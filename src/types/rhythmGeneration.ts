@@ -99,22 +99,26 @@ export interface RhythmGenerationProgress {
 /**
  * Per-band transient detection defaults.
  * Each frequency band has different optimal settings.
+ *
+ * NOTE: adaptiveThresholding is disabled by default (matches engine defaults).
+ * When enabled, it can only INCREASE the threshold based on track dynamics,
+ * never decrease it. This makes behavior more predictable.
  */
 export const DEFAULT_BAND_TRANSIENT_CONFIG: Record<Band, BandTransientConfig> = {
     low: {
         threshold: 0.4,       // Higher threshold - bass transients are typically stronger
         minInterval: 0.05,    // 50ms - bass events are more sparse
-        adaptiveThresholding: true,
+        adaptiveThresholding: false,  // Disabled by default - threshold used exactly as-is
     },
     mid: {
         threshold: 0.3,       // Medium threshold - balanced detection
         minInterval: 0.03,    // 30ms - moderate interval
-        adaptiveThresholding: true,
+        adaptiveThresholding: false,  // Disabled by default - threshold used exactly as-is
     },
     high: {
         threshold: 0.25,      // Lower threshold - hi-hats can be subtle
         minInterval: 0.02,    // 20ms - rapid fire percussion
-        adaptiveThresholding: true,
+        adaptiveThresholding: false,  // Disabled by default - threshold used exactly as-is
     },
 };
 
@@ -135,6 +139,10 @@ export interface AutoLevelSettings {
     transientConfig?: BandTransientConfigOverrides;
     /** Whether to use per-band defaults (when true, transientConfig is used) */
     usePerBandDefaults: boolean;
+    /** Enable density validation with automatic retry on too-dense transients */
+    enableDensityValidation: boolean;
+    /** Maximum retries per band when density validation fails (0-5) */
+    densityMaxRetries: number;
 }
 
 /**
@@ -147,6 +155,8 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     intensityThreshold: 0,
     usePerBandDefaults: true,  // Use per-band transient detection defaults by default
     transientConfig: undefined, // When usePerBandDefaults is true, engine uses its defaults
+    enableDensityValidation: false,  // Density validation disabled by default (opt-in)
+    densityMaxRetries: 0,       // No retries by default
 };
 
 /**

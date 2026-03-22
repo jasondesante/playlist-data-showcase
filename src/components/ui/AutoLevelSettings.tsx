@@ -376,6 +376,17 @@ export function AutoLevelSettings({
                                                 </p>
                                             </div>
 
+                                            {/* Adaptive Thresholding Info */}
+                                            <div className="auto-level-settings__info-box auto-level-settings__info-box--warning">
+                                                <Info size={14} />
+                                                <p>
+                                                    <strong>Adaptive Thresholding:</strong> When enabled, adjusts the
+                                                    threshold based on track dynamics. <em>Important:</em> This can only
+                                                    <strong> increase</strong> the threshold for dynamic tracks, never
+                                                    decrease it. For consistent signals, the threshold stays near the base value.
+                                                </p>
+                                            </div>
+
                                             {/* Use Per-Band Defaults Toggle */}
                                             <div className="auto-level-settings__toggle-row">
                                                 <label className="auto-level-settings__toggle-label">
@@ -511,6 +522,68 @@ export function AutoLevelSettings({
                                                     "Use Per-Band Defaults" to customize settings.
                                                 </p>
                                             )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Density Validation Section */}
+                                <div className="auto-level-settings__section">
+                                    <div className="auto-level-settings__toggle-row">
+                                        <label className="auto-level-settings__toggle-label">
+                                            Density Validation
+                                        </label>
+                                        <button
+                                            type="button"
+                                            className={cn(
+                                                'auto-level-settings__toggle-switch',
+                                                settings.enableDensityValidation && 'auto-level-settings__toggle-switch--active'
+                                            )}
+                                            onClick={() => handleChange('enableDensityValidation', !settings.enableDensityValidation)}
+                                            disabled={disabled}
+                                            role="switch"
+                                            aria-checked={settings.enableDensityValidation}
+                                        >
+                                            <span className="auto-level-settings__toggle-thumb" />
+                                        </button>
+                                    </div>
+
+                                    {settings.enableDensityValidation && (
+                                        <div className="auto-level-settings__density-validation">
+                                            <div className="auto-level-settings__info-box">
+                                                <Info size={14} />
+                                                <p>
+                                                    <strong>Density Validation:</strong> When enabled, if transients are
+                                                    too close together, the system will automatically increase thresholds
+                                                    and retry detection. This helps prevent overly dense patterns.
+                                                </p>
+                                            </div>
+
+                                            {/* Max Retries Slider */}
+                                            <div className="auto-level-settings__band-config-row">
+                                                <label className="auto-level-settings__band-config-label">
+                                                    Max Retries
+                                                </label>
+                                                <div className="auto-level-settings__band-config-slider-wrap">
+                                                    <input
+                                                        type="range"
+                                                        min="1"
+                                                        max="5"
+                                                        step="1"
+                                                        value={settings.densityMaxRetries || 3}
+                                                        onChange={(e) =>
+                                                            handleChange('densityMaxRetries', parseInt(e.target.value, 10))
+                                                        }
+                                                        className="auto-level-settings__band-config-slider"
+                                                        disabled={disabled}
+                                                    />
+                                                    <span className="auto-level-settings__band-config-value">
+                                                        {settings.densityMaxRetries || 3}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <p className="auto-level-settings__slider-help">
+                                                Number of retry attempts per band. Each retry increases the threshold by 0.1.
+                                            </p>
                                         </div>
                                     )}
                                 </div>

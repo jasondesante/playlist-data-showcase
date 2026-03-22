@@ -566,6 +566,24 @@
     color: hsl(var(--primary));
 }
 
+/* Warning variant of info box */
+.auto-level-settings__info-box--warning {
+    background-color: hsl(38 92% 50% / 0.08);
+    border-color: hsl(38 92% 50% / 0.3);
+}
+
+.auto-level-settings__info-box--warning svg {
+    color: hsl(38 92% 50%);
+}
+
+.auto-level-settings__info-box--warning strong {
+    color: hsl(38 92% 50%);
+}
+
+.auto-level-settings__info-box--warning em {
+    font-style: normal;
+}
+
 /* Toggle row */
 .auto-level-settings__toggle-row {
     display: flex;
@@ -795,4 +813,24 @@
     .auto-level-settings__band-config-slider-wrap {
         width: 100%;
     }
+}
+
+/* ============================================
+   DENSITY VALIDATION CONFIGURATION
+   ============================================ */
+
+.auto-level-settings__density-validation {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background-color: hsl(var(--surface-3));
+    border-radius: var(--radius);
+}
+
+.auto-level-settings__density-validation .auto-level-settings__slider-help {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
 }

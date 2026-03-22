@@ -261,6 +261,7 @@ export const useRhythmGeneration = (): UseRhythmGenerationReturn => {
                 outputMode: options?.outputMode ?? 'composite',
                 minimumTransientIntensity: options?.minimumTransientIntensity ?? 0.2,
                 transientConfig: options?.transientConfig,
+                densityValidation: options?.densityValidation,
                 verbose: options?.verbose ?? false,
             };
 

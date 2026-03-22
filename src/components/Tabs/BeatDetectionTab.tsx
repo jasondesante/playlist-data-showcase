@@ -272,6 +272,13 @@ export function BeatDetectionTab() {
                 outputMode: autoLevelSettings.outputMode,
                 minimumTransientIntensity: autoLevelSettings.intensityThreshold,
                 transientConfig: autoLevelSettings.transientConfig,
+                densityValidation: autoLevelSettings.enableDensityValidation
+                    ? {
+                          maxRetries: autoLevelSettings.densityMaxRetries,
+                          baseSensitivityReduction: 0.1,
+                          maxCumulativeReduction: 0.5,
+                      }
+                    : undefined,
             });
         }
     }, [
@@ -557,6 +564,13 @@ export function BeatDetectionTab() {
                                         outputMode: autoLevelSettings.outputMode,
                                         minimumTransientIntensity: autoLevelSettings.intensityThreshold,
                                         transientConfig: autoLevelSettings.transientConfig,
+                                        densityValidation: autoLevelSettings.enableDensityValidation
+                                            ? {
+                                                  maxRetries: autoLevelSettings.densityMaxRetries,
+                                                  baseSensitivityReduction: 0.1,
+                                                  maxCumulativeReduction: 0.5,
+                                              }
+                                            : undefined,
                                     });
                                 }
                             }}
@@ -573,6 +587,13 @@ export function BeatDetectionTab() {
                                         outputMode: autoLevelSettings.outputMode,
                                         minimumTransientIntensity: newThreshold,
                                         transientConfig: autoLevelSettings.transientConfig,
+                                        densityValidation: autoLevelSettings.enableDensityValidation
+                                            ? {
+                                                  maxRetries: autoLevelSettings.densityMaxRetries,
+                                                  baseSensitivityReduction: 0.1,
+                                                  maxCumulativeReduction: 0.5,
+                                              }
+                                            : undefined,
                                     });
                                 }
                             }}
