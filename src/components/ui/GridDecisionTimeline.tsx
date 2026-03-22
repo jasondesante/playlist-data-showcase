@@ -7,7 +7,8 @@
  * - Opacity based on confidence
  * - Hover shows confidence score and offset values
  * - Sync with audio playback (currentTime prop)
- * - Drag-to-scrub timeline
+ * - Drag-to-scrub timeline with click-to-seek
+ * - Quick scroll bar for fast navigation
  * - Show playhead position synced with audio
  *
  * Part of Phase 6: Quantization Visualization (Task 6.2)
@@ -17,6 +18,7 @@ import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Info } from 'lucide-react';
 import './GridDecisionTimeline.css';
 import type { GridDecision, GridType } from '../../types/rhythmGeneration';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 
 // ============================================================
 // Types
@@ -60,6 +62,9 @@ const GRID_LABELS: Record<GridType, string> = {
     triplet_8th: 'Triplet',
 };
 
+/** Pixels of movement before treating as drag (vs click) */
+const DRAG_THRESHOLD = 5;
+
 /**
  * Format time in seconds to MM:SS.ms display format
  */
@@ -93,15 +98,28 @@ function formatMs(ms: number): string {
 export function GridDecisionTimeline({
     gridDecisions,
     beatTimestamps,
-    currentTime = 0,
+    currentTime: propCurrentTime = 0,
     duration = 0,
-    isPlaying = false,
-    onSeek,
+    isPlaying: propIsPlaying = false,
+    onSeek: propOnSeek,
     anticipationWindow = 2.0,
     pastWindow = 4.0,
     className,
 }: GridDecisionTimelineProps) {
     const trackRef = useRef<HTMLDivElement>(null);
+    const quickScrollRef = useRef<HTMLDivElement>(null);
+
+    // Direct store access for responsive seeking
+    const storeSeek = useAudioPlayerStore((state) => state.seek);
+    const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);
+    const playbackState = useAudioPlayerStore((state) => state.playbackState);
+    const storeIsPlaying = playbackState === 'playing';
+
+    // Use store values if no prop override, but prefer prop for currentTime/isPlaying if provided
+    // This allows the component to work both with and without direct store access
+    const seek = propOnSeek || storeSeek;
+    const currentTime = propCurrentTime !== undefined || !storeCurrentTime ? propCurrentTime : storeCurrentTime;
+    const isPlaying = propIsPlaying !== undefined ? propIsPlaying : storeIsPlaying;
 
     // ========================================
     // Hover State for Tooltip
@@ -122,6 +140,14 @@ export function GridDecisionTimeline({
     });
     const isPlayingRef = useRef(isPlaying);
 
+    // CRITICAL: Use a ref to track smoothTime for stable callback references
+    const smoothTimeRef = useRef(smoothTime);
+
+    // Keep smoothTimeRef in sync with smoothTime state
+    useEffect(() => {
+        smoothTimeRef.current = smoothTime;
+    }, [smoothTime]);
+
     // Keep refs in sync with props
     useEffect(() => {
         lastAudioTimeRef.current = {
@@ -130,24 +156,22 @@ export function GridDecisionTimeline({
         };
     }, [currentTime]);
 
-    useEffect(() => {
-        isPlayingRef.current = isPlaying;
-    }, [isPlaying]);
-
     // Track previous isPlaying state to detect transitions
     const prevIsPlayingRef = useRef(isPlaying);
 
-    // Reset animation reference when playback transitions from paused to playing
     useEffect(() => {
-        const wasPlaying = prevIsPlayingRef.current;
-        prevIsPlayingRef.current = isPlaying;
+        isPlayingRef.current = isPlaying;
 
-        if (isPlaying && !wasPlaying) {
+        const playbackJustStarted = isPlaying && !prevIsPlayingRef.current;
+        if (playbackJustStarted) {
             lastAudioTimeRef.current = {
                 time: currentTime,
                 timestamp: performance.now(),
             };
+            setSmoothTime(currentTime);
         }
+
+        prevIsPlayingRef.current = isPlaying;
     }, [isPlaying, currentTime]);
 
     /**
@@ -194,44 +218,70 @@ export function GridDecisionTimeline({
     }, [currentTime, isPlaying]);
 
     // ========================================
-    // Drag-to-scrub functionality
+    // Drag-to-scrub and click-to-seek functionality
     // ========================================
 
     const [isDragging, setIsDragging] = useState(false);
     const dragStartXRef = useRef<number>(0);
     const dragStartTimeRef = useRef<number>(0);
 
+    // Quick scroll state
+    const [isQuickScrollDragging, setIsQuickScrollDragging] = useState(false);
+
+    // Total visible time window
+    const totalWindow = pastWindow + anticipationWindow;
+
     const handleMouseDown = useCallback(
         (event: React.MouseEvent<HTMLDivElement>) => {
-            if (!onSeek || !trackRef.current || duration === 0) return;
+            if (!trackRef.current || duration === 0) return;
 
             event.preventDefault();
             setIsDragging(true);
             dragStartXRef.current = event.clientX;
-            dragStartTimeRef.current = smoothTime;
+            dragStartTimeRef.current = smoothTimeRef.current;
         },
-        [onSeek, smoothTime, duration]
+        [duration]
     );
 
     const handleMouseMove = useCallback(
         (event: MouseEvent) => {
-            if (!isDragging || !onSeek || !trackRef.current || duration === 0) return;
+            if (!isDragging || !trackRef.current || duration === 0) return;
 
             const rect = trackRef.current.getBoundingClientRect();
             const trackWidth = rect.width;
             const deltaX = event.clientX - dragStartXRef.current;
-            const timePerPixel = (anticipationWindow * 2) / trackWidth;
-            const deltaTime = -deltaX * timePerPixel;
-            const newTime = Math.max(0, Math.min(duration, dragStartTimeRef.current + deltaTime));
 
-            onSeek(newTime);
+            if (Math.abs(deltaX) > DRAG_THRESHOLD) {
+                const timePerPixel = totalWindow / trackWidth;
+                const deltaTime = -deltaX * timePerPixel;
+                const newTime = Math.max(0, Math.min(duration, dragStartTimeRef.current + deltaTime));
+                seek(newTime);
+            }
         },
-        [isDragging, onSeek, anticipationWindow, duration]
+        [isDragging, totalWindow, duration, seek]
     );
 
-    const handleMouseUp = useCallback(() => {
-        setIsDragging(false);
-    }, []);
+    const handleMouseUp = useCallback(
+        (event: MouseEvent) => {
+            if (!isDragging || !trackRef.current || duration === 0) return;
+
+            const rect = trackRef.current.getBoundingClientRect();
+            const deltaX = event.clientX - dragStartXRef.current;
+
+            // If it was a click (not a drag), seek to clicked position
+            if (Math.abs(deltaX) <= DRAG_THRESHOLD) {
+                const clickX = event.clientX - rect.left;
+                const trackWidth = rect.width;
+                const positionRatio = clickX / trackWidth;
+                const timeFromPastStart = positionRatio * totalWindow;
+                const newTime = Math.max(0, Math.min(duration, (smoothTimeRef.current - pastWindow) + timeFromPastStart));
+                seek(newTime);
+            }
+
+            setIsDragging(false);
+        },
+        [isDragging, pastWindow, totalWindow, duration, seek]
+    );
 
     useEffect(() => {
         if (isDragging) {
@@ -245,30 +295,97 @@ export function GridDecisionTimeline({
     }, [isDragging, handleMouseMove, handleMouseUp]);
 
     // ========================================
+    // Quick scroll handlers
+    // ========================================
+
+    const handleQuickScrollClick = useCallback(
+        (event: React.MouseEvent) => {
+            if (!quickScrollRef.current || duration === 0) return;
+
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            const newTime = positionRatio * duration;
+            seek(newTime);
+        },
+        [duration, seek]
+    );
+
+    const handleQuickScrollDragStart = useCallback(
+        (event: React.MouseEvent) => {
+            if (!quickScrollRef.current || duration === 0) return;
+
+            event.preventDefault();
+            setIsQuickScrollDragging(true);
+
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            const newTime = positionRatio * duration;
+            seek(newTime);
+        },
+        [duration, seek]
+    );
+
+    // Quick scroll drag handling with RAF throttling
+    useEffect(() => {
+        if (!isQuickScrollDragging || duration === 0) return;
+
+        let pendingSeek: number | null = null;
+        let rafId: number | null = null;
+
+        const handleQuickScrollMove = (event: MouseEvent) => {
+            if (!quickScrollRef.current) return;
+
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            const newTime = positionRatio * duration;
+
+            pendingSeek = newTime;
+
+            if (!rafId) {
+                rafId = requestAnimationFrame(() => {
+                    if (pendingSeek !== null) {
+                        seek(pendingSeek);
+                        pendingSeek = null;
+                    }
+                    rafId = null;
+                });
+            }
+        };
+
+        const handleQuickScrollEnd = () => {
+            setIsQuickScrollDragging(false);
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+        };
+
+        window.addEventListener('mousemove', handleQuickScrollMove);
+        window.addEventListener('mouseup', handleQuickScrollEnd);
+
+        return () => {
+            window.removeEventListener('mousemove', handleQuickScrollMove);
+            window.removeEventListener('mouseup', handleQuickScrollEnd);
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+            }
+        };
+    }, [isQuickScrollDragging, duration, seek]);
+
+    // ========================================
     // Grid Decision Positioning
     // ========================================
 
     /**
-     * Calculate grid decision position on the timeline.
-     */
-    const calculatePosition = useCallback(
-        (timestamp: number): number => {
-            const timeUntilBeat = timestamp - smoothTime;
-            const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
-            return position;
-        },
-        [smoothTime, anticipationWindow]
-    );
-
-    /**
      * Get visible grid decisions within the window
      */
-    const getVisibleDecisions = useCallback((): Array<{
-        decision: GridDecision;
-        timestamp: number;
-        position: number;
-        isPast: boolean;
-    }> => {
+    const visibleDecisions = useMemo(() => {
         const minTime = smoothTime - pastWindow;
         const maxTime = smoothTime + anticipationWindow;
 
@@ -276,7 +393,8 @@ export function GridDecisionTimeline({
             .map((decision) => {
                 const timestamp = beatTimestamps[decision.beatIndex];
                 if (timestamp === undefined) return null;
-                const position = calculatePosition(timestamp);
+                const timeUntilBeat = timestamp - smoothTime;
+                const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
                 const isPast = timestamp < smoothTime - 0.05;
                 return { decision, timestamp, position, isPast };
             })
@@ -286,9 +404,7 @@ export function GridDecisionTimeline({
                 const positionMatch = item.position >= 0 && item.position <= 1;
                 return timeMatch && positionMatch;
             });
-    }, [gridDecisions, beatTimestamps, smoothTime, pastWindow, anticipationWindow, calculatePosition]);
-
-    const visibleDecisions = getVisibleDecisions();
+    }, [gridDecisions, beatTimestamps, smoothTime, pastWindow, anticipationWindow]);
 
     // ========================================
     // Statistics for info bar
@@ -318,6 +434,7 @@ export function GridDecisionTimeline({
      */
     const handleMouseEnter = useCallback(
         (decision: GridDecision, event: React.MouseEvent) => {
+            event.stopPropagation();
             setHoveredDecision(decision);
             const rect = (event.target as HTMLElement).getBoundingClientRect();
             setTooltipPosition({
@@ -332,19 +449,27 @@ export function GridDecisionTimeline({
         setHoveredDecision(null);
     }, []);
 
+    /**
+     * Prevent marker mouse down from triggering track drag
+     */
+    const handleMarkerMouseDown = useCallback((event: React.MouseEvent) => {
+        event.stopPropagation();
+        event.preventDefault();
+    }, []);
+
     return (
         <div className={`grid-decision-timeline ${className || ''}`}>
             {/* Timeline track */}
             <div
                 ref={trackRef}
-                className={`grid-decision-timeline-track ${onSeek ? 'grid-decision-timeline-track--draggable' : ''} ${isDragging ? 'grid-decision-timeline-track--dragging' : ''}`}
+                className={`grid-decision-timeline-track grid-decision-timeline-track--draggable ${isDragging ? 'grid-decision-timeline-track--dragging' : ''}`}
                 onMouseDown={handleMouseDown}
-                role={onSeek ? 'slider' : undefined}
+                role="slider"
                 aria-label="Grid decision timeline"
                 aria-valuemin={0}
                 aria-valuemax={duration}
                 aria-valuenow={smoothTime}
-                tabIndex={onSeek ? 0 : undefined}
+                tabIndex={0}
             >
                 {/* Background gradient */}
                 <div className="grid-decision-timeline-background" />
@@ -356,9 +481,9 @@ export function GridDecisionTimeline({
                 <div className="grid-decision-timeline-future-region" />
 
                 {/* Grid decision markers */}
-                {visibleDecisions.map(({ decision, position, isPast }) => (
+                {visibleDecisions.map(({ decision, position, isPast }, idx) => (
                     <div
-                        key={`grid-decision-${decision.beatIndex}`}
+                        key={`grid-decision-${decision.beatIndex}-${decision.selectedGrid}-${idx}`}
                         className={`grid-decision-timeline-marker ${
                             isPast ? 'grid-decision-timeline-marker--past' : ''
                         } ${
@@ -373,6 +498,8 @@ export function GridDecisionTimeline({
                         } as React.CSSProperties}
                         onMouseEnter={(e) => handleMouseEnter(decision, e)}
                         onMouseLeave={handleMouseLeave}
+                        onMouseDown={handleMarkerMouseDown}
+                        onClick={(e) => e.stopPropagation()}
                         role="button"
                         tabIndex={0}
                         aria-label={`Beat ${decision.beatIndex + 1}: ${GRID_LABELS[decision.selectedGrid]}, confidence ${Math.round(decision.confidence * 100)}%`}
@@ -491,6 +618,52 @@ export function GridDecisionTimeline({
                     <span className="grid-decision-timeline-legend-label">Hover for details</span>
                 </div>
             </div>
+
+            {/* Quick scrollbar for fast navigation */}
+            {duration > 0 && (
+                <div className="grid-decision-timeline-quickscroll">
+                    <div
+                        ref={quickScrollRef}
+                        className="grid-decision-timeline-quickscroll-track"
+                        onClick={handleQuickScrollClick}
+                        onMouseDown={handleQuickScrollDragStart}
+                    >
+                        {/* Grid decision markers (sampled for performance) */}
+                        {gridDecisions
+                            .filter((_, idx) => idx % Math.max(1, Math.floor(gridDecisions.length / 50)) === 0)
+                            .map((decision, index) => {
+                                const timestamp = beatTimestamps[decision.beatIndex];
+                                if (timestamp === undefined) return null;
+                                const position = timestamp / duration;
+                                return (
+                                    <div
+                                        key={`quickscroll-${index}`}
+                                        className="grid-decision-timeline-quickscroll-marker"
+                                        style={{
+                                            left: `${position * 100}%`,
+                                            backgroundColor: GRID_COLORS[decision.selectedGrid],
+                                        }}
+                                    />
+                                );
+                            })}
+
+                        {/* Viewport indicator */}
+                        <div
+                            className="grid-decision-timeline-quickscroll-viewport"
+                            style={{
+                                left: `${Math.max(0, ((smoothTime - pastWindow) / duration) * 100)}%`,
+                                width: `${Math.min(100, (totalWindow / duration) * 100)}%`,
+                            }}
+                        />
+
+                        {/* Current position indicator */}
+                        <div
+                            className="grid-decision-timeline-quickscroll-position"
+                            style={{ left: `${(smoothTime / duration) * 100}%` }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

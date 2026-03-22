@@ -14,6 +14,7 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Trophy, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import './VariantComparisonView.css';
+import { useAudioPlayerStore } from '../../../../store/audioPlayerStore';
 import type {
     GeneratedRhythm,
     DifficultyLevel,
@@ -316,6 +317,16 @@ export function VariantComparisonView({
     const [zoom, setZoom] = useState(1);
     const [scrollOffset, setScrollOffset] = useState(0);
 
+    // Quick scroll state
+    const quickScrollRef = useRef<HTMLDivElement>(null);
+    const [isQuickScrollDragging, setIsQuickScrollDragging] = useState(false);
+
+    // Direct store access for responsive seeking
+    const seek = useAudioPlayerStore((state) => state.seek);
+
+    // Subscribe to current time for quick scrollbar
+    const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);
+
     const variants = rhythm.difficultyVariants;
     const naturalDifficulty = rhythm.metadata.naturalDifficulty;
 
@@ -379,6 +390,112 @@ export function VariantComparisonView({
     const handleScroll = useCallback((offset: number) => {
         setScrollOffset(offset);
     }, []);
+
+    // ========================================
+    // Quick scroll handlers - click to jump, drag to scrub
+    // ========================================
+
+    const handleQuickScrollClick = useCallback((event: React.MouseEvent) => {
+        if (!quickScrollRef.current || duration <= 0) return;
+
+        const rect = quickScrollRef.current.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const trackWidth = rect.width;
+        const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+        const newTime = positionRatio * duration;
+
+        seek(newTime);
+    }, [duration, seek]);
+
+    const handleQuickScrollDragStart = useCallback((event: React.MouseEvent) => {
+        if (!quickScrollRef.current || duration <= 0) return;
+
+        event.preventDefault();
+        setIsQuickScrollDragging(true);
+
+        // Immediately seek on mousedown
+        const rect = quickScrollRef.current.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const trackWidth = rect.width;
+        const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+        const newTime = positionRatio * duration;
+
+        seek(newTime);
+    }, [duration, seek]);
+
+    // Quick scroll drag handling with RAF throttling (same pattern as TransientTimeline)
+    useEffect(() => {
+        if (!isQuickScrollDragging || duration <= 0) return;
+
+        let pendingSeek: number | null = null;
+        let rafId: number | null = null;
+
+        const handleQuickScrollMove = (event: MouseEvent) => {
+            if (!quickScrollRef.current) return;
+
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            const newTime = positionRatio * duration;
+
+            // Throttle to animation frames
+            pendingSeek = newTime;
+
+            if (!rafId) {
+                rafId = requestAnimationFrame(() => {
+                    if (pendingSeek !== null) {
+                        seek(pendingSeek);
+                        pendingSeek = null;
+                    }
+                    rafId = null;
+                });
+            }
+        };
+
+        const handleQuickScrollEnd = () => {
+            setIsQuickScrollDragging(false);
+            // Cancel any pending RAF
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+        };
+
+        window.addEventListener('mousemove', handleQuickScrollMove);
+        window.addEventListener('mouseup', handleQuickScrollEnd);
+
+        return () => {
+            window.removeEventListener('mousemove', handleQuickScrollMove);
+            window.removeEventListener('mouseup', handleQuickScrollEnd);
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+            }
+        };
+    }, [isQuickScrollDragging, duration, seek]);
+
+    // Get all beats for quick scroll markers (sampled for performance)
+    const quickScrollBeats = useMemo(() => {
+        const allBeats: Array<{ timestamp: number; band: Band }> = [];
+        DIFFICULTY_ORDER.forEach((diff) => {
+            variants[diff].beats.forEach((beat) => {
+                allBeats.push({
+                    timestamp: beat.timestamp,
+                    band: beat.sourceBand,
+                });
+            });
+        });
+
+        // Sort by timestamp
+        allBeats.sort((a, b) => a.timestamp - b.timestamp);
+
+        // Sample every Nth beat for performance (max ~100 markers)
+        const sampleRate = Math.max(1, Math.floor(allBeats.length / 100));
+        return allBeats.filter((_, idx) => idx % sampleRate === 0);
+    }, [variants]);
+
+    // Calculate visible duration for viewport indicator
+    const visibleDuration = duration / zoom;
 
     // Calculate comparison stats
     const comparisonStats = useMemo(() => {
@@ -559,6 +676,48 @@ export function VariantComparisonView({
                 <span>Click to seek</span>
                 <span>Use zoom controls to adjust view</span>
             </div>
+
+            {/* Quick scrollbar for fast navigation */}
+            {duration && duration > 0 && (
+                <div className="variant-comparison-quickscroll">
+                    <div
+                        ref={quickScrollRef}
+                        className={`variant-comparison-quickscroll-track ${isQuickScrollDragging ? 'dragging' : ''}`}
+                        onClick={handleQuickScrollClick}
+                        onMouseDown={handleQuickScrollDragStart}
+                    >
+                        {/* Beat density markers in quick scroll (sampled for performance) */}
+                        {quickScrollBeats.map((beat, index) => {
+                            const position = beat.timestamp / duration;
+                            return (
+                                <div
+                                    key={`quickscroll-beat-${index}`}
+                                    className="variant-comparison-quickscroll-marker"
+                                    style={{
+                                        left: `${position * 100}%`,
+                                        backgroundColor: BAND_COLORS[beat.band],
+                                    }}
+                                />
+                            );
+                        })}
+
+                        {/* Viewport indicator - shows current visible window */}
+                        <div
+                            className="variant-comparison-quickscroll-viewport"
+                            style={{
+                                left: `${Math.max(0, (scrollOffset / duration) * 100)}%`,
+                                width: `${Math.min(100, (visibleDuration / duration) * 100)}%`,
+                            }}
+                        />
+
+                        {/* Current position indicator (playhead) */}
+                        <div
+                            className="variant-comparison-quickscroll-position"
+                            style={{ left: `${(storeCurrentTime / duration) * 100}%` }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

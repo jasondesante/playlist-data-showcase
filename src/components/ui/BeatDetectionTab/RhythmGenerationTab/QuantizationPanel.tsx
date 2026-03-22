@@ -340,8 +340,9 @@ export function QuantizationPanel({
         return bandStreams[selectedBand].gridDecisions;
     }, [bandStreams, selectedBand]);
 
-    // Calculate beat timestamps from quarter note interval
+    // Calculate beat timestamps from actual beat data
     // The beatIndex in GridDecision refers to quarter note beats
+    // We need to use the ACTUAL detected timestamps, not theoretical calculations
     const beatTimestamps = useMemo(() => {
         const quarterNoteInterval = composite.quarterNoteInterval;
         const maxBeatIndex = Math.max(
@@ -351,14 +352,35 @@ export function QuantizationPanel({
             0
         );
 
+        // Build a map from beatIndex to actual timestamp using composite beats
+        // The composite stream contains beats with actual detected timestamps
+        const beatTimestampMap = new Map<number, number>();
+        for (const beat of composite.beats) {
+            // Only record if we don't have this beatIndex yet (prefer first occurrence)
+            if (!beatTimestampMap.has(beat.beatIndex)) {
+                beatTimestampMap.set(beat.beatIndex, beat.timestamp);
+            }
+        }
+
         // Create array of timestamps: index -> timestamp
-        // Beat 0 is at time 0, beat 1 is at quarterNoteInterval, etc.
+        // Use actual timestamps when available, fall back to calculated for missing indices
         const timestamps: number[] = [];
+
+        // Find the first actual beat timestamp to use as a reference for fallback calculation
+        const firstBeatTimestamp = beatTimestampMap.get(0) ?? 0;
+
         for (let i = 0; i <= maxBeatIndex; i++) {
-            timestamps.push(i * quarterNoteInterval);
+            const actualTimestamp = beatTimestampMap.get(i);
+            if (actualTimestamp !== undefined) {
+                timestamps.push(actualTimestamp);
+            } else {
+                // Fallback: calculate from the first beat's actual timestamp
+                // This handles any gaps in the beat map
+                timestamps.push(firstBeatTimestamp + i * quarterNoteInterval);
+            }
         }
         return timestamps;
-    }, [composite.quarterNoteInterval, bandStreams]);
+    }, [composite, bandStreams]);
 
     return (
         <div className={`quantization-panel ${className || ''}`}>
