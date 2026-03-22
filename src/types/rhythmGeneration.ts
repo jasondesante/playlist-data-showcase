@@ -103,7 +103,7 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     preset: 'standard',
     difficulty: 'medium',
     outputMode: 'composite',
-    intensityThreshold: 0.2,
+    intensityThreshold: 0,
 };
 
 /**

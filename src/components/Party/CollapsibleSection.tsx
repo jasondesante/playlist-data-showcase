@@ -55,13 +55,34 @@ export function CollapsibleSection({
 
   const [isCollapsed, setIsCollapsed] = useState(getInitialState);
   const contentRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState<number | undefined>(undefined);
 
-  // Measure content height when children change
+  // Use ResizeObserver to measure content height when it changes
+  // This handles cases where internal state changes affect height (e.g., TransientInspector expanding)
+  // We observe the INNER element because the outer has overflow:hidden and max-height constraints
   useEffect(() => {
-    if (contentRef.current) {
-      setContentHeight(contentRef.current.scrollHeight);
-    }
+    const innerEl = innerRef.current;
+    if (!innerEl) return;
+
+    const updateHeight = () => {
+      // Measure the inner element's offsetHeight which gives true unconstrained height
+      setContentHeight(innerEl.offsetHeight);
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      // Use requestAnimationFrame to avoid ResizeObserver loop errors
+      requestAnimationFrame(updateHeight);
+    });
+
+    resizeObserver.observe(innerEl);
+
+    // Initial measurement
+    updateHeight();
+
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [children]);
 
   const toggleCollapsed = () => {
@@ -113,7 +134,7 @@ export function CollapsibleSection({
         }}
         ref={contentRef}
       >
-        <div className="collapsible-section-inner">
+        <div className="collapsible-section-inner" ref={innerRef}>
           {children}
         </div>
       </div>

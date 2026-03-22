@@ -424,11 +424,11 @@ export function QuantizationPanel({
                             {overallStats.densityValidation.isValid ? 'Passed' : 'Adjusted'}
                         </span>
                     </div>
-                    {overallStats.densityValidation.retryCount > 0 && (
+                    {overallStats.densityValidation.maxRetryCount > 0 && (
                         <div className="quantization-density-item">
                             <span className="quantization-density-label">Retries</span>
                             <span className="quantization-density-value">
-                                {overallStats.densityValidation.retryCount}
+                                {overallStats.densityValidation.maxRetryCount}
                             </span>
                         </div>
                     )}
