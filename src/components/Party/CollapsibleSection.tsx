@@ -135,7 +135,7 @@ export function CollapsibleSection({
         ref={contentRef}
       >
         <div className="collapsible-section-inner" ref={innerRef}>
-          {children}
+          {!isCollapsed && children}
         </div>
       </div>
     </div>
