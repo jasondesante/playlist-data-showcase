@@ -106,8 +106,8 @@ export interface RhythmGenerationProgress {
  */
 export const DEFAULT_BAND_TRANSIENT_CONFIG: Record<Band, BandTransientConfig> = {
     low: {
-        threshold: 0.4,       // Higher threshold - bass transients are typically stronger
-        minInterval: 0.05,    // 50ms - bass events are more sparse
+        threshold: 0.5,       // Higher threshold - bass transients are typically stronger
+        minInterval: 0.08,    // 80ms - bass events are more sparse
         adaptiveThresholding: false,  // Disabled by default - threshold used exactly as-is
     },
     mid: {
