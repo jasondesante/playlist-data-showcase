@@ -13,9 +13,67 @@
  * Part of Phase 4: Transient Detection Visualization (Task 4.2)
  */
 
-import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo, memo } from 'react';
 import './TransientTimeline.css';
 import type { TransientResult, Band } from '../../types/rhythmGeneration';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
+
+// ============================================================
+// Constants
+// ============================================================
+
+/** Pixels of movement before treating as drag (vs click) */
+const DRAG_THRESHOLD = 5;
+
+// ============================================================
+// Binary Search Utilities for O(log n) filtering
+// ============================================================
+
+/**
+ * Find the index of the first transient at or after the given timestamp.
+ * Assumes transients array is sorted by timestamp.
+ * Returns 0 if all transients are after the timestamp.
+ */
+function findFirstIndexAfter(
+    transients: TransientResult[],
+    timestamp: number
+): number {
+    let left = 0;
+    let right = transients.length;
+
+    while (left < right) {
+        const mid = Math.floor((left + right) / 2);
+        if (transients[mid].timestamp < timestamp) {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+    return left;
+}
+
+/**
+ * Find the index of the last transient at or before the given timestamp.
+ * Assumes transients array is sorted by timestamp.
+ * Returns transients.length - 1 if all transients are before the timestamp.
+ */
+function findLastIndexBefore(
+    transients: TransientResult[],
+    timestamp: number
+): number {
+    let left = -1;
+    let right = transients.length - 1;
+
+    while (left < right) {
+        const mid = Math.floor((left + right + 1) / 2);
+        if (transients[mid].timestamp > timestamp) {
+            right = mid - 1;
+        } else {
+            left = mid;
+        }
+    }
+    return left;
+}
 
 // ============================================================
 // Types
@@ -24,16 +82,10 @@ import type { TransientResult, Band } from '../../types/rhythmGeneration';
 export interface TransientTimelineProps {
     /** Array of transient results to visualize */
     transients: TransientResult[];
-    /** Current audio playback time in seconds */
-    currentTime?: number;
     /** Total audio duration in seconds */
     duration?: number;
-    /** Whether audio is currently playing */
-    isPlaying?: boolean;
     /** Callback when user clicks on a transient */
     onTransientClick?: (transient: TransientResult, index: number) => void;
-    /** Callback when user seeks to a time position */
-    onSeek?: (time: number) => void;
     /** Index of the currently selected transient (for highlighting) */
     selectedTransientIndex?: number | null;
     /** Optional filter to show only specific band */
@@ -66,6 +118,67 @@ const DETECTION_METHOD_LABELS: Record<string, string> = {
     hfc: 'HFC',
 };
 
+// ============================================================
+// Memoized Marker Component for Performance
+// ============================================================
+
+interface TransientMarkerProps {
+    transient: TransientResult;
+    index: number;
+    position: number;
+    isPast: boolean;
+    isSelected: boolean;
+    onClick: (transient: TransientResult, index: number, event: React.MouseEvent) => void;
+    onKeyDown: (transient: TransientResult, index: number, event: React.KeyboardEvent) => void;
+}
+
+/**
+ * Memoized transient marker to prevent unnecessary re-renders.
+ * Only re-renders when its specific props change.
+ */
+const TransientMarker = memo(function TransientMarker({
+    transient,
+    index,
+    position,
+    isPast,
+    isSelected,
+    onClick,
+    onKeyDown,
+}: TransientMarkerProps) {
+    // Prevent mousedown from bubbling to parent track to avoid triggering seek
+    const handleMouseDown = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+    }, []);
+
+    return (
+        <div
+            className={`transient-timeline-marker ${
+                isPast ? 'transient-timeline-marker--past' : ''
+            } ${isSelected ? 'transient-timeline-marker--selected' : ''}`}
+            style={{
+                left: `${position * 100}%`,
+                '--band-color': BAND_COLORS[transient.band],
+            } as React.CSSProperties}
+            onClick={(e) => onClick(transient, index, e)}
+            onMouseDown={handleMouseDown}
+            onKeyDown={(e) => onKeyDown(transient, index, e)}
+            role="button"
+            tabIndex={0}
+            aria-label={`Transient at ${formatTime(transient.timestamp)}, ${transient.band} band, intensity ${Math.round(transient.intensity * 100)}%`}
+            title={`${formatTime(transient.timestamp)} | ${transient.band.toUpperCase()} | ${(transient.intensity * 100).toFixed(0)}% | ${DETECTION_METHOD_LABELS[transient.detectionMethod] || transient.detectionMethod}`}
+        >
+            <div
+                className="transient-timeline-marker-dot"
+                style={{
+                    width: `${8 + transient.intensity * 12}px`,
+                    height: `${8 + transient.intensity * 12}px`,
+                    backgroundColor: BAND_COLORS[transient.band],
+                }}
+            />
+        </div>
+    );
+});
+
 /**
  * Format time in seconds to MM:SS.ms display format
  */
@@ -87,11 +200,8 @@ function formatTime(seconds: number): string {
  */
 export function TransientTimeline({
     transients,
-    currentTime = 0,
     duration = 0,
-    isPlaying = false,
     onTransientClick,
-    onSeek,
     selectedTransientIndex = null,
     filterBand = 'all',
     intensityThreshold = 0,
@@ -100,6 +210,13 @@ export function TransientTimeline({
     className,
 }: TransientTimelineProps) {
     const trackRef = useRef<HTMLDivElement>(null);
+
+    // Direct store access for responsive seeking (same pattern as SubdivisionPreviewTimeline)
+    const seek = useAudioPlayerStore((state) => state.seek);
+    // Subscribe directly to currentTime and playbackState for immediate updates
+    const currentTime = useAudioPlayerStore((state) => state.currentTime);
+    const playbackState = useAudioPlayerStore((state) => state.playbackState);
+    const isPlaying = playbackState === 'playing';
 
     // ========================================
     // Smooth Animation with requestAnimationFrame
@@ -113,6 +230,16 @@ export function TransientTimeline({
     });
     const isPlayingRef = useRef(isPlaying);
 
+    // CRITICAL: Use a ref to track smoothTime for stable callback references.
+    // This prevents handleMouseDown from being recreated every frame during animation,
+    // which was causing the initial drag stutter.
+    const smoothTimeRef = useRef(smoothTime);
+
+    // Keep smoothTimeRef in sync with smoothTime state
+    useEffect(() => {
+        smoothTimeRef.current = smoothTime;
+    }, [smoothTime]);
+
     // Keep refs in sync with props
     useEffect(() => {
         lastAudioTimeRef.current = {
@@ -121,24 +248,27 @@ export function TransientTimeline({
         };
     }, [currentTime]);
 
-    useEffect(() => {
-        isPlayingRef.current = isPlaying;
-    }, [isPlaying]);
-
     // Track previous isPlaying state to detect transitions
     const prevIsPlayingRef = useRef(isPlaying);
 
-    // Reset animation reference when playback transitions from paused to playing
     useEffect(() => {
-        const wasPlaying = prevIsPlayingRef.current;
-        prevIsPlayingRef.current = isPlaying;
+        isPlayingRef.current = isPlaying;
 
-        if (isPlaying && !wasPlaying) {
+        // CRITICAL: When playback STARTS (transitions from false to true),
+        // reset the timestamp reference to prevent visual stutter.
+        // Without this, the animation loop calculates elapsed time using
+        // a stale timestamp from when the audio was last paused.
+        const playbackJustStarted = isPlaying && !prevIsPlayingRef.current;
+        if (playbackJustStarted) {
             lastAudioTimeRef.current = {
                 time: currentTime,
                 timestamp: performance.now(),
             };
+            // Sync smoothTime to currentTime immediately for smooth start
+            setSmoothTime(currentTime);
         }
+
+        prevIsPlayingRef.current = isPlaying;
     }, [isPlaying, currentTime]);
 
     /**
@@ -185,44 +315,78 @@ export function TransientTimeline({
     }, [currentTime, isPlaying]);
 
     // ========================================
-    // Drag-to-scrub functionality
+    // Drag-to-scrub and click-to-seek functionality
     // ========================================
 
     const [isDragging, setIsDragging] = useState(false);
     const dragStartXRef = useRef<number>(0);
     const dragStartTimeRef = useRef<number>(0);
 
+    // Quick scroll state
+    const [isQuickScrollDragging, setIsQuickScrollDragging] = useState(false);
+    const quickScrollRef = useRef<HTMLDivElement>(null);
+
+    // Total visible time window
+    const totalWindow = pastWindow + anticipationWindow;
+
     const handleMouseDown = useCallback(
         (event: React.MouseEvent<HTMLDivElement>) => {
-            if (!onSeek || !trackRef.current || duration === 0) return;
+            if (!trackRef.current || duration === 0) return;
 
             event.preventDefault();
             setIsDragging(true);
             dragStartXRef.current = event.clientX;
-            dragStartTimeRef.current = smoothTime;
+            // Use ref value to get current smoothTime without causing callback recreation
+            dragStartTimeRef.current = smoothTimeRef.current;
         },
-        [onSeek, smoothTime, duration]
+        [duration]  // Removed smoothTime dependency - now uses ref for stable callback
     );
 
     const handleMouseMove = useCallback(
         (event: MouseEvent) => {
-            if (!isDragging || !onSeek || !trackRef.current || duration === 0) return;
+            if (!isDragging || !trackRef.current || duration === 0) return;
 
             const rect = trackRef.current.getBoundingClientRect();
             const trackWidth = rect.width;
             const deltaX = event.clientX - dragStartXRef.current;
-            const timePerPixel = (anticipationWindow * 2) / trackWidth;
-            const deltaTime = -deltaX * timePerPixel;
-            const newTime = Math.max(0, Math.min(duration, dragStartTimeRef.current + deltaTime));
 
-            onSeek(newTime);
+            // If moved beyond threshold, treat as drag (scrub)
+            if (Math.abs(deltaX) > DRAG_THRESHOLD) {
+                const timePerPixel = totalWindow / trackWidth;
+                const deltaTime = -deltaX * timePerPixel;
+                const newTime = Math.max(0, Math.min(duration, dragStartTimeRef.current + deltaTime));
+                seek(newTime);
+            }
         },
-        [isDragging, onSeek, anticipationWindow, duration]
+        [isDragging, totalWindow, duration, seek]
     );
 
-    const handleMouseUp = useCallback(() => {
-        setIsDragging(false);
-    }, []);
+    const handleMouseUp = useCallback(
+        (event: MouseEvent) => {
+            if (!isDragging || !trackRef.current || duration === 0) return;
+
+            const rect = trackRef.current.getBoundingClientRect();
+            const deltaX = event.clientX - dragStartXRef.current;
+
+            // If it was a click (not a drag), seek to clicked position
+            if (Math.abs(deltaX) <= DRAG_THRESHOLD) {
+                const clickX = event.clientX - rect.left;
+                const trackWidth = rect.width;
+
+                // Calculate time from click position
+                // Position 0 = (smoothTime - pastWindow), 1 = (smoothTime + anticipationWindow)
+                const positionRatio = clickX / trackWidth;
+                const timeFromPastStart = positionRatio * totalWindow;
+                // Use ref value to get current smoothTime without causing callback recreation
+                const newTime = Math.max(0, Math.min(duration, (smoothTimeRef.current - pastWindow) + timeFromPastStart));
+
+                seek(newTime);
+            }
+
+            setIsDragging(false);
+        },
+        [isDragging, pastWindow, totalWindow, duration, seek]  // Removed smoothTime dependency
+    );
 
     useEffect(() => {
         if (isDragging) {
@@ -234,6 +398,95 @@ export function TransientTimeline({
             };
         }
     }, [isDragging, handleMouseMove, handleMouseUp]);
+
+    // ========================================
+    // Quick scroll handlers
+    // ========================================
+
+    const handleQuickScrollClick = useCallback(
+        (event: React.MouseEvent) => {
+            if (!quickScrollRef.current || duration === 0) return;
+
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            const newTime = positionRatio * duration;
+
+            seek(newTime);
+        },
+        [duration, seek]
+    );
+
+    const handleQuickScrollDragStart = useCallback(
+        (event: React.MouseEvent) => {
+            if (!quickScrollRef.current || duration === 0) return;
+
+            event.preventDefault();
+            setIsQuickScrollDragging(true);
+
+            // Immediately seek on mousedown
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            const newTime = positionRatio * duration;
+
+            seek(newTime);
+        },
+        [duration, seek]
+    );
+
+    // Quick scroll drag handling with RAF throttling
+    useEffect(() => {
+        if (!isQuickScrollDragging || duration === 0) return;
+
+        let pendingSeek: number | null = null;
+        let rafId: number | null = null;
+
+        const handleQuickScrollMove = (event: MouseEvent) => {
+            if (!quickScrollRef.current) return;
+
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            const newTime = positionRatio * duration;
+
+            // Throttle to animation frames
+            pendingSeek = newTime;
+
+            if (!rafId) {
+                rafId = requestAnimationFrame(() => {
+                    if (pendingSeek !== null) {
+                        seek(pendingSeek);
+                        pendingSeek = null;
+                    }
+                    rafId = null;
+                });
+            }
+        };
+
+        const handleQuickScrollEnd = () => {
+            setIsQuickScrollDragging(false);
+            // Cancel any pending RAF
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+        };
+
+        window.addEventListener('mousemove', handleQuickScrollMove);
+        window.addEventListener('mouseup', handleQuickScrollEnd);
+
+        return () => {
+            window.removeEventListener('mousemove', handleQuickScrollMove);
+            window.removeEventListener('mouseup', handleQuickScrollEnd);
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+            }
+        };
+    }, [isQuickScrollDragging, duration, seek]);
 
     // ========================================
     // Transient Filtering and Positioning
@@ -251,43 +504,49 @@ export function TransientTimeline({
     }, [transients, intensityThreshold, filterBand]);
 
     /**
-     * Calculate transient position on the timeline.
+     * Get visible transients within the window using binary search for O(log n) performance.
+     * Position calculation is inlined to avoid unnecessary function recreation.
      */
-    const calculatePosition = useCallback(
-        (timestamp: number): number => {
-            const timeUntilTransient = timestamp - smoothTime;
-            const position = 0.5 + (timeUntilTransient / anticipationWindow) * 0.5;
-            return position;
-        },
-        [smoothTime, anticipationWindow]
-    );
+    const visibleTransients = useMemo(() => {
+        if (filteredTransients.length === 0) return [];
 
-    /**
-     * Get visible transients within the window
-     */
-    const getVisibleTransients = useCallback((): Array<{
-        transient: TransientResult;
-        index: number;
-        position: number;
-        isPast: boolean;
-    }> => {
         const minTime = smoothTime - pastWindow;
         const maxTime = smoothTime + anticipationWindow;
 
-        return filteredTransients
-            .map((transient, index) => {
-                const position = calculatePosition(transient.timestamp);
-                const isPast = transient.timestamp < smoothTime - 0.05;
-                return { transient, index, position, isPast };
-            })
-            .filter((item) => {
-                const timeMatch = item.transient.timestamp >= minTime && item.transient.timestamp <= maxTime;
-                const positionMatch = item.position >= 0 && item.position <= 1;
-                return timeMatch && positionMatch;
-            });
-    }, [filteredTransients, smoothTime, pastWindow, anticipationWindow, calculatePosition]);
+        // Binary search to find the range of visible transients
+        const startIndex = findFirstIndexAfter(filteredTransients, minTime);
+        const endIndex = findLastIndexBefore(filteredTransients, maxTime);
 
-    const visibleTransients = getVisibleTransients();
+        // If no transients in range, return empty
+        if (startIndex > endIndex || startIndex >= filteredTransients.length) {
+            return [];
+        }
+
+        // Only process transients in the visible range
+        const result: Array<{
+            transient: TransientResult;
+            index: number;
+            position: number;
+            isPast: boolean;
+        }> = [];
+
+        for (let i = startIndex; i <= endIndex; i++) {
+            const transient = filteredTransients[i];
+
+            // Inline position calculation (avoids function recreation)
+            // NOW line is at 50% (center), with symmetric visible windows
+            const timeUntilTransient = transient.timestamp - smoothTime;
+            const position = 0.5 + (timeUntilTransient / anticipationWindow) * 0.5;
+
+            // Skip if position is out of bounds
+            if (position < 0 || position > 1) continue;
+
+            const isPast = transient.timestamp < smoothTime - 0.05;
+            result.push({ transient, index: i, position, isPast });
+        }
+
+        return result;
+    }, [filteredTransients, smoothTime, pastWindow, anticipationWindow]);
 
     // ========================================
     // Event Handlers
@@ -326,14 +585,14 @@ export function TransientTimeline({
             {/* Timeline track */}
             <div
                 ref={trackRef}
-                className={`transient-timeline-track ${onSeek ? 'transient-timeline-track--draggable' : ''} ${isDragging ? 'transient-timeline-track--dragging' : ''}`}
+                className={`transient-timeline-track transient-timeline-track--draggable ${isDragging ? 'transient-timeline-track--dragging' : ''}`}
                 onMouseDown={handleMouseDown}
-                role={onSeek ? 'slider' : undefined}
+                role="slider"
                 aria-label="Transient timeline"
                 aria-valuemin={0}
                 aria-valuemax={duration}
                 aria-valuenow={smoothTime}
-                tabIndex={onSeek ? 0 : undefined}
+                tabIndex={0}
             >
                 {/* Background gradient */}
                 <div className="transient-timeline-background" />
@@ -344,38 +603,18 @@ export function TransientTimeline({
                 {/* Future region indicator */}
                 <div className="transient-timeline-future-region" />
 
-                {/* Transient markers */}
+                {/* Transient markers - using memoized component for performance */}
                 {visibleTransients.map(({ transient, index, position, isPast }) => (
-                    <div
+                    <TransientMarker
                         key={`transient-${transient.timestamp.toFixed(3)}-${transient.band}-${index}`}
-                        className={`transient-timeline-marker ${
-                            isPast ? 'transient-timeline-marker--past' : ''
-                        } ${
-                            selectedTransientIndex !== null && transients.indexOf(transient) === selectedTransientIndex
-                                ? 'transient-timeline-marker--selected'
-                                : ''
-                        }`}
-                        style={{
-                            left: `${position * 100}%`,
-                            '--band-color': BAND_COLORS[transient.band],
-                        } as React.CSSProperties}
-                        onClick={(e) => handleTransientClick(transient, index, e)}
-                        onKeyDown={(e) => handleTransientKeyDown(transient, index, e)}
-                        role="button"
-                        tabIndex={0}
-                        aria-label={`Transient at ${formatTime(transient.timestamp)}, ${transient.band} band, intensity ${Math.round(transient.intensity * 100)}%`}
-                        title={`${formatTime(transient.timestamp)} | ${transient.band.toUpperCase()} | ${(transient.intensity * 100).toFixed(0)}% | ${DETECTION_METHOD_LABELS[transient.detectionMethod] || transient.detectionMethod}`}
-                    >
-                        {/* Transient dot */}
-                        <div
-                            className="transient-timeline-marker-dot"
-                            style={{
-                                width: `${8 + transient.intensity * 12}px`,
-                                height: `${8 + transient.intensity * 12}px`,
-                                backgroundColor: BAND_COLORS[transient.band],
-                            }}
-                        />
-                    </div>
+                        transient={transient}
+                        index={index}
+                        position={position}
+                        isPast={isPast}
+                        isSelected={selectedTransientIndex === index}
+                        onClick={handleTransientClick}
+                        onKeyDown={handleTransientKeyDown}
+                    />
                 ))}
 
                 {/* "Now" line - fixed in center */}
@@ -426,6 +665,50 @@ export function TransientTimeline({
                     <span className="transient-timeline-legend-label">Intensity</span>
                 </div>
             </div>
+
+            {/* Quick scrollbar for fast navigation */}
+            {duration && duration > 0 && (
+                <div className="transient-timeline-quickscroll">
+                    <div
+                        ref={quickScrollRef}
+                        className="transient-timeline-quickscroll-track"
+                        onClick={handleQuickScrollClick}
+                        onMouseDown={handleQuickScrollDragStart}
+                    >
+                        {/* Transient density markers in quick scroll (sample every Nth for performance) */}
+                    {filteredTransients
+                        .filter((_, idx) => idx % Math.max(1, Math.floor(filteredTransients.length / 100)) === 0)
+                        .map((transient, index) => {
+                            const position = transient.timestamp / duration;
+                            return (
+                                <div
+                                    key={`quickscroll-transient-${index}`}
+                                    className="transient-timeline-quickscroll-marker"
+                                    style={{
+                                        left: `${position * 100}%`,
+                                        backgroundColor: BAND_COLORS[transient.band],
+                                    }}
+                                />
+                            );
+                        })}
+
+                        {/* Viewport indicator - shows current visible window */}
+                        <div
+                            className="transient-timeline-quickscroll-viewport"
+                            style={{
+                                left: `${Math.max(0, ((smoothTime - pastWindow) / duration) * 100)}%`,
+                                width: `${Math.min(100, (totalWindow / duration) * 100)}%`,
+                            }}
+                        />
+
+                        {/* Current position indicator */}
+                        <div
+                            className="transient-timeline-quickscroll-position"
+                            style={{ left: `${(smoothTime / duration) * 100}%` }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

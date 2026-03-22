@@ -237,7 +237,6 @@ function RhythmGenerationResult({
                     <TransientDetectionPanel
                         rhythm={rhythm}
                         currentTime={currentTime}
-                        isPlaying={isPlaying}
                         onSeek={onSeek}
                         originalIntensityThreshold={originalIntensityThreshold}
                         onRegenerateWithThreshold={onRegenerateWithThreshold}

@@ -356,3 +356,65 @@
         transform: none;
     }
 }
+
+/* ============================================
+   QUICK SCROLL BAR
+   Mini scrollbar for fast timeline navigation
+   ============================================ */
+
+.transient-timeline-quickscroll {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.transient-timeline-quickscroll-track {
+    position: relative;
+    flex: 1;
+    height: 0.5rem;
+    background: hsl(var(--surface-3));
+    border-radius: 0.25rem;
+    cursor: pointer;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.transient-timeline-quickscroll-track:hover {
+    background: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.3);
+}
+
+/* Transient markers in quick scroll */
+.transient-timeline-quickscroll-marker {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    width: 1px;
+    transform: translateX(-50%);
+    opacity: 0.4;
+}
+
+/* Viewport indicator - shows current visible window */
+.transient-timeline-quickscroll-viewport {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: hsl(var(--primary) / 0.2);
+    border-left: 1px solid hsl(var(--primary) / 0.5);
+    border-right: 1px solid hsl(var(--primary) / 0.5);
+    border-radius: 0.125rem;
+    pointer-events: none;
+    min-width: 4px;
+}
+
+/* Current position indicator (playhead) */
+.transient-timeline-quickscroll-position {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 2px;
+    background: hsl(var(--primary));
+    transform: translateX(-50%);
+    pointer-events: none;
+    box-shadow: 0 0 4px hsl(var(--primary) / 0.8);
+}

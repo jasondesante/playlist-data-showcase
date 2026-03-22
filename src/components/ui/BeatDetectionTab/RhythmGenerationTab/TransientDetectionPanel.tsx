@@ -28,11 +28,9 @@ import type { GeneratedRhythm, TransientResult, Band } from '../../../../types/r
 export interface TransientDetectionPanelProps {
     /** The generated rhythm containing transient analysis */
     rhythm: GeneratedRhythm;
-    /** Current audio playback time in seconds (for timeline sync) */
+    /** Current audio playback time in seconds (for inspector display) */
     currentTime?: number;
-    /** Whether audio is currently playing */
-    isPlaying?: boolean;
-    /** Callback when user seeks to a time position */
+    /** Callback when user seeks to a time position (for inspector) */
     onSeek?: (time: number) => void;
     /** Additional CSS class names */
     className?: string;
@@ -261,7 +259,6 @@ function BandBreakdownCard({ band, transients, totalCount, hiddenCount, color, f
 export function TransientDetectionPanel({
     rhythm,
     currentTime = 0,
-    isPlaying = false,
     onSeek,
     className,
     originalIntensityThreshold = 0,
@@ -402,10 +399,7 @@ export function TransientDetectionPanel({
                 </div>
                 <TransientTimeline
                     transients={allTransients}
-                    currentTime={currentTime}
                     duration={duration}
-                    isPlaying={isPlaying}
-                    onSeek={onSeek}
                     onTransientClick={handleTransientClick}
                     selectedTransientIndex={selectedTransientIndex}
                     filterBand={activeBand}
