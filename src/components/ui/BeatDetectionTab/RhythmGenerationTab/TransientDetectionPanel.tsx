@@ -14,12 +14,13 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Filter, Layers, RefreshCw } from 'lucide-react';
+import { Filter, Layers, RefreshCw, Info } from 'lucide-react';
 import './TransientDetectionPanel.css';
 import { TransientTimeline } from '../../TransientTimeline';
 import { TransientInspector } from '../../TransientInspector';
 import { ZoomControls } from '../../ZoomControls';
-import type { GeneratedRhythm, TransientResult, Band } from '../../../../types/rhythmGeneration';
+import type { GeneratedRhythm, TransientResult, Band, BandTransientConfigOverrides, BandTransientConfig } from '../../../../types/rhythmGeneration';
+import { DEFAULT_BAND_TRANSIENT_CONFIG } from '../../../../types/rhythmGeneration';
 
 // ============================================================
 // Types
@@ -36,6 +37,8 @@ export interface TransientDetectionPanelProps {
     className?: string;
     /** The intensity threshold that was used during generation */
     originalIntensityThreshold?: number;
+    /** Per-band transient detection config that was used during generation */
+    transientConfig?: BandTransientConfigOverrides;
     /** Callback to re-run generation with a new threshold */
     onRegenerateWithThreshold?: (threshold: number) => void;
     /** Whether regeneration is in progress */
@@ -262,6 +265,7 @@ export function TransientDetectionPanel({
     onSeek,
     className,
     originalIntensityThreshold = 0,
+    transientConfig,
     onRegenerateWithThreshold,
     isRegenerating = false,
 }: TransientDetectionPanelProps) {
@@ -372,6 +376,59 @@ export function TransientDetectionPanel({
 
     return (
         <div className={`transient-detection-panel ${className || ''}`}>
+            {/* NMS Info Box */}
+            <div className="transient-nms-info">
+                <Info size={14} />
+                <p>
+                    <strong>Non-Maximum Suppression (NMS):</strong> Within each band's buffer window (20-50ms depending on frequency),
+                    only the strongest transient is kept. Weaker peaks are suppressed to prevent multiple detections for the same acoustic event.
+                </p>
+            </div>
+
+            {/* Detection Configuration Used */}
+            <div className="transient-config-summary">
+                <h4 className="transient-config-summary-title">Detection Configuration Used</h4>
+                <p className="transient-config-summary-description">
+                    {transientConfig
+                        ? 'Custom per-band settings were applied during transient detection.'
+                        : 'Default per-band settings were used for transient detection.'}
+                </p>
+                <div className="transient-config-per-band">
+                    {(['low', 'mid', 'high'] as const).map((band) => {
+                        const config: BandTransientConfig = transientConfig?.[band]
+                            ? { ...DEFAULT_BAND_TRANSIENT_CONFIG[band], ...transientConfig[band] }
+                            : DEFAULT_BAND_TRANSIENT_CONFIG[band];
+                        const isCustom = !!transientConfig?.[band];
+                        return (
+                            <div key={band} className={`transient-config-band transient-config-band--${band}`}>
+                                <div className="transient-config-band-header">
+                                    <span className="transient-config-band-name">
+                                        {band.charAt(0).toUpperCase() + band.slice(1)}
+                                    </span>
+                                    {isCustom && (
+                                        <span className="transient-config-band-custom-badge">Custom</span>
+                                    )}
+                                </div>
+                                <div className="transient-config-band-stats">
+                                    <div className="transient-config-band-stat">
+                                        <span className="transient-config-band-stat-label">Threshold</span>
+                                        <span className="transient-config-band-stat-value">{config.threshold.toFixed(2)}</span>
+                                    </div>
+                                    <div className="transient-config-band-stat">
+                                        <span className="transient-config-band-stat-label">Min Interval</span>
+                                        <span className="transient-config-band-stat-value">{(config.minInterval * 1000).toFixed(0)}ms</span>
+                                    </div>
+                                    <div className="transient-config-band-stat">
+                                        <span className="transient-config-band-stat-label">Adaptive</span>
+                                        <span className="transient-config-band-stat-value">{config.adaptiveThresholding ? 'On' : 'Off'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
             {/* Quantization Summary - shows what happened during quantization */}
             <div className="transient-quantization-summary">
                 <h4 className="transient-quantization-title">Quantization Results</h4>
@@ -408,6 +465,7 @@ export function TransientDetectionPanel({
                     <h5 className="transient-quantization-per-band-title">Per-Band Breakdown</h5>
                     {(Object.keys(quantizedByBandForSummary) as Band[]).map((band) => {
                         const bandValidation = densityValidation.bands[band];
+                        const hasRetries = bandValidation.retryCount > 0;
                         return (
                             <div key={band} className="transient-quantization-band">
                                 <span className="transient-quantization-band-name">
@@ -416,9 +474,14 @@ export function TransientDetectionPanel({
                                 <span className="transient-quantization-band-count">
                                     {totalByBand[band]} → {quantizedByBandForSummary[band]}
                                 </span>
-                                {bandValidation.retryCount > 0 && (
+                                {hasRetries && (
                                     <span className="transient-quantization-band-retries" title="Density validation retries">
                                         ({bandValidation.retryCount} retries, threshold: {(bandValidation.finalIntensityThreshold * 100).toFixed(0)}%)
+                                    </span>
+                                )}
+                                {hasRetries && bandValidation.sensitivityReduction > 0 && (
+                                    <span className="transient-quantization-band-sensitivity" title="Sensitivity reduction applied">
+                                        sensitivity -{(bandValidation.sensitivityReduction * 100).toFixed(0)}%
                                     </span>
                                 )}
                             </div>

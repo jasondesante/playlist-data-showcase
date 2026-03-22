@@ -526,3 +526,251 @@
         transition: none;
     }
 }
+
+/* ============================================
+   NMS INFO BOX
+   ============================================ */
+
+.transient-nms-info {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: hsl(var(--primary) / 0.08);
+    border: 1px solid hsl(var(--primary) / 0.2);
+    border-radius: 0.5rem;
+}
+
+.transient-nms-info svg {
+    flex-shrink: 0;
+    color: hsl(var(--primary));
+    margin-top: 0.125rem;
+}
+
+.transient-nms-info p {
+    font-size: 0.75rem;
+    color: hsl(var(--foreground));
+    line-height: 1.5;
+    margin: 0;
+}
+
+.transient-nms-info strong {
+    color: hsl(var(--primary));
+}
+
+/* ============================================
+   QUANTIZATION SUMMARY
+   ============================================ */
+
+.transient-quantization-summary {
+    padding: 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+}
+
+.transient-quantization-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0 0 0.5rem 0;
+}
+
+.transient-quantization-description {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.5;
+    margin: 0 0 0.75rem 0;
+}
+
+.transient-quantization-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.transient-quantization-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--surface-1));
+    border-radius: 0.375rem;
+    min-width: 4rem;
+}
+
+.transient-quantization-stat-label {
+    font-size: 0.625rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.transient-quantization-stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: hsl(var(--primary));
+    font-family: var(--font-mono);
+}
+
+/* Per-band breakdown */
+.transient-quantization-per-band {
+    padding-top: 0.75rem;
+    border-top: 1px solid hsl(var(--border));
+}
+
+.transient-quantization-per-band-title {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.5rem 0;
+}
+
+.transient-quantization-band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0;
+    font-size: 0.75rem;
+}
+
+.transient-quantization-band-name {
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    text-transform: capitalize;
+    min-width: 3rem;
+}
+
+.transient-quantization-band-count {
+    font-family: var(--font-mono);
+    color: hsl(var(--primary));
+}
+
+.transient-quantization-band-retries {
+    font-size: 0.6875rem;
+    color: hsl(var(--warning));
+    background: hsl(var(--warning) / 0.1);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+.transient-quantization-band-sensitivity {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--surface-3));
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+/* ============================================
+   DETECTION CONFIGURATION SUMMARY
+   Shows what per-band settings were used during detection
+   ============================================ */
+
+.transient-config-summary {
+    padding: 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    margin-bottom: 1rem;
+}
+
+.transient-config-summary-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0 0 0.25rem 0;
+}
+
+.transient-config-summary-description {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.5;
+    margin: 0 0 0.75rem 0;
+}
+
+.transient-config-per-band {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.transient-config-band {
+    padding: 0.75rem;
+    background: hsl(var(--surface-3));
+    border-radius: 0.375rem;
+    border: 1px solid hsl(var(--border));
+}
+
+.transient-config-band--low {
+    border-left: 3px solid hsl(217, 91%, 60%);
+}
+
+.transient-config-band--mid {
+    border-left: 3px solid hsl(142, 76%, 36%);
+}
+
+.transient-config-band--high {
+    border-left: 3px solid hsl(25, 95%, 53%);
+}
+
+.transient-config-band-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.transient-config-band-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    text-transform: capitalize;
+}
+
+.transient-config-band-custom-badge {
+    font-size: 0.5625rem;
+    font-weight: 500;
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.1);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.transient-config-band-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.transient-config-band-stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.transient-config-band-stat-label {
+    font-size: 0.625rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.transient-config-band-stat-value {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+/* Responsive adjustments for config summary */
+@media (max-width: 640px) {
+    .transient-config-per-band {
+        grid-template-columns: 1fr;
+    }
+}

@@ -5,6 +5,15 @@
  * for the automatic level generation feature.
  */
 
+// Import types for local use
+import type {
+    Band,
+    BandTransientConfig,
+    BandTransientConfigOverrides,
+    RhythmPresetName,
+    OutputMode,
+} from 'playlist-data-engine';
+
 // Re-export types from playlist-data-engine
 export type {
     GeneratedRhythm,
@@ -45,6 +54,12 @@ export type {
     CompositeBeat,
     DensityAnalysisResult,
     NaturalDifficulty,
+    // Transient detection configuration types
+    TransientDetectorConfig,
+    BandTransientConfig,
+    BandTransientConfigOverrides,
+    DensityValidationResult,
+    BandDensityValidationResult,
 } from 'playlist-data-engine';
 
 /**
@@ -82,18 +97,44 @@ export interface RhythmGenerationProgress {
 }
 
 /**
+ * Per-band transient detection defaults.
+ * Each frequency band has different optimal settings.
+ */
+export const DEFAULT_BAND_TRANSIENT_CONFIG: Record<Band, BandTransientConfig> = {
+    low: {
+        threshold: 0.4,       // Higher threshold - bass transients are typically stronger
+        minInterval: 0.05,    // 50ms - bass events are more sparse
+        adaptiveThresholding: true,
+    },
+    mid: {
+        threshold: 0.3,       // Medium threshold - balanced detection
+        minInterval: 0.03,    // 30ms - moderate interval
+        adaptiveThresholding: true,
+    },
+    high: {
+        threshold: 0.25,      // Lower threshold - hi-hats can be subtle
+        minInterval: 0.02,    // 20ms - rapid fire percussion
+        adaptiveThresholding: true,
+    },
+};
+
+/**
  * Settings for automatic level generation.
  * These are configured in Step 1 (Analyze) when auto mode is enabled.
  */
 export interface AutoLevelSettings {
     /** Selected preset for rhythm generation */
-    preset: import('playlist-data-engine').RhythmPresetName;
+    preset: RhythmPresetName;
     /** Target difficulty level */
     difficulty: 'easy' | 'medium' | 'hard';
     /** Output mode - which band stream to use */
-    outputMode: import('playlist-data-engine').OutputMode;
-    /** Minimum intensity threshold for transients (0.0-1.0) */
+    outputMode: OutputMode;
+    /** Minimum intensity threshold for transients (0.0-1.0) - deprecated, use transientConfig instead */
     intensityThreshold: number;
+    /** Per-band transient detection configuration overrides */
+    transientConfig?: BandTransientConfigOverrides;
+    /** Whether to use per-band defaults (when true, transientConfig is used) */
+    usePerBandDefaults: boolean;
 }
 
 /**
@@ -104,6 +145,8 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     difficulty: 'medium',
     outputMode: 'composite',
     intensityThreshold: 0,
+    usePerBandDefaults: true,  // Use per-band transient detection defaults by default
+    transientConfig: undefined, // When usePerBandDefaults is true, engine uses its defaults
 };
 
 /**

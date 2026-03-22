@@ -40,6 +40,7 @@ import type {
     GeneratedRhythm,
     RhythmicPhrase,
     HighlightedRegion,
+    BandTransientConfigOverrides,
 } from '../../../types/rhythmGeneration';
 import { getPhraseHighlightColor } from '../../../types/rhythmGeneration';
 import { cn } from '../../../utils/cn';
@@ -57,6 +58,8 @@ export interface RhythmGenerationTabProps {
     outputMode?: 'composite' | 'low' | 'mid' | 'high';
     /** Intensity threshold setting from Step 1 */
     intensityThreshold?: number;
+    /** Per-band transient detection configuration from Step 1 */
+    transientConfig?: BandTransientConfigOverrides;
     /** Callback when user wants to switch to manual mode */
     onSwitchToManual?: () => void;
     /** Callback when user wants to retry generation */
@@ -124,6 +127,8 @@ interface RhythmGenerationResultProps {
     onPlayPause?: () => void;
     /** The intensity threshold that was used during generation */
     originalIntensityThreshold?: number;
+    /** Per-band transient detection config that was used during generation */
+    transientConfig?: BandTransientConfigOverrides;
     /** Callback to re-run generation with a new threshold */
     onRegenerateWithThreshold?: (threshold: number) => void;
     /** Whether regeneration is in progress */
@@ -139,6 +144,7 @@ function RhythmGenerationResult({
     onSeek,
     onPlayPause,
     originalIntensityThreshold = 0,
+    transientConfig,
     onRegenerateWithThreshold,
     isRegenerating = false,
 }: RhythmGenerationResultProps) {
@@ -239,6 +245,7 @@ function RhythmGenerationResult({
                         currentTime={currentTime}
                         onSeek={onSeek}
                         originalIntensityThreshold={originalIntensityThreshold}
+                        transientConfig={transientConfig}
                         onRegenerateWithThreshold={onRegenerateWithThreshold}
                         isRegenerating={isRegenerating}
                     />
@@ -370,6 +377,7 @@ export function RhythmGenerationTab({
     difficulty: _difficulty = 'medium',
     outputMode: _outputMode = 'composite',
     intensityThreshold = 0.2,
+    transientConfig,
     onSwitchToManual,
     onRetry,
     onRegenerateWithThreshold,
@@ -475,6 +483,7 @@ export function RhythmGenerationTab({
                     onSeek={handleSeek}
                     onPlayPause={handlePlayPause}
                     originalIntensityThreshold={intensityThreshold}
+                    transientConfig={transientConfig}
                     onRegenerateWithThreshold={handleRegenerateWithThreshold}
                     isRegenerating={isGenerating}
                 />

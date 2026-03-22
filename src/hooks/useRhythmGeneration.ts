@@ -260,6 +260,7 @@ export const useRhythmGeneration = (): UseRhythmGenerationReturn => {
                 difficulty: options?.difficulty ?? 'medium',
                 outputMode: options?.outputMode ?? 'composite',
                 minimumTransientIntensity: options?.minimumTransientIntensity ?? 0.2,
+                transientConfig: options?.transientConfig,
                 verbose: options?.verbose ?? false,
             };
 

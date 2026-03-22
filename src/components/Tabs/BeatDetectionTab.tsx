@@ -271,6 +271,7 @@ export function BeatDetectionTab() {
                 difficulty: autoLevelSettings.difficulty,
                 outputMode: autoLevelSettings.outputMode,
                 minimumTransientIntensity: autoLevelSettings.intensityThreshold,
+                transientConfig: autoLevelSettings.transientConfig,
             });
         }
     }, [
@@ -547,6 +548,7 @@ export function BeatDetectionTab() {
                             difficulty={autoLevelSettings.difficulty}
                             outputMode={autoLevelSettings.outputMode}
                             intensityThreshold={autoLevelSettings.intensityThreshold}
+                            transientConfig={autoLevelSettings.transientConfig}
                             onSwitchToManual={() => setGenerationMode('manual')}
                             onRetry={() => {
                                 if (selectedTrack?.audio_url) {
@@ -554,6 +556,7 @@ export function BeatDetectionTab() {
                                         difficulty: autoLevelSettings.difficulty,
                                         outputMode: autoLevelSettings.outputMode,
                                         minimumTransientIntensity: autoLevelSettings.intensityThreshold,
+                                        transientConfig: autoLevelSettings.transientConfig,
                                     });
                                 }
                             }}
@@ -569,6 +572,7 @@ export function BeatDetectionTab() {
                                         difficulty: autoLevelSettings.difficulty,
                                         outputMode: autoLevelSettings.outputMode,
                                         minimumTransientIntensity: newThreshold,
+                                        transientConfig: autoLevelSettings.transientConfig,
                                     });
                                 }
                             }}

@@ -10,10 +10,11 @@
  * - Output mode selector (Composite/Low/Mid/High)
  * - Intensity threshold slider (0.0-1.0, default 0.2)
  * - Collapsible "Advanced Options" within this panel
+ * - Per-band transient detection configuration
  */
 
 import { useState, useCallback } from 'react';
-import { ChevronDown, Settings2, Sliders, RotateCcw } from 'lucide-react';
+import { ChevronDown, Settings2, Sliders, RotateCcw, Info, Waves } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { CollapsibleSection } from '../Party/CollapsibleSection';
 import type {
@@ -21,8 +22,13 @@ import type {
     DifficultyLevel,
     RhythmPresetName,
     OutputMode,
+    BandTransientConfig,
+    BandTransientConfigOverrides,
 } from '../../types/rhythmGeneration';
-import { DEFAULT_AUTO_LEVEL_SETTINGS } from '../../types/rhythmGeneration';
+import {
+    DEFAULT_AUTO_LEVEL_SETTINGS,
+    DEFAULT_BAND_TRANSIENT_CONFIG,
+} from '../../types/rhythmGeneration';
 import './AutoLevelSettings.css';
 
 // Band type for color coding
@@ -55,6 +61,12 @@ const BAND_COLORS: Record<Band, string> = {
     high: 'hsl(25, 95%, 53%)',
 };
 
+const BAND_INFO: Record<Band, { freq: string; description: string }> = {
+    low: { freq: '20-500 Hz', description: 'Kick drums, bass' },
+    mid: { freq: '500-2000 Hz', description: 'Vocals, snare body' },
+    high: { freq: '2000-20000 Hz', description: 'Hi-hats, cymbals' },
+};
+
 export interface AutoLevelSettingsProps {
     /** Current settings object */
     settings: AutoLevelSettingsType;
@@ -82,6 +94,7 @@ export function AutoLevelSettings({
     defaultCollapsed = false,
 }: AutoLevelSettingsProps) {
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+    const [isTransientConfigOpen, setIsTransientConfigOpen] = useState(false);
 
     const handleChange = useCallback(
         <K extends keyof AutoLevelSettingsType>(key: K, value: AutoLevelSettingsType[K]) => {
@@ -120,8 +133,66 @@ export function AutoLevelSettings({
         [handleChange]
     );
 
+    const handleUsePerBandDefaultsChange = useCallback(
+        (usePerBandDefaults: boolean) => {
+            if (usePerBandDefaults) {
+                // When enabling per-band defaults, clear custom config
+                onChange({
+                    ...settings,
+                    usePerBandDefaults: true,
+                    transientConfig: undefined,
+                });
+            } else {
+                // When disabling, initialize with current defaults
+                onChange({
+                    ...settings,
+                    usePerBandDefaults: false,
+                    transientConfig: {
+                        low: { ...DEFAULT_BAND_TRANSIENT_CONFIG.low },
+                        mid: { ...DEFAULT_BAND_TRANSIENT_CONFIG.mid },
+                        high: { ...DEFAULT_BAND_TRANSIENT_CONFIG.high },
+                    },
+                });
+            }
+        },
+        [onChange, settings]
+    );
+
+    const handleBandConfigChange = useCallback(
+        (band: Band, config: Partial<BandTransientConfig>) => {
+            if (disabled || settings.usePerBandDefaults) return;
+
+            const currentConfig = settings.transientConfig || {};
+            const newConfig: BandTransientConfigOverrides = {
+                ...currentConfig,
+                [band]: {
+                    ...DEFAULT_BAND_TRANSIENT_CONFIG[band],
+                    ...currentConfig[band],
+                    ...config,
+                },
+            };
+
+            handleChange('transientConfig', newConfig);
+        },
+        [disabled, settings, handleChange]
+    );
+
+    const getBandConfig = useCallback(
+        (band: Band): BandTransientConfig => {
+            if (settings.usePerBandDefaults || !settings.transientConfig?.[band]) {
+                return DEFAULT_BAND_TRANSIENT_CONFIG[band];
+            }
+            return {
+                ...DEFAULT_BAND_TRANSIENT_CONFIG[band],
+                ...settings.transientConfig[band],
+            };
+        },
+        [settings]
+    );
+
     const handleResetToDefaults = useCallback(() => {
         onChange({ ...DEFAULT_AUTO_LEVEL_SETTINGS });
+        setIsTransientConfigOpen(false);
     }, [onChange]);
 
     return (
@@ -271,6 +342,179 @@ export function AutoLevelSettings({
 
                         {isAdvancedOpen && (
                             <div className="auto-level-settings__advanced-content">
+                                {/* Transient Detection Configuration */}
+                                <div className="auto-level-settings__section">
+                                    <button
+                                        type="button"
+                                        className={cn(
+                                            'auto-level-settings__subsection-toggle',
+                                            isTransientConfigOpen && 'auto-level-settings__subsection-toggle--active'
+                                        )}
+                                        onClick={() => setIsTransientConfigOpen(!isTransientConfigOpen)}
+                                        disabled={disabled}
+                                    >
+                                        <Waves size={16} />
+                                        <span>Transient Detection</span>
+                                        <ChevronDown
+                                            size={16}
+                                            className={cn(
+                                                'auto-level-settings__subsection-chevron',
+                                                isTransientConfigOpen && 'auto-level-settings__subsection-chevron--rotated'
+                                            )}
+                                        />
+                                    </button>
+
+                                    {isTransientConfigOpen && (
+                                        <div className="auto-level-settings__transient-config">
+                                            {/* NMS Explanation */}
+                                            <div className="auto-level-settings__info-box">
+                                                <Info size={14} />
+                                                <p>
+                                                    <strong>Non-Maximum Suppression (NMS):</strong> Within each band's
+                                                    buffer window, only the strongest transient wins. Weaker peaks are
+                                                    suppressed to prevent multiple detections for the same acoustic event.
+                                                </p>
+                                            </div>
+
+                                            {/* Use Per-Band Defaults Toggle */}
+                                            <div className="auto-level-settings__toggle-row">
+                                                <label className="auto-level-settings__toggle-label">
+                                                    Use Per-Band Defaults
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    className={cn(
+                                                        'auto-level-settings__toggle-switch',
+                                                        settings.usePerBandDefaults && 'auto-level-settings__toggle-switch--active'
+                                                    )}
+                                                    onClick={() => handleUsePerBandDefaultsChange(!settings.usePerBandDefaults)}
+                                                    disabled={disabled}
+                                                    role="switch"
+                                                    aria-checked={settings.usePerBandDefaults}
+                                                >
+                                                    <span className="auto-level-settings__toggle-thumb" />
+                                                </button>
+                                            </div>
+
+                                            {/* Per-Band Configuration */}
+                                            {(['low', 'mid', 'high'] as const).map((band) => {
+                                                const config = getBandConfig(band);
+                                                const isDisabled = disabled || settings.usePerBandDefaults;
+
+                                                return (
+                                                    <div
+                                                        key={band}
+                                                        className={cn(
+                                                            'auto-level-settings__band-config',
+                                                            `auto-level-settings__band-config--${band}`,
+                                                            isDisabled && 'auto-level-settings__band-config--disabled'
+                                                        )}
+                                                    >
+                                                        <div className="auto-level-settings__band-config-header">
+                                                            <span
+                                                                className="auto-level-settings__band-color-dot"
+                                                                style={{ backgroundColor: BAND_COLORS[band] }}
+                                                            />
+                                                            <span className="auto-level-settings__band-config-name">
+                                                                {band.charAt(0).toUpperCase() + band.slice(1)} Band
+                                                            </span>
+                                                            <span className="auto-level-settings__band-config-freq">
+                                                                {BAND_INFO[band].freq}
+                                                            </span>
+                                                        </div>
+                                                        <p className="auto-level-settings__band-config-desc">
+                                                            {BAND_INFO[band].description}
+                                                        </p>
+
+                                                        {/* Threshold Slider */}
+                                                        <div className="auto-level-settings__band-config-row">
+                                                            <label className="auto-level-settings__band-config-label">
+                                                                Threshold
+                                                            </label>
+                                                            <div className="auto-level-settings__band-config-slider-wrap">
+                                                                <input
+                                                                    type="range"
+                                                                    min="0.1"
+                                                                    max="0.9"
+                                                                    step="0.05"
+                                                                    value={config.threshold}
+                                                                    onChange={(e) =>
+                                                                        handleBandConfigChange(band, {
+                                                                            threshold: parseFloat(e.target.value),
+                                                                        })
+                                                                    }
+                                                                    className="auto-level-settings__band-config-slider"
+                                                                    disabled={isDisabled}
+                                                                />
+                                                                <span className="auto-level-settings__band-config-value">
+                                                                    {config.threshold.toFixed(2)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Min Interval Slider */}
+                                                        <div className="auto-level-settings__band-config-row">
+                                                            <label className="auto-level-settings__band-config-label">
+                                                                Min Interval
+                                                            </label>
+                                                            <div className="auto-level-settings__band-config-slider-wrap">
+                                                                <input
+                                                                    type="range"
+                                                                    min="0.01"
+                                                                    max="0.1"
+                                                                    step="0.005"
+                                                                    value={config.minInterval}
+                                                                    onChange={(e) =>
+                                                                        handleBandConfigChange(band, {
+                                                                            minInterval: parseFloat(e.target.value),
+                                                                        })
+                                                                    }
+                                                                    className="auto-level-settings__band-config-slider"
+                                                                    disabled={isDisabled}
+                                                                />
+                                                                <span className="auto-level-settings__band-config-value">
+                                                                    {(config.minInterval * 1000).toFixed(0)}ms
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Adaptive Thresholding Toggle */}
+                                                        <div className="auto-level-settings__band-config-row">
+                                                            <label className="auto-level-settings__band-config-label">
+                                                                Adaptive
+                                                            </label>
+                                                            <button
+                                                                type="button"
+                                                                className={cn(
+                                                                    'auto-level-settings__mini-toggle',
+                                                                    config.adaptiveThresholding && 'auto-level-settings__mini-toggle--active'
+                                                                )}
+                                                                onClick={() =>
+                                                                    handleBandConfigChange(band, {
+                                                                        adaptiveThresholding: !config.adaptiveThresholding,
+                                                                    })
+                                                                }
+                                                                disabled={isDisabled}
+                                                                role="switch"
+                                                                aria-checked={config.adaptiveThresholding}
+                                                            >
+                                                                {config.adaptiveThresholding ? 'On' : 'Off'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+
+                                            {settings.usePerBandDefaults && (
+                                                <p className="auto-level-settings__transient-help">
+                                                    Per-band defaults are optimized for each frequency range. Disable
+                                                    "Use Per-Band Defaults" to customize settings.
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Band Colors Preview */}
                                 <div className="auto-level-settings__section">
                                     <h4 className="auto-level-settings__section-title">
