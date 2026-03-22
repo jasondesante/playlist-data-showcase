@@ -129,12 +129,24 @@
     height: 2.5rem;
     border-radius: 0.5rem;
     overflow: hidden;
-    cursor: pointer;
+    cursor: default;
     transition: box-shadow 0.15s ease;
 }
 
-.multi-band-timeline-track:hover {
-    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.2);
+.multi-band-timeline-track--draggable {
+    cursor: grab;
+}
+
+.multi-band-timeline-track--draggable:hover {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3);
+}
+
+.multi-band-timeline-track--dragging {
+    cursor: grabbing;
+}
+
+.multi-band-timeline-track--dragging:hover {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5);
 }
 
 .multi-band-timeline-track:focus {
@@ -325,4 +337,67 @@
     .multi-band-timeline-track {
         transition: none;
     }
+}
+
+/* ============================================
+   QUICK SCROLL BAR
+   Mini scrollbar for fast timeline navigation
+   ============================================ */
+
+.multi-band-quickscroll {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.multi-band-quickscroll-track {
+    position: relative;
+    flex: 1;
+    height: 0.5rem;
+    background: hsl(var(--surface-3));
+    border-radius: 0.25rem;
+    cursor: pointer;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.multi-band-quickscroll-track:hover {
+    background: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.3);
+}
+
+/* Transient markers in quick scroll */
+.multi-band-quickscroll-marker {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    width: 1px;
+    transform: translateX(-50%);
+    opacity: 0.4;
+}
+
+/* Viewport indicator - shows current visible window */
+.multi-band-quickscroll-viewport {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: hsl(var(--primary) / 0.2);
+    border-left: 1px solid hsl(var(--primary) / 0.5);
+    border-right: 1px solid hsl(var(--primary) / 0.5);
+    border-radius: 0.125rem;
+    pointer-events: none;
+    min-width: 4px;
+}
+
+/* Current position indicator (playhead) */
+.multi-band-quickscroll-position {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 2px;
+    background: hsl(var(--primary));
+    transform: translateX(-50%);
+    pointer-events: none;
+    box-shadow: 0 0 4px hsl(var(--primary) / 0.8);
 }
