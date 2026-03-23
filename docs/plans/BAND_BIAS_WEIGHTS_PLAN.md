@@ -284,8 +284,8 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
 ## Phase 3: Frontend UI Updates
 
 ### Task 3.1: Add Scoring Config UI to AutoLevelSettings
-- [ ] **File**: `src/components/ui/AutoLevelSettings.tsx`
-- [ ] Add a collapsible "Scoring Configuration" section with two subsections:
+- [x] **File**: `src/components/ui/AutoLevelSettings.tsx`
+- [x] Add a collapsible "Scoring Configuration" section with two subsections:
 
 #### Subsection A: Factor Weights
 Control how much each scoring factor contributes to band selection (weights should sum to ~1.0):
@@ -396,7 +396,7 @@ Control which frequency bands are favored (multiplier on final score):
 </div>
 ```
 
-- [ ] Add reset buttons for both sections:
+- [x] Add reset buttons for both sections:
 ```tsx
 <div className="reset-buttons">
     <button onClick={resetFactorWeights} className="reset-button">
@@ -407,6 +407,8 @@ Control which frequency bands are favored (multiplier on final score):
     </button>
 </div>
 ```
+
+**Completed**: Reset buttons implemented in both the scoring factors and band bias sections.
 
 ### Task 3.2: Add Scoring Config Styles
 - [ ] **File**: `src/components/ui/AutoLevelSettings.css`

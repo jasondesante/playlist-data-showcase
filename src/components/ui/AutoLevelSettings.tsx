@@ -13,8 +13,8 @@
  * - Per-band transient detection configuration
  */
 
-import { useState, useCallback } from 'react';
-import { ChevronDown, Settings2, Sliders, RotateCcw, Info, Waves } from 'lucide-react';
+import { useState, useCallback, useMemo } from 'react';
+import { ChevronDown, Settings2, Sliders, RotateCcw, Info, Waves, Target, Scale } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { CollapsibleSection } from '../Party/CollapsibleSection';
 import type {
@@ -24,7 +24,9 @@ import type {
     OutputMode,
     BandTransientConfig,
     BandTransientConfigOverrides,
+    BandBiasWeights,
 } from '../../types/rhythmGeneration';
+import type { StreamScorerConfig } from 'playlist-data-engine';
 import {
     DEFAULT_AUTO_LEVEL_SETTINGS,
     DEFAULT_BAND_TRANSIENT_CONFIG,
@@ -95,6 +97,7 @@ export function AutoLevelSettings({
 }: AutoLevelSettingsProps) {
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
     const [isTransientConfigOpen, setIsTransientConfigOpen] = useState(false);
+    const [isScoringConfigOpen, setIsScoringConfigOpen] = useState(false);
 
     const handleChange = useCallback(
         <K extends keyof AutoLevelSettingsType>(key: K, value: AutoLevelSettingsType[K]) => {
@@ -194,6 +197,112 @@ export function AutoLevelSettings({
         onChange({ ...DEFAULT_AUTO_LEVEL_SETTINGS });
         setIsTransientConfigOpen(false);
     }, [onChange]);
+
+    // ============================================================================
+    // Scoring Config Handlers
+    // ============================================================================
+
+    // Default factor weights from the engine
+    const DEFAULT_FACTOR_WEIGHTS = {
+        ioiVarianceWeight: 0.30,
+        syncopationWeight: 0.30,
+        phraseSignificanceWeight: 0.25,
+        densityWeight: 0.15,
+    };
+
+    const handleScoringFactorChange = useCallback(
+        <K extends keyof Pick<StreamScorerConfig, 'ioiVarianceWeight' | 'syncopationWeight' | 'phraseSignificanceWeight' | 'densityWeight'>>(
+            key: K,
+            value: number
+        ) => {
+            if (disabled) return;
+            onChange({
+                ...settings,
+                scoringConfig: {
+                    ...settings.scoringConfig,
+                    [key]: value,
+                },
+            });
+        },
+        [disabled, onChange, settings]
+    );
+
+    const handleBandBiasChange = useCallback(
+        (band: Band, value: number) => {
+            if (disabled) return;
+            const currentBias = settings.scoringConfig?.bandBiasWeights;
+            const newBias: BandBiasWeights = {
+                low: currentBias?.low ?? 1.0,
+                mid: currentBias?.mid ?? 1.0,
+                high: currentBias?.high ?? 1.0,
+                [band]: value,
+            };
+            onChange({
+                ...settings,
+                scoringConfig: {
+                    ...settings.scoringConfig,
+                    bandBiasWeights: newBias,
+                },
+            });
+        },
+        [disabled, onChange, settings]
+    );
+
+    const calculateTotalWeight = useCallback((): number => {
+        const config = settings.scoringConfig;
+        return (
+            (config?.ioiVarianceWeight ?? DEFAULT_FACTOR_WEIGHTS.ioiVarianceWeight) +
+            (config?.syncopationWeight ?? DEFAULT_FACTOR_WEIGHTS.syncopationWeight) +
+            (config?.phraseSignificanceWeight ?? DEFAULT_FACTOR_WEIGHTS.phraseSignificanceWeight) +
+            (config?.densityWeight ?? DEFAULT_FACTOR_WEIGHTS.densityWeight)
+        );
+    }, [settings.scoringConfig, DEFAULT_FACTOR_WEIGHTS]);
+
+    const resetFactorWeights = useCallback(() => {
+        if (disabled) return;
+        onChange({
+            ...settings,
+            scoringConfig: {
+                ...settings.scoringConfig,
+                ioiVarianceWeight: DEFAULT_FACTOR_WEIGHTS.ioiVarianceWeight,
+                syncopationWeight: DEFAULT_FACTOR_WEIGHTS.syncopationWeight,
+                phraseSignificanceWeight: DEFAULT_FACTOR_WEIGHTS.phraseSignificanceWeight,
+                densityWeight: DEFAULT_FACTOR_WEIGHTS.densityWeight,
+            },
+        });
+    }, [disabled, onChange, settings, DEFAULT_FACTOR_WEIGHTS]);
+
+    const resetBandBias = useCallback(() => {
+        if (disabled) return;
+        onChange({
+            ...settings,
+            scoringConfig: {
+                ...settings.scoringConfig,
+                bandBiasWeights: undefined,
+            },
+        });
+    }, [disabled, onChange, settings]);
+
+    const getBandBiasValue = useCallback(
+        (band: Band): number => {
+            return settings.scoringConfig?.bandBiasWeights?.[band] ?? 1.0;
+        },
+        [settings.scoringConfig]
+    );
+
+    const hasCustomFactorWeights = useMemo((): boolean => {
+        const config = settings.scoringConfig;
+        return (
+            config?.ioiVarianceWeight !== undefined ||
+            config?.syncopationWeight !== undefined ||
+            config?.phraseSignificanceWeight !== undefined ||
+            config?.densityWeight !== undefined
+        );
+    }, [settings.scoringConfig]);
+
+    const hasCustomBandBias = useMemo((): boolean => {
+        return settings.scoringConfig?.bandBiasWeights !== undefined;
+    }, [settings.scoringConfig]);
 
     return (
         <div className={cn('auto-level-settings', className)}>
@@ -503,6 +612,296 @@ export function AutoLevelSettings({
                                             <p className="auto-level-settings__slider-help">
                                                 Number of retry attempts per band. Each retry increases the threshold by 0.1.
                                             </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Scoring Configuration Section */}
+                                <div className="auto-level-settings__section">
+                                    <button
+                                        type="button"
+                                        className={cn(
+                                            'auto-level-settings__subsection-toggle',
+                                            isScoringConfigOpen && 'auto-level-settings__subsection-toggle--active'
+                                        )}
+                                        onClick={() => setIsScoringConfigOpen(!isScoringConfigOpen)}
+                                        disabled={disabled}
+                                    >
+                                        <Target size={16} />
+                                        <span>Scoring Configuration</span>
+                                        {hasCustomFactorWeights && (
+                                            <span className="auto-level-settings__badge">Factors</span>
+                                        )}
+                                        {hasCustomBandBias && (
+                                            <span className="auto-level-settings__badge">Bias</span>
+                                        )}
+                                        <ChevronDown
+                                            size={16}
+                                            className={cn(
+                                                'auto-level-settings__subsection-chevron',
+                                                isScoringConfigOpen && 'auto-level-settings__subsection-chevron--rotated'
+                                            )}
+                                        />
+                                    </button>
+
+                                    {isScoringConfigOpen && (
+                                        <div className="auto-level-settings__scoring-config">
+                                            {/* Scoring Explanation */}
+                                            <div className="auto-level-settings__info-box">
+                                                <Info size={14} />
+                                                <p>
+                                                    <strong>Scoring Configuration:</strong> Controls how the composite stream
+                                                    selects which band to use for each section. Adjust factor weights to change
+                                                    what makes a rhythm "interesting", and use band bias to manually favor or
+                                                    disfavor specific frequency bands.
+                                                </p>
+                                            </div>
+
+                                            {/* Scoring Factor Weights */}
+                                            <div className="auto-level-settings__scoring-factors">
+                                                <h4 className="auto-level-settings__subsection-title">
+                                                    <Scale size={14} />
+                                                    Scoring Factors
+                                                </h4>
+                                                <p className="auto-level-settings__help-text">
+                                                    Control how much each factor contributes to band selection.
+                                                    Weights should sum to ~1.0 for balanced scoring.
+                                                </p>
+
+                                                {/* IOI Variance */}
+                                                <div className="auto-level-settings__factor-row">
+                                                    <label className="auto-level-settings__factor-label">
+                                                        Rhythmic Variety (IOI)
+                                                    </label>
+                                                    <div className="auto-level-settings__factor-slider-wrap">
+                                                        <input
+                                                            type="range"
+                                                            min="0"
+                                                            max="0.5"
+                                                            step="0.05"
+                                                            value={settings.scoringConfig?.ioiVarianceWeight ?? DEFAULT_FACTOR_WEIGHTS.ioiVarianceWeight}
+                                                            onChange={(e) =>
+                                                                handleScoringFactorChange('ioiVarianceWeight', parseFloat(e.target.value))
+                                                            }
+                                                            className="auto-level-settings__factor-slider"
+                                                            disabled={disabled}
+                                                        />
+                                                        <span className="auto-level-settings__factor-value">
+                                                            {(settings.scoringConfig?.ioiVarianceWeight ?? DEFAULT_FACTOR_WEIGHTS.ioiVarianceWeight).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Syncopation */}
+                                                <div className="auto-level-settings__factor-row">
+                                                    <label className="auto-level-settings__factor-label">
+                                                        Syncopation
+                                                    </label>
+                                                    <div className="auto-level-settings__factor-slider-wrap">
+                                                        <input
+                                                            type="range"
+                                                            min="0"
+                                                            max="0.5"
+                                                            step="0.05"
+                                                            value={settings.scoringConfig?.syncopationWeight ?? DEFAULT_FACTOR_WEIGHTS.syncopationWeight}
+                                                            onChange={(e) =>
+                                                                handleScoringFactorChange('syncopationWeight', parseFloat(e.target.value))
+                                                            }
+                                                            className="auto-level-settings__factor-slider"
+                                                            disabled={disabled}
+                                                        />
+                                                        <span className="auto-level-settings__factor-value">
+                                                            {(settings.scoringConfig?.syncopationWeight ?? DEFAULT_FACTOR_WEIGHTS.syncopationWeight).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Phrase Significance */}
+                                                <div className="auto-level-settings__factor-row">
+                                                    <label className="auto-level-settings__factor-label">
+                                                        Phrase Significance
+                                                    </label>
+                                                    <div className="auto-level-settings__factor-slider-wrap">
+                                                        <input
+                                                            type="range"
+                                                            min="0"
+                                                            max="0.5"
+                                                            step="0.05"
+                                                            value={settings.scoringConfig?.phraseSignificanceWeight ?? DEFAULT_FACTOR_WEIGHTS.phraseSignificanceWeight}
+                                                            onChange={(e) =>
+                                                                handleScoringFactorChange('phraseSignificanceWeight', parseFloat(e.target.value))
+                                                            }
+                                                            className="auto-level-settings__factor-slider"
+                                                            disabled={disabled}
+                                                        />
+                                                        <span className="auto-level-settings__factor-value">
+                                                            {(settings.scoringConfig?.phraseSignificanceWeight ?? DEFAULT_FACTOR_WEIGHTS.phraseSignificanceWeight).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Density */}
+                                                <div className="auto-level-settings__factor-row">
+                                                    <label className="auto-level-settings__factor-label">
+                                                        Density
+                                                    </label>
+                                                    <div className="auto-level-settings__factor-slider-wrap">
+                                                        <input
+                                                            type="range"
+                                                            min="0"
+                                                            max="0.5"
+                                                            step="0.05"
+                                                            value={settings.scoringConfig?.densityWeight ?? DEFAULT_FACTOR_WEIGHTS.densityWeight}
+                                                            onChange={(e) =>
+                                                                handleScoringFactorChange('densityWeight', parseFloat(e.target.value))
+                                                            }
+                                                            className="auto-level-settings__factor-slider"
+                                                            disabled={disabled}
+                                                        />
+                                                        <span className="auto-level-settings__factor-value">
+                                                            {(settings.scoringConfig?.densityWeight ?? DEFAULT_FACTOR_WEIGHTS.densityWeight).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Weight Total */}
+                                                <div className="auto-level-settings__weight-total">
+                                                    <span>Total:</span>
+                                                    <span className={cn(
+                                                        'auto-level-settings__weight-sum',
+                                                        Math.abs(calculateTotalWeight() - 1.0) < 0.01 && 'auto-level-settings__weight-sum--ok'
+                                                    )}>
+                                                        {calculateTotalWeight().toFixed(2)}
+                                                    </span>
+                                                    {Math.abs(calculateTotalWeight() - 1.0) < 0.01 ? (
+                                                        <span className="auto-level-settings__weight-check">OK</span>
+                                                    ) : (
+                                                        <span className="auto-level-settings__weight-warning">
+                                                            (should be 1.0)
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Reset Factors Button */}
+                                                <div className="auto-level-settings__reset-row">
+                                                    <button
+                                                        type="button"
+                                                        className="auto-level-settings__reset-btn"
+                                                        onClick={resetFactorWeights}
+                                                        disabled={disabled || !hasCustomFactorWeights}
+                                                    >
+                                                        <RotateCcw size={12} />
+                                                        Reset Factors to Default
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Band Bias Weights */}
+                                            <div className="auto-level-settings__band-bias">
+                                                <h4 className="auto-level-settings__subsection-title">
+                                                    Band Preference
+                                                </h4>
+                                                <p className="auto-level-settings__help-text">
+                                                    Multiplier on final score per band: 1.0 = neutral, &lt;1.0 = disfavor, &gt;1.0 = favor
+                                                </p>
+
+                                                {/* Low Band */}
+                                                <div className="auto-level-settings__bias-row auto-level-settings__bias-row--low">
+                                                    <label className="auto-level-settings__bias-label">
+                                                        <span
+                                                            className="auto-level-settings__band-color-dot"
+                                                            style={{ backgroundColor: BAND_COLORS.low }}
+                                                        />
+                                                        Low (Bass)
+                                                    </label>
+                                                    <div className="auto-level-settings__bias-slider-wrap">
+                                                        <input
+                                                            type="range"
+                                                            min="0"
+                                                            max="2"
+                                                            step="0.1"
+                                                            value={getBandBiasValue('low')}
+                                                            onChange={(e) =>
+                                                                handleBandBiasChange('low', parseFloat(e.target.value))
+                                                            }
+                                                            className="auto-level-settings__bias-slider"
+                                                            disabled={disabled}
+                                                        />
+                                                        <span className="auto-level-settings__bias-value">
+                                                            {getBandBiasValue('low').toFixed(1)}x
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Mid Band */}
+                                                <div className="auto-level-settings__bias-row auto-level-settings__bias-row--mid">
+                                                    <label className="auto-level-settings__bias-label">
+                                                        <span
+                                                            className="auto-level-settings__band-color-dot"
+                                                            style={{ backgroundColor: BAND_COLORS.mid }}
+                                                        />
+                                                        Mid
+                                                    </label>
+                                                    <div className="auto-level-settings__bias-slider-wrap">
+                                                        <input
+                                                            type="range"
+                                                            min="0"
+                                                            max="2"
+                                                            step="0.1"
+                                                            value={getBandBiasValue('mid')}
+                                                            onChange={(e) =>
+                                                                handleBandBiasChange('mid', parseFloat(e.target.value))
+                                                            }
+                                                            className="auto-level-settings__bias-slider"
+                                                            disabled={disabled}
+                                                        />
+                                                        <span className="auto-level-settings__bias-value">
+                                                            {getBandBiasValue('mid').toFixed(1)}x
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* High Band */}
+                                                <div className="auto-level-settings__bias-row auto-level-settings__bias-row--high">
+                                                    <label className="auto-level-settings__bias-label">
+                                                        <span
+                                                            className="auto-level-settings__band-color-dot"
+                                                            style={{ backgroundColor: BAND_COLORS.high }}
+                                                        />
+                                                        High
+                                                    </label>
+                                                    <div className="auto-level-settings__bias-slider-wrap">
+                                                        <input
+                                                            type="range"
+                                                            min="0"
+                                                            max="2"
+                                                            step="0.1"
+                                                            value={getBandBiasValue('high')}
+                                                            onChange={(e) =>
+                                                                handleBandBiasChange('high', parseFloat(e.target.value))
+                                                            }
+                                                            className="auto-level-settings__bias-slider"
+                                                            disabled={disabled}
+                                                        />
+                                                        <span className="auto-level-settings__bias-value">
+                                                            {getBandBiasValue('high').toFixed(1)}x
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Reset Bias Button */}
+                                                <div className="auto-level-settings__reset-row">
+                                                    <button
+                                                        type="button"
+                                                        className="auto-level-settings__reset-btn"
+                                                        onClick={resetBandBias}
+                                                        disabled={disabled || !hasCustomBandBias}
+                                                    >
+                                                        <RotateCcw size={12} />
+                                                        Reset Bias to Neutral
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
