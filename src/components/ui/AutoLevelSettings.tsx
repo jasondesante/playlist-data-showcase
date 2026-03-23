@@ -472,7 +472,7 @@ export function AutoLevelSettings({
                                                                 <input
                                                                     type="range"
                                                                     min="0.01"
-                                                                    max="0.1"
+                                                                    max="0.25"
                                                                     step="0.005"
                                                                     value={config.minInterval}
                                                                     onChange={(e) =>
