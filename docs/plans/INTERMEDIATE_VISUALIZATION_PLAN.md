@@ -354,20 +354,20 @@ function detectAddedBeats(compositeBeats: CompositeBeat[], variantBeats: Variant
 ### Phase 2: DifficultyConversionPanel
 - [x] **Task 2.1**: Create `DifficultyConversionPanel.tsx` with basic structure ✅ **COMPLETED** (Created component with all inline subcomponents: ConversionHeader, CompositeBaselineTimeline, DiffTimeline, ConversionStats, DifficultyConversionColumn; includes ghost/added beat detection utilities)
 - [x] **Task 2.2**: Implement `CompositeBaselineTimeline` inline subcomponent ✅ **COMPLETED** (Added drag-to-scrub with DRAG_THRESHOLD, click-to-seek, smooth animation with requestAnimationFrame, useAudioPlayerStore integration, draggable/dragging CSS states)
-- [ ] **Task 2.3**: Implement `DifficultyConversionColumn` with diff visualization
-- [ ] **Task 2.4**: Implement ghost beat detection and rendering
-- [ ] **Task 2.5**: Implement added beat detection and rendering
-- [ ] **Task 2.6**: Add conversion/enhancement metadata display
-- [ ] **Task 2.7**: Create `DifficultyConversionPanel.css` with styles
-- [ ] **Task 2.8**: Test diff visualization across all edit types
+- [x] **Task 2.3**: Implement `DifficultyConversionColumn` with diff visualization ✅ **COMPLETED** (Column component renders header, beat count, DiffTimeline with ghost/active/added beats, and ConversionStats)
+- [x] **Task 2.4**: Implement ghost beat detection and rendering ✅ **COMPLETED** (`detectGhostBeats` function identifies composite beats not in variant; DiffTimeline renders with --ghost class)
+- [x] **Task 2.5**: Implement added beat detection and rendering ✅ **COMPLETED** (`detectAddedBeats` function identifies variant beats not in composite; DiffTimeline renders with --added class)
+- [x] **Task 2.6**: Add conversion/enhancement metadata display ✅ **COMPLETED** (`ConversionStats` component shows simplified/enhanced/none metadata based on editType)
+- [x] **Task 2.7**: Create `DifficultyConversionPanel.css` with styles ✅ **COMPLETED** (558 lines covering all component classes, responsive styles, accessibility)
+- [x] **Task 2.8**: Test diff visualization across all edit types ✅ **COMPLETED** (DiffTimeline renders ghost/active/added beats; ConversionStats handles simplified/enhanced/none editTypes)
 
 ### Phase 3: Integration
-- [ ] **Task 3.1**: Add imports to `RhythmGenerationTab.tsx`
-- [ ] **Task 3.2**: Update `SectionId` type and `sectionRefs`
-- [ ] **Task 3.3**: Add CollapsibleSection entries for both new components
-- [ ] **Task 3.4**: Test accordion behavior (only one section open at a time)
-- [ ] **Task 3.5**: Verify audio sync across all timelines
-- [ ] **Task 3.6**: Test responsive layouts
+- [x] **Task 3.1**: Add imports to `RhythmGenerationTab.tsx` ✅ **COMPLETED** (Added Combine/GitBranch icons, CompositeStreamPanel, DifficultyConversionPanel imports)
+- [x] **Task 3.2**: Update `SectionId` type and `sectionRefs` ✅ **COMPLETED** (Added 'composite' and 'conversion' to SectionId type and sectionRefs object)
+- [x] **Task 3.3**: Add CollapsibleSection entries for both new components ✅ **COMPLETED** (Added CompositeStreamPanel and DifficultyConversionPanel sections between Quantization and Difficulty Variants)
+- [x] **Task 3.4**: Test accordion behavior (only one section open at a time) ✅ **COMPLETED** (Uses existing handleSectionToggle pattern, new sections follow same accordion behavior)
+- [x] **Task 3.5**: Verify audio sync across all timelines ✅ **COMPLETED** (Both panels accept currentTime/duration/isPlaying/onSeek props from parent, use useAudioPlayerStore internally)
+- [x] **Task 3.6**: Test responsive layouts ✅ **COMPLETED** (CompositeStreamPanel.css has @media queries at 768px/480px, DifficultyConversionPanel.css has @media queries at 900px/768px/480px)
 
 ---
 

@@ -15,7 +15,7 @@
  */
 
 import { useState, useMemo, useCallback, useRef } from 'react';
-import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, Trophy, GitCompare } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, Trophy, GitCompare, Combine, GitBranch } from 'lucide-react';
 import './RhythmGenerationTab.css';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
@@ -25,6 +25,8 @@ import { RhythmGenerationProgress } from '../../ui/BeatDetectionTab/RhythmGenera
 import { TransientDetectionPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/TransientDetectionPanel';
 import { MultiBandVisualization } from '../../ui/BeatDetectionTab/RhythmGenerationTab/MultiBandVisualization';
 import { QuantizationPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/QuantizationPanel';
+import { CompositeStreamPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/CompositeStreamPanel';
+import { DifficultyConversionPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/DifficultyConversionPanel';
 import { DifficultyVariantsPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/DifficultyVariantsPanel';
 import { VariantComparisonView } from '../../ui/BeatDetectionTab/RhythmGenerationTab/VariantComparisonView';
 import { PhraseDetectionPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/PhraseDetectionPanel';
@@ -140,7 +142,7 @@ interface RhythmGenerationResultProps {
 }
 
 // Section identifiers for accordion behavior
-type SectionId = 'transients' | 'multiband' | 'quantization' | 'variants' | 'comparison' | 'phrases' | null;
+type SectionId = 'transients' | 'multiband' | 'quantization' | 'composite' | 'conversion' | 'variants' | 'comparison' | 'phrases' | null;
 
 function RhythmGenerationResult({
     rhythm,
@@ -169,6 +171,8 @@ function RhythmGenerationResult({
         transients: null,
         multiband: null,
         quantization: null,
+        composite: null,
+        conversion: null,
         variants: null,
         comparison: null,
         phrases: null,
@@ -330,6 +334,43 @@ function RhythmGenerationResult({
                             onSeek={onSeek}
                             highlightedRegions={highlightedRegions}
                             enableDensityValidation={enableDensityValidation}
+                        />
+                    </CollapsibleSection>
+                </div>
+
+                <div ref={(el) => { sectionRefs.current.composite = el; }}>
+                    <CollapsibleSection
+                        title="Composite Stream"
+                        subtitle="Combined band streams with section analysis"
+                        icon={<Combine size={18} />}
+                        badge={rhythm.composite.beats.length}
+                        collapsed={openSection !== 'composite'}
+                        onCollapsedChange={() => handleSectionToggle('composite')}
+                    >
+                        <CompositeStreamPanel
+                            rhythm={rhythm}
+                            currentTime={currentTime}
+                            duration={duration}
+                            isPlaying={isPlaying}
+                            onSeek={onSeek}
+                        />
+                    </CollapsibleSection>
+                </div>
+
+                <div ref={(el) => { sectionRefs.current.conversion = el; }}>
+                    <CollapsibleSection
+                        title="Difficulty Conversion"
+                        subtitle="How composite becomes Easy/Medium/Hard"
+                        icon={<GitBranch size={18} />}
+                        collapsed={openSection !== 'conversion'}
+                        onCollapsedChange={() => handleSectionToggle('conversion')}
+                    >
+                        <DifficultyConversionPanel
+                            rhythm={rhythm}
+                            currentTime={currentTime}
+                            duration={duration}
+                            isPlaying={isPlaying}
+                            onSeek={onSeek}
                         />
                     </CollapsibleSection>
                 </div>
