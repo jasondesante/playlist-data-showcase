@@ -216,7 +216,9 @@
 }
 
 /* ============================================
-   BAND TIMELINES (Placeholder - Task 1.2)
+   BAND STREAM TIMELINES (Task 1.2)
+   Full timeline components with beat markers,
+   drag-to-scrub, and quick scroll, and audio sync
    ============================================ */
 
 .composite-band-timelines {
@@ -226,24 +228,27 @@
     margin-bottom: 1rem;
 }
 
-.composite-band-timeline-placeholder {
-    padding: 0.75rem;
-    background: hsl(var(--surface-1));
-    border-radius: 0.375rem;
-    border: 1px solid hsl(var(--border) / 0.5);
+/* Single band timeline container */
+.composite-band-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
+/* Band timeline header */
 .composite-band-timeline-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.5rem;
+    padding: 0.25rem 0.5rem;
 }
 
 .composite-band-timeline-label {
     font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: capitalize;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-width: 3rem;
 }
 
 .composite-band-timeline-count {
@@ -252,45 +257,186 @@
     font-family: var(--font-mono);
 }
 
+/* Timeline track */
 .composite-band-timeline-track {
     position: relative;
-    height: 24px;
-    border-radius: 0.25rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
     overflow: hidden;
+    cursor: default;
+    transition: box-shadow 0.15s ease;
 }
 
-.composite-band-timeline-track-background {
+.composite-band-timeline-track--draggable {
+    cursor: grab;
+}
+
+.composite-band-timeline-track--draggable:hover {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3);
+}
+
+.composite-band-timeline-track--dragging {
+    cursor: grabbing;
+}
+
+.composite-band-timeline-track--dragging:hover {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5);
+}
+
+.composite-band-timeline-track:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.4);
+}
+
+/* Background layers */
+.composite-band-timeline-background {
     position: absolute;
     inset: 0;
-    background: hsl(var(--surface-3));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border) / 0.3);
 }
 
-.composite-band-timeline-track-accent {
+/* Band color accent line (left edge) */
+.composite-band-timeline-accent {
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
-    width: 30%;
-    opacity: 0.15;
-}
-
-.composite-band-timeline-now-line {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 30%;
-    width: 2px;
-    z-index: 2;
-}
-
-.composite-band-timeline-now-line-inner {
-    width: 100%;
-    height: 100%;
+    width: 3px;
+    border-radius: 0.5rem 0 0 0.5rem;
     opacity: 0.8;
 }
 
 /* ============================================
-   COMPOSITE TIMELINE (Placeholder - Task 1.3)
+   BEAT MARKERS
+   ============================================ */
+
+.composite-band-marker {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.composite-band-marker-dot {
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.composite-band-marker:hover .composite-band-marker-dot {
+    transform: scale(1.3);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Past markers (faded) */
+.composite-band-marker--past {
+    opacity: 0.4;
+}
+
+.composite-band-marker--past .composite-band-marker-dot {
+    opacity: 0.6;
+}
+
+/* ============================================
+   NOW LINE (Playhead)
+   ============================================ */
+
+.composite-band-now-line {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 100%;
+    width: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.composite-band-now-line-inner {
+    width: 2px;
+    height: 100%;
+    opacity: 0.7;
+    box-shadow: 0 0 4px currentColor;
+}
+
+/* ============================================
+   QUICK SCROLL BAR
+   Mini scrollbar for fast timeline navigation
+   ============================================ */
+
+.composite-band-quickscroll {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.composite-band-quickscroll-track {
+    position: relative;
+    flex: 1;
+    height: 0.5rem;
+    background: hsl(var(--surface-3));
+    border-radius: 0.25rem;
+    cursor: pointer;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.composite-band-quickscroll-track:hover {
+    background: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.3);
+}
+
+/* Beat markers in quick scroll */
+.composite-band-quickscroll-marker {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    width: 1px;
+    transform: translateX(-50%);
+    opacity: 0.4;
+}
+
+/* Viewport indicator - shows current visible window */
+.composite-band-quickscroll-viewport {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: hsl(var(--primary) / 0.2);
+    border-left: 1px solid hsl(var(--primary) / 0.5);
+    border-right: 1px solid hsl(var(--primary) / 0.5);
+    border-radius: 0.125rem;
+    pointer-events: none;
+    min-width: 4px;
+}
+
+/* Current position indicator (playhead) */
+.composite-band-quickscroll-position {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 2px;
+    background: hsl(var(--primary));
+    transform: translateX(-50%);
+    pointer-events: none;
+    box-shadow: 0 0 4px hsl(var(--primary) / 0.8);
+}
+
+/* ============================================
+   COMPOSITE TIMELINE (Task 1.3)
+   Full timeline with color-coded beats by sourceBand,
+   section boundaries, and hover tooltips
    ============================================ */
 
 .composite-timeline-section {
@@ -298,43 +444,308 @@
     border-top: 1px solid hsl(var(--border) / 0.3);
 }
 
-.composite-timeline-track {
-    position: relative;
-    height: 32px;
-    border-radius: 0.25rem;
-    overflow: hidden;
-    background: hsl(var(--surface-3));
+.composite-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
-.composite-timeline-track-background {
+.composite-timeline-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 0.5rem;
+}
+
+.composite-timeline-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--foreground));
+}
+
+.composite-timeline-count {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+}
+
+.composite-timeline-track {
+    position: relative;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    cursor: default;
+    transition: box-shadow 0.15s ease;
+}
+
+.composite-timeline-track--draggable {
+    cursor: grab;
+}
+
+.composite-timeline-track--draggable:hover {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3);
+}
+
+.composite-timeline-track--dragging {
+    cursor: grabbing;
+}
+
+.composite-timeline-track--dragging:hover {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5);
+}
+
+.composite-timeline-track:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.4);
+}
+
+.composite-timeline-background {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-        90deg,
-        #3b82f6 0%,
-        #3b82f6 33%,
-        #22c55e 33%,
-        #22c55e 66%,
-        #f97316 66%,
-        #f97316 100%
-    );
-    opacity: 0.2;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border) / 0.3);
 }
+
+/* ============================================
+   SECTION REGIONS
+   Colored backgrounds showing which band won each section
+   ============================================ */
+
+.composite-section-region {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    opacity: 0.15;
+    pointer-events: auto;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.composite-section-region--hovered {
+    opacity: 0.3;
+}
+
+/* ============================================
+   SECTION BOUNDARIES
+   Vertical lines marking section transitions
+   ============================================ */
+
+.composite-section-boundary {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-50%);
+    pointer-events: auto;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.composite-section-boundary-line {
+    width: 100%;
+    height: 100%;
+    opacity: 0.5;
+    transition: opacity 0.15s ease, width 0.15s ease;
+}
+
+.composite-section-boundary--hovered .composite-section-boundary-line {
+    opacity: 1;
+    width: 3px;
+}
+
+/* ============================================
+   SECTION TOOLTIP
+   Hover info showing winning band, score, margin
+   ============================================ */
+
+.composite-section-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--surface-1));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 20;
+    min-width: 140px;
+    pointer-events: none;
+    animation: composite-tooltip-fade-in 0.15s ease;
+}
+
+@keyframes composite-tooltip-fade-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.composite-section-tooltip-header {
+    margin-bottom: 0.375rem;
+    padding-bottom: 0.375rem;
+    border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.composite-section-tooltip-band {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.composite-section-tooltip-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.composite-section-tooltip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.composite-section-tooltip-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.composite-section-tooltip-value {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+/* ============================================
+   COMPOSITE BEAT MARKERS
+   Color-coded by sourceBand
+   ============================================ */
+
+.composite-timeline-marker {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.composite-timeline-marker-dot {
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.composite-timeline-marker:hover .composite-timeline-marker-dot {
+    transform: scale(1.3);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.composite-timeline-marker--past {
+    opacity: 0.4;
+}
+
+.composite-timeline-marker--past .composite-timeline-marker-dot {
+    opacity: 0.6;
+}
+
+/* ============================================
+   COMPOSITE NOW LINE (Playhead)
+   ============================================ */
 
 .composite-timeline-now-line {
     position: absolute;
     top: 0;
-    bottom: 0;
-    left: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 100%;
     width: 2px;
-    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+    pointer-events: none;
 }
 
 .composite-timeline-now-line-inner {
-    width: 100%;
+    width: 2px;
     height: 100%;
     background: hsl(var(--foreground));
-    opacity: 0.8;
+    opacity: 0.7;
+    box-shadow: 0 0 4px hsl(var(--foreground) / 0.8);
+}
+
+/* ============================================
+   COMPOSITE QUICK SCROLL BAR
+   ============================================ */
+
+.composite-timeline-quickscroll {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.composite-timeline-quickscroll-track {
+    position: relative;
+    flex: 1;
+    height: 0.5rem;
+    background: hsl(var(--surface-3));
+    border-radius: 0.25rem;
+    cursor: pointer;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.composite-timeline-quickscroll-track:hover {
+    background: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.3);
+}
+
+.composite-timeline-quickscroll-marker {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    width: 1px;
+    transform: translateX(-50%);
+    opacity: 0.4;
+}
+
+.composite-timeline-quickscroll-viewport {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: hsl(var(--primary) / 0.2);
+    border-left: 1px solid hsl(var(--primary) / 0.5);
+    border-right: 1px solid hsl(var(--primary) / 0.5);
+    border-radius: 0.125rem;
+    pointer-events: none;
+    min-width: 4px;
+}
+
+.composite-timeline-quickscroll-position {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 2px;
+    background: hsl(var(--primary));
+    transform: translateX(-50%);
+    pointer-events: none;
+    box-shadow: 0 0 4px hsl(var(--primary) / 0.8);
 }
 
 /* ============================================

@@ -51,6 +51,7 @@ export type {
     DifficultyLevel,
     EditType,
     CompositeStream,
+    CompositeSection,
     CompositeBeat,
     DensityAnalysisResult,
     NaturalDifficulty,
