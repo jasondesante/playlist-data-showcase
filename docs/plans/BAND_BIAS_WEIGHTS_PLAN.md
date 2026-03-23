@@ -152,8 +152,8 @@ export interface RhythmGenerationOptions {
 ```
 
 ### Task 1.4: Pass ScoringConfig to StreamScorer
-- [ ] **File**: `src/core/generation/RhythmGenerator.ts`
-- [ ] Update the constructor to pass scoring config:
+- [x] **File**: `src/core/generation/RhythmGenerator.ts`
+- [x] Update the constructor to pass scoring config:
 
 ```typescript
 constructor(options: RhythmGenerationOptions = {}) {
