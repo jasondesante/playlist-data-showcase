@@ -88,8 +88,8 @@ const DEFAULT_STREAM_SCORER_CONFIG: StreamScorerConfig = {
 ```
 
 ### Task 1.2: Apply Bias in scoreSection()
-- [ ] **File**: `src/core/analysis/beat/StreamScorer.ts`
-- [ ] Modify the `scoreSection()` method to apply band bias:
+- [x] **File**: `src/core/analysis/beat/StreamScorer.ts`
+- [x] Modify the `scoreSection()` method to apply band bias:
 
 ```typescript
 private scoreSection(
