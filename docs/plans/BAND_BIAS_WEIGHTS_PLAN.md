@@ -222,8 +222,8 @@ describe('Band Bias Weights', () => {
 ## Phase 2: Frontend Type Updates (playlist-data-showcase)
 
 ### Task 2.1: Import StreamScorerConfig Type
-- [ ] **File**: `src/types/rhythmGeneration.ts`
-- [ ] Add import and re-export:
+- [x] **File**: `src/types/rhythmGeneration.ts`
+- [x] Add import and re-export:
 
 ```typescript
 import type {
@@ -237,6 +237,8 @@ export type {
     StreamScorerConfig,
 } from 'playlist-data-engine';
 ```
+
+**Completed**: Added `StreamScorerConfig` and `BandBiasWeights` to re-exports.
 
 ### Task 2.2: Update AutoLevelSettings Interface
 - [ ] **File**: `src/types/rhythmGeneration.ts`

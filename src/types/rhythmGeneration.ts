@@ -61,6 +61,9 @@ export type {
     BandTransientConfigOverrides,
     DensityValidationResult,
     BandDensityValidationResult,
+    // Stream scoring configuration types
+    StreamScorerConfig,
+    BandBiasWeights,
 } from 'playlist-data-engine';
 
 /**
