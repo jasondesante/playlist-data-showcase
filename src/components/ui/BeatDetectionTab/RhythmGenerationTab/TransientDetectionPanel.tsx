@@ -14,11 +14,12 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Filter, Layers, RefreshCw, Info } from 'lucide-react';
+import { Filter, Layers, RefreshCw } from 'lucide-react';
 import './TransientDetectionPanel.css';
 import { TransientTimeline } from '../../TransientTimeline';
 import { TransientInspector } from '../../TransientInspector';
 import { ZoomControls } from '../../ZoomControls';
+import { Tooltip } from '../../Tooltip';
 import type { GeneratedRhythm, TransientResult, Band, BandTransientConfigOverrides, BandTransientConfig } from '../../../../types/rhythmGeneration';
 import { DEFAULT_BAND_TRANSIENT_CONFIG } from '../../../../types/rhythmGeneration';
 
@@ -376,15 +377,6 @@ export function TransientDetectionPanel({
 
     return (
         <div className={`transient-detection-panel ${className || ''}`}>
-            {/* NMS Info Box */}
-            <div className="transient-nms-info">
-                <Info size={14} />
-                <p>
-                    <strong>Non-Maximum Suppression (NMS):</strong> Within each band's buffer window (20-50ms depending on frequency),
-                    only the strongest transient is kept. Weaker peaks are suppressed to prevent multiple detections for the same acoustic event.
-                </p>
-            </div>
-
             {/* Detection Configuration Used */}
             <div className="transient-config-summary">
                 <h4 className="transient-config-summary-title">Detection Configuration Used</h4>
@@ -415,7 +407,10 @@ export function TransientDetectionPanel({
                                         <span className="transient-config-band-stat-value">{config.threshold.toFixed(2)}</span>
                                     </div>
                                     <div className="transient-config-band-stat">
-                                        <span className="transient-config-band-stat-label">Min Interval</span>
+                                        <span className="transient-config-band-stat-label">
+                                            Min Interval
+                                            <Tooltip content="Non-Maximum Suppression (NMS): Within each band's buffer window (20-50ms depending on frequency), only the strongest transient is kept. Weaker peaks are suppressed to prevent multiple detections for the same acoustic event." />
+                                        </span>
                                         <span className="transient-config-band-stat-value">{(config.minInterval * 1000).toFixed(0)}ms</span>
                                     </div>
                                     <div className="transient-config-band-stat">
