@@ -653,7 +653,7 @@ Also added three new usage examples:
 - [x] Band bias sliders update settings
 - [x] Weight total indicator shows correct sum
 - [x] Settings pass through to generation hook
-- [ ] Composite reflects customized scoring
+- [x] Composite reflects customized scoring
 - [x] Reset buttons restore defaults
 - [x] Factor reset restores to 0.30/0.30/0.25/0.15
 - [x] Band bias reset restores to 1.0/1.0/1.0
@@ -665,6 +665,14 @@ Also added three new usage examples:
 - Reset buttons (8 tests)
 - Disabled state (5 tests)
 - Settings pass through to generation hook (6 tests)
+
+**Completed**: Added 17 comprehensive tests in `src/components/ui/BeatDetectionTab/RhythmGenerationTab/CompositeStreamPanel.scoringConfig.test.tsx` covering:
+- No scoring config display (2 tests)
+- Band bias weights display with color coding (4 tests)
+- Factor weights display (4 tests)
+- Combined display (2 tests)
+- Info icon (1 test)
+- Edge cases (4 tests)
 
 ### Integration Tests
 - [ ] End-to-end test with custom factor weights
