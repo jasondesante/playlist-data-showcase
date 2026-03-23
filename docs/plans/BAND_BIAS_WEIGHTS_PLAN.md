@@ -675,9 +675,17 @@ Also added three new usage examples:
 - Edge cases (4 tests)
 
 ### Integration Tests
-- [ ] End-to-end test with custom factor weights
-- [ ] End-to-end test with band bias weights
-- [ ] End-to-end test with both combined
+- [x] End-to-end test with custom factor weights
+- [x] End-to-end test with band bias weights
+- [x] End-to-end test with both combined
+
+**Completed**: Added 25 comprehensive integration tests in `src/tests/scoringConfig.integration.test.ts` covering:
+- Custom factor weights flow (6 tests)
+- Band bias weights flow (7 tests)
+- Combined configuration (5 tests)
+- Settings pass-through validation (3 tests)
+- Store integration (2 tests)
+- Complete flow validation (2 tests)
 
 ### Documentation
 - [x] DATA_ENGINE_REFERENCE.md updated with all scoring parameters
