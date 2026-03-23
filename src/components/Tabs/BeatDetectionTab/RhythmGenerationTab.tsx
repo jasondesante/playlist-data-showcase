@@ -140,7 +140,7 @@ interface RhythmGenerationResultProps {
 }
 
 // Section identifiers for accordion behavior
-type SectionId = 'transients' | 'multiband' | 'quantization' | 'variants' | 'comparison' | 'phrases';
+type SectionId = 'transients' | 'multiband' | 'quantization' | 'variants' | 'comparison' | 'phrases' | null;
 
 function RhythmGenerationResult({
     rhythm,
@@ -165,7 +165,7 @@ function RhythmGenerationResult({
     const [openSection, setOpenSection] = useState<SectionId>('transients');
 
     // Refs for each section to enable scroll-into-view
-    const sectionRefs = useRef<Record<SectionId, HTMLDivElement | null>>({
+    const sectionRefs = useRef<Record<Exclude<SectionId, null>, HTMLDivElement | null>>({
         transients: null,
         multiband: null,
         quantization: null,
@@ -174,10 +174,13 @@ function RhythmGenerationResult({
         phrases: null,
     });
 
-    const handleSectionToggle = (sectionId: SectionId) => {
+    const handleSectionToggle = (sectionId: Exclude<SectionId, null>) => {
         const prevSection = openSection;
-        // Only change if clicking a different section
-        if (prevSection !== sectionId) {
+        if (prevSection === sectionId) {
+            // Clicking the same section that's open - close it
+            setOpenSection(null);
+        } else {
+            // Clicking a different section - open it
             setOpenSection(sectionId);
             // Scroll the newly opened section into view after a brief delay for the animation
             setTimeout(() => {
