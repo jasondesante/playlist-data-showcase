@@ -17,6 +17,7 @@
  */
 
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Info } from 'lucide-react';
 import './QuantizedBeatTimeline.css';
 import type { GeneratedBeat, Band, GridType, HighlightedRegion } from '../../types/rhythmGeneration';
@@ -555,26 +556,14 @@ export function QuantizedBeatTimeline({
     // ========================================
 
     /**
-     * Handle click on beat
-     */
-    const handleBeatClick = useCallback(
-        (beat: GeneratedBeat, index: number, event: React.MouseEvent) => {
-            event.stopPropagation();
-            if (onBeatClick) {
-                onBeatClick(beat, index);
-            }
-        },
-        [onBeatClick]
-    );
-
-    /**
      * Handle hover on beat marker
      */
     const handleMouseEnter = useCallback(
         (beat: GeneratedBeat, index: number, event: React.MouseEvent) => {
             setHoveredBeat(beat);
             setHoveredIndex(index);
-            const rect = (event.target as HTMLElement).getBoundingClientRect();
+            // Use currentTarget to always get the marker element, not child elements
+            const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
             setTooltipPosition({
                 x: rect.left + rect.width / 2,
                 y: rect.top,
@@ -582,6 +571,44 @@ export function QuantizedBeatTimeline({
         },
         []
     );
+
+    /**
+     * Handle click on beat marker (for touch devices - toggles tooltip)
+     */
+    const handleMarkerClick = useCallback(
+        (beat: GeneratedBeat, index: number, event: React.MouseEvent) => {
+            event.stopPropagation();
+            event.preventDefault();
+
+            // Toggle tooltip on click
+            if (hoveredIndex === index) {
+                setHoveredBeat(null);
+                setHoveredIndex(null);
+            } else {
+                setHoveredBeat(beat);
+                setHoveredIndex(index);
+                const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                setTooltipPosition({
+                    x: rect.left + rect.width / 2,
+                    y: rect.top,
+                });
+            }
+
+            // Also call the external onBeatClick handler if provided
+            if (onBeatClick) {
+                onBeatClick(beat, index);
+            }
+        },
+        [hoveredIndex, onBeatClick]
+    );
+
+    /**
+     * Prevent marker mouse down from triggering track drag
+     */
+    const handleMarkerMouseDown = useCallback((event: React.MouseEvent) => {
+        event.stopPropagation();
+        event.preventDefault();
+    }, []);
 
     const handleMouseLeave = useCallback(() => {
         setHoveredBeat(null);
@@ -673,9 +700,10 @@ export function QuantizedBeatTimeline({
                             left: `${position * 100}%`,
                             '--band-color': BAND_COLORS[beat.band],
                         } as React.CSSProperties}
-                        onClick={(e) => handleBeatClick(beat, index, e)}
+                        onClick={(e) => handleMarkerClick(beat, index, e)}
                         onMouseEnter={(e) => handleMouseEnter(beat, index, e)}
                         onMouseLeave={handleMouseLeave}
+                        onMouseDown={handleMarkerMouseDown}
                         onKeyDown={(e) => handleBeatKeyDown(beat, index, e)}
                         role="button"
                         tabIndex={0}
@@ -707,8 +735,8 @@ export function QuantizedBeatTimeline({
                 </div>
             </div>
 
-            {/* Tooltip for hovered beat */}
-            {hoveredBeat && (
+            {/* Tooltip for hovered beat - rendered via portal to escape container clipping */}
+            {hoveredBeat && createPortal(
                 <div
                     className="quantized-beat-timeline-tooltip"
                     style={{
@@ -757,7 +785,8 @@ export function QuantizedBeatTimeline({
                             </div>
                         )}
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Timeline info bar */}

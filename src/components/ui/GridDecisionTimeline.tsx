@@ -15,6 +15,7 @@
  */
 
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Info } from 'lucide-react';
 import './GridDecisionTimeline.css';
 import type { GridDecision, GridType } from '../../types/rhythmGeneration';
@@ -417,13 +418,53 @@ export function GridDecisionTimeline({
             ? gridDecisions.reduce((sum, d) => sum + d.confidence, 0) / gridDecisions.length
             : 0;
 
+        // Determine dominant grid type for the song
+        const dominantGrid: GridType = straightCount >= tripletCount ? 'straight_16th' : 'triplet_8th';
+
         return {
             total: gridDecisions.length,
             straightCount,
             tripletCount,
             avgConfidence,
+            dominantGrid,
         };
     }, [gridDecisions]);
+
+    // ========================================
+    // Overlap Detection for Hover Priority
+    // ========================================
+
+    /**
+     * Build a map of beatIndex -> decisions at that index
+     * Used to detect overlapping markers from different bands
+     */
+    const decisionsByBeatIndex = useMemo(() => {
+        const map = new Map<number, GridDecision[]>();
+        for (const decision of gridDecisions) {
+            const existing = map.get(decision.beatIndex) || [];
+            existing.push(decision);
+            map.set(decision.beatIndex, existing);
+        }
+        return map;
+    }, [gridDecisions]);
+
+    /**
+     * Check if a marker should respond to hover based on dominant grid priority.
+     * When multiple markers overlap at the same beatIndex, only the dominant grid type responds to hover.
+     */
+    const shouldAllowHover = useCallback(
+        (decision: GridDecision): boolean => {
+            const decisionsAtBeat = decisionsByBeatIndex.get(decision.beatIndex);
+            if (!decisionsAtBeat || decisionsAtBeat.length <= 1) {
+                // No overlap, always allow hover
+                return true;
+            }
+
+            // Multiple markers at this position - only allow if this is the dominant type
+            return decision.selectedGrid === stats.dominantGrid;
+        },
+        [decisionsByBeatIndex, stats.dominantGrid]
+    );
 
     // ========================================
     // Event Handlers
@@ -435,14 +476,49 @@ export function GridDecisionTimeline({
     const handleMouseEnter = useCallback(
         (decision: GridDecision, event: React.MouseEvent) => {
             event.stopPropagation();
+
+            // Only allow hover if this marker should respond (dominant grid priority for overlaps)
+            if (!shouldAllowHover(decision)) {
+                return;
+            }
+
             setHoveredDecision(decision);
-            const rect = (event.target as HTMLElement).getBoundingClientRect();
+            // Use currentTarget to always get the marker element, not child elements
+            const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
             setTooltipPosition({
                 x: rect.left + rect.width / 2,
                 y: rect.top,
             });
         },
-        []
+        [shouldAllowHover]
+    );
+
+    /**
+     * Handle click on grid decision marker (for touch devices)
+     */
+    const handleMarkerClick = useCallback(
+        (decision: GridDecision, event: React.MouseEvent) => {
+            event.stopPropagation();
+            event.preventDefault();
+
+            // Only allow click if this marker should respond (dominant grid priority for overlaps)
+            if (!shouldAllowHover(decision)) {
+                return;
+            }
+
+            // Toggle tooltip on click
+            if (hoveredDecision?.beatIndex === decision.beatIndex) {
+                setHoveredDecision(null);
+            } else {
+                setHoveredDecision(decision);
+                const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                setTooltipPosition({
+                    x: rect.left + rect.width / 2,
+                    y: rect.top,
+                });
+            }
+        },
+        [hoveredDecision, shouldAllowHover]
     );
 
     const handleMouseLeave = useCallback(() => {
@@ -481,38 +557,43 @@ export function GridDecisionTimeline({
                 <div className="grid-decision-timeline-future-region" />
 
                 {/* Grid decision markers */}
-                {visibleDecisions.map(({ decision, position, isPast }, idx) => (
-                    <div
-                        key={`grid-decision-${decision.beatIndex}-${decision.selectedGrid}-${idx}`}
-                        className={`grid-decision-timeline-marker ${
-                            isPast ? 'grid-decision-timeline-marker--past' : ''
-                        } ${
-                            hoveredDecision?.beatIndex === decision.beatIndex
-                                ? 'grid-decision-timeline-marker--hovered'
-                                : ''
-                        }`}
-                        style={{
-                            left: `${position * 100}%`,
-                            '--grid-color': GRID_COLORS[decision.selectedGrid],
-                            opacity: 0.3 + (decision.confidence * 0.7),
-                        } as React.CSSProperties}
-                        onMouseEnter={(e) => handleMouseEnter(decision, e)}
-                        onMouseLeave={handleMouseLeave}
-                        onMouseDown={handleMarkerMouseDown}
-                        onClick={(e) => e.stopPropagation()}
-                        role="button"
-                        tabIndex={0}
-                        aria-label={`Beat ${decision.beatIndex + 1}: ${GRID_LABELS[decision.selectedGrid]}, confidence ${Math.round(decision.confidence * 100)}%`}
-                    >
-                        {/* Marker dot */}
-                        <div className="grid-decision-timeline-marker-dot">
-                            {/* Grid type indicator */}
-                            <span className="grid-decision-timeline-marker-label">
-                                {decision.selectedGrid === 'triplet_8th' ? 'T' : 'S'}
-                            </span>
+                {visibleDecisions.map(({ decision, position, isPast }, idx) => {
+                    const canHover = shouldAllowHover(decision);
+                    const isHovered = hoveredDecision?.beatIndex === decision.beatIndex &&
+                                      hoveredDecision?.selectedGrid === decision.selectedGrid;
+                    return (
+                        <div
+                            key={`grid-decision-${decision.beatIndex}-${decision.selectedGrid}-${idx}`}
+                            className={`grid-decision-timeline-marker ${isPast ? 'grid-decision-timeline-marker--past' : ''
+                                } ${isHovered ? 'grid-decision-timeline-marker--hovered' : ''
+                                } ${!canHover ? 'grid-decision-timeline-marker--suppressed' : ''}`}
+                            style={{
+                                left: `${position * 100}%`,
+                                '--grid-color': GRID_COLORS[decision.selectedGrid],
+                                // confidence is in ms (difference between grid offsets), normalize to 0-1 with 50ms = max
+                                opacity: canHover
+                                    ? 0.3 + (Math.min(decision.confidence / 50, 1) * 0.7)
+                                    : 0.15, // Dim suppressed markers
+                                zIndex: canHover ? 10 : 5, // Dominant markers on top
+                            } as React.CSSProperties}
+                            onMouseEnter={canHover ? (e) => handleMouseEnter(decision, e) : undefined}
+                            onMouseLeave={canHover ? handleMouseLeave : undefined}
+                            onMouseDown={handleMarkerMouseDown}
+                            onClick={canHover ? (e) => handleMarkerClick(decision, e) : undefined}
+                            role="button"
+                            tabIndex={canHover ? 0 : -1}
+                            aria-label={`Beat ${decision.beatIndex + 1}: ${GRID_LABELS[decision.selectedGrid]}, grid diff ${decision.confidence.toFixed(1)}ms${!canHover ? ' (overlapped)' : ''}`}
+                        >
+                            {/* Marker dot */}
+                            <div className="grid-decision-timeline-marker-dot">
+                                {/* Grid type indicator */}
+                                <span className="grid-decision-timeline-marker-label">
+                                    {decision.selectedGrid === 'triplet_8th' ? 'T' : 'S'}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
 
                 {/* "Now" line - fixed in center */}
                 <div className="grid-decision-timeline-now-line">
@@ -521,8 +602,8 @@ export function GridDecisionTimeline({
                 </div>
             </div>
 
-            {/* Tooltip for hovered decision */}
-            {hoveredDecision && (
+            {/* Tooltip for hovered decision - rendered via portal to escape container clipping */}
+            {hoveredDecision && createPortal(
                 <div
                     className="grid-decision-timeline-tooltip"
                     style={{
@@ -543,9 +624,9 @@ export function GridDecisionTimeline({
                     </div>
                     <div className="grid-decision-tooltip-stats">
                         <div className="grid-decision-tooltip-stat">
-                            <span className="grid-decision-tooltip-stat-label">Confidence</span>
+                            <span className="grid-decision-tooltip-stat-label">Grid Diff</span>
                             <span className="grid-decision-tooltip-stat-value">
-                                {(hoveredDecision.confidence * 100).toFixed(0)}%
+                                {formatMs(hoveredDecision.confidence)}
                             </span>
                         </div>
                         <div className="grid-decision-tooltip-stat">
@@ -567,7 +648,8 @@ export function GridDecisionTimeline({
                             </span>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Timeline info bar */}
@@ -587,7 +669,7 @@ export function GridDecisionTimeline({
                 <div className="grid-decision-timeline-info-item">
                     <span className="grid-decision-timeline-info-label">Avg Conf</span>
                     <span className="grid-decision-timeline-info-value">
-                        {(stats.avgConfidence * 100).toFixed(0)}%
+                        {formatMs(stats.avgConfidence)}
                     </span>
                 </div>
             </div>
@@ -611,7 +693,7 @@ export function GridDecisionTimeline({
                         <div className="grid-decision-timeline-legend-opacity-low" />
                         <div className="grid-decision-timeline-legend-opacity-high" />
                     </div>
-                    <span className="grid-decision-timeline-legend-label">Confidence</span>
+                    <span className="grid-decision-timeline-legend-label">Grid Fit</span>
                 </div>
                 <div className="grid-decision-timeline-legend-item">
                     <Info size={14} />
