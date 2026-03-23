@@ -2,7 +2,20 @@
 
 ## Overview
 
-Add the ability to bias the composite stream scoring toward specific frequency bands (low/mid/high). This allows users to control which band gets preference when generating the composite rhythm stream.
+Expose the full `StreamScorerConfig` through `RhythmGenerationOptions`, allowing users to control:
+
+1. **Factor Weights** - How much each scoring factor contributes:
+   - `ioiVarianceWeight` (rhythmic variety)
+   - `syncopationWeight` (offbeat emphasis)
+   - `phraseSignificanceWeight` (pattern detection)
+   - `densityWeight` (note count)
+
+2. **Band Bias Weights** - Manual preference multipliers for each frequency band:
+   - `low` (bass)
+   - `mid`
+   - `high`
+
+This allows fine-grained control over which band gets selected for each section of the composite stream.
 
 ## Problem Statement
 
@@ -16,12 +29,26 @@ If the bass band wins 70% of sections, it's because it scores highest on these f
 
 ## Proposed Solution
 
-Add `bandBiasWeights` as multipliers on the final score:
-- `1.0` = no bias (default)
-- `> 1.0` = favor this band
-- `< 1.0` = disfavor this band
+Add `scoringConfig?: Partial<StreamScorerConfig>` to `RhythmGenerationOptions`, exposing:
 
-Example: To reduce bass dominance, set `{ low: 0.5, mid: 1.0, high: 1.0 }`
+### Factor Weights (how much each factor contributes to the score)
+| Parameter | Default | Purpose |
+|-----------|---------|---------|
+| `ioiVarianceWeight` | 0.30 | Rhythmic variety importance |
+| `syncopationWeight` | 0.30 | Offbeat emphasis importance |
+| `phraseSignificanceWeight` | 0.25 | Pattern detection importance |
+| `densityWeight` | 0.15 | Note count importance |
+
+**Note**: Factor weights should sum to ~1.0 for balanced scoring.
+
+### Band Bias Weights (multiplier on final score per band)
+| Parameter | Default | Range | Effect |
+|-----------|---------|-------|--------|
+| `bandBiasWeights.low` | undefined | 0.0-2.0 | 0 = never win, 1 = neutral, 2 = strongly favored |
+| `bandBiasWeights.mid` | undefined | 0.0-2.0 | Same as above |
+| `bandBiasWeights.high` | undefined | 0.0-2.0 | Same as above |
+
+**Note**: When `undefined`, no bias is applied (all bands compete on merit alone).
 
 ---
 
@@ -203,7 +230,7 @@ export type {
 
 ### Task 2.2: Update AutoLevelSettings Interface
 - [ ] **File**: `src/types/rhythmGeneration.ts`
-- [ ] Add scoring config to settings:
+- [ ] Add scoring config to settings (exposes ALL scoring parameters):
 
 ```typescript
 export interface AutoLevelSettings {
@@ -216,21 +243,25 @@ export interface AutoLevelSettings {
     enableDensityValidation: boolean;
     densityMaxRetries: number;
 
-    // NEW: Band bias weights
-    bandBiasWeights?: {
-        low: number;
-        mid: number;
-        high: number;
-    };
+    // NEW: Full scoring configuration
+    scoringConfig?: Partial<StreamScorerConfig>;
 }
 ```
+
+**Note**: This exposes ALL StreamScorerConfig parameters:
+- `ioiVarianceWeight` (default: 0.30) - How much rhythmic variety matters
+- `syncopationWeight` (default: 0.30) - How much offbeat emphasis matters
+- `phraseSignificanceWeight` (default: 0.25) - How much pattern detection matters
+- `densityWeight` (default: 0.15) - How much note count matters
+- `beatsPerSection` (default: 8) - Section size for scoring
+- `bandBiasWeights` - Manual band preference multipliers
 
 - [ ] Update defaults:
 
 ```typescript
 export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     // ... existing defaults ...
-    bandBiasWeights: undefined, // NEW
+    scoringConfig: undefined, // NEW - uses engine defaults when undefined
 };
 ```
 
@@ -238,66 +269,138 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
 
 ## Phase 3: Frontend UI Updates
 
-### Task 3.1: Add Band Bias UI to AutoLevelSettings
+### Task 3.1: Add Scoring Config UI to AutoLevelSettings
 - [ ] **File**: `src/components/ui/AutoLevelSettings.tsx`
-- [ ] Add a collapsible "Band Preference" section with sliders:
+- [ ] Add a collapsible "Scoring Configuration" section with two subsections:
+
+#### Subsection A: Factor Weights
+Control how much each scoring factor contributes to band selection (weights should sum to ~1.0):
 
 ```tsx
-<CollapsibleSection
-    title="Band Preference"
-    subtitle="Control which frequency bands are favored"
-    collapsed={!showAdvanced}
-    onCollapsedChange={setShowAdvanced}
->
-    <div className="band-bias-controls">
-        <div className="band-bias-row">
-            <label>Low (Bass)</label>
-            <input
-                type="range"
-                min="0"
-                max="2"
-                step="0.1"
-                value={settings.bandBiasWeights?.low ?? 1.0}
-                onChange={(e) => handleBandBiasChange('low', parseFloat(e.target.value))}
-            />
-            <span>{(settings.bandBiasWeights?.low ?? 1.0).toFixed(1)}</span>
-        </div>
-        <div className="band-bias-row">
-            <label>Mid</label>
-            <input
-                type="range"
-                min="0"
-                max="2"
-                step="0.1"
-                value={settings.bandBiasWeights?.mid ?? 1.0}
-                onChange={(e) => handleBandBiasChange('mid', parseFloat(e.target.value))}
-            />
-            <span>{(settings.bandBiasWeights?.mid ?? 1.0).toFixed(1)}</span>
-        </div>
-        <div className="band-bias-row">
-            <label>High</label>
-            <input
-                type="range"
-                min="0"
-                max="2"
-                step="0.1"
-                value={settings.bandBiasWeights?.high ?? 1.0}
-                onChange={(e) => handleBandBiasChange('high', parseFloat(e.target.value))}
-            />
-            <span>{(settings.bandBiasWeights?.high ?? 1.0).toFixed(1)}</span>
-        </div>
-        <button onClick={resetBandBias} className="reset-button">
-            Reset to Equal
-        </button>
+<div className="scoring-factor-controls">
+    <h4>Scoring Factors</h4>
+    <p className="help-text">Adjust how much each factor contributes to band selection</p>
+
+    <div className="factor-row">
+        <label>Rhythmic Variety (IOI)</label>
+        <input
+            type="range"
+            min="0"
+            max="0.5"
+            step="0.05"
+            value={settings.scoringConfig?.ioiVarianceWeight ?? 0.30}
+            onChange={(e) => handleScoringFactorChange('ioiVarianceWeight', parseFloat(e.target.value))}
+        />
+        <span>{(settings.scoringConfig?.ioiVarianceWeight ?? 0.30).toFixed(2)}</span>
     </div>
-</CollapsibleSection>
+    <div className="factor-row">
+        <label>Syncopation</label>
+        <input
+            type="range"
+            min="0"
+            max="0.5"
+            step="0.05"
+            value={settings.scoringConfig?.syncopationWeight ?? 0.30}
+            onChange={(e) => handleScoringFactorChange('syncopationWeight', parseFloat(e.target.value))}
+        />
+        <span>{(settings.scoringConfig?.syncopationWeight ?? 0.30).toFixed(2)}</span>
+    </div>
+    <div className="factor-row">
+        <label>Phrase Significance</label>
+        <input
+            type="range"
+            min="0"
+            max="0.5"
+            step="0.05"
+            value={settings.scoringConfig?.phraseSignificanceWeight ?? 0.25}
+            onChange={(e) => handleScoringFactorChange('phraseSignificanceWeight', parseFloat(e.target.value))}
+        />
+        <span>{(settings.scoringConfig?.phraseSignificanceWeight ?? 0.25).toFixed(2)}</span>
+    </div>
+    <div className="factor-row">
+        <label>Density</label>
+        <input
+            type="range"
+            min="0"
+            max="0.5"
+            step="0.05"
+            value={settings.scoringConfig?.densityWeight ?? 0.15}
+            onChange={(e) => handleScoringFactorChange('densityWeight', parseFloat(e.target.value))}
+        />
+        <span>{(settings.scoringConfig?.densityWeight ?? 0.15).toFixed(2)}</span>
+    </div>
+    <div className="weight-total">
+        Total: {calculateTotalWeight().toFixed(2)} {calculateTotalWeight() === 1.0 ? '✓' : '⚠️ (should be 1.0)'}
+    </div>
+</div>
 ```
 
-### Task 3.2: Add Band Bias Styles
+#### Subsection B: Band Bias Weights
+Control which frequency bands are favored (multiplier on final score):
+
+```tsx
+<div className="band-bias-controls">
+    <h4>Band Preference</h4>
+    <p className="help-text">1.0 = neutral, &lt;1.0 = disfavor, &gt;1.0 = favor</p>
+
+    <div className="band-bias-row">
+        <label>Low (Bass)</label>
+        <input
+            type="range"
+            min="0"
+            max="2"
+            step="0.1"
+            value={settings.scoringConfig?.bandBiasWeights?.low ?? 1.0}
+            onChange={(e) => handleBandBiasChange('low', parseFloat(e.target.value))}
+        />
+        <span>{(settings.scoringConfig?.bandBiasWeights?.low ?? 1.0).toFixed(1)}x</span>
+    </div>
+    <div className="band-bias-row">
+        <label>Mid</label>
+        <input
+            type="range"
+            min="0"
+            max="2"
+            step="0.1"
+            value={settings.scoringConfig?.bandBiasWeights?.mid ?? 1.0}
+            onChange={(e) => handleBandBiasChange('mid', parseFloat(e.target.value))}
+        />
+        <span>{(settings.scoringConfig?.bandBiasWeights?.mid ?? 1.0).toFixed(1)}x</span>
+    </div>
+    <div className="band-bias-row">
+        <label>High</label>
+        <input
+            type="range"
+            min="0"
+            max="2"
+            step="0.1"
+            value={settings.scoringConfig?.bandBiasWeights?.high ?? 1.0}
+            onChange={(e) => handleBandBiasChange('high', parseFloat(e.target.value))}
+        />
+        <span>{(settings.scoringConfig?.bandBiasWeights?.high ?? 1.0).toFixed(1)}x</span>
+    </div>
+</div>
+```
+
+- [ ] Add reset buttons for both sections:
+```tsx
+<div className="reset-buttons">
+    <button onClick={resetFactorWeights} className="reset-button">
+        Reset Factors to Default
+    </button>
+    <button onClick={resetBandBias} className="reset-button">
+        Reset Band Bias to Equal
+    </button>
+</div>
+```
+
+### Task 3.2: Add Scoring Config Styles
 - [ ] **File**: `src/components/ui/AutoLevelSettings.css`
-- [ ] Add slider styles:
+- [ ] Add styles for both factor controls and band bias controls:
 
 ```css
+/* Scoring Factor Controls */
+.scoring-factor-controls,
 .band-bias-controls {
     display: flex;
     flex-direction: column;
@@ -305,43 +408,85 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     padding: 12px;
     background: var(--color-surface-elevated);
     border-radius: 8px;
+    margin-bottom: 12px;
 }
 
+.scoring-factor-controls h4,
+.band-bias-controls h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.help-text {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+.factor-row,
 .band-bias-row {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
+.factor-row label,
 .band-bias-row label {
-    width: 80px;
+    width: 140px;
     font-weight: 500;
+    font-size: 13px;
 }
 
+.factor-row input[type="range"],
 .band-bias-row input[type="range"] {
     flex: 1;
 }
 
+.factor-row span,
 .band-bias-row span {
-    width: 40px;
+    width: 50px;
     text-align: right;
     font-family: monospace;
+    font-size: 13px;
+}
+
+.weight-total {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border);
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+/* Reset Buttons */
+.reset-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 8px;
 }
 
 .reset-button {
-    align-self: flex-end;
     padding: 4px 12px;
     font-size: 12px;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 4px;
     cursor: pointer;
+    transition: background 0.2s;
+}
+
+.reset-button:hover {
+    background: var(--color-surface-hover);
 }
 ```
 
-### Task 3.3: Pass Band Bias to Rhythm Generation
+### Task 3.3: Pass Scoring Config to Rhythm Generation
 - [ ] **File**: `src/hooks/useRhythmGeneration.ts`
-- [ ] Update the generate function to pass scoring config:
+- [ ] Update the generate function to pass the full scoring config:
 
 ```typescript
 const generatorOptions: RhythmGenerationOptions = {
@@ -351,40 +496,49 @@ const generatorOptions: RhythmGenerationOptions = {
     transientConfig: options?.transientConfig,
     densityValidation: options?.densityValidation,
 
-    // NEW: Pass band bias weights
-    scoringConfig: options?.bandBiasWeights ? {
-        bandBiasWeights: options.bandBiasWeights
-    } : undefined,
+    // NEW: Pass full scoring config (includes factor weights AND band bias)
+    scoringConfig: options?.scoringConfig,
 };
 ```
 
 ### Task 3.4: Update RhythmGenerationTab Props
 - [ ] **File**: `src/components/Tabs/BeatDetectionTab/RhythmGenerationTab.tsx`
-- [ ] Add bandBiasWeights to props and pass through:
+- [ ] Add scoringConfig to props and pass through:
 
 ```typescript
 interface RhythmGenerationTabProps {
     // ... existing props ...
-    bandBiasWeights?: { low: number; mid: number; high: number };
+    scoringConfig?: Partial<StreamScorerConfig>;
 }
 ```
 
 ---
 
 ## Phase 4: CompositeStreamPanel Visualization
-### Task 4.1: Display Band Bias Info
+### Task 4.1: Display Scoring Config Info
 - [ ] **File**: `src/components/ui/BeatDetectionTab/RhythmGenerationTab/CompositeStreamPanel.tsx`
-- [ ] Add a note showing if band bias was applied:
+- [ ] Add a note showing if custom scoring config was applied:
 
 ```tsx
-{bandBiasWeights && (
-    <div className="band-bias-info">
+{scoringConfig && (
+    <div className="scoring-config-info">
         <Info size={14} />
         <span>
-            Band bias applied:
-            Low {bandBiasWeights.low.toFixed(1)}x |
-            Mid {bandBiasWeights.mid.toFixed(1)}x |
-            High {bandBiasWeights.high.toFixed(1)}x
+            Custom scoring applied
+            {scoringConfig.bandBiasWeights && (
+                <> | Bias: Low {scoringConfig.bandBiasWeights.low.toFixed(1)}x,
+                Mid {scoringConfig.bandBiasWeights.mid.toFixed(1)}x,
+                High {scoringConfig.bandBiasWeights.high.toFixed(1)}x</>
+            )}
+            {(scoringConfig.ioiVarianceWeight !== undefined ||
+              scoringConfig.syncopationWeight !== undefined ||
+              scoringConfig.phraseSignificanceWeight !== undefined ||
+              scoringConfig.densityWeight !== undefined) && (
+                <> | Factors: IOI {scoringConfig.ioiVarianceWeight ?? 0.30},
+                Sync {scoringConfig.syncopationWeight ?? 0.30},
+                Phrase {scoringConfig.phraseSignificanceWeight ?? 0.25},
+                Density {scoringConfig.densityWeight ?? 0.15}</>
+            )}
         </span>
     </div>
 )}
@@ -448,22 +602,37 @@ const result = await analyzer.generateRhythm('song.mp3', 'track-001', {
 
 ## Testing Checklist
 
-- [ ] Engine: Band bias multiplies scores correctly
-- [ ] Engine: Undefined bias = no change to scores
-- [ ] Engine: Missing band in config defaults to 1.0
-- [ ] Engine: All unit tests pass
-- [ ] Frontend: UI sliders update settings
-- [ ] Frontend: Settings pass through to generation
-- [ ] Frontend: Composite reflects biased band selection
-- [ ] Frontend: Reset button restores equal weights
-- [ ] Integration: End-to-end test with biased weights
-- [ ] Docs: DATA_ENGINE_REFERENCE.md updated with new parameters
-- [ ] Docs: BEAT_DETECTION.md updated with example and use cases
+### Engine Tests
+- [ ] Band bias multiplies scores correctly
+- [ ] Undefined bias = no change to scores
+- [ ] Missing band in config defaults to 1.0
+- [ ] Custom factor weights are applied correctly
+- [ ] All unit tests pass
+
+### Frontend Tests
+- [ ] Factor weight sliders update settings
+- [ ] Band bias sliders update settings
+- [ ] Weight total indicator shows correct sum
+- [ ] Settings pass through to generation hook
+- [ ] Composite reflects customized scoring
+- [ ] Reset buttons restore defaults
+- [ ] Factor reset restores to 0.30/0.30/0.25/0.15
+- [ ] Band bias reset restores to 1.0/1.0/1.0
+
+### Integration Tests
+- [ ] End-to-end test with custom factor weights
+- [ ] End-to-end test with band bias weights
+- [ ] End-to-end test with both combined
+
+### Documentation
+- [ ] DATA_ENGINE_REFERENCE.md updated with all scoring parameters
+- [ ] BEAT_DETECTION.md updated with examples and use cases
 
 ---
 
 ## Example Usage
 
+### Example 1: Band Bias Only
 ```typescript
 // Favor mid and high bands, reduce bass
 const generator = new RhythmGenerator({
@@ -473,6 +642,28 @@ const generator = new RhythmGenerator({
             low: 0.3,   // Bass rarely wins
             mid: 1.2,   // Mid slightly favored
             high: 1.5,  // High strongly favored
+        }
+    }
+});
+```
+
+### Example 2: Combined (Factor Weights + Band Bias)
+```typescript
+// Focus on syncopated high-frequency rhythms
+const generator = new RhythmGenerator({
+    outputMode: 'composite',
+    scoringConfig: {
+        // Favor syncopation and variety
+        ioiVarianceWeight: 0.35,
+        syncopationWeight: 0.40,
+        phraseSignificanceWeight: 0.15,
+        densityWeight: 0.10,
+
+        // And bias toward high frequencies
+        bandBiasWeights: {
+            low: 0.2,   // Almost never use bass
+            mid: 1.0,   // Neutral
+            high: 1.8,  // Strongly favor high frequencies
         }
     }
 });
@@ -489,22 +680,22 @@ const generator = new RhythmGenerator({
 | `src/core/analysis/beat/StreamScorer.ts` | Add bandBiasWeights to config, apply in scoreSection() |
 | `src/core/generation/RhythmGenerator.ts` | Add scoringConfig option, pass to StreamScorer |
 | `src/index.ts` | Export StreamScorerConfig |
-| `tests/unit/beat/streamScorer.test.ts` | Add band bias tests |
+| `tests/unit/beat/streamScorer.test.ts` | Add band bias and factor weight tests |
 
 ### Frontend (playlist-data-showcase)
 
 | File | Change |
 |------|--------|
-| `src/types/rhythmGeneration.ts` | Add bandBiasWeights to AutoLevelSettings |
-| `src/components/ui/AutoLevelSettings.tsx` | Add band bias sliders |
-| `src/components/ui/AutoLevelSettings.css` | Add slider styles |
-| `src/hooks/useRhythmGeneration.ts` | Pass bandBiasWeights to engine |
-| `src/components/Tabs/BeatDetectionTab/RhythmGenerationTab.tsx` | Pass bandBiasWeights prop |
-| `src/components/ui/BeatDetectionTab/RhythmGenerationTab/CompositeStreamPanel.tsx` | Display bias info |
+| `src/types/rhythmGeneration.ts` | Add scoringConfig to AutoLevelSettings (exposes all StreamScorerConfig params) |
+| `src/components/ui/AutoLevelSettings.tsx` | Add factor weight sliders + band bias sliders with reset buttons |
+| `src/components/ui/AutoLevelSettings.css` | Add styles for both control sections |
+| `src/hooks/useRhythmGeneration.ts` | Pass scoringConfig to engine |
+| `src/components/Tabs/BeatDetectionTab/RhythmGenerationTab.tsx` | Pass scoringConfig prop |
+| `src/components/ui/BeatDetectionTab/RhythmGenerationTab/CompositeStreamPanel.tsx` | Display scoring config info |
 
 ### Documentation (playlist-data-engine)
 
 | File | Change |
 |------|--------|
-| `docs/DATA_ENGINE_REFERENCE.md` | Document bandBiasWeights in StreamScorerConfig and scoringConfig in RhythmGenerationOptions |
-| `docs/BEAT_DETECTION.md` | Add band bias section with examples and use cases |
+| `docs/DATA_ENGINE_REFERENCE.md` | Document ALL StreamScorerConfig parameters + scoringConfig in RhythmGenerationOptions |
+| `docs/BEAT_DETECTION.md` | Add scoring customization section with examples for factor weights and band bias |
