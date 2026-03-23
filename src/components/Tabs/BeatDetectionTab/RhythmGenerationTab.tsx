@@ -43,6 +43,7 @@ import type {
     RhythmicPhrase,
     HighlightedRegion,
     BandTransientConfigOverrides,
+    StreamScorerConfig,
 } from '../../../types/rhythmGeneration';
 import { getPhraseHighlightColor } from '../../../types/rhythmGeneration';
 import { cn } from '../../../utils/cn';
@@ -64,6 +65,8 @@ export interface RhythmGenerationTabProps {
     transientConfig?: BandTransientConfigOverrides;
     /** Whether density validation was enabled during generation */
     enableDensityValidation?: boolean;
+    /** Stream scoring configuration (factor weights and band bias) from Step 1 */
+    scoringConfig?: Partial<StreamScorerConfig>;
     /** Callback when user wants to switch to manual mode */
     onSwitchToManual?: () => void;
     /** Callback when user wants to retry generation */
@@ -139,6 +142,8 @@ interface RhythmGenerationResultProps {
     isRegenerating?: boolean;
     /** Whether density validation was enabled during generation */
     enableDensityValidation?: boolean;
+    /** Stream scoring configuration (factor weights and band bias) that was used during generation */
+    scoringConfig?: Partial<StreamScorerConfig>;
 }
 
 // Section identifiers for accordion behavior
@@ -157,6 +162,7 @@ function RhythmGenerationResult({
     onRegenerateWithThreshold,
     isRegenerating = false,
     enableDensityValidation = false,
+    scoringConfig,
 }: RhythmGenerationResultProps) {
     const { metadata } = rhythm;
 
@@ -353,6 +359,7 @@ function RhythmGenerationResult({
                             duration={duration}
                             isPlaying={isPlaying}
                             onSeek={onSeek}
+                            scoringConfig={scoringConfig}
                         />
                     </CollapsibleSection>
                 </div>
@@ -481,6 +488,7 @@ export function RhythmGenerationTab({
     intensityThreshold = 0.2,
     transientConfig,
     enableDensityValidation = false,
+    scoringConfig,
     onSwitchToManual,
     onRetry,
     onRegenerateWithThreshold,
@@ -590,6 +598,7 @@ export function RhythmGenerationTab({
                     onRegenerateWithThreshold={handleRegenerateWithThreshold}
                     isRegenerating={isGenerating}
                     enableDensityValidation={enableDensityValidation}
+                    scoringConfig={scoringConfig}
                 />
             );
         }

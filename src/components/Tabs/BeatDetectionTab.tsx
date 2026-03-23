@@ -557,6 +557,7 @@ export function BeatDetectionTab() {
                             intensityThreshold={autoLevelSettings.intensityThreshold}
                             transientConfig={autoLevelSettings.transientConfig}
                             enableDensityValidation={autoLevelSettings.enableDensityValidation}
+                            scoringConfig={autoLevelSettings.scoringConfig}
                             onSwitchToManual={() => setGenerationMode('manual')}
                             onRetry={() => {
                                 if (selectedTrack?.audio_url) {
@@ -565,6 +566,7 @@ export function BeatDetectionTab() {
                                         outputMode: autoLevelSettings.outputMode,
                                         minimumTransientIntensity: autoLevelSettings.intensityThreshold,
                                         transientConfig: autoLevelSettings.transientConfig,
+                                        scoringConfig: autoLevelSettings.scoringConfig,
                                         densityValidation: autoLevelSettings.enableDensityValidation
                                             ? {
                                                   maxRetries: autoLevelSettings.densityMaxRetries,
@@ -588,6 +590,7 @@ export function BeatDetectionTab() {
                                         outputMode: autoLevelSettings.outputMode,
                                         minimumTransientIntensity: newThreshold,
                                         transientConfig: autoLevelSettings.transientConfig,
+                                        scoringConfig: autoLevelSettings.scoringConfig,
                                         densityValidation: autoLevelSettings.enableDensityValidation
                                             ? {
                                                   maxRetries: autoLevelSettings.densityMaxRetries,

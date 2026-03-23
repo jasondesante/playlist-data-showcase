@@ -25,6 +25,7 @@ import type {
     HighlightedRegion,
     CompositeBeat,
     CompositeSection,
+    StreamScorerConfig,
 } from '../../../../types/rhythmGeneration';
 
 // ============================================================
@@ -44,6 +45,8 @@ export interface CompositeStreamPanelProps {
     onSeek?: (time: number) => void;
     /** Highlighted regions to show on timelines (for phrase occurrences) */
     highlightedRegions?: HighlightedRegion[];
+    /** Stream scoring configuration (factor weights and band bias) that was used during generation */
+    scoringConfig?: Partial<StreamScorerConfig>;
     /** Additional CSS class names */
     className?: string;
 }
@@ -1575,6 +1578,7 @@ export function CompositeStreamPanel({
     isPlaying: _isPlaying = false,
     onSeek: _onSeek,
     highlightedRegions: _highlightedRegions = [],
+    scoringConfig: _scoringConfig,
     className,
 }: CompositeStreamPanelProps) {
     // Get composite data from the rhythm

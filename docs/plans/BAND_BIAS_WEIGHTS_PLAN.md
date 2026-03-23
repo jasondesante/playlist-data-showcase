@@ -518,8 +518,8 @@ const generatorOptions: RhythmGenerationOptions = {
 ```
 
 ### Task 3.4: Update RhythmGenerationTab Props
-- [ ] **File**: `src/components/Tabs/BeatDetectionTab/RhythmGenerationTab.tsx`
-- [ ] Add scoringConfig to props and pass through:
+- [x] **File**: `src/components/Tabs/BeatDetectionTab/RhythmGenerationTab.tsx`
+- [x] Add scoringConfig to props and pass through:
 
 ```typescript
 interface RhythmGenerationTabProps {
@@ -527,6 +527,13 @@ interface RhythmGenerationTabProps {
     scoringConfig?: Partial<StreamScorerConfig>;
 }
 ```
+
+**Completed**: Added `scoringConfig?: Partial<StreamScorerConfig>` to:
+- `RhythmGenerationTabProps` interface
+- `RhythmGenerationResultProps` interface
+- `CompositeStreamPanelProps` interface
+- Passed scoringConfig through from BeatDetectionTab → RhythmGenerationTab → RhythmGenerationResult → CompositeStreamPanel
+- Also passed scoringConfig to generateRhythm calls in onRetry and onRegenerateWithThreshold callbacks
 
 ---
 
