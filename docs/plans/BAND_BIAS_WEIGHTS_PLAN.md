@@ -411,8 +411,8 @@ Control which frequency bands are favored (multiplier on final score):
 **Completed**: Reset buttons implemented in both the scoring factors and band bias sections.
 
 ### Task 3.2: Add Scoring Config Styles
-- [ ] **File**: `src/components/ui/AutoLevelSettings.css`
-- [ ] Add styles for both factor controls and band bias controls:
+- [x] **File**: `src/components/ui/AutoLevelSettings.css`
+- [x] Add styles for both factor controls and band bias controls:
 
 ```css
 /* Scoring Factor Controls */
