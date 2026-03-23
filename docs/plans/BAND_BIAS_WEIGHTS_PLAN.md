@@ -574,16 +574,18 @@ interface RhythmGenerationTabProps {
 ## Phase 5: Documentation Updates (playlist-data-engine)
 
 ### Task 5.1: Update DATA_ENGINE_REFERENCE.md
-- [ ] **File**: `docs/DATA_ENGINE_REFERENCE.md`
-- [ ] Add `bandBiasWeights` to the `StreamScorerConfig` section:
+- [x] **File**: `docs/DATA_ENGINE_REFERENCE.md`
+- [x] Add `bandBiasWeights` to the `StreamScorerConfig` section:
   - Description: "Band bias multipliers applied to final section scores"
   - Type: `{ low: number; mid: number; high: number } | undefined`
   - Default: `undefined` (no bias)
   - Range: `0.0 - 2.0` (0 = never win, 1 = neutral, 2 = strongly favored)
-- [ ] Add `scoringConfig` to the `RhythmGenerationOptions` section:
+- [x] Add `scoringConfig` to the `RhythmGenerationOptions` section:
   - Description: "Configuration for stream scoring algorithm"
   - Type: `Partial<StreamScorerConfig>`
   - Default: `undefined`
+
+**Completed**: Added full `StreamScorerConfig` documentation including all factor weights, offbeat grid positions, and `bandBiasWeights` with type/range/description tables. Also added `scoringConfig` to `RhythmGenerator` options table.
 
 ### Task 5.2: Update BEAT_DETECTION.md
 - [ ] **File**: `docs/BEAT_DETECTION.md`
