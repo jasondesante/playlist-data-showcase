@@ -588,11 +588,11 @@ interface RhythmGenerationTabProps {
 **Completed**: Added full `StreamScorerConfig` documentation including all factor weights, offbeat grid positions, and `bandBiasWeights` with type/range/description tables. Also added `scoringConfig` to `RhythmGenerator` options table.
 
 ### Task 5.2: Update BEAT_DETECTION.md
-- [ ] **File**: `docs/BEAT_DETECTION.md`
-- [ ] Add a new section explaining the band bias feature:
+- [x] **File**: `docs/BEAT_DETECTION.md`
+- [x] Add a new section explaining the band bias feature:
   - What it does: Allows manual control over which frequency bands are favored
   - When to use: When automatic selection is too bass-heavy or you want to focus on specific frequencies
-- [ ] Add or update an example showing `bandBiasWeights` usage:
+- [x] Add or update an example showing `bandBiasWeights` usage:
 
 ```typescript
 // Example: Favor high frequencies, reduce bass dominance
@@ -609,10 +609,22 @@ const result = await analyzer.generateRhythm('song.mp3', 'track-001', {
 });
 ```
 
-- [ ] Document common use cases:
+- [x] Document common use cases:
   - Reducing bass dominance: `{ low: 0.5, mid: 1.0, high: 1.0 }`
   - Focusing on melody/rhythm: `{ low: 0.3, mid: 1.5, high: 1.0 }`
   - Emphasizing percussion: `{ low: 1.0, mid: 1.0, high: 1.5 }`
+
+**Completed**: Added "Custom Scoring Configuration" subsection to the "Scoring and Composite Generation" section with:
+- When to use custom scoring
+- Factor weights table with parameters, defaults, ranges, and purposes
+- Band bias weights table with parameters, defaults, ranges, and effects
+- Visual diagram showing how bias affects band selection
+- Common use cases table
+
+Also added three new usage examples:
+- "Custom Scoring with Band Bias" - basic band bias usage
+- "Custom Scoring with Factor Weights" - adjusting scoring factor contributions
+- "Combined Scoring Configuration" - using both factor weights and band bias together
 
 ---
 
