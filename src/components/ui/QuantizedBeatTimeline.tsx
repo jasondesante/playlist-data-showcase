@@ -22,6 +22,7 @@ import { Info, Grid3X3, Music3 } from 'lucide-react';
 import './QuantizedBeatTimeline.css';
 import type { GeneratedBeat, Band, GridType, HighlightedRegion } from '../../types/rhythmGeneration';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
+import { useUnifiedBeatMap } from '../../store/beatDetectionStore';
 
 // ============================================================
 // Types
@@ -33,8 +34,6 @@ export type GridDisplayMode = 'straight_16th' | 'triplet_8th';
 export interface QuantizedBeatTimelineProps {
     /** Array of quantized beats to visualize */
     beats: GeneratedBeat[];
-    /** Quarter note interval in seconds (for beat grid lines) */
-    quarterNoteInterval?: number;
     /** Current audio playback time in seconds */
     currentTime?: number;
     /** Total audio duration in seconds */
@@ -115,7 +114,6 @@ function formatMs(ms: number): string {
  */
 export function QuantizedBeatTimeline({
     beats,
-    quarterNoteInterval = 0.5,
     currentTime: propCurrentTime = 0,
     duration = 0,
     isPlaying: propIsPlaying = false,
@@ -142,6 +140,11 @@ export function QuantizedBeatTimeline({
     }, [beats]);
     const trackRef = useRef<HTMLDivElement>(null);
     const quickScrollRef = useRef<HTMLDivElement>(null);
+
+    // CRITICAL: Get the actual detected beat map from the store
+    // This is the unified beat map of quarter notes that was used to quantize the transients
+    // We MUST use this for the grid lines, just like BeatSubdivisionGrid does
+    const unifiedBeatMap = useUnifiedBeatMap();
 
     // Direct store access for responsive seeking
     const storeSeek = useAudioPlayerStore((state) => state.seek);
@@ -491,32 +494,35 @@ export function QuantizedBeatTimeline({
     // ========================================
 
     /**
-     * Calculate visible beat grid lines
+     * Calculate visible beat grid lines using the unified beat map
+     * (same source as BeatSubdivisionGrid uses).
      */
     const getVisibleGridLines = useCallback((): Array<{
         timestamp: number;
         beatIndex: number;
         position: number;
     }> => {
+        if (!unifiedBeatMap || unifiedBeatMap.beats.length === 0) return [];
+
         const minTime = smoothTime - pastWindow;
         const maxTime = smoothTime + anticipationWindow;
 
-        // Calculate which beat indices are visible
-        const startBeatIndex = Math.floor(minTime / quarterNoteInterval);
-        const endBeatIndex = Math.ceil(maxTime / quarterNoteInterval);
-
         const lines: Array<{ timestamp: number; beatIndex: number; position: number }> = [];
 
-        for (let i = startBeatIndex; i <= endBeatIndex; i++) {
-            const timestamp = i * quarterNoteInterval;
-            const position = calculatePosition(timestamp);
-            if (position >= 0 && position <= 1) {
-                lines.push({ timestamp, beatIndex: i, position });
+        for (let i = 0; i < unifiedBeatMap.beats.length; i++) {
+            const beat = unifiedBeatMap.beats[i];
+            const timestamp = beat.timestamp;
+
+            if (timestamp >= minTime && timestamp <= maxTime) {
+                const position = calculatePosition(timestamp);
+                if (position >= 0 && position <= 1) {
+                    lines.push({ timestamp, beatIndex: i, position });
+                }
             }
         }
 
         return lines;
-    }, [smoothTime, pastWindow, anticipationWindow, quarterNoteInterval, calculatePosition]);
+    }, [smoothTime, pastWindow, anticipationWindow, calculatePosition, unifiedBeatMap]);
 
     const visibleGridLines = getVisibleGridLines();
 
@@ -526,8 +532,7 @@ export function QuantizedBeatTimeline({
 
     /**
      * Calculate visible subdivision lines within each beat.
-     * Supports 16th note subdivisions (4 divisions) or triplet 8th (3 divisions).
-     * Lines at positions 1, 2, [3] within each beat (position 0 is the beat line).
+     * Uses the unified beat map (same source as BeatSubdivisionGrid).
      */
     const getVisibleSubdivisionLines = useCallback((): Array<{
         timestamp: number;
@@ -535,34 +540,53 @@ export function QuantizedBeatTimeline({
         subdivision: number;
         position: number;
     }> => {
+        if (!unifiedBeatMap || unifiedBeatMap.beats.length < 2) return [];
+
         const minTime = smoothTime - pastWindow;
         const maxTime = smoothTime + anticipationWindow;
 
-        // Calculate which beat indices are visible
-        const startBeatIndex = Math.floor(minTime / quarterNoteInterval);
-        const endBeatIndex = Math.ceil(maxTime / quarterNoteInterval);
-
         const lines: Array<{ timestamp: number; beatIndex: number; subdivision: number; position: number }> = [];
-
-        // subdivisionsPerBeat: 4 for 16th notes, 3 for triplets
+        const beats = unifiedBeatMap.beats;
         const subdivisionsPerBeat = gridDisplayMode === 'triplet_8th' ? 3 : 4;
 
-        for (let beatIdx = startBeatIndex; beatIdx <= endBeatIndex; beatIdx++) {
-            const beatStart = beatIdx * quarterNoteInterval;
+        for (let beatIdx = 0; beatIdx < beats.length - 1; beatIdx++) {
+            const beatStart = beats[beatIdx].timestamp;
+            const nextBeatStart = beats[beatIdx + 1].timestamp;
+            const beatInterval = nextBeatStart - beatStart;
 
-            // Skip subdivision 0 (that's the beat line itself)
-            for (let sub = 1; sub < subdivisionsPerBeat; sub++) {
-                const timestamp = beatStart + (sub / subdivisionsPerBeat) * quarterNoteInterval;
-                const position = calculatePosition(timestamp);
+            if (beatStart + beatInterval >= minTime && beatStart <= maxTime) {
+                for (let sub = 1; sub < subdivisionsPerBeat; sub++) {
+                    const timestamp = beatStart + (sub / subdivisionsPerBeat) * beatInterval;
+                    const position = calculatePosition(timestamp);
 
-                if (position >= 0 && position <= 1) {
-                    lines.push({ timestamp, beatIndex: beatIdx, subdivision: sub, position });
+                    if (position >= 0 && position <= 1) {
+                        lines.push({ timestamp, beatIndex: beatIdx, subdivision: sub, position });
+                    }
+                }
+            }
+        }
+
+        // Handle the last beat - use the previous interval as an estimate
+        const lastBeatIdx = beats.length - 1;
+        const lastBeatStart = beats[lastBeatIdx].timestamp;
+        if (lastBeatIdx > 0) {
+            const prevBeatStart = beats[lastBeatIdx - 1].timestamp;
+            const beatInterval = lastBeatStart - prevBeatStart;
+
+            if (lastBeatStart + beatInterval >= minTime && lastBeatStart <= maxTime) {
+                for (let sub = 1; sub < subdivisionsPerBeat; sub++) {
+                    const timestamp = lastBeatStart + (sub / subdivisionsPerBeat) * beatInterval;
+                    const position = calculatePosition(timestamp);
+
+                    if (position >= 0 && position <= 1) {
+                        lines.push({ timestamp, beatIndex: lastBeatIdx, subdivision: sub, position });
+                    }
                 }
             }
         }
 
         return lines;
-    }, [smoothTime, pastWindow, anticipationWindow, quarterNoteInterval, calculatePosition, gridDisplayMode]);
+    }, [smoothTime, pastWindow, anticipationWindow, calculatePosition, gridDisplayMode, unifiedBeatMap]);
 
     const visibleSubdivisionLines = getVisibleSubdivisionLines();
 

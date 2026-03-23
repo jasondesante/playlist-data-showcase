@@ -647,7 +647,6 @@ export function QuantizationPanel({
                 </div>
                 <QuantizedBeatTimeline
                     beats={allBeatsForTimeline}
-                    quarterNoteInterval={composite.quarterNoteInterval}
                     currentTime={currentTime}
                     duration={duration}
                     isPlaying={isPlaying}
