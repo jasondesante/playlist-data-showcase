@@ -167,8 +167,8 @@ constructor(options: RhythmGenerationOptions = {}) {
 ```
 
 ### Task 1.5: Export New Types
-- [ ] **File**: `src/index.ts`
-- [ ] Ensure `StreamScorerConfig` is exported:
+- [x] **File**: `src/index.ts`
+- [x] Ensure `StreamScorerConfig` is exported:
 
 ```typescript
 export {
@@ -179,6 +179,8 @@ export {
     // ...
 } from './core/analysis/beat/StreamScorer.js';
 ```
+
+**Completed**: Also exported `BandBiasWeights` type which is referenced by `StreamScorerConfig`.
 
 ### Task 1.6: Add Tests
 - [ ] **File**: `tests/unit/beat/streamScorer.test.ts`
