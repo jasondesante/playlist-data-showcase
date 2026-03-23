@@ -14,6 +14,7 @@
 
 import { useMemo, useState } from 'react';
 import { Grid3X3, TrendingUp, BarChart3 } from 'lucide-react';
+import { Tooltip } from '../../Tooltip';
 import './QuantizationPanel.css';
 import { GridDecisionTimeline } from '../../GridDecisionTimeline';
 import { QuantizedBeatTimeline } from '../../QuantizedBeatTimeline';
@@ -197,15 +198,21 @@ function BandQuantizationCard({ band, beats, gridDecisions, color }: BandQuantiz
                     </span>
                 </div>
                 <div className="quantization-band-card-stat">
-                    <span className="quantization-band-card-stat-label">Grid Split</span>
+                    <span className="quantization-band-card-stat-label">
+                        Grid Split
+                        <Tooltip content="How many quarter note positions used straight 16th vs triplet 8th grid. A single quarter note can contain multiple quantized notes." />
+                    </span>
                     <span className="quantization-band-card-stat-value">
                         {stats.straightCount} / {stats.tripletCount}
                     </span>
                 </div>
                 <div className="quantization-band-card-stat">
-                    <span className="quantization-band-card-stat-label">Avg Confidence</span>
+                    <span className="quantization-band-card-stat-label">
+                        Avg Confidence
+                        <Tooltip content="How much better the chosen grid fits compared to the alternative grid. Higher = clearer decision." />
+                    </span>
                     <span className="quantization-band-card-stat-value">
-                        {(stats.avgConfidence * 100).toFixed(0)}%
+                        {stats.avgConfidence.toFixed(1)}ms
                     </span>
                 </div>
             </div>
@@ -479,7 +486,7 @@ export function QuantizationPanel({
                 />
                 <StatCard
                     label="Avg Confidence"
-                    value={`${(overallStats.avgConfidence * 100).toFixed(0)}%`}
+                    value={`${overallStats.avgConfidence.toFixed(1)}ms`}
                     icon={<BarChart3 size={16} />}
                     color="default"
                 />
@@ -557,6 +564,7 @@ export function QuantizationPanel({
                             <button
                                 className={`quantization-band-btn ${selectedBand === 'all' ? 'active' : ''}`}
                                 onClick={() => setSelectedBand('all')}
+                                data-band="all"
                             >
                                 All
                             </button>
@@ -566,6 +574,7 @@ export function QuantizationPanel({
                                     className={`quantization-band-btn ${selectedBand === band ? 'active' : ''}`}
                                     onClick={() => setSelectedBand(band)}
                                     style={{ '--band-color': BAND_COLORS[band] } as React.CSSProperties}
+                                    data-band={band}
                                 >
                                     {band.charAt(0).toUpperCase() + band.slice(1)}
                                 </button>
@@ -601,6 +610,7 @@ export function QuantizationPanel({
                         <button
                             className={`quantization-band-btn ${selectedBeatBand === 'all' ? 'active' : ''}`}
                             onClick={() => setSelectedBeatBand('all')}
+                            data-band="all"
                         >
                             All
                         </button>
@@ -610,6 +620,7 @@ export function QuantizationPanel({
                                 className={`quantization-band-btn ${selectedBeatBand === band ? 'active' : ''}`}
                                 onClick={() => setSelectedBeatBand(band)}
                                 style={{ '--band-color': BAND_COLORS[band] } as React.CSSProperties}
+                                data-band={band}
                             >
                                 {band.charAt(0).toUpperCase() + band.slice(1)}
                             </button>

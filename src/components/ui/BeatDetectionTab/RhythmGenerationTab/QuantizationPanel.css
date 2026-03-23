@@ -605,12 +605,172 @@
     margin-bottom: 0.75rem;
 }
 
+/* ============================================
+   BAND SELECTOR BUTTONS
+   ============================================ */
+
+.quantization-timeline-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.quantization-timeline-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.quantization-band-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.quantization-band-selector-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 0.25rem;
+}
+
+.quantization-band-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.375rem 0.625rem;
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    letter-spacing: 0.03em;
+}
+
+.quantization-band-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+    border-color: hsl(var(--border));
+    transform: translateY(-1px);
+}
+
+.quantization-band-btn:active:not(:disabled) {
+    transform: translateY(0);
+    transform: scale(0.98);
+}
+
+.quantization-band-btn:focus {
+    outline: none;
+    border-color: hsl(var(--primary) / 0.6);
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.quantization-band-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Active state - "All" button */
+.quantization-band-btn[data-band="all"].active {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--cute-purple) / 0.12));
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.2);
+    color: hsl(var(--primary));
+}
+
+.quantization-band-btn[data-band="all"].active:hover:not(:disabled) {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.22), hsl(var(--cute-purple) / 0.16));
+    box-shadow: 0 0 16px hsl(var(--primary) / 0.3);
+}
+
+/* Active state - Low band (blue) */
+.quantization-band-btn[data-band="low"].active {
+    background: linear-gradient(135deg, hsl(217 91% 60% / 0.18), hsl(217 91% 60% / 0.12));
+    border-color: hsl(217 91% 60%);
+    box-shadow: 0 0 12px hsl(217 91% 60% / 0.2);
+    color: hsl(217 91% 70%);
+}
+
+.quantization-band-btn[data-band="low"].active:hover:not(:disabled) {
+    background: linear-gradient(135deg, hsl(217 91% 60% / 0.22), hsl(217 91% 60% / 0.16));
+    box-shadow: 0 0 16px hsl(217 91% 60% / 0.3);
+}
+
+/* Active state - Mid band (green) */
+.quantization-band-btn[data-band="mid"].active {
+    background: linear-gradient(135deg, hsl(142 76% 36% / 0.18), hsl(142 76% 36% / 0.12));
+    border-color: hsl(142 76% 36%);
+    box-shadow: 0 0 12px hsl(142 76% 36% / 0.2);
+    color: hsl(142 76% 50%);
+}
+
+.quantization-band-btn[data-band="mid"].active:hover:not(:disabled) {
+    background: linear-gradient(135deg, hsl(142 76% 36% / 0.22), hsl(142 76% 36% / 0.16));
+    box-shadow: 0 0 16px hsl(142 76% 36% / 0.3);
+}
+
+/* Active state - High band (orange) */
+.quantization-band-btn[data-band="high"].active {
+    background: linear-gradient(135deg, hsl(25 95% 53% / 0.18), hsl(25 95% 53% / 0.12));
+    border-color: hsl(25 95% 53%);
+    box-shadow: 0 0 12px hsl(25 95% 53% / 0.2);
+    color: hsl(25 95% 65%);
+}
+
+.quantization-band-btn[data-band="high"].active:hover:not(:disabled) {
+    background: linear-gradient(135deg, hsl(25 95% 53% / 0.22), hsl(25 95% 53% / 0.16));
+    box-shadow: 0 0 16px hsl(25 95% 53% / 0.3);
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .quantization-band-btn {
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    .quantization-band-btn:hover:not(:disabled) {
+        transform: none;
+    }
+
+    .quantization-band-btn:active:not(:disabled) {
+        transform: scale(0.98);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .quantization-band-btn {
+        transition: none;
+    }
+}
+
 @media (max-width: 768px) {
     .quantization-beat-timeline-section {
         padding: 0.75rem;
     }
 
-    .quantization-beat-timeline-section .quantization-band-selector {
+    .quantization-timeline-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .quantization-band-selector {
         flex-wrap: wrap;
+    }
+
+    .quantization-band-btn {
+        padding: 0.3125rem 0.5rem;
+        font-size: 0.625rem;
     }
 }
