@@ -70,18 +70,36 @@
     bottom: 0;
     width: 1px;
     height: 100%;
-    background: hsl(var(--border) / 0.15);
+    background: hsl(var(--border) / 0.5);
     pointer-events: none;
     z-index: 5;
 }
 
-/* Subtle grid line labels */
-.quantized-beat-timeline-grid-line:not(.gridLine) {
-    opacity: 0.2;
+/* Beat number labels */
+.quantized-beat-timeline-grid-label {
+    position: absolute;
+    top: 0.25rem;
+    left: 0.25rem;
+    font-size: 0.5rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground) / 0.5);
+    pointer-events: none;
 }
 
-.quantized-beat-timeline-grid-line::after {
-    opacity: 0.15;
+/* ============================================
+   SUBDIVISION GRID LINES (16th notes)
+   Fainter than beat lines
+   ============================================ */
+
+.quantized-beat-timeline-subdivision-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    height: 100%;
+    background: hsl(var(--border) / 0.2);
+    pointer-events: none;
+    z-index: 4;
 }
 
 /* Past Region (left of now line) */
@@ -468,6 +486,60 @@
 
 .quantized-beat-timeline-legend-error-bar--high {
     background: hsl(var(--error) / 0.8);
+}
+
+/* ============================================
+   GRID MODE TOGGLE
+   ============================================ */
+
+.quantized-beat-timeline-grid-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.375rem;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.quantized-beat-timeline-grid-toggle-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 0.25rem;
+}
+
+.quantized-beat-timeline-grid-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--surface-3));
+    border: 1px solid hsl(var(--border) / 0.4);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.quantized-beat-timeline-grid-toggle-btn:hover {
+    background: hsl(var(--surface-4));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+}
+
+.quantized-beat-timeline-grid-toggle-btn.active {
+    background: hsl(var(--primary) / 0.15);
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary) / 0.4);
+}
+
+.quantized-beat-timeline-grid-toggle-btn:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
 }
 
 /* ============================================

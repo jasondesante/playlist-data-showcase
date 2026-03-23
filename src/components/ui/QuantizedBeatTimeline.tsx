@@ -18,7 +18,7 @@
 
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Info } from 'lucide-react';
+import { Info, Grid3X3, Music3 } from 'lucide-react';
 import './QuantizedBeatTimeline.css';
 import type { GeneratedBeat, Band, GridType, HighlightedRegion } from '../../types/rhythmGeneration';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -26,6 +26,9 @@ import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 // ============================================================
 // Types
 // ============================================================
+
+/** Grid display mode for subdivision lines */
+export type GridDisplayMode = 'straight_16th' | 'triplet_8th';
 
 export interface QuantizedBeatTimelineProps {
     /** Array of quantized beats to visualize */
@@ -52,6 +55,10 @@ export interface QuantizedBeatTimelineProps {
     pastWindow?: number;
     /** Highlighted regions to show on the timeline (for phrase occurrences) */
     highlightedRegions?: HighlightedRegion[];
+    /** Grid display mode for subdivision lines (16th notes vs triplets) */
+    gridDisplayMode?: GridDisplayMode;
+    /** Callback when grid display mode changes */
+    onGridDisplayModeChange?: (mode: GridDisplayMode) => void;
     /** Additional CSS class names */
     className?: string;
 }
@@ -119,6 +126,8 @@ export function QuantizedBeatTimeline({
     anticipationWindow = 2.0,
     pastWindow = 4.0,
     highlightedRegions = [],
+    gridDisplayMode: propGridDisplayMode,
+    onGridDisplayModeChange,
     className,
 }: QuantizedBeatTimelineProps) {
     // Debug: Log the beats prop on initial render
@@ -144,6 +153,23 @@ export function QuantizedBeatTimeline({
     const seek = propOnSeek || storeSeek;
     const currentTime = propCurrentTime !== undefined || !storeCurrentTime ? propCurrentTime : storeCurrentTime;
     const isPlaying = propIsPlaying !== undefined ? propIsPlaying : storeIsPlaying;
+
+    // ========================================
+    // Grid Display Mode State
+    // ========================================
+
+    const [internalGridDisplayMode, setInternalGridDisplayMode] = useState<GridDisplayMode>('straight_16th');
+
+    // Use controlled prop if provided, otherwise use internal state
+    const gridDisplayMode = propGridDisplayMode ?? internalGridDisplayMode;
+
+    const handleGridDisplayModeChange = useCallback((mode: GridDisplayMode) => {
+        if (onGridDisplayModeChange) {
+            onGridDisplayModeChange(mode);
+        } else {
+            setInternalGridDisplayMode(mode);
+        }
+    }, [onGridDisplayModeChange]);
 
     // ========================================
     // Hover State for Tooltip
@@ -495,6 +521,52 @@ export function QuantizedBeatTimeline({
     const visibleGridLines = getVisibleGridLines();
 
     // ========================================
+    // Subdivision Grid Lines (within each beat)
+    // ========================================
+
+    /**
+     * Calculate visible subdivision lines within each beat.
+     * Supports 16th note subdivisions (4 divisions) or triplet 8th (3 divisions).
+     * Lines at positions 1, 2, [3] within each beat (position 0 is the beat line).
+     */
+    const getVisibleSubdivisionLines = useCallback((): Array<{
+        timestamp: number;
+        beatIndex: number;
+        subdivision: number;
+        position: number;
+    }> => {
+        const minTime = smoothTime - pastWindow;
+        const maxTime = smoothTime + anticipationWindow;
+
+        // Calculate which beat indices are visible
+        const startBeatIndex = Math.floor(minTime / quarterNoteInterval);
+        const endBeatIndex = Math.ceil(maxTime / quarterNoteInterval);
+
+        const lines: Array<{ timestamp: number; beatIndex: number; subdivision: number; position: number }> = [];
+
+        // subdivisionsPerBeat: 4 for 16th notes, 3 for triplets
+        const subdivisionsPerBeat = gridDisplayMode === 'triplet_8th' ? 3 : 4;
+
+        for (let beatIdx = startBeatIndex; beatIdx <= endBeatIndex; beatIdx++) {
+            const beatStart = beatIdx * quarterNoteInterval;
+
+            // Skip subdivision 0 (that's the beat line itself)
+            for (let sub = 1; sub < subdivisionsPerBeat; sub++) {
+                const timestamp = beatStart + (sub / subdivisionsPerBeat) * quarterNoteInterval;
+                const position = calculatePosition(timestamp);
+
+                if (position >= 0 && position <= 1) {
+                    lines.push({ timestamp, beatIndex: beatIdx, subdivision: sub, position });
+                }
+            }
+        }
+
+        return lines;
+    }, [smoothTime, pastWindow, anticipationWindow, quarterNoteInterval, calculatePosition, gridDisplayMode]);
+
+    const visibleSubdivisionLines = getVisibleSubdivisionLines();
+
+    // ========================================
     // Highlighted Regions for Phrase Occurrences
     // ========================================
 
@@ -667,6 +739,15 @@ export function QuantizedBeatTimeline({
                             </span>
                         )}
                     </div>
+                ))}
+
+                {/* Subdivision grid lines (16th notes - fainter than beat lines) */}
+                {visibleSubdivisionLines.map(({ beatIndex, subdivision, position }) => (
+                    <div
+                        key={`subdivision-${beatIndex}-${subdivision}`}
+                        className="quantized-beat-timeline-subdivision-line"
+                        style={{ left: `${position * 100}%` }}
+                    />
                 ))}
 
                 {/* Highlighted regions (for phrase occurrences) */}
@@ -843,6 +924,33 @@ export function QuantizedBeatTimeline({
                     <Info size={14} />
                     <span className="quantized-beat-timeline-legend-label">Hover for details</span>
                 </div>
+            </div>
+
+            {/* Grid Mode Toggle */}
+            <div className="quantized-beat-timeline-grid-toggle">
+                <span className="quantized-beat-timeline-grid-toggle-label">Grid:</span>
+                <button
+                    className={`quantized-beat-timeline-grid-toggle-btn ${
+                        gridDisplayMode === 'straight_16th' ? 'active' : ''
+                    }`}
+                    onClick={() => handleGridDisplayModeChange('straight_16th')}
+                    title="16th note grid (4 divisions per beat)"
+                    aria-pressed={gridDisplayMode === 'straight_16th'}
+                >
+                    <Grid3X3 size={14} />
+                    <span>16th</span>
+                </button>
+                <button
+                    className={`quantized-beat-timeline-grid-toggle-btn ${
+                        gridDisplayMode === 'triplet_8th' ? 'active' : ''
+                    }`}
+                    onClick={() => handleGridDisplayModeChange('triplet_8th')}
+                    title="Triplet 8th grid (3 divisions per beat)"
+                    aria-pressed={gridDisplayMode === 'triplet_8th'}
+                >
+                    <Music3 size={14} />
+                    <span>Triplet</span>
+                </button>
             </div>
 
             {/* Quick scrollbar for fast navigation */}

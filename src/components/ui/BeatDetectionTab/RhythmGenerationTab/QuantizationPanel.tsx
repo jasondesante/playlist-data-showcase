@@ -261,14 +261,23 @@ export function QuantizationPanel({
     // State for beat timeline band filter
     const [selectedBeatBand, setSelectedBeatBand] = useState<Band | 'all'>('all');
 
-    // Zoom state - controls the visible time window for timelines
-    const [zoomLevel, setZoomLevel] = useState(1);
+    // Zoom state for Grid Decision Timeline
+    const [gridZoomLevel, setGridZoomLevel] = useState(1);
+
+    // Zoom state for Quantized Beat Timeline
+    const [beatZoomLevel, setBeatZoomLevel] = useState(1);
+
     // Base windows at zoom level 1
     const baseAnticipationWindow = 2.0;
     const basePastWindow = 4.0;
-    // Calculate windows based on zoom (higher zoom = smaller windows = more detail)
-    const anticipationWindow = baseAnticipationWindow / zoomLevel;
-    const pastWindow = basePastWindow / zoomLevel;
+
+    // Calculate windows for Grid Decision Timeline based on its zoom
+    const gridAnticipationWindow = baseAnticipationWindow / gridZoomLevel;
+    const gridPastWindow = basePastWindow / gridZoomLevel;
+
+    // Calculate windows for Quantized Beat Timeline based on its zoom
+    const beatAnticipationWindow = baseAnticipationWindow / beatZoomLevel;
+    const beatPastWindow = basePastWindow / beatZoomLevel;
 
     // Get beats for QuantizedBeatTimeline
     const allBeatsForTimeline = useMemo(() => {
@@ -581,8 +590,8 @@ export function QuantizationPanel({
                             ))}
                         </div>
                         <ZoomControls
-                            zoomLevel={zoomLevel}
-                            onZoomChange={setZoomLevel}
+                            zoomLevel={gridZoomLevel}
+                            onZoomChange={setGridZoomLevel}
                             minZoom={0.5}
                             maxZoom={4}
                             size="sm"
@@ -596,8 +605,8 @@ export function QuantizationPanel({
                     duration={duration}
                     isPlaying={isPlaying}
                     onSeek={onSeek}
-                    anticipationWindow={anticipationWindow}
-                    pastWindow={pastWindow}
+                    anticipationWindow={gridAnticipationWindow}
+                    pastWindow={gridPastWindow}
                 />
             </div>
 
@@ -605,26 +614,35 @@ export function QuantizationPanel({
             <div className="quantization-beat-timeline-section">
                 <div className="quantization-timeline-header">
                     <h4 className="quantization-section-title">Quantized Beat Timeline</h4>
-                    <div className="quantization-band-selector">
-                        <span className="quantization-band-selector-label">Band:</span>
-                        <button
-                            className={`quantization-band-btn ${selectedBeatBand === 'all' ? 'active' : ''}`}
-                            onClick={() => setSelectedBeatBand('all')}
-                            data-band="all"
-                        >
-                            All
-                        </button>
-                        {bands.map((band) => (
+                    <div className="quantization-timeline-controls">
+                        <div className="quantization-band-selector">
+                            <span className="quantization-band-selector-label">Band:</span>
                             <button
-                                key={band}
-                                className={`quantization-band-btn ${selectedBeatBand === band ? 'active' : ''}`}
-                                onClick={() => setSelectedBeatBand(band)}
-                                style={{ '--band-color': BAND_COLORS[band] } as React.CSSProperties}
-                                data-band={band}
+                                className={`quantization-band-btn ${selectedBeatBand === 'all' ? 'active' : ''}`}
+                                onClick={() => setSelectedBeatBand('all')}
+                                data-band="all"
                             >
-                                {band.charAt(0).toUpperCase() + band.slice(1)}
+                                All
                             </button>
-                        ))}
+                            {bands.map((band) => (
+                                <button
+                                    key={band}
+                                    className={`quantization-band-btn ${selectedBeatBand === band ? 'active' : ''}`}
+                                    onClick={() => setSelectedBeatBand(band)}
+                                    style={{ '--band-color': BAND_COLORS[band] } as React.CSSProperties}
+                                    data-band={band}
+                                >
+                                    {band.charAt(0).toUpperCase() + band.slice(1)}
+                                </button>
+                            ))}
+                        </div>
+                        <ZoomControls
+                            zoomLevel={beatZoomLevel}
+                            onZoomChange={setBeatZoomLevel}
+                            minZoom={0.5}
+                            maxZoom={4}
+                            size="sm"
+                        />
                     </div>
                 </div>
                 <QuantizedBeatTimeline
@@ -636,6 +654,8 @@ export function QuantizationPanel({
                     onSeek={onSeek}
                     filterBand={selectedBeatBand}
                     highlightedRegions={highlightedRegions}
+                    anticipationWindow={beatAnticipationWindow}
+                    pastWindow={beatPastWindow}
                 />
             </div>
         </div>
