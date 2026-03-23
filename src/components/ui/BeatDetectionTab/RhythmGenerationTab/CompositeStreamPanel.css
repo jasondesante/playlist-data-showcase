@@ -1,0 +1,427 @@
+/* ============================================
+   COMPOSITE STREAM PANEL (Task 1.1)
+   Container for composite stream visualization.
+   Shows how 3 quantized band streams are
+   combined into a composite stream.
+   ============================================ */
+
+/* Main container */
+.composite-stream-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.composite-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+}
+
+.composite-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.composite-title svg {
+    color: hsl(var(--primary));
+}
+
+.composite-count {
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+}
+
+.composite-count-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: hsl(var(--primary));
+    font-family: var(--font-mono);
+}
+
+.composite-count-label {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   SUMMARY STATISTICS
+   ============================================ */
+
+.composite-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.composite-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+}
+
+.composite-stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 0.375rem;
+    background: hsl(var(--surface-3));
+    color: hsl(var(--muted-foreground));
+}
+
+.composite-stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.composite-stat-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.composite-stat-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+/* ============================================
+   SECTION TITLES
+   ============================================ */
+
+.composite-section-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0 0 0.5rem 0;
+}
+
+/* ============================================
+   DISTRIBUTION SECTION
+   ============================================ */
+
+.composite-distribution-section {
+    padding: 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+}
+
+.composite-distribution-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.composite-distribution-bar-track {
+    display: flex;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: hsl(var(--surface-3));
+}
+
+.composite-distribution-segment {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.composite-distribution-segment--low {
+    background: #3b82f6;
+}
+
+.composite-distribution-segment--mid {
+    background: #22c55e;
+}
+
+.composite-distribution-segment--high {
+    background: #f97316;
+}
+
+.composite-distribution-legend {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.composite-distribution-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.composite-distribution-marker {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
+
+.composite-distribution-label {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.composite-distribution-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+/* ============================================
+   TIMELINES SECTION
+   ============================================ */
+
+.composite-timelines-section {
+    padding: 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+}
+
+.composite-timelines-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.composite-timelines-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* ============================================
+   BAND TIMELINES (Placeholder - Task 1.2)
+   ============================================ */
+
+.composite-band-timelines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.composite-band-timeline-placeholder {
+    padding: 0.75rem;
+    background: hsl(var(--surface-1));
+    border-radius: 0.375rem;
+    border: 1px solid hsl(var(--border) / 0.5);
+}
+
+.composite-band-timeline-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.composite-band-timeline-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.composite-band-timeline-count {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+}
+
+.composite-band-timeline-track {
+    position: relative;
+    height: 24px;
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.composite-band-timeline-track-background {
+    position: absolute;
+    inset: 0;
+    background: hsl(var(--surface-3));
+}
+
+.composite-band-timeline-track-accent {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 30%;
+    opacity: 0.15;
+}
+
+.composite-band-timeline-now-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 30%;
+    width: 2px;
+    z-index: 2;
+}
+
+.composite-band-timeline-now-line-inner {
+    width: 100%;
+    height: 100%;
+    opacity: 0.8;
+}
+
+/* ============================================
+   COMPOSITE TIMELINE (Placeholder - Task 1.3)
+   ============================================ */
+
+.composite-timeline-section {
+    padding-top: 1rem;
+    border-top: 1px solid hsl(var(--border) / 0.3);
+}
+
+.composite-timeline-track {
+    position: relative;
+    height: 32px;
+    border-radius: 0.25rem;
+    overflow: hidden;
+    background: hsl(var(--surface-3));
+}
+
+.composite-timeline-track-background {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        #3b82f6 0%,
+        #3b82f6 33%,
+        #22c55e 33%,
+        #22c55e 66%,
+        #f97316 66%,
+        #f97316 100%
+    );
+    opacity: 0.2;
+}
+
+.composite-timeline-now-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 30%;
+    width: 2px;
+    z-index: 2;
+}
+
+.composite-timeline-now-line-inner {
+    width: 100%;
+    height: 100%;
+    background: hsl(var(--foreground));
+    opacity: 0.8;
+}
+
+/* ============================================
+   LEGEND
+   ============================================ */
+
+.composite-legend {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+}
+
+.composite-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.composite-legend-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.composite-legend-label {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 768px) {
+    .composite-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .composite-distribution-legend {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .composite-timelines-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .composite-legend {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .composite-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .composite-stat-card {
+        padding: 0.75rem;
+    }
+
+    .composite-distribution-section,
+    .composite-timelines-section {
+        padding: 0.75rem;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.composite-stream-panel *:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .composite-distribution-segment {
+        transition: none;
+    }
+}
