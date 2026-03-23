@@ -642,11 +642,11 @@ Also added three new usage examples:
 ## Testing Checklist
 
 ### Engine Tests
-- [ ] Band bias multiplies scores correctly
-- [ ] Undefined bias = no change to scores
-- [ ] Missing band in config defaults to 1.0
-- [ ] Custom factor weights are applied correctly
-- [ ] All unit tests pass
+- [x] Band bias multiplies scores correctly
+- [x] Undefined bias = no change to scores
+- [x] Missing band in config defaults to 1.0
+- [x] Custom factor weights are applied correctly
+- [x] All unit tests pass (30 tests passing)
 
 ### Frontend Tests
 - [ ] Factor weight sliders update settings
@@ -664,8 +664,8 @@ Also added three new usage examples:
 - [ ] End-to-end test with both combined
 
 ### Documentation
-- [ ] DATA_ENGINE_REFERENCE.md updated with all scoring parameters
-- [ ] BEAT_DETECTION.md updated with examples and use cases
+- [x] DATA_ENGINE_REFERENCE.md updated with all scoring parameters
+- [x] BEAT_DETECTION.md updated with examples and use cases
 
 ---
 
