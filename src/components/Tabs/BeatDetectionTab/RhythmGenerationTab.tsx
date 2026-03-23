@@ -14,7 +14,7 @@
  * - Metadata display on successful generation
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, Trophy, GitCompare } from 'lucide-react';
 import './RhythmGenerationTab.css';
 import { Card } from '../../ui/Card';
@@ -135,6 +135,9 @@ interface RhythmGenerationResultProps {
     isRegenerating?: boolean;
 }
 
+// Section identifiers for accordion behavior
+type SectionId = 'transients' | 'multiband' | 'quantization' | 'variants' | 'comparison' | 'phrases';
+
 function RhythmGenerationResult({
     rhythm,
     onProceed,
@@ -149,6 +152,37 @@ function RhythmGenerationResult({
     isRegenerating = false,
 }: RhythmGenerationResultProps) {
     const { metadata } = rhythm;
+
+    // ========================================
+    // Accordion State - Only one section open at a time
+    // ========================================
+
+    const [openSection, setOpenSection] = useState<SectionId>('transients');
+
+    // Refs for each section to enable scroll-into-view
+    const sectionRefs = useRef<Record<SectionId, HTMLDivElement | null>>({
+        transients: null,
+        multiband: null,
+        quantization: null,
+        variants: null,
+        comparison: null,
+        phrases: null,
+    });
+
+    const handleSectionToggle = (sectionId: SectionId) => {
+        const prevSection = openSection;
+        // Only change if clicking a different section
+        if (prevSection !== sectionId) {
+            setOpenSection(sectionId);
+            // Scroll the newly opened section into view after a brief delay for the animation
+            setTimeout(() => {
+                sectionRefs.current[sectionId]?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                });
+            }, 100);
+        }
+    };
 
     // ========================================
     // Phrase Selection State for Highlighting
@@ -231,103 +265,121 @@ function RhythmGenerationResult({
                 </div>
             )}
 
-            {/* Visualization panels placeholder - will be expanded in future phases */}
+            {/* Visualization panels with accordion behavior - only one open at a time */}
             <div className="rhythm-generation-visualizations">
-                <CollapsibleSection
-                    title="Transient Detection"
-                    subtitle="Raw transient analysis results"
-                    icon={<Zap size={18} />}
-                    badge={metadata.transientsDetected}
-                    defaultCollapsed={false}
-                >
-                    <TransientDetectionPanel
-                        rhythm={rhythm}
-                        currentTime={currentTime}
-                        onSeek={onSeek}
-                        originalIntensityThreshold={originalIntensityThreshold}
-                        transientConfig={transientConfig}
-                        onRegenerateWithThreshold={onRegenerateWithThreshold}
-                        isRegenerating={isRegenerating}
-                    />
-                </CollapsibleSection>
+                <div ref={(el) => { sectionRefs.current.transients = el; }}>
+                    <CollapsibleSection
+                        title="Transient Detection"
+                        subtitle="Raw transient analysis results"
+                        icon={<Zap size={18} />}
+                        badge={metadata.transientsDetected}
+                        collapsed={openSection !== 'transients'}
+                        onCollapsedChange={() => handleSectionToggle('transients')}
+                    >
+                        <TransientDetectionPanel
+                            rhythm={rhythm}
+                            currentTime={currentTime}
+                            onSeek={onSeek}
+                            originalIntensityThreshold={originalIntensityThreshold}
+                            transientConfig={transientConfig}
+                            onRegenerateWithThreshold={onRegenerateWithThreshold}
+                            isRegenerating={isRegenerating}
+                        />
+                    </CollapsibleSection>
+                </div>
 
-                <CollapsibleSection
-                    title="Multi-Band Analysis"
-                    subtitle="Frequency band breakdown"
-                    icon={<Layers size={18} />}
-                    defaultCollapsed={true}
-                >
-                    <MultiBandVisualization
-                        rhythm={rhythm}
-                        currentTime={currentTime}
-                        duration={duration}
-                        isPlaying={isPlaying}
-                        onSeek={onSeek}
-                    />
-                </CollapsibleSection>
+                <div ref={(el) => { sectionRefs.current.multiband = el; }}>
+                    <CollapsibleSection
+                        title="Multi-Band Analysis"
+                        subtitle="Frequency band breakdown"
+                        icon={<Layers size={18} />}
+                        collapsed={openSection !== 'multiband'}
+                        onCollapsedChange={() => handleSectionToggle('multiband')}
+                    >
+                        <MultiBandVisualization
+                            rhythm={rhythm}
+                            currentTime={currentTime}
+                            duration={duration}
+                            isPlaying={isPlaying}
+                            onSeek={onSeek}
+                        />
+                    </CollapsibleSection>
+                </div>
 
-                <CollapsibleSection
-                    title="Quantization"
-                    subtitle="Beat grid quantization results"
-                    icon={<Grid3X3 size={18} />}
-                    defaultCollapsed={true}
-                >
-                    <QuantizationPanel
-                        rhythm={rhythm}
-                        currentTime={currentTime}
-                        duration={duration}
-                        isPlaying={isPlaying}
-                        onSeek={onSeek}
-                        highlightedRegions={highlightedRegions}
-                    />
-                </CollapsibleSection>
+                <div ref={(el) => { sectionRefs.current.quantization = el; }}>
+                    <CollapsibleSection
+                        title="Quantization"
+                        subtitle="Beat grid quantization results"
+                        icon={<Grid3X3 size={18} />}
+                        collapsed={openSection !== 'quantization'}
+                        onCollapsedChange={() => handleSectionToggle('quantization')}
+                    >
+                        <QuantizationPanel
+                            rhythm={rhythm}
+                            currentTime={currentTime}
+                            duration={duration}
+                            isPlaying={isPlaying}
+                            onSeek={onSeek}
+                            highlightedRegions={highlightedRegions}
+                        />
+                    </CollapsibleSection>
+                </div>
 
-                <CollapsibleSection
-                    title="Difficulty Variants"
-                    subtitle="Easy / Medium / Hard variations"
-                    icon={<Trophy size={18} />}
-                    defaultCollapsed={false}
-                >
-                    <DifficultyVariantsPanel
-                        rhythm={rhythm}
-                        currentTime={currentTime}
-                        duration={duration}
-                        isPlaying={isPlaying}
-                        onSeek={onSeek}
-                    />
-                </CollapsibleSection>
+                <div ref={(el) => { sectionRefs.current.variants = el; }}>
+                    <CollapsibleSection
+                        title="Difficulty Variants"
+                        subtitle="Easy / Medium / Hard variations"
+                        icon={<Trophy size={18} />}
+                        collapsed={openSection !== 'variants'}
+                        onCollapsedChange={() => handleSectionToggle('variants')}
+                    >
+                        <DifficultyVariantsPanel
+                            rhythm={rhythm}
+                            currentTime={currentTime}
+                            duration={duration}
+                            isPlaying={isPlaying}
+                            onSeek={onSeek}
+                        />
+                    </CollapsibleSection>
+                </div>
 
-                <CollapsibleSection
-                    title="Difficulty Comparison"
-                    subtitle="Stacked view with shared zoom/scroll"
-                    icon={<GitCompare size={18} />}
-                    defaultCollapsed={true}
-                >
-                    <VariantComparisonView
-                        rhythm={rhythm}
-                        currentTime={currentTime}
-                        duration={duration}
-                        isPlaying={isPlaying}
-                        onSeek={onSeek}
-                    />
-                </CollapsibleSection>
+                <div ref={(el) => { sectionRefs.current.comparison = el; }}>
+                    <CollapsibleSection
+                        title="Difficulty Comparison"
+                        subtitle="Stacked view with shared zoom/scroll"
+                        icon={<GitCompare size={18} />}
+                        collapsed={openSection !== 'comparison'}
+                        onCollapsedChange={() => handleSectionToggle('comparison')}
+                    >
+                        <VariantComparisonView
+                            rhythm={rhythm}
+                            currentTime={currentTime}
+                            duration={duration}
+                            isPlaying={isPlaying}
+                            onSeek={onSeek}
+                        />
+                    </CollapsibleSection>
+                </div>
 
-                <CollapsibleSection
-                    title="Phrase Detection"
-                    subtitle="Detected rhythmic patterns"
-                    icon={<Music size={18} />}
-                    badge={metadata.phrasesDetected}
-                    defaultCollapsed={true}
-                >
-                    <PhraseDetectionPanel
-                        rhythm={rhythm}
-                        currentTime={currentTime}
-                        isPlaying={isPlaying}
-                        onSeek={onSeek}
-                        onPhraseSelect={handlePhraseSelect}
-                        selectedPhrase={selectedPhrase}
-                    />
-                </CollapsibleSection>
+                <div ref={(el) => { sectionRefs.current.phrases = el; }}>
+                    <CollapsibleSection
+                        title="Phrase Detection"
+                        subtitle="Detected rhythmic patterns"
+                        icon={<Music size={18} />}
+                        badge={metadata.phrasesDetected}
+                        collapsed={openSection !== 'phrases'}
+                        onCollapsedChange={() => handleSectionToggle('phrases')}
+                    >
+                        <PhraseDetectionPanel
+                            rhythm={rhythm}
+                            currentTime={currentTime}
+                            isPlaying={isPlaying}
+                            onSeek={onSeek}
+                            onPhraseSelect={handlePhraseSelect}
+                            selectedPhrase={selectedPhrase}
+                        />
+                    </CollapsibleSection>
+                </div>
             </div>
 
             {/* Proceed button */}

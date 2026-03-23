@@ -3,6 +3,10 @@
  *
  * A reusable collapsible panel with a header that can be toggled.
  * Used to organize the PartyTab layout with collapsible sections.
+ *
+ * Supports both controlled and uncontrolled modes:
+ * - Uncontrolled: Uses internal state, optionally persisted to localStorage
+ * - Controlled: Use `collapsed` and `onCollapsedChange` props for external control
  */
 
 import { useState, useRef, useEffect } from 'react';
@@ -16,15 +20,19 @@ export interface CollapsibleSectionProps {
   subtitle?: string;
   /** Content to be rendered inside the collapsible area */
   children: React.ReactNode;
-  /** Whether the section starts collapsed (default: false = expanded) */
+  /** Whether the section starts collapsed (default: false = expanded) - uncontrolled mode only */
   defaultCollapsed?: boolean;
+  /** Controlled collapsed state - when provided, component becomes controlled */
+  collapsed?: boolean;
+  /** Callback when collapsed state changes */
+  onCollapsedChange?: (collapsed: boolean) => void;
   /** Optional icon to display before the title */
   icon?: React.ReactNode;
   /** Optional badge/count to display in the header */
   badge?: string | number;
   /** Additional CSS class for the container */
   className?: string;
-  /** Whether to persist collapsed state across sessions using localStorage */
+  /** Whether to persist collapsed state across sessions using localStorage (uncontrolled mode only) */
   persistKey?: string;
 }
 
@@ -33,12 +41,17 @@ export function CollapsibleSection({
   subtitle,
   children,
   defaultCollapsed = false,
+  collapsed: controlledCollapsed,
+  onCollapsedChange,
   icon,
   badge,
   className = '',
   persistKey
 }: CollapsibleSectionProps) {
-  // Initialize collapsed state, optionally from localStorage
+  // Determine if component is controlled
+  const isControlled = controlledCollapsed !== undefined;
+
+  // Initialize collapsed state, optionally from localStorage (uncontrolled mode only)
   const getInitialState = () => {
     if (persistKey) {
       try {
@@ -53,7 +66,11 @@ export function CollapsibleSection({
     return defaultCollapsed;
   };
 
-  const [isCollapsed, setIsCollapsed] = useState(getInitialState);
+  const [internalCollapsed, setInternalCollapsed] = useState(getInitialState);
+
+  // Use controlled value if provided, otherwise use internal state
+  const isCollapsed = isControlled ? controlledCollapsed : internalCollapsed;
+
   const contentRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState<number | undefined>(undefined);
@@ -76,26 +93,30 @@ export function CollapsibleSection({
     });
 
     resizeObserver.observe(innerEl);
-
-    // Initial measurement
-    updateHeight();
+    updateHeight(); // Initial measurement
 
     return () => {
       resizeObserver.disconnect();
     };
-  }, [children]);
+  }, [isCollapsed]); // Re-measure when collapsed state changes
 
   const toggleCollapsed = () => {
     const newState = !isCollapsed;
-    setIsCollapsed(newState);
 
-    // Persist state to localStorage if key provided
-    if (persistKey) {
+    // Update internal state if uncontrolled
+    if (!isControlled) {
+      setInternalCollapsed(newState);
+    }
+
+    // Notify parent of change
+    if (onCollapsedChange) {
+      onCollapsedChange(newState);
+    }
+
+    // Persist to localStorage (only in uncontrolled mode with persistKey)
+    if (!isControlled && persistKey) {
       try {
-        localStorage.setItem(
-          `collapsible-${persistKey}`,
-          newState ? 'collapsed' : 'expanded'
-        );
+        localStorage.setItem(`collapsible-${persistKey}`, newState ? 'collapsed' : 'expanded');
       } catch {
         // Ignore localStorage errors
       }
