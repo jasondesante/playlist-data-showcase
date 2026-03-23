@@ -129,8 +129,8 @@ private scoreSection(
 ```
 
 ### Task 1.3: Add ScoringConfig to RhythmGenerationOptions
-- [ ] **File**: `src/core/generation/RhythmGenerator.ts`
-- [ ] Add scoring configuration option:
+- [x] **File**: `src/core/generation/RhythmGenerator.ts`
+- [x] Add scoring configuration option:
 
 ```typescript
 export interface RhythmGenerationOptions {
