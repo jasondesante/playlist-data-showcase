@@ -501,8 +501,8 @@ Control which frequency bands are favored (multiplier on final score):
 ```
 
 ### Task 3.3: Pass Scoring Config to Rhythm Generation
-- [ ] **File**: `src/hooks/useRhythmGeneration.ts`
-- [ ] Update the generate function to pass the full scoring config:
+- [x] **File**: `src/hooks/useRhythmGeneration.ts`
+- [x] Update the generate function to pass the full scoring config:
 
 ```typescript
 const generatorOptions: RhythmGenerationOptions = {

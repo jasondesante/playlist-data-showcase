@@ -262,6 +262,8 @@ export const useRhythmGeneration = (): UseRhythmGenerationReturn => {
                 minimumTransientIntensity: options?.minimumTransientIntensity ?? 0.2,
                 transientConfig: options?.transientConfig,
                 densityValidation: options?.densityValidation,
+                // Pass scoring config (includes factor weights AND band bias)
+                scoringConfig: options?.scoringConfig,
                 verbose: options?.verbose ?? false,
             };
 
