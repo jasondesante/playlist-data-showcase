@@ -272,12 +272,13 @@ export function BeatDetectionTab() {
                 outputMode: autoLevelSettings.outputMode,
                 minimumTransientIntensity: autoLevelSettings.intensityThreshold,
                 transientConfig: autoLevelSettings.transientConfig,
+                scoringConfig: autoLevelSettings.scoringConfig,
                 densityValidation: autoLevelSettings.enableDensityValidation
                     ? {
-                          maxRetries: autoLevelSettings.densityMaxRetries,
-                          baseSensitivityReduction: 0.1,
-                          maxCumulativeReduction: 0.5,
-                      }
+                        maxRetries: autoLevelSettings.densityMaxRetries,
+                        baseSensitivityReduction: 0.1,
+                        maxCumulativeReduction: 0.5,
+                    }
                     : undefined,
             });
         }
@@ -569,10 +570,10 @@ export function BeatDetectionTab() {
                                         scoringConfig: autoLevelSettings.scoringConfig,
                                         densityValidation: autoLevelSettings.enableDensityValidation
                                             ? {
-                                                  maxRetries: autoLevelSettings.densityMaxRetries,
-                                                  baseSensitivityReduction: 0.1,
-                                                  maxCumulativeReduction: 0.5,
-                                              }
+                                                maxRetries: autoLevelSettings.densityMaxRetries,
+                                                baseSensitivityReduction: 0.1,
+                                                maxCumulativeReduction: 0.5,
+                                            }
                                             : undefined,
                                     });
                                 }
@@ -593,10 +594,10 @@ export function BeatDetectionTab() {
                                         scoringConfig: autoLevelSettings.scoringConfig,
                                         densityValidation: autoLevelSettings.enableDensityValidation
                                             ? {
-                                                  maxRetries: autoLevelSettings.densityMaxRetries,
-                                                  baseSensitivityReduction: 0.1,
-                                                  maxCumulativeReduction: 0.5,
-                                              }
+                                                maxRetries: autoLevelSettings.densityMaxRetries,
+                                                baseSensitivityReduction: 0.1,
+                                                maxCumulativeReduction: 0.5,
+                                            }
                                             : undefined,
                                     });
                                 }
