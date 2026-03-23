@@ -396,6 +396,69 @@ export function QuantizationPanel({
                 </div>
             </div>
 
+            {/* Quantization Pipeline Summary */}
+            <div className="quantization-pipeline-summary">
+                <h4 className="quantization-pipeline-title">Quantization Pipeline</h4>
+                <p className="quantization-pipeline-description">
+                    During quantization, {rhythm.metadata.transientsFilteredByIntensity} transients were filtered out by intensity thresholding and density validation,
+                    leaving {rhythm.metadata.transientsDetected - rhythm.metadata.transientsFilteredByIntensity} transients to be quantized into {overallStats.totalBeats} beats.
+                </p>
+                <div className="quantization-pipeline-stats">
+                    <div className="quantization-pipeline-stat">
+                        <span className="quantization-pipeline-stat-label">Original</span>
+                        <span className="quantization-pipeline-stat-value">{rhythm.metadata.transientsDetected}</span>
+                    </div>
+                    <div className="quantization-pipeline-stat">
+                        <span className="quantization-pipeline-stat-label">Filtered</span>
+                        <span className="quantization-pipeline-stat-value">{rhythm.metadata.transientsFilteredByIntensity}</span>
+                    </div>
+                    <div className="quantization-pipeline-stat">
+                        <span className="quantization-pipeline-stat-label">Remaining</span>
+                        <span className="quantization-pipeline-stat-value">{rhythm.metadata.transientsDetected - rhythm.metadata.transientsFilteredByIntensity}</span>
+                    </div>
+                    <div className="quantization-pipeline-stat">
+                        <span className="quantization-pipeline-stat-label">Quantized</span>
+                        <span className="quantization-pipeline-stat-value">{overallStats.totalBeats}</span>
+                    </div>
+                    {overallStats.densityValidation.maxRetryCount > 0 && (
+                        <div className="quantization-pipeline-stat">
+                            <span className="quantization-pipeline-stat-label">Retries</span>
+                            <span className="quantization-pipeline-stat-value">{overallStats.densityValidation.maxRetryCount}</span>
+                        </div>
+                    )}
+                </div>
+                {/* Per-band quantized counts */}
+                <div className="quantization-pipeline-per-band">
+                    <h5 className="quantization-pipeline-per-band-title">Per-Band Breakdown</h5>
+                    {bands.map((band) => {
+                        const bandValidation = overallStats.densityValidation.bands[band];
+                        const hasRetries = bandValidation.retryCount > 0;
+                        const totalInBand = rhythm.analysis.transientAnalysis.transients.filter(t => t.band === band).length;
+                        const quantizedInBand = bandStreams[band].beats.length;
+                        return (
+                            <div key={band} className="quantization-pipeline-band">
+                                <span className="quantization-pipeline-band-name">
+                                    {band.charAt(0).toUpperCase() + band.slice(1)}
+                                </span>
+                                <span className="quantization-pipeline-band-count">
+                                    {totalInBand} → {quantizedInBand}
+                                </span>
+                                {hasRetries && (
+                                    <span className="quantization-pipeline-band-retries" title="Density validation retries">
+                                        ({bandValidation.retryCount} retries, threshold: {(bandValidation.finalIntensityThreshold * 100).toFixed(0)}%)
+                                    </span>
+                                )}
+                                {hasRetries && bandValidation.sensitivityReduction > 0 && (
+                                    <span className="quantization-pipeline-band-sensitivity" title="Sensitivity reduction applied">
+                                        sensitivity -{(bandValidation.sensitivityReduction * 100).toFixed(0)}%
+                                    </span>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
             {/* Summary statistics */}
             <div className="quantization-summary">
                 <StatCard

@@ -54,6 +54,114 @@
 }
 
 /* ============================================
+   QUANTIZATION PIPELINE SUMMARY
+   ============================================ */
+
+.quantization-pipeline-summary {
+    padding: 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+}
+
+.quantization-pipeline-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0 0 0.5rem 0;
+}
+
+.quantization-pipeline-description {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.5;
+    margin: 0 0 0.75rem 0;
+}
+
+.quantization-pipeline-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.quantization-pipeline-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--surface-1));
+    border-radius: 0.375rem;
+    min-width: 4rem;
+}
+
+.quantization-pipeline-stat-label {
+    font-size: 0.625rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.quantization-pipeline-stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: hsl(var(--primary));
+    font-family: var(--font-mono);
+}
+
+/* Per-band breakdown */
+.quantization-pipeline-per-band {
+    padding-top: 0.75rem;
+    border-top: 1px solid hsl(var(--border));
+}
+
+.quantization-pipeline-per-band-title {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.5rem 0;
+}
+
+.quantization-pipeline-band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0;
+    font-size: 0.75rem;
+}
+
+.quantization-pipeline-band-name {
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    text-transform: capitalize;
+    min-width: 3rem;
+}
+
+.quantization-pipeline-band-count {
+    font-family: var(--font-mono);
+    color: hsl(var(--primary));
+}
+
+.quantization-pipeline-band-retries {
+    font-size: 0.6875rem;
+    color: hsl(var(--warning));
+    background: hsl(var(--warning) / 0.1);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+.quantization-pipeline-band-sensitivity {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--surface-3));
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+/* ============================================
    SUMMARY STATISTICS
    ============================================ */
 

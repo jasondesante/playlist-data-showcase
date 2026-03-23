@@ -319,22 +319,6 @@ export function TransientDetectionPanel({
         return allTransients.filter((t) => t.intensity < intensityThreshold).length;
     }, [allTransients, intensityThreshold]);
 
-    // ========================================
-    // Quantization Summary Data
-    // Shows what actually happened during the engine's quantization step
-    // ========================================
-    const quantizationResult = rhythm.analysis.quantizationResult;
-    const quantizationMetadata = quantizationResult.metadata;
-
-    // Calculate total transients that made it through to quantization
-    const quantizedBeatsCount = useMemo(() => {
-        return (
-            rhythm.bandStreams.low.beats.length +
-            rhythm.bandStreams.mid.beats.length +
-            rhythm.bandStreams.high.beats.length
-        );
-    }, [rhythm.bandStreams]);
-
     // Calculate total count per band (unfiltered)
     const totalByBand = useMemo(() => {
         const counts: Record<Band, number> = { low: 0, mid: 0, high: 0 };
@@ -357,22 +341,6 @@ export function TransientDetectionPanel({
     const handleTransientClick = (transient: TransientResult, index: number) => {
         setSelectedTransient(transient);
         setSelectedTransientIndex(index);
-    };
-
-    // ========================================
-    // Calculate quantization summary stats
-    // ========================================
-    const transientsDetected = rhythm.metadata.transientsDetected;
-    const transientsFiltered = rhythm.metadata.transientsFilteredByIntensity;
-    const transientsRemaining = transientsDetected - transientsFiltered;
-    const densityValidation = quantizationMetadata.densityValidation;
-    const maxRetryCount = densityValidation.maxRetryCount;
-
-    // Calculate per-band quantized counts (beats that made it through)
-    const quantizedByBandForSummary = {
-        low: rhythm.bandStreams.low.beats.length,
-        mid: rhythm.bandStreams.mid.beats.length,
-        high: rhythm.bandStreams.high.beats.length,
     };
 
     return (
@@ -418,67 +386,6 @@ export function TransientDetectionPanel({
                                         <span className="transient-config-band-stat-value">{config.adaptiveThresholding ? 'On' : 'Off'}</span>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Quantization Summary - shows what happened during quantization */}
-            <div className="transient-quantization-summary">
-                <h4 className="transient-quantization-title">Quantization Results</h4>
-                <p className="transient-quantization-description">
-                    During quantization, {transientsFiltered} transients were filtered out by intensity thresholding and density validation,
-                    leaving {transientsRemaining} transients to be quantized into {quantizedBeatsCount} beats.
-                </p>
-                <div className="transient-quantization-stats">
-                    <div className="transient-quantization-stat">
-                        <span className="transient-quantization-stat-label">Original</span>
-                        <span className="transient-quantization-stat-value">{transientsDetected}</span>
-                    </div>
-                    <div className="transient-quantization-stat">
-                        <span className="transient-quantization-stat-label">Filtered</span>
-                        <span className="transient-quantization-stat-value">{transientsFiltered}</span>
-                    </div>
-                    <div className="transient-quantization-stat">
-                        <span className="transient-quantization-stat-label">Remaining</span>
-                        <span className="transient-quantization-stat-value">{transientsRemaining}</span>
-                    </div>
-                    <div className="transient-quantization-stat">
-                        <span className="transient-quantization-stat-label">Quantized</span>
-                        <span className="transient-quantization-stat-value">{quantizedBeatsCount}</span>
-                    </div>
-                    {maxRetryCount > 0 && (
-                        <div className="transient-quantization-stat">
-                            <span className="transient-quantization-stat-label">Retries</span>
-                            <span className="transient-quantization-stat-value">{maxRetryCount}</span>
-                        </div>
-                    )}
-                </div>
-                {/* Per-band quantized counts */}
-                <div className="transient-quantization-per-band">
-                    <h5 className="transient-quantization-per-band-title">Per-Band Breakdown</h5>
-                    {(Object.keys(quantizedByBandForSummary) as Band[]).map((band) => {
-                        const bandValidation = densityValidation.bands[band];
-                        const hasRetries = bandValidation.retryCount > 0;
-                        return (
-                            <div key={band} className="transient-quantization-band">
-                                <span className="transient-quantization-band-name">
-                                    {band.charAt(0).toUpperCase() + band.slice(1)}
-                                </span>
-                                <span className="transient-quantization-band-count">
-                                    {totalByBand[band]} → {quantizedByBandForSummary[band]}
-                                </span>
-                                {hasRetries && (
-                                    <span className="transient-quantization-band-retries" title="Density validation retries">
-                                        ({bandValidation.retryCount} retries, threshold: {(bandValidation.finalIntensityThreshold * 100).toFixed(0)}%)
-                                    </span>
-                                )}
-                                {hasRetries && bandValidation.sensitivityReduction > 0 && (
-                                    <span className="transient-quantization-band-sensitivity" title="Sensitivity reduction applied">
-                                        sensitivity -{(bandValidation.sensitivityReduction * 100).toFixed(0)}%
-                                    </span>
-                                )}
                             </div>
                         );
                     })}
