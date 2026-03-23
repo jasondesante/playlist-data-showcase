@@ -241,8 +241,8 @@ export type {
 **Completed**: Added `StreamScorerConfig` and `BandBiasWeights` to re-exports.
 
 ### Task 2.2: Update AutoLevelSettings Interface
-- [ ] **File**: `src/types/rhythmGeneration.ts`
-- [ ] Add scoring config to settings (exposes ALL scoring parameters):
+- [x] **File**: `src/types/rhythmGeneration.ts`
+- [x] Add scoring config to settings (exposes ALL scoring parameters):
 
 ```typescript
 export interface AutoLevelSettings {
@@ -268,7 +268,7 @@ export interface AutoLevelSettings {
 - `beatsPerSection` (default: 8) - Section size for scoring
 - `bandBiasWeights` - Manual band preference multipliers
 
-- [ ] Update defaults:
+- [x] Update defaults:
 
 ```typescript
 export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
@@ -276,6 +276,8 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     scoringConfig: undefined, // NEW - uses engine defaults when undefined
 };
 ```
+
+**Completed**: Added `scoringConfig?: Partial<StreamScorerConfig>` to interface and `scoringConfig: undefined` to defaults. Also imported `StreamScorerConfig` type for local use.
 
 ---
 

@@ -12,6 +12,7 @@ import type {
     BandTransientConfigOverrides,
     RhythmPresetName,
     OutputMode,
+    StreamScorerConfig,
 } from 'playlist-data-engine';
 
 // Re-export types from playlist-data-engine
@@ -147,6 +148,13 @@ export interface AutoLevelSettings {
     enableDensityValidation: boolean;
     /** Maximum retries per band when density validation fails (0-5) */
     densityMaxRetries: number;
+    /**
+     * Stream scoring configuration - controls how bands are selected for composite stream.
+     * Includes factor weights (ioiVariance, syncopation, phraseSignificance, density)
+     * and band bias weights (manual preference multipliers per frequency band).
+     * When undefined, engine defaults are used.
+     */
+    scoringConfig?: Partial<StreamScorerConfig>;
 }
 
 /**
@@ -161,6 +169,7 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     transientConfig: undefined, // When usePerBandDefaults is true, engine uses its defaults
     enableDensityValidation: false,  // Density validation disabled by default (opt-in)
     densityMaxRetries: 0,       // No retries by default
+    scoringConfig: undefined,   // Uses engine defaults when undefined
 };
 
 /**
