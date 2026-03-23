@@ -630,12 +630,12 @@ Also added three new usage examples:
 
 ## Implementation Order
 
-- [ ] 1. **Engine Phase 1.1-1.5**: Update types and pass through config
-- [ ] 2. **Engine Phase 1.6**: Add tests
-- [ ] 3. **Frontend Phase 2.1-2.2**: Update types
-- [ ] 4. **Frontend Phase 3.1-3.4**: Add UI controls
-- [ ] 5. **Frontend Phase 4.1**: Update visualization
-- [ ] 6. **Docs Phase 5.1-5.2**: Update engine documentation
+- [x] 1. **Engine Phase 1.1-1.5**: Update types and pass through config
+- [x] 2. **Engine Phase 1.6**: Add tests
+- [x] 3. **Frontend Phase 2.1-2.2**: Update types
+- [x] 4. **Frontend Phase 3.1-3.4**: Add UI controls
+- [x] 5. **Frontend Phase 4.1**: Update visualization
+- [x] 6. **Docs Phase 5.1-5.2**: Update engine documentation
 
 ---
 
