@@ -112,6 +112,26 @@
     overflow: hidden;
 }
 
+/* Draggable track styles */
+.difficulty-conversion-baseline-track--draggable {
+    cursor: grab;
+    user-select: none;
+}
+
+.difficulty-conversion-baseline-track--draggable:hover {
+    background: hsl(var(--surface-2));
+}
+
+.difficulty-conversion-baseline-track--dragging {
+    cursor: grabbing;
+    background: hsl(var(--surface-2));
+}
+
+.difficulty-conversion-baseline-track--draggable:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
 .difficulty-conversion-baseline-marker {
     position: absolute;
     top: 50%;

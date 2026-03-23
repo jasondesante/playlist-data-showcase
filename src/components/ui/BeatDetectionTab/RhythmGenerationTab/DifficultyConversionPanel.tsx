@@ -18,10 +18,11 @@
  * Part of Phase 2: DifficultyConversionPanel (Task 2.1)
  */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { GitBranch, CheckCircle, TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import './DifficultyConversionPanel.css';
 import { ZoomControls } from '../../ZoomControls';
+import { useAudioPlayerStore } from '../../../../store/audioPlayerStore';
 import type {
     GeneratedRhythm,
     DifficultyVariant,
@@ -80,6 +81,9 @@ const EDIT_TYPE_ICONS: Record<EditType, React.ElementType> = {
     interpolated: TrendingUp,
     pattern_inserted: TrendingUp,
 };
+
+/** Pixels of movement before treating as drag (vs click) */
+const DRAG_THRESHOLD = 5;
 
 // ============================================================
 // Utility Functions
@@ -157,6 +161,12 @@ function ConversionHeader({ difficulty, isNatural, editType, color }: Conversion
 
 /**
  * Mini timeline showing the composite baseline
+ * Features:
+ * - Shows composite beats as markers
+ * - Playhead synced with audio
+ * - Drag-to-scrub functionality
+ * - Click-to-seek
+ * - Smooth animation with requestAnimationFrame
  */
 interface CompositeBaselineTimelineProps {
     beats: CompositeBeat[];
@@ -168,9 +178,182 @@ interface CompositeBaselineTimelineProps {
 function CompositeBaselineTimeline({
     beats,
     duration,
-    currentTime = 0,
+    currentTime: propCurrentTime = 0,
     zoomLevel = 1,
 }: CompositeBaselineTimelineProps) {
+    const trackRef = useRef<HTMLDivElement>(null);
+
+    // Direct store access for responsive seeking
+    const seek = useAudioPlayerStore((state) => state.seek);
+    const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);
+    const playbackState = useAudioPlayerStore((state) => state.playbackState);
+    const isPlaying = playbackState === 'playing';
+
+    // ========================================
+    // Smooth Animation with requestAnimationFrame
+    // ========================================
+
+    const animationFrameRef = useRef<number | null>(null);
+    const [smoothTime, setSmoothTime] = useState(storeCurrentTime);
+    const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
+        time: storeCurrentTime,
+        timestamp: performance.now(),
+    });
+    const isPlayingRef = useRef(isPlaying);
+
+    // CRITICAL: Use a ref to track smoothTime for stable callback references
+    const smoothTimeRef = useRef(smoothTime);
+
+    // Keep smoothTimeRef in sync with smoothTime state
+    useEffect(() => {
+        smoothTimeRef.current = smoothTime;
+    }, [smoothTime]);
+
+    // Keep refs in sync with props
+    useEffect(() => {
+        lastAudioTimeRef.current = {
+            time: storeCurrentTime,
+            timestamp: performance.now(),
+        };
+    }, [storeCurrentTime]);
+
+    // Track previous isPlaying state to detect transitions
+    const prevIsPlayingRef = useRef(isPlaying);
+
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+
+        const playbackJustStarted = isPlaying && !prevIsPlayingRef.current;
+        if (playbackJustStarted) {
+            lastAudioTimeRef.current = {
+                time: storeCurrentTime,
+                timestamp: performance.now(),
+            };
+            setSmoothTime(storeCurrentTime);
+        }
+
+        prevIsPlayingRef.current = isPlaying;
+    }, [isPlaying, storeCurrentTime]);
+
+    /**
+     * Animation loop for smooth scrolling
+     */
+    useEffect(() => {
+        if (!isPlaying) {
+            setSmoothTime(storeCurrentTime);
+            return;
+        }
+
+        const animate = () => {
+            const now = performance.now();
+            const { time: lastAudioTime, timestamp: lastUpdateTimestamp } = lastAudioTimeRef.current;
+            const elapsedMs = now - lastUpdateTimestamp;
+            const elapsedSeconds = elapsedMs / 1000;
+            const interpolatedTime = lastAudioTime + elapsedSeconds;
+            const clampedTime = duration > 0 ? Math.min(interpolatedTime, duration) : interpolatedTime;
+            setSmoothTime(clampedTime);
+
+            if (isPlayingRef.current && (duration <= 0 || clampedTime < duration)) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+            }
+        };
+
+        animationFrameRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
+            }
+        };
+    }, [isPlaying, duration]);
+
+    /**
+     * Handle seek events
+     */
+    useEffect(() => {
+        if (!isPlaying) {
+            setSmoothTime(storeCurrentTime);
+        }
+    }, [storeCurrentTime, isPlaying]);
+
+    // Use smooth time for display, fall back to prop
+    const currentTime = isPlaying ? smoothTime : storeCurrentTime || propCurrentTime;
+
+    // ========================================
+    // Drag-to-scrub and click-to-seek functionality
+    // ========================================
+
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartXRef = useRef<number>(0);
+    const dragStartTimeRef = useRef<number>(0);
+
+    const handleMouseDown = useCallback(
+        (event: React.MouseEvent<HTMLDivElement>) => {
+            if (!trackRef.current || duration === 0) return;
+
+            event.preventDefault();
+            setIsDragging(true);
+            dragStartXRef.current = event.clientX;
+            dragStartTimeRef.current = smoothTimeRef.current;
+        },
+        [duration]
+    );
+
+    const handleMouseMove = useCallback(
+        (event: MouseEvent) => {
+            if (!isDragging || !trackRef.current || duration === 0) return;
+
+            const rect = trackRef.current.getBoundingClientRect();
+            const trackWidth = rect.width;
+            const deltaX = event.clientX - dragStartXRef.current;
+
+            if (Math.abs(deltaX) > DRAG_THRESHOLD) {
+                const timePerPixel = duration / trackWidth;
+                const deltaTime = -deltaX * timePerPixel;
+                const newTime = Math.max(0, Math.min(duration, dragStartTimeRef.current + deltaTime));
+                seek(newTime);
+            }
+        },
+        [isDragging, duration, seek]
+    );
+
+    const handleMouseUp = useCallback(
+        (event: MouseEvent) => {
+            if (!isDragging || !trackRef.current || duration === 0) return;
+
+            const rect = trackRef.current.getBoundingClientRect();
+            const deltaX = event.clientX - dragStartXRef.current;
+
+            if (Math.abs(deltaX) <= DRAG_THRESHOLD) {
+                // Click to seek
+                const clickX = event.clientX - rect.left;
+                const trackWidth = rect.width;
+                const positionRatio = clickX / trackWidth;
+                const newTime = Math.max(0, Math.min(duration, positionRatio * duration));
+                seek(newTime);
+            }
+
+            setIsDragging(false);
+        },
+        [isDragging, duration, seek]
+    );
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+            return () => {
+                window.removeEventListener('mousemove', handleMouseMove);
+                window.removeEventListener('mouseup', handleMouseUp);
+            };
+        }
+    }, [isDragging, handleMouseMove, handleMouseUp]);
+
+    // ========================================
+    // Beat rendering
+    // ========================================
+
     // Calculate visible time range based on zoom
     const visibleDuration = duration / zoomLevel;
 
@@ -213,7 +396,17 @@ function CompositeBaselineTimeline({
                 Composite Baseline ({beats.length} beats)
             </div>
             <div className="difficulty-conversion-baseline-timeline">
-                <div className="difficulty-conversion-baseline-track">
+                <div
+                    ref={trackRef}
+                    className={`difficulty-conversion-baseline-track difficulty-conversion-baseline-track--draggable ${isDragging ? 'difficulty-conversion-baseline-track--dragging' : ''}`}
+                    onMouseDown={handleMouseDown}
+                    role="slider"
+                    tabIndex={0}
+                    aria-label="Composite baseline timeline"
+                    aria-valuemin={0}
+                    aria-valuemax={duration}
+                    aria-valuenow={currentTime}
+                >
                     {displayBeats.map((beat, index) => {
                         const leftPercent = ((beat.timestamp - startTime) / visibleDuration) * 100;
                         const size = 4 + (beat.intensity || 0.5) * 6;

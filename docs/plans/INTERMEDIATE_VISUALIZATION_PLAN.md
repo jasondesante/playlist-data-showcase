@@ -353,7 +353,7 @@ function detectAddedBeats(compositeBeats: CompositeBeat[], variantBeats: Variant
 
 ### Phase 2: DifficultyConversionPanel
 - [x] **Task 2.1**: Create `DifficultyConversionPanel.tsx` with basic structure ✅ **COMPLETED** (Created component with all inline subcomponents: ConversionHeader, CompositeBaselineTimeline, DiffTimeline, ConversionStats, DifficultyConversionColumn; includes ghost/added beat detection utilities)
-- [ ] **Task 2.2**: Implement `CompositeBaselineTimeline` inline subcomponent
+- [x] **Task 2.2**: Implement `CompositeBaselineTimeline` inline subcomponent ✅ **COMPLETED** (Added drag-to-scrub with DRAG_THRESHOLD, click-to-seek, smooth animation with requestAnimationFrame, useAudioPlayerStore integration, draggable/dragging CSS states)
 - [ ] **Task 2.3**: Implement `DifficultyConversionColumn` with diff visualization
 - [ ] **Task 2.4**: Implement ghost beat detection and rendering
 - [ ] **Task 2.5**: Implement added beat detection and rendering
