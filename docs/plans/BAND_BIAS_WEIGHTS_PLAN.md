@@ -183,8 +183,8 @@ export {
 **Completed**: Also exported `BandBiasWeights` type which is referenced by `StreamScorerConfig`.
 
 ### Task 1.6: Add Tests
-- [ ] **File**: `tests/unit/beat/streamScorer.test.ts`
-- [ ] Add tests for band bias:
+- [x] **File**: `tests/unit/beat/streamScorer.test.ts`
+- [x] Add tests for band bias:
 
 ```typescript
 describe('Band Bias Weights', () => {
@@ -208,6 +208,14 @@ describe('Band Bias Weights', () => {
     });
 });
 ```
+
+**Completed**: Added 7 comprehensive tests for band bias weights:
+- `should apply band bias to final scores` - verifies score multiplication
+- `should default to no bias when not configured` - verifies default behavior
+- `should handle missing band in bias config by defaulting to 1.0` - verifies partial config handling
+- `should affect section winners based on bias` - verifies winners change based on bias
+- `should include bandBiasWeights in config when set` - verifies config getter
+- `should return bandBiasWeights in scoring result config` - verifies result includes config
 
 ---
 
