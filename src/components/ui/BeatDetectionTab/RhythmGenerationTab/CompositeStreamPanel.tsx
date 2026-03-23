@@ -1283,6 +1283,282 @@ function CompositeTimeline({
 }
 
 // ============================================================
+// SharedQuickScroll Component (Task 1.6)
+// ============================================================
+
+/**
+ * Props for SharedQuickScroll
+ */
+interface SharedQuickScrollProps {
+    /** Composite beats to show as density markers */
+    compositeBeats: CompositeBeat[];
+    /** Total audio duration in seconds */
+    duration: number;
+    /** Current zoom level */
+    zoomLevel: number;
+}
+
+/**
+ * SharedQuickScroll
+ *
+ * A shared quick scroll bar that provides synchronized navigation
+ * across all timelines in the CompositeStreamPanel.
+ *
+ * Features:
+ * - Shows combined beat density from all bands
+ * - Displays current viewport position
+ * - Click/drag to seek
+ * - Real-time sync with audio playback
+ */
+function SharedQuickScroll({
+    compositeBeats,
+    duration,
+    zoomLevel,
+}: SharedQuickScrollProps) {
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Direct store access for responsive seeking
+    const seek = useAudioPlayerStore((state) => state.seek);
+    const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);
+    const playbackState = useAudioPlayerStore((state) => state.playbackState);
+    const isPlaying = playbackState === 'playing';
+
+    // Smooth animation state
+    const animationFrameRef = useRef<number | null>(null);
+    const [smoothTime, setSmoothTime] = useState(storeCurrentTime);
+    const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
+        time: storeCurrentTime,
+        timestamp: performance.now(),
+    });
+    const isPlayingRef = useRef(isPlaying);
+    const smoothTimeRef = useRef(smoothTime);
+
+    // Keep refs in sync
+    useEffect(() => {
+        smoothTimeRef.current = smoothTime;
+    }, [smoothTime]);
+
+    useEffect(() => {
+        lastAudioTimeRef.current = {
+            time: storeCurrentTime,
+            timestamp: performance.now(),
+        };
+    }, [storeCurrentTime]);
+
+    const prevIsPlayingRef = useRef(isPlaying);
+
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+
+        const playbackJustStarted = isPlaying && !prevIsPlayingRef.current;
+        if (playbackJustStarted) {
+            lastAudioTimeRef.current = {
+                time: storeCurrentTime,
+                timestamp: performance.now(),
+            };
+            setSmoothTime(storeCurrentTime);
+        }
+
+        prevIsPlayingRef.current = isPlaying;
+    }, [isPlaying, storeCurrentTime]);
+
+    // Animation loop for smooth playhead
+    useEffect(() => {
+        if (!isPlaying) {
+            setSmoothTime(storeCurrentTime);
+            return;
+        }
+
+        const animate = () => {
+            const now = performance.now();
+            const { time: lastAudioTime, timestamp: lastUpdateTimestamp } = lastAudioTimeRef.current;
+            const elapsedMs = now - lastUpdateTimestamp;
+            const elapsedSeconds = elapsedMs / 1000;
+            const interpolatedTime = lastAudioTime + elapsedSeconds;
+            const clampedTime = duration > 0 ? Math.min(interpolatedTime, duration) : interpolatedTime;
+            setSmoothTime(clampedTime);
+
+            if (isPlayingRef.current && (duration <= 0 || clampedTime < duration)) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+            }
+        };
+
+        animationFrameRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
+            }
+        };
+    }, [isPlaying, duration]);
+
+    useEffect(() => {
+        if (!isPlaying) {
+            setSmoothTime(storeCurrentTime);
+        }
+    }, [storeCurrentTime, isPlaying]);
+
+    // ========================================
+    // Drag handling
+    // ========================================
+
+    const [isDragging, setIsDragging] = useState(false);
+
+    // Calculate viewport window based on zoom
+    const baseAnticipationWindow = 2.0;
+    const basePastWindow = 4.0;
+    const anticipationWindow = baseAnticipationWindow / zoomLevel;
+    const pastWindow = basePastWindow / zoomLevel;
+    const totalWindow = pastWindow + anticipationWindow;
+
+    const handleClick = useCallback(
+        (event: React.MouseEvent) => {
+            if (!scrollRef.current || duration === 0) return;
+
+            const rect = scrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            const newTime = positionRatio * duration;
+            seek(newTime);
+        },
+        [duration, seek]
+    );
+
+    const handleDragStart = useCallback(
+        (event: React.MouseEvent) => {
+            if (!scrollRef.current || duration === 0) return;
+
+            event.preventDefault();
+            setIsDragging(true);
+
+            const rect = scrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            const newTime = positionRatio * duration;
+            seek(newTime);
+        },
+        [duration, seek]
+    );
+
+    // Drag handling with RAF throttling
+    useEffect(() => {
+        if (!isDragging || duration === 0) return;
+
+        let pendingSeek: number | null = null;
+        let rafId: number | null = null;
+
+        const handleMouseMove = (event: MouseEvent) => {
+            if (!scrollRef.current) return;
+
+            const rect = scrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            const newTime = positionRatio * duration;
+
+            pendingSeek = newTime;
+
+            if (!rafId) {
+                rafId = requestAnimationFrame(() => {
+                    if (pendingSeek !== null) {
+                        seek(pendingSeek);
+                        pendingSeek = null;
+                    }
+                    rafId = null;
+                });
+            }
+        };
+
+        const handleMouseUp = () => {
+            setIsDragging(false);
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+            }
+        };
+    }, [isDragging, duration, seek]);
+
+    // ========================================
+    // Sample beats for density display
+    // ========================================
+
+    const sampledBeats = useMemo(() => {
+        if (compositeBeats.length === 0) return [];
+        // Sample at most 100 beats for performance
+        const sampleRate = Math.max(1, Math.floor(compositeBeats.length / 100));
+        return compositeBeats
+            .filter((_, idx) => idx % sampleRate === 0)
+            .map((beat) => ({
+                position: duration > 0 ? beat.timestamp / duration : 0,
+                color: BAND_COLORS[beat.sourceBand],
+            }));
+    }, [compositeBeats, duration]);
+
+    if (duration === 0) return null;
+
+    return (
+        <div className="composite-shared-quickscroll">
+            <div className="composite-shared-quickscroll-label">
+                Navigation
+            </div>
+            <div
+                ref={scrollRef}
+                className={`composite-shared-quickscroll-track ${isDragging ? 'composite-shared-quickscroll-track--dragging' : ''}`}
+                onClick={handleClick}
+                onMouseDown={handleDragStart}
+                role="slider"
+                tabIndex={0}
+                aria-label="Timeline navigation"
+                aria-valuemin={0}
+                aria-valuemax={duration}
+                aria-valuenow={smoothTime}
+            >
+                {/* Beat density markers */}
+                {sampledBeats.map((beat, index) => (
+                    <div
+                        key={`shared-scroll-beat-${index}`}
+                        className="composite-shared-quickscroll-marker"
+                        style={{
+                            left: `${beat.position * 100}%`,
+                            backgroundColor: beat.color,
+                        }}
+                    />
+                ))}
+
+                {/* Viewport indicator */}
+                <div
+                    className="composite-shared-quickscroll-viewport"
+                    style={{
+                        left: `${Math.max(0, ((smoothTime - pastWindow) / duration) * 100)}%`,
+                        width: `${Math.min(100, (totalWindow / duration) * 100)}%`,
+                    }}
+                />
+
+                {/* Current position indicator */}
+                <div
+                    className="composite-shared-quickscroll-position"
+                    style={{ left: `${(smoothTime / duration) * 100}%` }}
+                />
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
 // Main Component
 // ============================================================
 
@@ -1418,6 +1694,13 @@ export function CompositeStreamPanel({
                         zoomLevel={zoomLevel}
                     />
                 </div>
+
+                {/* Shared Quick Scroll Bar (Task 1.6) */}
+                <SharedQuickScroll
+                    compositeBeats={composite.beats}
+                    duration={_duration || 0}
+                    zoomLevel={zoomLevel}
+                />
             </div>
 
             {/* Legend */}
