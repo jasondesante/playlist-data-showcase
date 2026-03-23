@@ -48,9 +48,9 @@ const BIN_BOUNDARIES = [0, 10, 20, 30, 40, 50, 75, 100, 150, 200];
 
 /** Color zones for different error ranges */
 const ERROR_ZONE_COLORS: Record<string, string> = {
-    excellent: 'hsl(var(--success))',      // 0-20ms: excellent
+    excellent: 'hsl(var(--cute-green))',   // 0-20ms: excellent
     good: 'hsl(var(--primary))',           // 20-40ms: good
-    acceptable: 'hsl(var(--warning))',     // 40-75ms: acceptable
+    acceptable: 'hsl(var(--cute-yellow))', // 40-75ms: acceptable
     poor: 'hsl(var(--destructive))',       // 75ms+: poor
 };
 

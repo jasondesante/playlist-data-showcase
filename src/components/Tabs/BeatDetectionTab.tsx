@@ -556,6 +556,7 @@ export function BeatDetectionTab() {
                             outputMode={autoLevelSettings.outputMode}
                             intensityThreshold={autoLevelSettings.intensityThreshold}
                             transientConfig={autoLevelSettings.transientConfig}
+                            enableDensityValidation={autoLevelSettings.enableDensityValidation}
                             onSwitchToManual={() => setGenerationMode('manual')}
                             onRetry={() => {
                                 if (selectedTrack?.audio_url) {

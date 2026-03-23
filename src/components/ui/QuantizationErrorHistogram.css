@@ -166,7 +166,7 @@
 
 /* Bar color zones */
 .quantization-histogram-bar--excellent {
-    background: hsl(var(--success));
+    background: hsl(var(--cute-green));
 }
 
 .quantization-histogram-bar--good {
@@ -174,7 +174,7 @@
 }
 
 .quantization-histogram-bar--acceptable {
-    background: hsl(var(--warning));
+    background: hsl(var(--cute-yellow));
 }
 
 .quantization-histogram-bar--poor {

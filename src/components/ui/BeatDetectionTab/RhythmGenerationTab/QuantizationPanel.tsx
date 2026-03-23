@@ -44,6 +44,8 @@ export interface QuantizationPanelProps {
     onSeek?: (time: number) => void;
     /** Highlighted regions to show on timelines (for phrase occurrences) */
     highlightedRegions?: HighlightedRegion[];
+    /** Whether density validation was enabled during generation */
+    enableDensityValidation?: boolean;
     /** Additional CSS class names */
     className?: string;
 }
@@ -238,6 +240,7 @@ export function QuantizationPanel({
     isPlaying = false,
     onSeek,
     highlightedRegions = [],
+    enableDensityValidation = false,
     className,
 }: QuantizationPanelProps) {
     // Get quantization data from the rhythm
@@ -400,7 +403,7 @@ export function QuantizationPanel({
             <div className="quantization-pipeline-summary">
                 <h4 className="quantization-pipeline-title">Quantization Pipeline</h4>
                 <p className="quantization-pipeline-description">
-                    During quantization, {rhythm.metadata.transientsFilteredByIntensity} transients were filtered out by intensity thresholding and density validation,
+                    During quantization, {rhythm.metadata.transientsFilteredByIntensity} transients were filtered out by intensity thresholding{enableDensityValidation ? ' and density validation' : ''},
                     leaving {rhythm.metadata.transientsDetected - rhythm.metadata.transientsFilteredByIntensity} transients to be quantized into {overallStats.totalBeats} beats.
                 </p>
                 <div className="quantization-pipeline-stats">
@@ -420,7 +423,7 @@ export function QuantizationPanel({
                         <span className="quantization-pipeline-stat-label">Quantized</span>
                         <span className="quantization-pipeline-stat-value">{overallStats.totalBeats}</span>
                     </div>
-                    {overallStats.densityValidation.maxRetryCount > 0 && (
+                    {enableDensityValidation && overallStats.densityValidation.maxRetryCount > 0 && (
                         <div className="quantization-pipeline-stat">
                             <span className="quantization-pipeline-stat-label">Retries</span>
                             <span className="quantization-pipeline-stat-value">{overallStats.densityValidation.maxRetryCount}</span>
@@ -432,7 +435,7 @@ export function QuantizationPanel({
                     <h5 className="quantization-pipeline-per-band-title">Per-Band Breakdown</h5>
                     {bands.map((band) => {
                         const bandValidation = overallStats.densityValidation.bands[band];
-                        const hasRetries = bandValidation.retryCount > 0;
+                        const hasRetries = enableDensityValidation && bandValidation.retryCount > 0;
                         const totalInBand = rhythm.analysis.transientAnalysis.transients.filter(t => t.band === band).length;
                         const quantizedInBand = bandStreams[band].beats.length;
                         return (
@@ -500,8 +503,8 @@ export function QuantizationPanel({
                 ]}
             />
 
-            {/* Density validation info */}
-            {overallStats.densityValidation && (
+            {/* Density validation info - only show if density validation was enabled */}
+            {enableDensityValidation && overallStats.densityValidation && (
                 <div className="quantization-density-info">
                     <div className="quantization-density-item">
                         <span className="quantization-density-label">Density Validation</span>

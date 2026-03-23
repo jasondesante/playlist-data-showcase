@@ -60,6 +60,8 @@ export interface RhythmGenerationTabProps {
     intensityThreshold?: number;
     /** Per-band transient detection configuration from Step 1 */
     transientConfig?: BandTransientConfigOverrides;
+    /** Whether density validation was enabled during generation */
+    enableDensityValidation?: boolean;
     /** Callback when user wants to switch to manual mode */
     onSwitchToManual?: () => void;
     /** Callback when user wants to retry generation */
@@ -133,6 +135,8 @@ interface RhythmGenerationResultProps {
     onRegenerateWithThreshold?: (threshold: number) => void;
     /** Whether regeneration is in progress */
     isRegenerating?: boolean;
+    /** Whether density validation was enabled during generation */
+    enableDensityValidation?: boolean;
 }
 
 // Section identifiers for accordion behavior
@@ -150,6 +154,7 @@ function RhythmGenerationResult({
     transientConfig,
     onRegenerateWithThreshold,
     isRegenerating = false,
+    enableDensityValidation = false,
 }: RhythmGenerationResultProps) {
     const { metadata } = rhythm;
 
@@ -321,6 +326,7 @@ function RhythmGenerationResult({
                             isPlaying={isPlaying}
                             onSeek={onSeek}
                             highlightedRegions={highlightedRegions}
+                            enableDensityValidation={enableDensityValidation}
                         />
                     </CollapsibleSection>
                 </div>
@@ -430,6 +436,7 @@ export function RhythmGenerationTab({
     outputMode: _outputMode = 'composite',
     intensityThreshold = 0.2,
     transientConfig,
+    enableDensityValidation = false,
     onSwitchToManual,
     onRetry,
     onRegenerateWithThreshold,
@@ -538,6 +545,7 @@ export function RhythmGenerationTab({
                     transientConfig={transientConfig}
                     onRegenerateWithThreshold={handleRegenerateWithThreshold}
                     isRegenerating={isGenerating}
+                    enableDensityValidation={enableDensityValidation}
                 />
             );
         }
