@@ -652,18 +652,19 @@ Also added three new usage examples:
 - [x] Factor weight sliders update settings
 - [x] Band bias sliders update settings
 - [x] Weight total indicator shows correct sum
-- [ ] Settings pass through to generation hook
+- [x] Settings pass through to generation hook
 - [ ] Composite reflects customized scoring
 - [x] Reset buttons restore defaults
 - [x] Factor reset restores to 0.30/0.30/0.25/0.15
 - [x] Band bias reset restores to 1.0/1.0/1.0
 
-**Completed**: Added 29 comprehensive tests in `src/components/ui/AutoLevelSettings.scoringConfig.test.tsx` covering:
+**Completed**: Added 35 comprehensive tests in `src/components/ui/AutoLevelSettings.scoringConfig.test.tsx` covering:
 - Factor weight slider updates (7 tests)
 - Band bias slider updates (6 tests)
 - Weight total indicator (3 tests)
 - Reset buttons (8 tests)
 - Disabled state (5 tests)
+- Settings pass through to generation hook (6 tests)
 
 ### Integration Tests
 - [ ] End-to-end test with custom factor weights

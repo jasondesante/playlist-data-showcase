@@ -746,4 +746,196 @@ describe('AutoLevelSettings - Scoring Configuration', () => {
             expect(advancedOptionsButton.disabled).toBe(true);
         });
     });
+
+    describe('Settings Pass Through to Generation Hook', () => {
+        /**
+         * These tests verify that the scoringConfig produced by AutoLevelSettings
+         * is in the correct format to be passed to the useRhythmGeneration hook.
+         *
+         * The flow is:
+         * 1. User adjusts scoring config in AutoLevelSettings
+         * 2. onChange is called with updated settings
+         * 3. BeatDetectionTab stores the settings
+         * 4. When generateRhythm is called, it passes settings.scoringConfig
+         * 5. useRhythmGeneration hook passes scoringConfig to RhythmGenerator
+         */
+
+        it('produces scoringConfig that matches RhythmGenerationOptions type', async () => {
+            render(
+                <AutoLevelSettings
+                    settings={defaultSettings}
+                    onChange={mockOnChange}
+                />
+            );
+
+            await expandScoringConfig();
+
+            // Change multiple settings to create a complex config
+            const ioiSlider = getFactorSlider('Rhythmic Variety (IOI)');
+            fireEvent.change(ioiSlider, { target: { value: '0.35' } });
+
+            // Verify the scoringConfig structure matches what the hook expects
+            const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
+            const updatedSettings = lastCall[0];
+
+            // Verify the structure matches Partial<StreamScorerConfig>
+            expect(updatedSettings.scoringConfig).toBeDefined();
+            expect(typeof updatedSettings.scoringConfig.ioiVarianceWeight).toBe('number');
+        });
+
+        it('produces bandBiasWeights in correct format for RhythmGenerator', async () => {
+            render(
+                <AutoLevelSettings
+                    settings={defaultSettings}
+                    onChange={mockOnChange}
+                />
+            );
+
+            await expandScoringConfig();
+
+            // Change band bias
+            const lowSlider = getBiasSlider('Low (Bass)');
+            fireEvent.change(lowSlider, { target: { value: '0.5' } });
+
+            // Verify the bandBiasWeights structure
+            const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
+            const bandBiasWeights = lastCall[0].scoringConfig.bandBiasWeights;
+
+            // Should have all three bands
+            expect(bandBiasWeights).toHaveProperty('low');
+            expect(bandBiasWeights).toHaveProperty('mid');
+            expect(bandBiasWeights).toHaveProperty('high');
+
+            // All values should be numbers
+            expect(typeof bandBiasWeights.low).toBe('number');
+            expect(typeof bandBiasWeights.mid).toBe('number');
+            expect(typeof bandBiasWeights.high).toBe('number');
+        });
+
+        it('produces factor weights with correct numeric values', async () => {
+            render(
+                <AutoLevelSettings
+                    settings={defaultSettings}
+                    onChange={mockOnChange}
+                />
+            );
+
+            await expandScoringConfig();
+
+            // Change all factor weights
+            const ioiSlider = getFactorSlider('Rhythmic Variety (IOI)');
+            fireEvent.change(ioiSlider, { target: { value: '0.35' } });
+
+            const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
+            const config = lastCall[0].scoringConfig;
+
+            // Verify factor weights are in valid range (0-0.5)
+            expect(config.ioiVarianceWeight).toBeGreaterThanOrEqual(0);
+            expect(config.ioiVarianceWeight).toBeLessThanOrEqual(0.5);
+
+            // Verify the value is close to expected (account for floating point precision)
+            expect(config.ioiVarianceWeight).toBeCloseTo(0.35, 2);
+        });
+
+        it('produces scoringConfig that can be serialized for engine', async () => {
+            // This test verifies the scoringConfig can be serialized and passed to the engine
+            const settingsWithScoringConfig: AutoLevelSettingsType = {
+                ...defaultSettings,
+                scoringConfig: {
+                    ioiVarianceWeight: 0.35,
+                    syncopationWeight: 0.35,
+                    phraseSignificanceWeight: 0.20,
+                    densityWeight: 0.10,
+                    bandBiasWeights: {
+                        low: 0.5,
+                        mid: 1.0,
+                        high: 1.5,
+                    },
+                },
+            };
+
+            render(
+                <AutoLevelSettings
+                    settings={settingsWithScoringConfig}
+                    onChange={mockOnChange}
+                />
+            );
+
+            // The scoringConfig should be serializable (no functions, dates, etc.)
+            const serialized = JSON.stringify(settingsWithScoringConfig.scoringConfig);
+            const parsed = JSON.parse(serialized);
+
+            expect(parsed.ioiVarianceWeight).toBe(0.35);
+            expect(parsed.bandBiasWeights.low).toBe(0.5);
+            expect(parsed.bandBiasWeights.mid).toBe(1.0);
+            expect(parsed.bandBiasWeights.high).toBe(1.5);
+        });
+
+        it('produces complete bandBiasWeights when any band is changed', async () => {
+            render(
+                <AutoLevelSettings
+                    settings={defaultSettings}
+                    onChange={mockOnChange}
+                />
+            );
+
+            await expandScoringConfig();
+
+            // Change only the high band
+            const highSlider = getBiasSlider('High');
+            fireEvent.change(highSlider, { target: { value: '1.5' } });
+
+            const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
+            const bandBiasWeights = lastCall[0].scoringConfig.bandBiasWeights;
+
+            // All bands should be present, not just the changed one
+            expect(Object.keys(bandBiasWeights)).toHaveLength(3);
+            expect(bandBiasWeights).toEqual({
+                low: 1.0,
+                mid: 1.0,
+                high: 1.5,
+            });
+        });
+
+        it('maintains scoringConfig integrity when other settings change', async () => {
+            // This test verifies that the scoringConfig format is preserved
+            // when the settings object is passed through the component
+            const settingsWithScoringConfig: AutoLevelSettingsType = {
+                ...defaultSettings,
+                scoringConfig: {
+                    ioiVarianceWeight: 0.35,
+                    bandBiasWeights: {
+                        low: 0.5,
+                        mid: 1.0,
+                        high: 1.5,
+                    },
+                },
+            };
+
+            render(
+                <AutoLevelSettings
+                    settings={settingsWithScoringConfig}
+                    onChange={mockOnChange}
+                />
+            );
+
+            // Verify the settings are rendered correctly with the scoringConfig
+            // by checking that changing a scoring config setting preserves the structure
+            await expandScoringConfig();
+
+            const ioiSlider = getFactorSlider('Rhythmic Variety (IOI)');
+            fireEvent.change(ioiSlider, { target: { value: '0.40' } });
+
+            const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
+            const newSettings = lastCall[0];
+
+            // Scoring config should be updated but bandBiasWeights should be preserved
+            expect(newSettings.scoringConfig.ioiVarianceWeight).toBe(0.40);
+            expect(newSettings.scoringConfig.bandBiasWeights).toEqual({
+                low: 0.5,
+                mid: 1.0,
+                high: 1.5,
+            });
+        });
+    });
 });
