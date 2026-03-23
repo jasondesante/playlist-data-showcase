@@ -19,7 +19,6 @@ import './TransientDetectionPanel.css';
 import { TransientTimeline } from '../../TransientTimeline';
 import { TransientInspector } from '../../TransientInspector';
 import { ZoomControls } from '../../ZoomControls';
-import { Tooltip } from '../../Tooltip';
 import type { GeneratedRhythm, TransientResult, Band, BandTransientConfigOverrides, BandTransientConfig } from '../../../../types/rhythmGeneration';
 import { DEFAULT_BAND_TRANSIENT_CONFIG } from '../../../../types/rhythmGeneration';
 
@@ -195,6 +194,7 @@ function BandToggle({ activeBand, onBandChange }: BandToggleProps) {
 
 /**
  * Band breakdown card showing statistics for a single band
+ * Combines detection results with configuration used
  */
 interface BandBreakdownCardProps {
     band: Band;
@@ -203,9 +203,13 @@ interface BandBreakdownCardProps {
     hiddenCount: number;
     color: string;
     frequencyRange: string;
+    /** Per-band config that was used during generation */
+    config: BandTransientConfig;
+    /** Whether this band had custom config applied */
+    isCustom?: boolean;
 }
 
-function BandBreakdownCard({ band, transients, totalCount, hiddenCount, color, frequencyRange }: BandBreakdownCardProps) {
+function BandBreakdownCard({ band, transients, totalCount, hiddenCount, color, frequencyRange, config, isCustom = false }: BandBreakdownCardProps) {
     // Calculate statistics
     const visibleCount = transients.length;
     const avgIntensity = visibleCount > 0
@@ -223,27 +227,56 @@ function BandBreakdownCard({ band, transients, totalCount, hiddenCount, color, f
 
     return (
         <div className="transient-band-card" style={{ '--band-color': color } as React.CSSProperties}>
+            {/* Header with band name and count */}
             <div className="transient-band-card-header">
                 <span className="transient-band-card-name">{band.charAt(0).toUpperCase() + band.slice(1)}</span>
                 <span className="transient-band-card-count">
-                    {hiddenCount > 0 ? `${visibleCount} / ${totalCount}` : visibleCount}
+                    {hiddenCount > 0 ? `${visibleCount} / ${totalCount}` : totalCount}
                 </span>
             </div>
             <div className="transient-band-card-range">{frequencyRange}</div>
-            <div className="transient-band-card-stats">
-                <div className="transient-band-card-stat">
-                    <span className="transient-band-card-stat-label">Avg Intensity</span>
-                    <span className="transient-band-card-stat-value">{(avgIntensity * 100).toFixed(0)}%</span>
-                </div>
-                {primaryMethod && (
+
+            {/* Results section */}
+            <div className="transient-band-card-section transient-band-card-results">
+                <div className="transient-band-card-section-label">Results</div>
+                <div className="transient-band-card-stats">
                     <div className="transient-band-card-stat">
-                        <span className="transient-band-card-stat-label">Method</span>
-                        <span className="transient-band-card-stat-badge">
-                            {DETECTION_METHOD_LABELS[primaryMethod[0]] || primaryMethod[0]}
-                        </span>
+                        <span className="transient-band-card-stat-label">Avg Intensity</span>
+                        <span className="transient-band-card-stat-value">{(avgIntensity * 100).toFixed(0)}%</span>
                     </div>
-                )}
+                    {primaryMethod && (
+                        <div className="transient-band-card-stat">
+                            <span className="transient-band-card-stat-label">Method</span>
+                            <span className="transient-band-card-stat-badge">
+                                {DETECTION_METHOD_LABELS[primaryMethod[0]] || primaryMethod[0]}
+                            </span>
+                        </div>
+                    )}
+                </div>
             </div>
+
+            {/* Config section (muted styling) */}
+            <div className="transient-band-card-section transient-band-card-config">
+                <div className="transient-band-card-section-label">
+                    Config
+                    {isCustom && <span className="transient-band-card-custom-badge">Custom</span>}
+                </div>
+                <div className="transient-band-card-config-row">
+                    <span className="transient-band-card-config-item">
+                        <span className="transient-band-card-config-label">Thr:</span>
+                        <span className="transient-band-card-config-value">{config.threshold.toFixed(2)}</span>
+                    </span>
+                    <span className="transient-band-card-config-item">
+                        <span className="transient-band-card-config-label">Min:</span>
+                        <span className="transient-band-card-config-value">{(config.minInterval * 1000).toFixed(0)}ms</span>
+                    </span>
+                    <span className="transient-band-card-config-item">
+                        <span className="transient-band-card-config-label">Adp:</span>
+                        <span className="transient-band-card-config-value">{config.adaptiveThresholding ? 'On' : 'Off'}</span>
+                    </span>
+                </div>
+            </div>
+
             <div className="transient-band-card-indicator" style={{ backgroundColor: color }} />
         </div>
     );
@@ -345,53 +378,6 @@ export function TransientDetectionPanel({
 
     return (
         <div className={`transient-detection-panel ${className || ''}`}>
-            {/* Detection Configuration Used */}
-            <div className="transient-config-summary">
-                <h4 className="transient-config-summary-title">Detection Configuration Used</h4>
-                <p className="transient-config-summary-description">
-                    {transientConfig
-                        ? 'Custom per-band settings were applied during transient detection.'
-                        : 'Default per-band settings were used for transient detection.'}
-                </p>
-                <div className="transient-config-per-band">
-                    {(['low', 'mid', 'high'] as const).map((band) => {
-                        const config: BandTransientConfig = transientConfig?.[band]
-                            ? { ...DEFAULT_BAND_TRANSIENT_CONFIG[band], ...transientConfig[band] }
-                            : DEFAULT_BAND_TRANSIENT_CONFIG[band];
-                        const isCustom = !!transientConfig?.[band];
-                        return (
-                            <div key={band} className={`transient-config-band transient-config-band--${band}`}>
-                                <div className="transient-config-band-header">
-                                    <span className="transient-config-band-name">
-                                        {band.charAt(0).toUpperCase() + band.slice(1)}
-                                    </span>
-                                    {isCustom && (
-                                        <span className="transient-config-band-custom-badge">Custom</span>
-                                    )}
-                                </div>
-                                <div className="transient-config-band-stats">
-                                    <div className="transient-config-band-stat">
-                                        <span className="transient-config-band-stat-label">Threshold</span>
-                                        <span className="transient-config-band-stat-value">{config.threshold.toFixed(2)}</span>
-                                    </div>
-                                    <div className="transient-config-band-stat">
-                                        <span className="transient-config-band-stat-label">
-                                            Min Interval
-                                            <Tooltip content="Non-Maximum Suppression (NMS): Within each band's buffer window (20-50ms depending on frequency), only the strongest transient is kept. Weaker peaks are suppressed to prevent multiple detections for the same acoustic event." />
-                                        </span>
-                                        <span className="transient-config-band-stat-value">{(config.minInterval * 1000).toFixed(0)}ms</span>
-                                    </div>
-                                    <div className="transient-config-band-stat">
-                                        <span className="transient-config-band-stat-label">Adaptive</span>
-                                        <span className="transient-config-band-stat-value">{config.adaptiveThresholding ? 'On' : 'Off'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
             {/* Filter controls */}
             <div className="transient-detection-controls">
                 <IntensityFilter
@@ -409,19 +395,27 @@ export function TransientDetectionPanel({
                 />
             </div>
 
-            {/* Band breakdown cards */}
+            {/* Band breakdown cards (combined results + config) */}
             <div className="transient-detection-bands">
-                {(Object.keys(transientsByBand) as Band[]).map((band) => (
-                    <BandBreakdownCard
-                        key={band}
-                        band={band}
-                        transients={transientsByBand[band]}
-                        totalCount={totalByBand[band]}
-                        hiddenCount={hiddenByBand[band]}
-                        color={BAND_COLORS[band]}
-                        frequencyRange={BAND_RANGES[band]}
-                    />
-                ))}
+                {(Object.keys(transientsByBand) as Band[]).map((band) => {
+                    const bandConfig: BandTransientConfig = transientConfig?.[band]
+                        ? { ...DEFAULT_BAND_TRANSIENT_CONFIG[band], ...transientConfig[band] }
+                        : DEFAULT_BAND_TRANSIENT_CONFIG[band];
+                    const isCustom = !!transientConfig?.[band];
+                    return (
+                        <BandBreakdownCard
+                            key={band}
+                            band={band}
+                            transients={transientsByBand[band]}
+                            totalCount={totalByBand[band]}
+                            hiddenCount={hiddenByBand[band]}
+                            color={BAND_COLORS[band]}
+                            frequencyRange={BAND_RANGES[band]}
+                            config={bandConfig}
+                            isCustom={isCustom}
+                        />
+                    );
+                })}
             </div>
 
             {/* Transient Timeline (Task 4.2) */}

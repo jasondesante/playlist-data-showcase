@@ -340,6 +340,109 @@
     margin-bottom: 0.75rem;
 }
 
+/* Card sections */
+.transient-band-card-section {
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid hsl(var(--border) / 0.5);
+}
+
+.transient-band-card-section:first-of-type {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+}
+
+.transient-band-card-section-label {
+    font-size: 0.5625rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.375rem;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+/* Results section - prominent styling */
+.transient-band-card-results .transient-band-card-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.transient-band-card-results .transient-band-card-stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.transient-band-card-results .transient-band-card-stat-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.transient-band-card-results .transient-band-card-stat-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+.transient-band-card-results .transient-band-card-stat-badge {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    background: hsl(var(--surface-3));
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+/* Config section - muted styling */
+.transient-band-card-config {
+    opacity: 0.8;
+}
+
+.transient-band-card-config-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.transient-band-card-config-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.transient-band-card-config-label {
+    font-size: 0.5625rem;
+    color: hsl(var(--muted-foreground) / 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.transient-band-card-config-value {
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+}
+
+.transient-band-card-custom-badge {
+    font-size: 0.5rem;
+    font-weight: 600;
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.15);
+    padding: 0.0625rem 0.25rem;
+    border-radius: 0.125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Legacy stats styling (for backwards compatibility) */
 .transient-band-card-stats {
     display: flex;
     flex-direction: column;
