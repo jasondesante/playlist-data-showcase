@@ -34,6 +34,8 @@ export type GridDisplayMode = 'straight_16th' | 'triplet_8th';
 export interface QuantizedBeatTimelineProps {
     /** Array of quantized beats to visualize */
     beats: GeneratedBeat[];
+    /** Current zoom level (affects grid line opacity) */
+    zoomLevel?: number;
     /** Current audio playback time in seconds */
     currentTime?: number;
     /** Total audio duration in seconds */
