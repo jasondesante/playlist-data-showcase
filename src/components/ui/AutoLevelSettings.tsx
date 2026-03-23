@@ -204,87 +204,6 @@ export function AutoLevelSettings({
                 defaultCollapsed={defaultCollapsed}
             >
                 <div className="auto-level-settings__content">
-                    {/* Preset Selection */}
-                    <div className="auto-level-settings__form-group">
-                        <label className="auto-level-settings__form-label">Preset</label>
-                        <div className="auto-level-settings__preset-buttons">
-                            {PRESETS.map((preset) => (
-                                <button
-                                    key={preset.value}
-                                    type="button"
-                                    className={cn(
-                                        'auto-level-settings__preset-button',
-                                        settings.preset === preset.value &&
-                                            'auto-level-settings__preset-button--active'
-                                    )}
-                                    onClick={() => handlePresetChange(preset.value)}
-                                    disabled={disabled}
-                                    title={preset.description}
-                                >
-                                    <span className="auto-level-settings__preset-button-text">
-                                        {preset.label}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Difficulty Selection */}
-                    <div className="auto-level-settings__form-group">
-                        <label className="auto-level-settings__form-label">Difficulty</label>
-                        <div className="auto-level-settings__difficulty-buttons">
-                            {DIFFICULTIES.map((diff) => (
-                                <button
-                                    key={diff.value}
-                                    type="button"
-                                    className={cn(
-                                        'auto-level-settings__difficulty-button',
-                                        settings.difficulty === diff.value &&
-                                            'auto-level-settings__difficulty-button--active'
-                                    )}
-                                    onClick={() => handleDifficultyChange(diff.value)}
-                                    disabled={disabled}
-                                    title={diff.description}
-                                >
-                                    <span className="auto-level-settings__difficulty-button-text">
-                                        {diff.label}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Output Mode Selection */}
-                    <div className="auto-level-settings__form-group">
-                        <label className="auto-level-settings__form-label">Output Mode</label>
-                        <div className="auto-level-settings__output-mode-buttons">
-                            {OUTPUT_MODES.map((mode) => (
-                                <button
-                                    key={mode.value}
-                                    type="button"
-                                    className={cn(
-                                        'auto-level-settings__output-mode-button',
-                                        settings.outputMode === mode.value &&
-                                            'auto-level-settings__output-mode-button--active',
-                                        mode.band && `auto-level-settings__output-mode-button--${mode.band}`
-                                    )}
-                                    onClick={() => handleOutputModeChange(mode.value)}
-                                    disabled={disabled}
-                                    title={mode.description}
-                                >
-                                    {mode.band && (
-                                        <span
-                                            className="auto-level-settings__band-dot"
-                                            style={{ backgroundColor: BAND_COLORS[mode.band] }}
-                                        />
-                                    )}
-                                    <span className="auto-level-settings__output-mode-button-text">
-                                        {mode.label}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
 
                     {/* Intensity Threshold Slider */}
                     <div className="auto-level-settings__form-group">
@@ -588,36 +507,89 @@ export function AutoLevelSettings({
                                     )}
                                 </div>
 
-                                {/* Band Colors Preview */}
-                                <div className="auto-level-settings__section">
-                                    <h4 className="auto-level-settings__section-title">
-                                        Band Colors Reference
-                                    </h4>
-                                    <div className="auto-level-settings__band-colors">
-                                        {(['low', 'mid', 'high'] as const).map((band) => (
-                                            <div
-                                                key={band}
-                                                className="auto-level-settings__band-color-item"
+
+                                {/* Preset Selection */}
+                                <div className="auto-level-settings__form-group">
+                                    <label className="auto-level-settings__form-label">Preset</label>
+                                    <div className="auto-level-settings__preset-buttons">
+                                        {PRESETS.map((preset) => (
+                                            <button
+                                                key={preset.value}
+                                                type="button"
+                                                className={cn(
+                                                    'auto-level-settings__preset-button',
+                                                    settings.preset === preset.value &&
+                                                    'auto-level-settings__preset-button--active'
+                                                )}
+                                                onClick={() => handlePresetChange(preset.value)}
+                                                disabled={disabled}
+                                                title={preset.description}
                                             >
-                                                <span
-                                                    className="auto-level-settings__band-color-dot"
-                                                    style={{ backgroundColor: BAND_COLORS[band] }}
-                                                />
-                                                <span className="auto-level-settings__band-color-label">
-                                                    {band.charAt(0).toUpperCase() + band.slice(1)}{' '}
-                                                    Band
+                                                <span className="auto-level-settings__preset-button-text">
+                                                    {preset.label}
                                                 </span>
-                                            </div>
+                                            </button>
                                         ))}
                                     </div>
                                 </div>
 
-                                {/* Info Text */}
-                                <p className="auto-level-settings__advanced-info">
-                                    Advanced options like seed, verbose logging, and cache settings
-                                    are available programmatically via the{' '}
-                                    <code>RhythmGenerator</code> API.
-                                </p>
+                                {/* Difficulty Selection */}
+                                <div className="auto-level-settings__form-group">
+                                    <label className="auto-level-settings__form-label">Difficulty</label>
+                                    <div className="auto-level-settings__difficulty-buttons">
+                                        {DIFFICULTIES.map((diff) => (
+                                            <button
+                                                key={diff.value}
+                                                type="button"
+                                                className={cn(
+                                                    'auto-level-settings__difficulty-button',
+                                                    settings.difficulty === diff.value &&
+                                                    'auto-level-settings__difficulty-button--active'
+                                                )}
+                                                onClick={() => handleDifficultyChange(diff.value)}
+                                                disabled={disabled}
+                                                title={diff.description}
+                                            >
+                                                <span className="auto-level-settings__difficulty-button-text">
+                                                    {diff.label}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Output Mode Selection */}
+                                <div className="auto-level-settings__form-group">
+                                    <label className="auto-level-settings__form-label">Output Mode</label>
+                                    <div className="auto-level-settings__output-mode-buttons">
+                                        {OUTPUT_MODES.map((mode) => (
+                                            <button
+                                                key={mode.value}
+                                                type="button"
+                                                className={cn(
+                                                    'auto-level-settings__output-mode-button',
+                                                    settings.outputMode === mode.value &&
+                                                    'auto-level-settings__output-mode-button--active',
+                                                    mode.band && `auto-level-settings__output-mode-button--${mode.band}`
+                                                )}
+                                                onClick={() => handleOutputModeChange(mode.value)}
+                                                disabled={disabled}
+                                                title={mode.description}
+                                            >
+                                                {mode.band && (
+                                                    <span
+                                                        className="auto-level-settings__band-dot"
+                                                        style={{ backgroundColor: BAND_COLORS[mode.band] }}
+                                                    />
+                                                )}
+                                                <span className="auto-level-settings__output-mode-button-text">
+                                                    {mode.label}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
                             </div>
                         )}
                     </div>
