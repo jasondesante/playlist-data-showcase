@@ -539,8 +539,8 @@ interface RhythmGenerationTabProps {
 
 ## Phase 4: CompositeStreamPanel Visualization
 ### Task 4.1: Display Scoring Config Info
-- [ ] **File**: `src/components/ui/BeatDetectionTab/RhythmGenerationTab/CompositeStreamPanel.tsx`
-- [ ] Add a note showing if custom scoring config was applied:
+- [x] **File**: `src/components/ui/BeatDetectionTab/RhythmGenerationTab/CompositeStreamPanel.tsx`
+- [x] Add a note showing if custom scoring config was applied:
 
 ```tsx
 {scoringConfig && (
@@ -566,6 +566,8 @@ interface RhythmGenerationTabProps {
     </div>
 )}
 ```
+
+**Completed**: Added `Info` icon import, used `scoringConfig` prop, and added display section showing custom scoring config info with band bias values (color-coded by band) and factor weights. Added CSS styles for the new `.composite-scoring-config-info` section.
 
 ---
 

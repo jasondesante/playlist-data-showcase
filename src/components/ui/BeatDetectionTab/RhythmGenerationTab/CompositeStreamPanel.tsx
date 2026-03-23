@@ -14,7 +14,7 @@
  */
 
 import { useRef, useState, useEffect, useCallback, useMemo, memo } from 'react';
-import { Combine, PieChart, Layers } from 'lucide-react';
+import { Combine, PieChart, Layers, Info } from 'lucide-react';
 import './CompositeStreamPanel.css';
 import { ZoomControls } from '../../ZoomControls';
 import { useAudioPlayerStore } from '../../../../store/audioPlayerStore';
@@ -1578,7 +1578,7 @@ export function CompositeStreamPanel({
     isPlaying: _isPlaying = false,
     onSeek: _onSeek,
     highlightedRegions: _highlightedRegions = [],
-    scoringConfig: _scoringConfig,
+    scoringConfig,
     className,
 }: CompositeStreamPanelProps) {
     // Get composite data from the rhythm
@@ -1638,6 +1638,45 @@ export function CompositeStreamPanel({
                     icon={<PieChart size={16} />}
                 />
             </div>
+
+            {/* Scoring Config Info (Task 4.1) */}
+            {scoringConfig && (
+                <div className="composite-scoring-config-info">
+                    <Info size={14} />
+                    <span>
+                        Custom scoring applied
+                        {scoringConfig.bandBiasWeights && (
+                            <>
+                                {' | '}
+                                <span className="scoring-config-label">Bias:</span>
+                                {' '}
+                                <span style={{ color: BAND_COLORS.low }}>Low {scoringConfig.bandBiasWeights.low.toFixed(1)}x</span>
+                                {', '}
+                                <span style={{ color: BAND_COLORS.mid }}>Mid {scoringConfig.bandBiasWeights.mid.toFixed(1)}x</span>
+                                {', '}
+                                <span style={{ color: BAND_COLORS.high }}>High {scoringConfig.bandBiasWeights.high.toFixed(1)}x</span>
+                            </>
+                        )}
+                        {(scoringConfig.ioiVarianceWeight !== undefined ||
+                          scoringConfig.syncopationWeight !== undefined ||
+                          scoringConfig.phraseSignificanceWeight !== undefined ||
+                          scoringConfig.densityWeight !== undefined) && (
+                            <>
+                                {' | '}
+                                <span className="scoring-config-label">Factors:</span>
+                                {' IOI '}
+                                <span className="scoring-config-value">{(scoringConfig.ioiVarianceWeight ?? 0.30).toFixed(2)}</span>
+                                {', Sync '}
+                                <span className="scoring-config-value">{(scoringConfig.syncopationWeight ?? 0.30).toFixed(2)}</span>
+                                {', Phrase '}
+                                <span className="scoring-config-value">{(scoringConfig.phraseSignificanceWeight ?? 0.25).toFixed(2)}</span>
+                                {', Density '}
+                                <span className="scoring-config-value">{(scoringConfig.densityWeight ?? 0.15).toFixed(2)}</span>
+                            </>
+                        )}
+                    </span>
+                </div>
+            )}
 
             {/* Beats per band distribution bar */}
             <div className="composite-distribution-section">
