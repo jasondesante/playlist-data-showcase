@@ -352,7 +352,7 @@ function detectAddedBeats(compositeBeats: CompositeBeat[], variantBeats: Variant
 - [x] **Task 1.7**: Test audio sync and drag-to-scrub ✅ **COMPLETED** (Verified implementation follows MultiBandVisualization patterns: uses useAudioPlayerStore for seek/currentTime, requestAnimationFrame for smooth animation, DRAG_THRESHOLD=5 for drag detection, RAF throttling for quick scroll)
 
 ### Phase 2: DifficultyConversionPanel
-- [ ] **Task 2.1**: Create `DifficultyConversionPanel.tsx` with basic structure
+- [x] **Task 2.1**: Create `DifficultyConversionPanel.tsx` with basic structure ✅ **COMPLETED** (Created component with all inline subcomponents: ConversionHeader, CompositeBaselineTimeline, DiffTimeline, ConversionStats, DifficultyConversionColumn; includes ghost/added beat detection utilities)
 - [ ] **Task 2.2**: Implement `CompositeBaselineTimeline` inline subcomponent
 - [ ] **Task 2.3**: Implement `DifficultyConversionColumn` with diff visualization
 - [ ] **Task 2.4**: Implement ghost beat detection and rendering
