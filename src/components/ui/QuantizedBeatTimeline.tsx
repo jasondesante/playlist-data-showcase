@@ -52,6 +52,10 @@ export interface QuantizedBeatTimelineProps {
     anticipationWindow?: number;
     /** Past window in seconds for showing beats that have passed (default: 4.0) */
     pastWindow?: number;
+    /** Base anticipation window for zoom calculation (default: 2.0) */
+    baseAnticipationWindow?: number;
+    /** Base past window for zoom calculation (default: 4.0) */
+    basePastWindow?: number;
     /** Highlighted regions to show on the timeline (for phrase occurrences) */
     highlightedRegions?: HighlightedRegion[];
     /** Grid display mode for subdivision lines (16th notes vs triplets) */
@@ -123,6 +127,8 @@ export function QuantizedBeatTimeline({
     selectedBeatIndex = null,
     anticipationWindow = 2.0,
     pastWindow = 4.0,
+    baseAnticipationWindow = 2.0,
+    basePastWindow = 4.0,
     highlightedRegions = [],
     gridDisplayMode: propGridDisplayMode,
     onGridDisplayModeChange,
@@ -286,6 +292,33 @@ export function QuantizedBeatTimeline({
 
     // Total visible time window
     const totalWindow = pastWindow + anticipationWindow;
+
+    // Calculate effective zoom level from window sizes
+    // When zoomed in, windows are smaller, so zoom = baseWindow / currentWindow
+    const effectiveZoom = useMemo(() => {
+        const baseTotalWindow = baseAnticipationWindow + basePastWindow;
+        return baseTotalWindow / totalWindow;
+    }, [baseAnticipationWindow, basePastWindow, totalWindow]);
+
+    // Calculate grid line opacity based on zoom level
+    // Higher zoom = more visible grid lines
+    const gridLineOpacity = useMemo(() => {
+        // Base opacity at 1x zoom: 0.6
+        // Scale up with zoom, max at 1.0
+        const baseOpacity = 0.6;
+        const maxOpacity = 1.0;
+        const scaleFactor = 0.2; // How much to increase per zoom level
+        return Math.min(maxOpacity, baseOpacity + (effectiveZoom - 1) * scaleFactor);
+    }, [effectiveZoom]);
+
+    const subdivisionLineOpacity = useMemo(() => {
+        // Base opacity at 1x zoom: 0.3
+        // Scale up with zoom, max at 0.8
+        const baseOpacity = 0.4;
+        const maxOpacity = 1;
+        const scaleFactor = 0.3; // How much to increase per zoom level
+        return Math.min(maxOpacity, baseOpacity + (effectiveZoom - 1) * scaleFactor);
+    }, [effectiveZoom]);
 
     const handleMouseDown = useCallback(
         (event: React.MouseEvent<HTMLDivElement>) => {
@@ -754,7 +787,10 @@ export function QuantizedBeatTimeline({
                     <div
                         key={`grid-line-${beatIndex}`}
                         className="quantized-beat-timeline-grid-line"
-                        style={{ left: `${position * 100}%` }}
+                        style={{
+                            left: `${position * 100}%`,
+                            opacity: gridLineOpacity,
+                        }}
                     >
                         {/* Beat number label for every 4th beat */}
                         {beatIndex % 4 === 0 && (
@@ -770,7 +806,10 @@ export function QuantizedBeatTimeline({
                     <div
                         key={`subdivision-${beatIndex}-${subdivision}`}
                         className="quantized-beat-timeline-subdivision-line"
-                        style={{ left: `${position * 100}%` }}
+                        style={{
+                            left: `${position * 100}%`,
+                            opacity: subdivisionLineOpacity,
+                        }}
                     />
                 ))}
 
@@ -792,15 +831,12 @@ export function QuantizedBeatTimeline({
                 {visibleBeats.map(({ beat, index, position, isPast }) => (
                     <div
                         key={`beat-${beat.timestamp.toFixed(3)}-${beat.band}-${beat.beatIndex}-${beat.gridPosition}`}
-                        className={`quantized-beat-timeline-marker ${
-                            isPast ? 'quantized-beat-timeline-marker--past' : ''
-                        } ${
-                            selectedBeatIndex !== null && index === selectedBeatIndex
+                        className={`quantized-beat-timeline-marker ${isPast ? 'quantized-beat-timeline-marker--past' : ''
+                            } ${selectedBeatIndex !== null && index === selectedBeatIndex
                                 ? 'quantized-beat-timeline-marker--selected'
                                 : ''
-                        } ${
-                            hoveredIndex === index ? 'quantized-beat-timeline-marker--hovered' : ''
-                        }`}
+                            } ${hoveredIndex === index ? 'quantized-beat-timeline-marker--hovered' : ''
+                            }`}
                         style={{
                             left: `${position * 100}%`,
                             '--band-color': BAND_COLORS[beat.band],
@@ -882,9 +918,8 @@ export function QuantizedBeatTimeline({
                         {hoveredBeat.quantizationError !== undefined && (
                             <div className="quantized-beat-tooltip-stat">
                                 <span className="quantized-beat-tooltip-stat-label">Quant Error</span>
-                                <span className={`quantized-beat-tooltip-stat-value ${
-                                    hoveredBeat.quantizationError > 50 ? 'quantized-beat-tooltip-stat-value--warning' : ''
-                                }`}>
+                                <span className={`quantized-beat-tooltip-stat-value ${hoveredBeat.quantizationError > 50 ? 'quantized-beat-tooltip-stat-value--warning' : ''
+                                    }`}>
                                     {formatMs(hoveredBeat.quantizationError)}
                                 </span>
                             </div>
@@ -910,9 +945,8 @@ export function QuantizedBeatTimeline({
                 </div>
                 <div className="quantized-beat-timeline-info-item">
                     <span className="quantized-beat-timeline-info-label">Avg Error</span>
-                    <span className={`quantized-beat-timeline-info-value ${
-                        stats.avgError > 30 ? 'quantized-beat-timeline-info-value--warning' : ''
-                    }`}>
+                    <span className={`quantized-beat-timeline-info-value ${stats.avgError > 30 ? 'quantized-beat-timeline-info-value--warning' : ''
+                        }`}>
                         {formatMs(stats.avgError)}
                     </span>
                 </div>
@@ -954,9 +988,8 @@ export function QuantizedBeatTimeline({
             <div className="quantized-beat-timeline-grid-toggle">
                 <span className="quantized-beat-timeline-grid-toggle-label">Grid:</span>
                 <button
-                    className={`quantized-beat-timeline-grid-toggle-btn ${
-                        gridDisplayMode === 'straight_16th' ? 'active' : ''
-                    }`}
+                    className={`quantized-beat-timeline-grid-toggle-btn ${gridDisplayMode === 'straight_16th' ? 'active' : ''
+                        }`}
                     onClick={() => handleGridDisplayModeChange('straight_16th')}
                     title="16th note grid (4 divisions per beat)"
                     aria-pressed={gridDisplayMode === 'straight_16th'}
@@ -965,9 +998,8 @@ export function QuantizedBeatTimeline({
                     <span>16th</span>
                 </button>
                 <button
-                    className={`quantized-beat-timeline-grid-toggle-btn ${
-                        gridDisplayMode === 'triplet_8th' ? 'active' : ''
-                    }`}
+                    className={`quantized-beat-timeline-grid-toggle-btn ${gridDisplayMode === 'triplet_8th' ? 'active' : ''
+                        }`}
                     onClick={() => handleGridDisplayModeChange('triplet_8th')}
                     title="Triplet 8th grid (3 divisions per beat)"
                     aria-pressed={gridDisplayMode === 'triplet_8th'}
