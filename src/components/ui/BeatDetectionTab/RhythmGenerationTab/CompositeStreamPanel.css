@@ -340,6 +340,86 @@
 }
 
 /* ============================================
+   BEAT GRID LINES
+   Vertical lines showing quarter note positions
+   ============================================ */
+
+.composite-band-grid-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    height: 100%;
+    background: hsl(var(--border) / 0.6);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Beat number labels */
+.composite-band-grid-label {
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    font-size: 0.5rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground) / 0.5);
+    pointer-events: none;
+}
+
+/* ============================================
+   SUBDIVISION GRID LINES (16th notes)
+   Fainter than beat lines
+   ============================================ */
+
+.composite-band-subdivision-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    height: 100%;
+    background: hsl(var(--border) / 0.3);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ============================================
+   COMPOSITE TIMELINE GRID LINES
+   Same styles but for the composite timeline
+   ============================================ */
+
+.composite-timeline-grid-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    height: 100%;
+    background: hsl(var(--border) / 0.6);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.composite-timeline-grid-label {
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    font-size: 0.5rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground) / 0.5);
+    pointer-events: none;
+}
+
+.composite-timeline-subdivision-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    height: 100%;
+    background: hsl(var(--border) / 0.3);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ============================================
    BEAT MARKERS
    ============================================ */
 

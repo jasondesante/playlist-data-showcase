@@ -17,6 +17,7 @@ import { Trophy, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import './VariantComparisonView.css';
 import { useAudioPlayerStore } from '../../../../store/audioPlayerStore';
 import { usePlaylistStore } from '../../../../store/playlistStore';
+import { useUnifiedBeatMap } from '../../../../store/beatDetectionStore';
 import type {
     GeneratedRhythm,
     DifficultyLevel,
@@ -115,6 +116,10 @@ interface VariantRowProps {
     color: string;
     pastWindow: number;
     anticipationWindow: number;
+    /** Shared smooth time from parent - ensures all rows are synchronized */
+    smoothTime: number;
+    /** The unified beat map for grid lines */
+    unifiedBeatMap: ReturnType<typeof useUnifiedBeatMap>;
 }
 
 /** Pixels of movement before treating as drag (vs click) */
@@ -127,15 +132,14 @@ const VariantRow = memo(function VariantRow({
     color,
     pastWindow,
     anticipationWindow,
+    smoothTime,
+    unifiedBeatMap,
 }: VariantRowProps) {
     const trackRef = useRef<HTMLDivElement>(null);
 
     // Direct store access for responsive seeking
     const storeSeek = useAudioPlayerStore((state) => state.seek);
     const currentAudioUrl = useAudioPlayerStore((state) => state.currentUrl);
-    const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);
-    const playbackState = useAudioPlayerStore((state) => state.playbackState);
-    const isPlaying = playbackState === 'playing';
 
     // Get selected track from playlist store (for initiating playback when audio not loaded)
     const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
@@ -147,93 +151,13 @@ const VariantRow = memo(function VariantRow({
 
     const beats = variant.beats as VariantBeat[];
 
-    // ========================================
-    // Smooth Animation with requestAnimationFrame
-    // ========================================
-
-    const animationFrameRef = useRef<number | null>(null);
-    const [smoothTime, setSmoothTime] = useState(storeCurrentTime);
-    const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
-        time: storeCurrentTime,
-        timestamp: performance.now(),
-    });
-    const isPlayingRef = useRef(isPlaying);
-
-    // CRITICAL: Use a ref to track smoothTime for stable callback references
+    // Ref for stable callback references (smoothTime is now a prop from parent)
     const smoothTimeRef = useRef(smoothTime);
 
-    // Keep smoothTimeRef in sync with smoothTime state
+    // Keep smoothTimeRef in sync with smoothTime prop
     useEffect(() => {
         smoothTimeRef.current = smoothTime;
     }, [smoothTime]);
-
-    // Keep refs in sync with props
-    useEffect(() => {
-        lastAudioTimeRef.current = {
-            time: storeCurrentTime,
-            timestamp: performance.now(),
-        };
-    }, [storeCurrentTime]);
-
-    // Track previous isPlaying state to detect transitions
-    const prevIsPlayingRef = useRef(isPlaying);
-
-    useEffect(() => {
-        isPlayingRef.current = isPlaying;
-
-        const playbackJustStarted = isPlaying && !prevIsPlayingRef.current;
-        if (playbackJustStarted) {
-            lastAudioTimeRef.current = {
-                time: storeCurrentTime,
-                timestamp: performance.now(),
-            };
-            setSmoothTime(storeCurrentTime);
-        }
-
-        prevIsPlayingRef.current = isPlaying;
-    }, [isPlaying, storeCurrentTime]);
-
-    /**
-     * Animation loop for smooth scrolling
-     */
-    useEffect(() => {
-        if (!isPlaying) {
-            setSmoothTime(storeCurrentTime);
-            return;
-        }
-
-        const animate = () => {
-            const now = performance.now();
-            const { time: lastAudioTime, timestamp: lastUpdateTimestamp } = lastAudioTimeRef.current;
-            const elapsedMs = now - lastUpdateTimestamp;
-            const elapsedSeconds = elapsedMs / 1000;
-            const interpolatedTime = lastAudioTime + elapsedSeconds;
-            const clampedTime = duration > 0 ? Math.min(interpolatedTime, duration) : interpolatedTime;
-            setSmoothTime(clampedTime);
-
-            if (isPlayingRef.current && (duration <= 0 || clampedTime < duration)) {
-                animationFrameRef.current = requestAnimationFrame(animate);
-            }
-        };
-
-        animationFrameRef.current = requestAnimationFrame(animate);
-
-        return () => {
-            if (animationFrameRef.current) {
-                cancelAnimationFrame(animationFrameRef.current);
-                animationFrameRef.current = null;
-            }
-        };
-    }, [isPlaying, duration]);
-
-    /**
-     * Handle seek events
-     */
-    useEffect(() => {
-        if (!isPlaying) {
-            setSmoothTime(storeCurrentTime);
-        }
-    }, [storeCurrentTime, isPlaying]);
 
     // ========================================
     // Drag-to-scrub and click-to-seek functionality
@@ -337,6 +261,85 @@ const VariantRow = memo(function VariantRow({
             });
     }, [beats, smoothTime, minTime, maxTime, anticipationWindow]);
 
+    // ========================================
+    // Beat Grid Lines (same pattern as QuantizedBeatTimeline)
+    // ========================================
+
+    /**
+     * Calculate visible beat grid lines using the unified beat map
+     */
+    const visibleGridLines = useMemo(() => {
+        if (!unifiedBeatMap || unifiedBeatMap.beats.length === 0) return [];
+
+        const lines: Array<{ timestamp: number; beatIndex: number; position: number }> = [];
+
+        for (let i = 0; i < unifiedBeatMap.beats.length; i++) {
+            const beat = unifiedBeatMap.beats[i];
+            const timestamp = beat.timestamp;
+
+            if (timestamp >= minTime && timestamp <= maxTime) {
+                const timeUntilBeat = timestamp - smoothTime;
+                const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
+                if (position >= 0 && position <= 1) {
+                    lines.push({ timestamp, beatIndex: i, position });
+                }
+            }
+        }
+
+        return lines;
+    }, [unifiedBeatMap, smoothTime, minTime, maxTime, anticipationWindow]);
+
+    /**
+     * Calculate visible subdivision lines within each beat (16th notes)
+     */
+    const visibleSubdivisionLines = useMemo(() => {
+        if (!unifiedBeatMap || unifiedBeatMap.beats.length < 2) return [];
+
+        const lines: Array<{ timestamp: number; beatIndex: number; subdivision: number; position: number }> = [];
+        const beats = unifiedBeatMap.beats;
+        const subdivisionsPerBeat = 4; // 16th notes
+
+        for (let beatIdx = 0; beatIdx < beats.length - 1; beatIdx++) {
+            const beatStart = beats[beatIdx].timestamp;
+            const nextBeatStart = beats[beatIdx + 1].timestamp;
+            const beatInterval = nextBeatStart - beatStart;
+
+            if (beatStart + beatInterval >= minTime && beatStart <= maxTime) {
+                for (let sub = 1; sub < subdivisionsPerBeat; sub++) {
+                    const timestamp = beatStart + (sub / subdivisionsPerBeat) * beatInterval;
+                    const timeUntilBeat = timestamp - smoothTime;
+                    const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
+
+                    if (position >= 0 && position <= 1) {
+                        lines.push({ timestamp, beatIndex: beatIdx, subdivision: sub, position });
+                    }
+                }
+            }
+        }
+
+        // Handle the last beat - use the previous interval as an estimate
+        const lastBeatIdx = beats.length - 1;
+        const lastBeatStart = beats[lastBeatIdx].timestamp;
+        if (lastBeatIdx > 0) {
+            const prevBeatStart = beats[lastBeatIdx - 1].timestamp;
+            const beatInterval = lastBeatStart - prevBeatStart;
+
+            if (lastBeatStart + beatInterval >= minTime && lastBeatStart <= maxTime) {
+                for (let sub = 1; sub < subdivisionsPerBeat; sub++) {
+                    const timestamp = lastBeatStart + (sub / subdivisionsPerBeat) * beatInterval;
+                    const timeUntilBeat = timestamp - smoothTime;
+                    const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
+
+                    if (position >= 0 && position <= 1) {
+                        lines.push({ timestamp, beatIndex: lastBeatIdx, subdivision: sub, position });
+                    }
+                }
+            }
+        }
+
+        return lines;
+    }, [unifiedBeatMap, smoothTime, minTime, maxTime, anticipationWindow]);
+
     // Get beat color
     const getBeatColor = useCallback((beat: VariantBeat): string => {
         if (variant.editType === 'pattern_inserted') {
@@ -377,6 +380,31 @@ const VariantRow = memo(function VariantRow({
             >
                 {/* Background */}
                 <div className="variant-comparison-track-bg" />
+
+                {/* Beat grid lines (quarter notes) */}
+                {visibleGridLines.map(({ beatIndex, position }) => (
+                    <div
+                        key={`grid-line-${beatIndex}`}
+                        className="variant-comparison-grid-line"
+                        style={{ left: `${position * 100}%` }}
+                    >
+                        {/* Beat number label for every 4th beat (measure numbers) */}
+                        {beatIndex % 4 === 0 && (
+                            <span className="variant-comparison-grid-label">
+                                {Math.floor(beatIndex / 4) + 1}
+                            </span>
+                        )}
+                    </div>
+                ))}
+
+                {/* Subdivision grid lines (16th notes - fainter) */}
+                {visibleSubdivisionLines.map(({ beatIndex, subdivision, position }) => (
+                    <div
+                        key={`subdivision-${beatIndex}-${subdivision}`}
+                        className="variant-comparison-subdivision-line"
+                        style={{ left: `${position * 100}%` }}
+                    />
+                ))}
 
                 {/* Beat markers */}
                 {visibleBeats.map(({ beat, index, position, isPast }) => {
@@ -456,6 +484,11 @@ export function VariantComparisonView({
 
     // Subscribe to current time for quick scrollbar
     const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);
+    const playbackState = useAudioPlayerStore((state) => state.playbackState);
+    const isPlaying = playbackState === 'playing';
+
+    // Get the unified beat map for grid lines (shared across all rows)
+    const unifiedBeatMap = useUnifiedBeatMap();
 
     const variants = rhythm.difficultyVariants;
 
@@ -482,6 +515,88 @@ export function VariantComparisonView({
     const anticipationWindow = baseAnticipationWindow / zoomLevel;
     const pastWindow = basePastWindow / zoomLevel;
     const totalWindow = pastWindow + anticipationWindow;
+
+    // ========================================
+    // Shared Smooth Time State (for all rows)
+    // ========================================
+
+    const animationFrameRef = useRef<number | null>(null);
+    const [smoothTime, setSmoothTime] = useState(storeCurrentTime);
+    const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
+        time: storeCurrentTime,
+        timestamp: performance.now(),
+    });
+    const isPlayingRef = useRef(isPlaying);
+    const smoothTimeRef = useRef(smoothTime);
+
+    // Keep smoothTimeRef in sync
+    useEffect(() => {
+        smoothTimeRef.current = smoothTime;
+    }, [smoothTime]);
+
+    // Keep refs in sync with store
+    useEffect(() => {
+        lastAudioTimeRef.current = {
+            time: storeCurrentTime,
+            timestamp: performance.now(),
+        };
+    }, [storeCurrentTime]);
+
+    // Track previous isPlaying state
+    const prevIsPlayingRef = useRef(isPlaying);
+
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+
+        const playbackJustStarted = isPlaying && !prevIsPlayingRef.current;
+        if (playbackJustStarted) {
+            lastAudioTimeRef.current = {
+                time: storeCurrentTime,
+                timestamp: performance.now(),
+            };
+            setSmoothTime(storeCurrentTime);
+        }
+
+        prevIsPlayingRef.current = isPlaying;
+    }, [isPlaying, storeCurrentTime]);
+
+    // Animation loop for smooth scrolling (shared across all rows)
+    useEffect(() => {
+        if (!isPlaying) {
+            setSmoothTime(storeCurrentTime);
+            return;
+        }
+
+        const animate = () => {
+            const now = performance.now();
+            const { time: lastAudioTime, timestamp: lastUpdateTimestamp } = lastAudioTimeRef.current;
+            const elapsedMs = now - lastUpdateTimestamp;
+            const elapsedSeconds = elapsedMs / 1000;
+            const interpolatedTime = lastAudioTime + elapsedSeconds;
+            const clampedTime = duration > 0 ? Math.min(interpolatedTime, duration) : interpolatedTime;
+            setSmoothTime(clampedTime);
+
+            if (isPlayingRef.current && (duration <= 0 || clampedTime < duration)) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+            }
+        };
+
+        animationFrameRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
+            }
+        };
+    }, [isPlaying, duration]);
+
+    // Handle seek events
+    useEffect(() => {
+        if (!isPlaying) {
+            setSmoothTime(storeCurrentTime);
+        }
+    }, [storeCurrentTime, isPlaying]);
 
     // Zoom controls
     const handleZoomIn = useCallback(() => {
@@ -695,6 +810,8 @@ export function VariantComparisonView({
                         color={DIFFICULTY_COLORS[difficulty]}
                         pastWindow={pastWindow}
                         anticipationWindow={anticipationWindow}
+                        smoothTime={smoothTime}
+                        unifiedBeatMap={unifiedBeatMap}
                     />
                 ))}
             </div>

@@ -261,6 +261,49 @@
     transform: translateY(-50%);
 }
 
+/* ============================================
+   BEAT GRID LINES (quarter notes)
+   ============================================ */
+
+.variant-comparison-grid-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    height: 100%;
+    background: hsl(var(--border) / 0.5);
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Beat number labels (measure numbers on every 4th beat) */
+.variant-comparison-grid-label {
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    font-size: 0.5rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground) / 0.6);
+    pointer-events: none;
+    font-family: var(--font-mono);
+}
+
+/* ============================================
+   SUBDIVISION GRID LINES (16th notes)
+   Fainter than beat lines
+   ============================================ */
+
+.variant-comparison-subdivision-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    height: 100%;
+    background: hsl(var(--border) / 0.25);
+    pointer-events: none;
+    z-index: 4;
+}
+
 /* Beat marker */
 .variant-comparison-beat {
     position: absolute;

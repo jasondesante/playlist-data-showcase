@@ -19,6 +19,7 @@ import './CompositeStreamPanel.css';
 import { ZoomControls } from '../../ZoomControls';
 import { useAudioPlayerStore } from '../../../../store/audioPlayerStore';
 import { usePlaylistStore } from '../../../../store/playlistStore';
+import { useUnifiedBeatMap } from '../../../../store/beatDetectionStore';
 import type {
     GeneratedRhythm,
     GeneratedBeat,
@@ -227,7 +228,10 @@ function BandStreamTimeline({
     zoomLevel,
 }: BandStreamTimelineProps) {
     const trackRef = useRef<HTMLDivElement>(null);
-    const quickScrollRef = useRef<HTMLDivElement>(null);
+
+    // CRITICAL: Get the actual detected beat map from the store
+    // This is the unified beat map of quarter notes that was used to quantize the We use this for grid lines.
+    const unifiedBeatMap = useUnifiedBeatMap();    const quickScrollRef = useRef<HTMLDivElement>(null);
 
     // Direct store access for responsive seeking
     const storeSeek = useAudioPlayerStore((state) => state.seek);
@@ -526,6 +530,87 @@ function BandStreamTimeline({
             });
     }, [beats, smoothTime, minTime, maxTime, anticipationWindow]);
 
+    // ========================================
+    // Beat Grid Lines (from unified beat map)
+    // ========================================
+
+    /**
+     * Calculate visible beat grid lines using the unified beat map
+     * (same source as QuantizedBeatTimeline uses).
+     */
+    const visibleGridLines = useMemo(() => {
+        if (!unifiedBeatMap || unifiedBeatMap.beats.length === 0) return [];
+
+        const lines: Array<{ timestamp: number; beatIndex: number; position: number }> = [];
+
+        for (let i = 0; i < unifiedBeatMap.beats.length; i++) {
+            const beat = unifiedBeatMap.beats[i];
+            const timestamp = beat.timestamp;
+
+            if (timestamp >= minTime && timestamp <= maxTime) {
+                const timeUntilBeat = timestamp - smoothTime;
+                const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
+                if (position >= 0 && position <= 1) {
+                    lines.push({ timestamp, beatIndex: i, position });
+                }
+            }
+        }
+
+        return lines;
+    }, [smoothTime, minTime, maxTime, anticipationWindow, unifiedBeatMap]);
+
+    /**
+     * Calculate visible subdivision lines within each beat.
+     * Uses the unified beat map (same source as QuantizedBeatTimeline).
+     */
+    const visibleSubdivisionLines = useMemo(() => {
+        if (!unifiedBeatMap || unifiedBeatMap.beats.length < 2) return [];
+
+        const lines: Array<{ timestamp: number; beatIndex: number; subdivision: number; position: number }> = [];
+        const beats = unifiedBeatMap.beats;
+        const subdivisionsPerBeat = 4; // 16th notes
+
+        for (let beatIdx = 0; beatIdx < beats.length - 1; beatIdx++) {
+            const beatStart = beats[beatIdx].timestamp;
+            const nextBeatStart = beats[beatIdx + 1].timestamp;
+            const beatInterval = nextBeatStart - beatStart;
+
+            if (beatStart + beatInterval >= minTime && beatStart <= maxTime) {
+                for (let sub = 1; sub < subdivisionsPerBeat; sub++) {
+                    const timestamp = beatStart + (sub / subdivisionsPerBeat) * beatInterval;
+                    const timeUntilSub = timestamp - smoothTime;
+                    const position = 0.5 + (timeUntilSub / anticipationWindow) * 0.5;
+
+                    if (position >= 0 && position <= 1) {
+                        lines.push({ timestamp, beatIndex: beatIdx, subdivision: sub, position });
+                    }
+                }
+            }
+        }
+
+        // Handle the last beat - use the previous interval as an estimate
+        const lastBeatIdx = beats.length - 1;
+        const lastBeatStart = beats[lastBeatIdx].timestamp;
+        if (lastBeatIdx > 0) {
+            const prevBeatStart = beats[lastBeatIdx - 1].timestamp;
+            const beatInterval = lastBeatStart - prevBeatStart;
+
+            if (lastBeatStart + beatInterval >= minTime && lastBeatStart <= maxTime) {
+                for (let sub = 1; sub < subdivisionsPerBeat; sub++) {
+                    const timestamp = lastBeatStart + (sub / subdivisionsPerBeat) * beatInterval;
+                    const timeUntilSub = timestamp - smoothTime;
+                    const position = 0.5 + (timeUntilSub / anticipationWindow) * 0.5;
+
+                    if (position >= 0 && position <= 1) {
+                        lines.push({ timestamp, beatIndex: lastBeatIdx, subdivision: sub, position });
+                    }
+                }
+            }
+        }
+
+        return lines;
+    }, [smoothTime, minTime, maxTime, anticipationWindow, unifiedBeatMap]);
+
     // Beat count for header
     const beatCount = beats.length;
 
@@ -568,6 +653,31 @@ function BandStreamTimeline({
 
                 {/* Band color accent line */}
                 <div className="composite-band-timeline-accent" style={{ backgroundColor: color }} />
+
+                {/* Beat grid lines (quarter notes from unified beat map) */}
+                {visibleGridLines.map(({ beatIndex, position }) => (
+                    <div
+                        key={`grid-line-${beatIndex}`}
+                        className="composite-band-grid-line"
+                        style={{ left: `${position * 100}%` }}
+                    >
+                        {/* Beat number label for every 4th beat (measure start) */}
+                        {beatIndex % 4 === 0 && (
+                            <span className="composite-band-grid-label">
+                                {Math.floor(beatIndex / 4) + 1}
+                            </span>
+                        )}
+                    </div>
+                ))}
+
+                {/* Subdivision grid lines (16th notes - fainter than beat lines) */}
+                {visibleSubdivisionLines.map(({ beatIndex, subdivision, position }) => (
+                    <div
+                        key={`subdivision-${beatIndex}-${subdivision}`}
+                        className="composite-band-subdivision-line"
+                        style={{ left: `${position * 100}%` }}
+                    />
+                ))}
 
                 {/* Beat markers */}
                 {visibleBeats.map(({ beat, index, position, isPast }) => (
@@ -827,6 +937,11 @@ function CompositeTimeline({
 
     // Get selected track from playlist store (for initiating playback when audio not loaded)
     const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
+
+    // CRITICAL: Get the actual detected beat map from the store
+    // This is the unified beat map of quarter notes that was used to quantize
+    // We MUST use this for the grid lines, just like QuantizedBeatTimeline does
+    const unifiedBeatMap = useUnifiedBeatMap();
 
     // Smart seek wrapper: loads audio first if not loaded
     const seek = useCallback((time: number) => {
@@ -1119,6 +1234,87 @@ function CompositeTimeline({
     }, [beats, smoothTime, minTime, maxTime, anticipationWindow]);
 
     // ========================================
+    // Beat Grid Lines (from unified beat map)
+    // ========================================
+
+    /**
+     * Calculate visible beat grid lines using the unified beat map
+     * (same source as QuantizedBeatTimeline uses).
+     */
+    const visibleGridLines = useMemo(() => {
+        if (!unifiedBeatMap || unifiedBeatMap.beats.length === 0) return [];
+
+        const lines: Array<{ timestamp: number; beatIndex: number; position: number }> = [];
+
+        for (let i = 0; i < unifiedBeatMap.beats.length; i++) {
+            const beat = unifiedBeatMap.beats[i];
+            const timestamp = beat.timestamp;
+
+            if (timestamp >= minTime && timestamp <= maxTime) {
+                const timeUntilBeat = timestamp - smoothTime;
+                const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
+                if (position >= 0 && position <= 1) {
+                    lines.push({ timestamp, beatIndex: i, position });
+                }
+            }
+        }
+
+        return lines;
+    }, [smoothTime, minTime, maxTime, anticipationWindow, unifiedBeatMap]);
+
+    /**
+     * Calculate visible subdivision lines within each beat.
+     * Uses the unified beat map (same source as QuantizedBeatTimeline).
+     */
+    const visibleSubdivisionLines = useMemo(() => {
+        if (!unifiedBeatMap || unifiedBeatMap.beats.length < 2) return [];
+
+        const lines: Array<{ timestamp: number; beatIndex: number; subdivision: number; position: number }> = [];
+        const beats = unifiedBeatMap.beats;
+        const subdivisionsPerBeat = 4; // 16th notes
+
+        for (let beatIdx = 0; beatIdx < beats.length - 1; beatIdx++) {
+            const beatStart = beats[beatIdx].timestamp;
+            const nextBeatStart = beats[beatIdx + 1].timestamp;
+            const beatInterval = nextBeatStart - beatStart;
+
+            if (beatStart + beatInterval >= minTime && beatStart <= maxTime) {
+                for (let sub = 1; sub < subdivisionsPerBeat; sub++) {
+                    const timestamp = beatStart + (sub / subdivisionsPerBeat) * beatInterval;
+                    const timeUntilSub = timestamp - smoothTime;
+                    const position = 0.5 + (timeUntilSub / anticipationWindow) * 0.5;
+
+                    if (position >= 0 && position <= 1) {
+                        lines.push({ timestamp, beatIndex: beatIdx, subdivision: sub, position });
+                    }
+                }
+            }
+        }
+
+        // Handle the last beat - use the previous interval as an estimate
+        const lastBeatIdx = beats.length - 1;
+        const lastBeatStart = beats[lastBeatIdx].timestamp;
+        if (lastBeatIdx > 0) {
+            const prevBeatStart = beats[lastBeatIdx - 1].timestamp;
+            const beatInterval = lastBeatStart - prevBeatStart;
+
+            if (lastBeatStart + beatInterval >= minTime && lastBeatStart <= maxTime) {
+                for (let sub = 1; sub < subdivisionsPerBeat; sub++) {
+                    const timestamp = lastBeatStart + (sub / subdivisionsPerBeat) * beatInterval;
+                    const timeUntilSub = timestamp - smoothTime;
+                    const position = 0.5 + (timeUntilSub / anticipationWindow) * 0.5;
+
+                    if (position >= 0 && position <= 1) {
+                        lines.push({ timestamp, beatIndex: lastBeatIdx, subdivision: sub, position });
+                    }
+                }
+            }
+        }
+
+        return lines;
+    }, [smoothTime, minTime, maxTime, anticipationWindow, unifiedBeatMap]);
+
+    // ========================================
     // Section Processing
     // ========================================
 
@@ -1211,6 +1407,31 @@ function CompositeTimeline({
                         hsl(var(--surface-3)) 100%
                     )`
                 }} />
+
+                {/* Beat grid lines */}
+                {visibleGridLines.map(({ beatIndex, position }) => (
+                    <div
+                        key={`grid-line-${beatIndex}`}
+                        className="composite-timeline-grid-line"
+                        style={{ left: `${position * 100}%` }}
+                    >
+                        {/* Beat number label for every 4th beat */}
+                        {beatIndex % 4 === 0 && (
+                            <span className="composite-timeline-grid-label">
+                                {Math.floor(beatIndex / 4) + 1}
+                            </span>
+                        )}
+                    </div>
+                ))}
+
+                {/* Subdivision grid lines (16th notes - fainter than beat lines) */}
+                {visibleSubdivisionLines.map(({ beatIndex, subdivision, position }) => (
+                    <div
+                        key={`subdivision-${beatIndex}-${subdivision}`}
+                        className="composite-timeline-subdivision-line"
+                        style={{ left: `${position * 100}%` }}
+                    />
+                ))}
 
                 {/* Section regions (colored backgrounds) */}
                 {sectionMarkers.regions.map((region, index) => (
