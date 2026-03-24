@@ -15,7 +15,7 @@
  */
 
 import { useState, useMemo, useCallback, useRef } from 'react';
-import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, Trophy, GitCompare, Combine, GitBranch } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, GitCompare, Combine, GitBranch } from 'lucide-react';
 import './RhythmGenerationTab.css';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
@@ -27,7 +27,6 @@ import { MultiBandVisualization } from '../../ui/BeatDetectionTab/RhythmGenerati
 import { QuantizationPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/QuantizationPanel';
 import { CompositeStreamPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/CompositeStreamPanel';
 import { DifficultyConversionPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/DifficultyConversionPanel';
-import { DifficultyVariantsPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/DifficultyVariantsPanel';
 import { VariantComparisonView } from '../../ui/BeatDetectionTab/RhythmGenerationTab/VariantComparisonView';
 import { PhraseDetectionPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/PhraseDetectionPanel';
 import { TimelineControls } from '../../ui/BeatDetectionTab/RhythmGenerationTab/TimelineControls';
@@ -147,7 +146,7 @@ interface RhythmGenerationResultProps {
 }
 
 // Section identifiers for accordion behavior
-type SectionId = 'transients' | 'multiband' | 'quantization' | 'composite' | 'conversion' | 'variants' | 'comparison' | 'phrases' | null;
+type SectionId = 'transients' | 'multiband' | 'quantization' | 'composite' | 'conversion' | 'comparison' | 'phrases' | null;
 
 function RhythmGenerationResult({
     rhythm,
@@ -179,7 +178,6 @@ function RhythmGenerationResult({
         quantization: null,
         composite: null,
         conversion: null,
-        variants: null,
         comparison: null,
         phrases: null,
     });
@@ -382,23 +380,6 @@ function RhythmGenerationResult({
                     </CollapsibleSection>
                 </div>
 
-                <div ref={(el) => { sectionRefs.current.variants = el; }}>
-                    <CollapsibleSection
-                        title="Difficulty Variants"
-                        subtitle="Easy / Medium / Hard variations"
-                        icon={<Trophy size={18} />}
-                        collapsed={openSection !== 'variants'}
-                        onCollapsedChange={() => handleSectionToggle('variants')}
-                    >
-                        <DifficultyVariantsPanel
-                            rhythm={rhythm}
-                            currentTime={currentTime}
-                            duration={duration}
-                            isPlaying={isPlaying}
-                            onSeek={onSeek}
-                        />
-                    </CollapsibleSection>
-                </div>
 
                 <div ref={(el) => { sectionRefs.current.comparison = el; }}>
                     <CollapsibleSection

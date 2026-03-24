@@ -103,6 +103,16 @@ const EDIT_TYPE_ICONS: Record<EditType, React.ElementType> = {
     pattern_inserted: TrendingUp,
 };
 
+/**
+ * Grid type display names
+ */
+const GRID_TYPE_LABELS: Record<string, string> = {
+    straight_16th: '16th',
+    triplet_8th: 'Triplet',
+    straight_8th: '8th',
+    quarter_triplet: 'Q-Triplet',
+};
+
 /** Pixels of movement before treating as drag (vs click) */
 const DRAG_THRESHOLD = 5;
 
@@ -951,9 +961,7 @@ interface ConversionStatsProps {
     variant: DifficultyVariant;
     ghostBeatCount: number;
     addedBeatCount: number;
-}
-
-function ConversionStats({ variant, ghostBeatCount, addedBeatCount }: ConversionStatsProps) {
+}function ConversionStats({ variant, ghostBeatCount, addedBeatCount }: ConversionStatsProps) {
     // Show conversion metadata for simplified variants
     if (variant.editType === 'simplified' && variant.conversionMetadata) {
         const { conversionMetadata } = variant;
@@ -1095,6 +1103,17 @@ const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
         return Math.min(100, (density / MAX_DENSITY_DISPLAY) * 100);
     }, [density]);
 
+    // Calculate primary grid type (most common grid type in this variant)
+    const primaryGridType = useMemo(() => {
+        const counts: Record<string, number> = {};
+        variant.beats.forEach(beat => {
+            const gridType = beat.gridType || 'straight_16th';
+            counts[gridType] = (counts[gridType] || 0) + 1;
+        });
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+        return sorted[0] ? { type: sorted[0][0], count: sorted[0][1], total: variant.beats.length } : null;
+    }, [variant.beats]);
+
     return (
         <div
             className={`difficulty-conversion-column ${isNatural ? 'difficulty-conversion-column--natural' : ''}`}
@@ -1174,6 +1193,35 @@ const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
                     </div>
                 </div>
             )}
+
+            {/* Variant Details: Primary Grid + Edit Amount (from old DifficultyVariantsPanel) */}
+            <div className="difficulty-conversion-variant-details">
+                {primaryGridType && (
+                    <div className="difficulty-conversion-variant-detail">
+                        <span className="difficulty-conversion-variant-detail-label">Primary Grid</span>
+                        <span className="difficulty-conversion-variant-detail-value difficulty-conversion-variant-detail-value--grid">
+                            {GRID_TYPE_LABELS[primaryGridType.type] || primaryGridType.type}
+                        </span>
+                    </div>
+                )}
+                {variant.editAmount !== undefined && variant.editAmount > 0 && (
+                    <div className="difficulty-conversion-variant-detail">
+                        <span className="difficulty-conversion-variant-detail-label">Edit Amount</span>
+                        <span className="difficulty-conversion-variant-detail-value">
+                            {(variant.editAmount * 100).toFixed(0)}%
+                        </span>
+                    </div>
+                )}
+                {/* Show edit type badge for non-none cases as well */}
+                {variant.editType !== 'none' && !variant.editAmount && (
+                    <div className="difficulty-conversion-variant-detail difficulty-conversion-variant-detail--full-width">
+                        <span className="difficulty-conversion-variant-detail-label">Modification</span>
+                        <span className="difficulty-conversion-variant-detail-value">
+                            {EDIT_TYPE_LABELS[variant.editType]}
+                        </span>
+                    </div>
+                )}
+            </div>
 
             <DiffTimeline
                 compositeBeats={compositeBeats}

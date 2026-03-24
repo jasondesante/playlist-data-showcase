@@ -617,6 +617,51 @@
 }
 
 /* ============================================
+   VARIANT DETAILS (Primary Grid + Edit Amount)
+   ============================================ */
+
+.difficulty-conversion-variant-details {
+    display: flex;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    background: hsl(var(--surface-1));
+    border-top: 1px solid hsl(var(--border) / 0.3);
+    border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.difficulty-conversion-variant-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.difficulty-conversion-variant-detail--full-width {
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.difficulty-conversion-variant-detail-label {
+    font-size: 0.5625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
+}
+
+.difficulty-conversion-variant-detail-value {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.difficulty-conversion-variant-detail-value--grid {
+    font-family: var(--font-mono);
+    color: hsl(var(--primary));
+}
+
+/* ============================================
    DIFF TIMELINE
    ============================================ */
 
