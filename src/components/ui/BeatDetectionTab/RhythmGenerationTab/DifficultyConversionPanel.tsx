@@ -126,6 +126,56 @@ function findLastBeatIndexBefore(beats: CompositeBeat[], timestamp: number): num
     return left;
 }
 
+/**
+ * Find the index of the first variant beat at or after the given timestamp.
+ * Assumes beats array is sorted by timestamp.
+ */
+function findFirstVariantBeatIndexAfter(beats: VariantBeat[], timestamp: number): number {
+    let left = 0;
+    let right = beats.length;
+    while (left < right) {
+        const mid = Math.floor((left + right) / 2);
+        if (beats[mid].timestamp < timestamp) {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+    return left;
+}
+
+/**
+ * Find the index of the last variant beat at or before the given timestamp.
+ * Assumes beats array is sorted by timestamp.
+ */
+function findLastVariantBeatIndexBefore(beats: VariantBeat[], timestamp: number): number {
+    let left = -1;
+    let right = beats.length - 1;
+    while (left < right) {
+        const mid = Math.floor((left + right + 1) / 2);
+        if (beats[mid].timestamp > timestamp) {
+            right = mid - 1;
+        } else {
+            left = mid;
+        }
+    }
+    return left;
+}
+
+/**
+ * Sample beats array to a maximum count for performance.
+ * Uses uniform sampling to maintain visual distribution.
+ */
+function sampleBeats<T extends { timestamp: number }>(beats: T[], maxCount: number): T[] {
+    if (beats.length <= maxCount) return beats;
+    const step = beats.length / maxCount;
+    const sampled: T[] = [];
+    for (let i = 0; i < beats.length; i += step) {
+        sampled.push(beats[Math.floor(i)]);
+    }
+    return sampled;
+}
+
 // ============================================================
 // Utility Functions
 // ============================================================
@@ -372,10 +422,13 @@ function CompositeBaselineTimeline({
     // RAF throttling for smooth drag performance
     const pendingSeekRef = useRef<number | null>(null);
     const rafIdRef = useRef<number | null>(null);
-    
+
     // Lock scroll offset during drag to prevent viewport jumping
     const lockedScrollOffsetRef = useRef<number | null>(null);
     const [lockedScrollOffset, setLockedScrollOffset] = useState<number | null>(null);
+
+    // Track scrollOffset via ref for stable callback references
+    const scrollOffsetRef = useRef(0);
 
     const handleMouseDown = useCallback(
         (event: React.MouseEvent<HTMLDivElement>) => {
@@ -386,8 +439,8 @@ function CompositeBaselineTimeline({
             dragStartXRef.current = event.clientX;
             dragStartTimeRef.current = smoothTimeRef.current;
             // Lock the current scroll offset so viewport doesn't jump during drag
-            lockedScrollOffsetRef.current = scrollOffset;
-            setLockedScrollOffset(scrollOffset);
+            lockedScrollOffsetRef.current = scrollOffsetRef.current;
+            setLockedScrollOffset(scrollOffsetRef.current);
         },
         [duration]
     );
@@ -404,7 +457,7 @@ function CompositeBaselineTimeline({
                 const timePerPixel = duration / trackWidth;
                 const deltaTime = deltaX * timePerPixel; //dont fucking change this
                 const newTime = Math.max(0, Math.min(duration, dragStartTimeRef.current + deltaTime));
-                
+
                 // RAF throttle: only seek once per animation frame
                 pendingSeekRef.current = newTime;
                 if (!rafIdRef.current) {
@@ -430,7 +483,7 @@ function CompositeBaselineTimeline({
                 cancelAnimationFrame(rafIdRef.current);
                 rafIdRef.current = null;
             }
-            
+
             // Unlock scroll offset
             lockedScrollOffsetRef.current = null;
             setLockedScrollOffset(null);
@@ -485,6 +538,11 @@ function CompositeBaselineTimeline({
         const halfVisible = visibleDuration / 2;
         return Math.max(0, Math.min(duration - visibleDuration, currentTime - halfVisible));
     }, [currentTime, duration, visibleDuration, zoomLevel, lockedScrollOffset]);
+
+    // Keep scrollOffsetRef in sync for stable callback references
+    useEffect(() => {
+        scrollOffsetRef.current = scrollOffset;
+    }, [scrollOffset]);
 
     const startTime = scrollOffset;
     const endTime = scrollOffset + visibleDuration;
@@ -587,7 +645,7 @@ interface DiffTimelineProps {
     zoomLevel?: number;
 }
 
-function DiffTimeline({
+const DiffTimeline = memo(function DiffTimeline({
     ghostBeats,
     variantBeats,
     addedBeats,
@@ -607,28 +665,67 @@ function DiffTimeline({
     const startTime = scrollOffset;
     const endTime = scrollOffset + visibleDuration;
 
-    // Filter active beats (present in variant)
+    // Filter active beats (present in variant) using binary search for O(log n) performance
     const activeBeats = useMemo(() => {
-        return variantBeats.filter(beat =>
-            beat.timestamp >= startTime - 0.1 &&
-            beat.timestamp <= endTime + 0.1
-        );
+        if (variantBeats.length === 0) return [];
+
+        const minTime = startTime - 0.1;
+        const maxTime = endTime + 0.1;
+
+        // Binary search to find the range of visible beats
+        const startIndex = findFirstVariantBeatIndexAfter(variantBeats, minTime);
+        const endIndex = findLastVariantBeatIndexBefore(variantBeats, maxTime);
+
+        // If no beats in range, return empty
+        if (startIndex > endIndex || startIndex >= variantBeats.length) {
+            return [];
+        }
+
+        // Extract visible beats and sample if too many
+        const visible = variantBeats.slice(startIndex, endIndex + 1);
+        return sampleBeats(visible, 150);
     }, [variantBeats, startTime, endTime]);
 
-    // Filter ghost beats (removed from composite)
+    // Filter ghost beats (removed from composite) using binary search for O(log n) performance
     const visibleGhostBeats = useMemo(() => {
-        return ghostBeats.filter(beat =>
-            beat.timestamp >= startTime - 0.1 &&
-            beat.timestamp <= endTime + 0.1
-        );
+        if (ghostBeats.length === 0) return [];
+
+        const minTime = startTime - 0.1;
+        const maxTime = endTime + 0.1;
+
+        // Binary search to find the range of visible beats
+        const startIndex = findFirstBeatIndexAfter(ghostBeats, minTime);
+        const endIndex = findLastBeatIndexBefore(ghostBeats, maxTime);
+
+        // If no beats in range, return empty
+        if (startIndex > endIndex || startIndex >= ghostBeats.length) {
+            return [];
+        }
+
+        // Extract visible beats and sample if too many
+        const visible = ghostBeats.slice(startIndex, endIndex + 1);
+        return sampleBeats(visible, 150);
     }, [ghostBeats, startTime, endTime]);
 
-    // Filter added beats
+    // Filter added beats using binary search for O(log n) performance
     const visibleAddedBeats = useMemo(() => {
-        return addedBeats.filter(beat =>
-            beat.timestamp >= startTime - 0.1 &&
-            beat.timestamp <= endTime + 0.1
-        );
+        if (addedBeats.length === 0) return [];
+
+        const minTime = startTime - 0.1;
+        const maxTime = endTime + 0.1;
+
+        // Binary search to find the range of visible beats
+        const startIndex = findFirstVariantBeatIndexAfter(addedBeats, minTime);
+        const endIndex = findLastVariantBeatIndexBefore(addedBeats, maxTime);
+
+        // If no beats in range, return empty
+        if (startIndex > endIndex || startIndex >= addedBeats.length) {
+            return [];
+        }
+
+        // Extract visible beats and sample if too many
+        const visible = addedBeats.slice(startIndex, endIndex + 1);
+        return sampleBeats(visible, 150);
     }, [addedBeats, startTime, endTime]);
 
     // Playhead position
@@ -695,7 +792,7 @@ function DiffTimeline({
             </div>
         </div>
     );
-}
+});
 
 /**
  * Conversion metadata display for simplified variants
@@ -791,39 +888,35 @@ function ConversionStats({ variant, ghostBeatCount, addedBeatCount }: Conversion
 
 /**
  * Single difficulty conversion column
+ * Memoized to prevent re-renders when parent updates but props haven't changed.
  */
 interface DifficultyConversionColumnProps {
     difficulty: DifficultyLevel;
     variant: DifficultyVariant;
     isNatural: boolean;
     compositeBeats: CompositeBeat[];
+    /** Pre-calculated ghost beats for this difficulty */
+    ghostBeats: CompositeBeat[];
+    /** Pre-calculated added beats for this difficulty */
+    addedBeats: VariantBeat[];
     duration: number;
     color: string;
     currentTime?: number;
     zoomLevel?: number;
 }
 
-function DifficultyConversionColumn({
+const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
     difficulty,
     variant,
     isNatural,
     compositeBeats,
+    ghostBeats,
+    addedBeats,
     duration,
     color,
     currentTime,
     zoomLevel = 1,
 }: DifficultyConversionColumnProps) {
-    // Calculate ghost beats and added beats
-    const ghostBeats = useMemo(
-        () => detectGhostBeats(compositeBeats, variant.beats),
-        [compositeBeats, variant.beats]
-    );
-
-    const addedBeats = useMemo(
-        () => detectAddedBeats(compositeBeats, variant.beats),
-        [compositeBeats, variant.beats]
-    );
-
     return (
         <div
             className={`difficulty-conversion-column ${isNatural ? 'difficulty-conversion-column--natural' : ''}`}
@@ -859,7 +952,7 @@ function DifficultyConversionColumn({
             />
         </div>
     );
-}
+});
 
 // ============================================================
 // Main Component
@@ -900,6 +993,19 @@ export function DifficultyConversionPanel({
 
     // Difficulty levels in display order
     const difficulties: DifficultyLevel[] = ['easy', 'medium', 'hard'];
+
+    // Calculate ghost and added beats for each difficulty (memoized for performance)
+    // These are pre-computed once and passed to each DifficultyConversionColumn
+    const variantDiffData = useMemo(() => {
+        return difficulties.reduce((acc, difficulty) => {
+            const variant = variants[difficulty];
+            acc[difficulty] = {
+                ghostBeats: detectGhostBeats(compositeBeats, variant.beats),
+                addedBeats: detectAddedBeats(compositeBeats, variant.beats),
+            };
+            return acc;
+        }, {} as Record<DifficultyLevel, { ghostBeats: CompositeBeat[]; addedBeats: VariantBeat[] }>);
+    }, [compositeBeats, variants]);
 
     // Calculate summary stats
     const summaryStats = useMemo(() => {
@@ -975,6 +1081,8 @@ export function DifficultyConversionPanel({
                         variant={variants[difficulty]}
                         isNatural={difficulty === naturalDifficulty}
                         compositeBeats={compositeBeats}
+                        ghostBeats={variantDiffData[difficulty].ghostBeats}
+                        addedBeats={variantDiffData[difficulty].addedBeats}
                         duration={duration}
                         color={DIFFICULTY_COLORS[difficulty]}
                         currentTime={currentTime}
