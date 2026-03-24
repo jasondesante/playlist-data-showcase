@@ -50,71 +50,71 @@ interface AudioPlayerState {
 // Global HTML5 Audio instance
 let audioElement: HTMLAudioElement | null = null;
 
+const setupAudioEventListeners = (audio: HTMLAudioElement) => {
+    audio.addEventListener('loadstart', () => {
+        useAudioPlayerStore.getState().setPlaybackState('loading');
+    });
+
+    audio.addEventListener('canplay', () => {
+        const store = useAudioPlayerStore.getState();
+
+        // CRITICAL: Check the actual audio element state, not the store state
+        const isActuallyPlaying = !audio.paused && audio.readyState >= 2;
+
+        // If audio is actually playing, keep it as 'playing' - don't override to 'paused'
+        if (isActuallyPlaying) {
+            if (store.playbackState !== 'playing') {
+                useAudioPlayerStore.getState().setPlaybackState('playing');
+            }
+            return;
+        }
+
+        // Only set to 'paused' if currently 'loading' AND not actually playing
+        if (store.playbackState === 'loading' && !isActuallyPlaying) {
+            useAudioPlayerStore.getState().setPlaybackState('paused');
+        }
+    });
+
+    audio.addEventListener('play', () => {
+        useAudioPlayerStore.getState().setPlaybackState('playing');
+    });
+
+    audio.addEventListener('pause', () => {
+        const store = useAudioPlayerStore.getState();
+        if (store.playbackState === 'playing') {
+            useAudioPlayerStore.getState().setPlaybackState('paused');
+        }
+    });
+
+    audio.addEventListener('ended', () => {
+        // Reset currentTime to 0 so the song can be replayed from the beginning.
+        // This must happen here (not in play/resume/togglePlay) to avoid breaking
+        // the seekable range on subsequent plays.
+        audio.currentTime = 0;
+        const store = useAudioPlayerStore.getState();
+        store.setPlaybackState('ended');
+        store.updateTime(0);
+    });
+
+    audio.addEventListener('error', () => {
+        useAudioPlayerStore.getState().setError('Failed to load audio');
+        useAudioPlayerStore.getState().setPlaybackState('error');
+    });
+
+    audio.addEventListener('timeupdate', () => {
+        useAudioPlayerStore.getState().updateTime(audio.currentTime);
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+        useAudioPlayerStore.getState().updateDuration(audio.duration);
+    });
+};
+
 const getAudioElement = (): HTMLAudioElement => {
     if (!audioElement) {
         audioElement = new Audio();
-        audioElement.preload = 'metadata';
-
-        // Set up event listeners
-        audioElement.addEventListener('loadstart', () => {
-            useAudioPlayerStore.getState().setPlaybackState('loading');
-        });
-
-        audioElement.addEventListener('canplay', () => {
-            const store = useAudioPlayerStore.getState();
-
-            // CRITICAL: Check the actual audio element state, not the store state
-            // The 'play' event might have set store.playbackState to 'playing', but due to
-            // React batching, it might not be visible here. So we check audioElement.paused directly.
-            const isActuallyPlaying = audioElement && !audioElement.paused && audioElement.readyState >= 2; // HAVE_CURRENT_DATA
-
-            // If audio is actually playing, keep it as 'playing' - don't override to 'paused'
-            if (isActuallyPlaying) {
-                // Ensure the store reflects reality
-                if (store.playbackState !== 'playing') {
-                    useAudioPlayerStore.getState().setPlaybackState('playing');
-                }
-                return;
-            }
-
-            // Only set to 'paused' if currently 'loading' AND not actually playing
-            if (store.playbackState === 'loading' && !isActuallyPlaying) {
-                // Don't auto-play, just transition to ready state
-                useAudioPlayerStore.getState().setPlaybackState('paused');
-            }
-        });
-
-        audioElement.addEventListener('play', () => {
-            useAudioPlayerStore.getState().setPlaybackState('playing');
-        });
-
-        audioElement.addEventListener('pause', () => {
-            const store = useAudioPlayerStore.getState();
-            if (store.playbackState === 'playing') {
-                useAudioPlayerStore.getState().setPlaybackState('paused');
-            }
-        });
-
-        audioElement.addEventListener('ended', () => {
-            useAudioPlayerStore.getState().setPlaybackState('ended');
-        });
-
-        audioElement.addEventListener('error', () => {
-            useAudioPlayerStore.getState().setError('Failed to load audio');
-            useAudioPlayerStore.getState().setPlaybackState('error');
-        });
-
-        audioElement.addEventListener('timeupdate', () => {
-            if (audioElement) {
-                useAudioPlayerStore.getState().updateTime(audioElement.currentTime);
-            }
-        });
-
-        audioElement.addEventListener('loadedmetadata', () => {
-            if (audioElement) {
-                useAudioPlayerStore.getState().updateDuration(audioElement.duration);
-            }
-        });
+        audioElement.preload = 'auto'; // Force buffering to ensure seekable range
+        setupAudioEventListeners(audioElement);
     }
     return audioElement;
 };
@@ -160,7 +160,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
                 set({ error: err.message, playbackState: 'error' });
             });
         } else {
-            // Same track - resume if paused or restart if ended
+            // Same track
             const state = get().playbackState;
             if (state === 'paused') {
                 audio.play().catch((err) => {
@@ -168,12 +168,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
                     set({ error: err.message, playbackState: 'error' });
                 });
             } else if (state === 'ended') {
-                // Restart from beginning when song has ended
-                // Don't set playbackState to 'loading' here - the canplay event handler
-                // would override it to 'paused' before play() actually starts.
-                // Let the 'play' event naturally set state to 'playing'.
-                audio.currentTime = 0;
-                set({ currentTime: 0 });
+                // currentTime was already reset in the 'ended' event handler
                 audio.play().catch((err) => {
                     console.error('Playback failed:', err);
                     set({ error: err.message, playbackState: 'error' });
@@ -192,19 +187,14 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     resume: () => {
         const audio = getAudioElement();
         const state = get().playbackState;
-        
+
         if (state === 'paused' && get().currentUrl) {
             audio.play().catch((err) => {
                 console.error('Playback failed:', err);
                 set({ error: err.message, playbackState: 'error' });
             });
         } else if (state === 'ended' && get().currentUrl) {
-            // Restart from beginning when song has ended
-            // Don't set playbackState to 'loading' here - the canplay event handler
-            // would override it to 'paused' before play() actually starts.
-            // Let the 'play' event naturally set state to 'playing'.
-            audio.currentTime = 0;
-            set({ currentTime: 0 });
+            // currentTime was already reset in the 'ended' event handler
             audio.play().catch((err) => {
                 console.error('Playback failed:', err);
                 set({ error: err.message, playbackState: 'error' });
@@ -234,12 +224,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
                     set({ error: err.message, playbackState: 'error' });
                 });
             } else if (playbackState === 'ended') {
-                // Restart from beginning when song has ended
-                // Don't set playbackState to 'loading' here - the canplay event handler
-                // would override it to 'paused' before play() actually starts.
-                // Let the 'play' event naturally set state to 'playing'.
-                audio.currentTime = 0;
-                set({ currentTime: 0 });
+                // currentTime was already reset in the 'ended' event handler
                 audio.play().catch((err) => {
                     console.error('Playback failed:', err);
                     set({ error: err.message, playbackState: 'error' });
@@ -316,8 +301,39 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     seek: (time: number) => {
         const audio = getAudioElement();
         if (get().currentUrl) {
-            audio.currentTime = Math.max(0, Math.min(time, get().duration));
-            set({ currentTime: audio.currentTime });
+            const duration = get().duration;
+            const maxTime = Number.isFinite(duration) && duration > 0 ? duration : Infinity;
+            const targetTime = Math.max(0, Math.min(time, maxTime));
+
+            // Check if seekable range is valid
+            const hasValidSeekable = audio.seekable.length > 0 &&
+                (audio.seekable.end(audio.seekable.length - 1) === Infinity ||
+                    audio.seekable.end(audio.seekable.length - 1) >= targetTime);
+
+            if (!hasValidSeekable) {
+                // Seekable range is broken - force reload the audio
+                console.log('[seek] seekable range broken, reloading audio');
+                const wasPlaying = !audio.paused;
+                const currentSrc = audio.src;
+                audio.src = '';
+                audio.src = currentSrc;
+
+                // If audio was playing, resume playback after reload completes
+                if (wasPlaying) {
+                    const resumeOnCanPlay = () => {
+                        audio.currentTime = targetTime;
+                        audio.play().catch((err) => {
+                            console.error('Resume after seek reload failed:', err);
+                        });
+                        audio.removeEventListener('canplay', resumeOnCanPlay);
+                    };
+                    audio.addEventListener('canplay', resumeOnCanPlay);
+                    return; // Exit early - the event handler will set currentTime and resume
+                }
+            }
+
+            audio.currentTime = targetTime;
+            set({ currentTime: targetTime });
         }
     },
 
