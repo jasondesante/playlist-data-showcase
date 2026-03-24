@@ -85,6 +85,48 @@
 }
 
 /* ============================================
+   BEAT GRID LINES
+   ============================================ */
+
+.transient-timeline-grid-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    height: 100%;
+    background: hsl(var(--border) / 0.6);
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Beat number labels (measure numbers) */
+.transient-timeline-grid-label {
+    position: absolute;
+    top: 0.25rem;
+    left: 0.25rem;
+    font-size: 0.5rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground) / 0.5);
+    pointer-events: none;
+}
+
+/* ============================================
+   SUBDIVISION GRID LINES (16th notes)
+   Fainter than beat lines
+   ============================================ */
+
+.transient-timeline-subdivision-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    height: 100%;
+    background: hsl(var(--border) / 0.35);
+    pointer-events: none;
+    z-index: 4;
+}
+
+/* ============================================
    TRANSIENT MARKERS
    ============================================ */
 
@@ -97,7 +139,7 @@
     align-items: center;
     justify-content: center;
     pointer-events: none;
-    z-index: 2;
+    z-index: 6;
 }
 
 .transient-timeline-marker-dot {
@@ -124,7 +166,7 @@
 
 /* Selected transient marker */
 .transient-timeline-marker--selected {
-    z-index: 3;
+    z-index: 7;
 }
 
 .transient-timeline-marker--selected .transient-timeline-marker-dot {

@@ -22,6 +22,7 @@ import { ZoomControls } from '../../ZoomControls';
 import type { GeneratedRhythm, TransientResult, Band } from '../../../../types/rhythmGeneration';
 import { useAudioPlayerStore } from '../../../../store/audioPlayerStore';
 import { usePlaylistStore } from '../../../../store/playlistStore';
+import { useUnifiedBeatMap } from '../../../../store/beatDetectionStore';
 
 // ============================================================
 // Types
@@ -143,6 +144,10 @@ interface BandTimelineProps {
     intensityThreshold: number;
     anticipationWindow: number;
     pastWindow: number;
+    /** Beat map for grid lines */
+    beatMap: ReturnType<typeof useUnifiedBeatMap>;
+    /** Zoom level affects grid line opacity */
+    zoomLevel: number;
 }
 
 function BandTimeline({
@@ -155,6 +160,8 @@ function BandTimeline({
     intensityThreshold,
     anticipationWindow,
     pastWindow,
+    beatMap,
+    zoomLevel,
 }: BandTimelineProps) {
     const trackRef = useRef<HTMLDivElement>(null);
     const quickScrollRef = useRef<HTMLDivElement>(null);
@@ -473,6 +480,105 @@ function BandTimeline({
             });
     }, [filteredTransients, smoothTime, minTime, maxTime, anticipationWindow]);
 
+    // ========================================
+    // Beat Grid Lines
+    // ========================================
+
+    /**
+     * Calculate position (0-1) for a timestamp within the visible window.
+     * The playhead is always at 0.5 (center).
+     */
+    const calculatePosition = useCallback((timestamp: number): number => {
+        const timeUntilEvent = timestamp - smoothTime;
+        return 0.5 + (timeUntilEvent / anticipationWindow) * 0.5;
+    }, [smoothTime, anticipationWindow]);
+
+    /**
+     * Calculate visible beat grid lines (quarter notes)
+     */
+    const getVisibleGridLines = useCallback((): Array<{
+        timestamp: number;
+        beatIndex: number;
+        position: number;
+    }> => {
+        if (!beatMap || beatMap.beats.length === 0) return [];
+
+        const lines: Array<{ timestamp: number; beatIndex: number; position: number }> = [];
+
+        for (let i = 0; i < beatMap.beats.length; i++) {
+            const beat = beatMap.beats[i];
+            const timestamp = beat.timestamp;
+
+            if (timestamp >= minTime && timestamp <= maxTime) {
+                const position = calculatePosition(timestamp);
+                if (position >= 0 && position <= 1) {
+                    lines.push({ timestamp, beatIndex: i, position });
+                }
+            }
+        }
+
+        return lines;
+    }, [beatMap, minTime, maxTime, calculatePosition]);
+
+    /**
+     * Calculate visible subdivision grid lines (16th notes or triplets)
+     */
+    const getVisibleSubdivisionLines = useCallback((): Array<{
+        timestamp: number;
+        beatIndex: number;
+        subdivision: number;
+        position: number;
+    }> => {
+        if (!beatMap || beatMap.beats.length === 0) return [];
+
+        const lines: Array<{ timestamp: number; beatIndex: number; subdivision: number; position: number }> = [];
+
+        const subdivisionsPerBeat = 4; // Always use straight 16th notes
+
+        for (let i = 0; i < beatMap.beats.length; i++) {
+            const beat = beatMap.beats[i];
+            const beatTimestamp = beat.timestamp;
+
+            // Get next beat for subdivision calculation
+            const nextBeat = beatMap.beats[i + 1];
+            if (!nextBeat) continue;
+
+            const beatDuration = nextBeat.timestamp - beatTimestamp;
+            const subdivisionDuration = beatDuration / subdivisionsPerBeat;
+
+            // Add subdivision lines (skip the first one which is the beat itself)
+            for (let sub = 1; sub < subdivisionsPerBeat; sub++) {
+                const timestamp = beatTimestamp + (sub * subdivisionDuration);
+
+                if (timestamp >= minTime && timestamp <= maxTime) {
+                    const position = calculatePosition(timestamp);
+                    if (position >= 0 && position <= 1) {
+                        lines.push({ timestamp, beatIndex: i, subdivision: sub, position });
+                    }
+                }
+            }
+        }
+
+        return lines;
+    }, [beatMap, minTime, maxTime, calculatePosition]);
+
+    // Calculate visible grid lines
+    const visibleGridLines = useMemo(() => getVisibleGridLines(), [getVisibleGridLines]);
+    const visibleSubdivisionLines = useMemo(() => getVisibleSubdivisionLines(), [getVisibleSubdivisionLines]);
+
+    // Grid line opacity based on zoom level (higher zoom = more visible)
+    const gridLineOpacity = useMemo(() => {
+        const base = 0.4;
+        const zoomBoost = (zoomLevel - 1) * 0.15;
+        return Math.min(1, base + zoomBoost);
+    }, [zoomLevel]);
+
+    const subdivisionLineOpacity = useMemo(() => {
+        const base = 0.25;
+        const zoomBoost = (zoomLevel - 1) * 0.1;
+        return Math.min(0.8, base + zoomBoost);
+    }, [zoomLevel]);
+
     // Handle click on transient
     const handleTransientClick = useCallback((transient: TransientResult, index: number, event: React.MouseEvent) => {
         event.stopPropagation();
@@ -522,6 +628,37 @@ function BandTimeline({
 
                 {/* Band color accent line */}
                 <div className="multi-band-timeline-accent" style={{ backgroundColor: color }} />
+
+                {/* Beat grid lines (quarter notes) */}
+                {visibleGridLines.map(({ beatIndex, position }) => (
+                    <div
+                        key={`grid-line-${beatIndex}`}
+                        className="multi-band-grid-line"
+                        style={{
+                            left: `${position * 100}%`,
+                            opacity: gridLineOpacity,
+                        }}
+                    >
+                        {/* Measure number label for downbeats (every 4th beat) */}
+                        {beatIndex % 4 === 0 && (
+                            <span className="multi-band-grid-label">
+                                {Math.floor(beatIndex / 4) + 1}
+                            </span>
+                        )}
+                    </div>
+                ))}
+
+                {/* Subdivision grid lines */}
+                {visibleSubdivisionLines.map(({ beatIndex, subdivision, position }) => (
+                    <div
+                        key={`subdivision-${beatIndex}-${subdivision}`}
+                        className="multi-band-subdivision-line"
+                        style={{
+                            left: `${position * 100}%`,
+                            opacity: subdivisionLineOpacity,
+                        }}
+                    />
+                ))}
 
                 {/* Transient markers */}
                 {visibleTransients.map(({ transient, index, position, isPast }) => (
@@ -615,6 +752,9 @@ export function MultiBandVisualization({
     const transientAnalysis = rhythm.analysis.transientAnalysis;
     const allTransients = transientAnalysis.transients;
 
+    // Get beat map for grid lines
+    const beatMap = useUnifiedBeatMap();
+
     // Get duration from metadata or estimate from last transient
     const duration = propDuration ?? rhythm.metadata.duration > 0
         ? rhythm.metadata.duration
@@ -692,6 +832,8 @@ export function MultiBandVisualization({
                         intensityThreshold={intensityThreshold}
                         anticipationWindow={anticipationWindow}
                         pastWindow={pastWindow}
+                        beatMap={beatMap}
+                        zoomLevel={zoomLevel}
                     />
                 ))}
             </div>
