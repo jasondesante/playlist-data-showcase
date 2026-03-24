@@ -6,12 +6,13 @@
  * - Visual density comparison at a glance
  * - Beat count labels for each difficulty
  * - Vertical alignment so beats line up by time across all three
- * - Shared zoom/scroll across all three timelines
+ * - Centered playhead (now line in middle of timeline)
+ * - Drag-to-scrub and quick scroll navigation
  *
  * Part of Phase 7: Difficulty Variants Visualization (Task 7.3)
  */
 
-import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { Trophy, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import './VariantComparisonView.css';
 import { useAudioPlayerStore } from '../../../../store/audioPlayerStore';
@@ -105,88 +106,196 @@ const DIFFICULTY_ORDER: DifficultyLevel[] = ['easy', 'medium', 'hard'];
 
 /**
  * Single timeline row for a difficulty variant
+ * Uses centered playhead approach - playhead is always at 50% of timeline
  */
 interface VariantRowProps {
     difficulty: DifficultyLevel;
     variant: DifficultyVariant;
     duration: number;
     color: string;
-    isNatural: boolean;
-    currentTime: number;
-    zoom: number;
-    scrollOffset: number;
-    onScroll: (offset: number) => void;
-    onSeek?: (time: number) => void;
-    containerWidth: number;
+    pastWindow: number;
+    anticipationWindow: number;
 }
 
-function VariantRow({
+/** Pixels of movement before treating as drag (vs click) */
+const DRAG_THRESHOLD = 5;
+
+const VariantRow = memo(function VariantRow({
     difficulty,
     variant,
     duration,
     color,
-    isNatural,
-    currentTime,
-    zoom,
-    scrollOffset,
-    onScroll,
-    onSeek,
-    containerWidth,
+    pastWindow,
+    anticipationWindow,
 }: VariantRowProps) {
     const trackRef = useRef<HTMLDivElement>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const dragStartXRef = useRef(0);
-    const dragStartOffsetRef = useRef(0);
+
+    // Direct store access for responsive seeking
+    const storeSeek = useAudioPlayerStore((state) => state.seek);
+    const currentAudioUrl = useAudioPlayerStore((state) => state.currentUrl);
+    const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);
+    const playbackState = useAudioPlayerStore((state) => state.playbackState);
+    const isPlaying = playbackState === 'playing';
+
+    // Get selected track from playlist store (for initiating playback when audio not loaded)
+    const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
+
+    // Smart seek wrapper: loads audio first if not loaded
+    const seek = useCallback((time: number) => {
+        storeSeek(time, currentAudioUrl || selectedTrack?.audio_url);
+    }, [storeSeek, currentAudioUrl, selectedTrack?.audio_url]);
 
     const beats = variant.beats as VariantBeat[];
 
-    // Calculate visible time range based on zoom and scroll
-    const visibleDuration = duration / zoom;
-    const startTime = scrollOffset;
-    const endTime = Math.min(duration, startTime + visibleDuration);
+    // ========================================
+    // Smooth Animation with requestAnimationFrame
+    // ========================================
 
-    // Get visible beats
-    const visibleBeats = useMemo(() => {
-        return beats.filter(beat =>
-            beat.timestamp >= startTime - 0.1 &&
-            beat.timestamp <= endTime + 0.1
-        );
-    }, [beats, startTime, endTime]);
+    const animationFrameRef = useRef<number | null>(null);
+    const [smoothTime, setSmoothTime] = useState(storeCurrentTime);
+    const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
+        time: storeCurrentTime,
+        timestamp: performance.now(),
+    });
+    const isPlayingRef = useRef(isPlaying);
 
-    // Calculate beat position as percentage
-    const getBeatPosition = useCallback((timestamp: number): number => {
-        if (visibleDuration <= 0) return 0;
-        return ((timestamp - startTime) / visibleDuration) * 100;
-    }, [startTime, visibleDuration]);
+    // CRITICAL: Use a ref to track smoothTime for stable callback references
+    const smoothTimeRef = useRef(smoothTime);
 
-    // Calculate playhead position as percentage
-    const playheadPercent = useMemo(() => {
-        if (currentTime < startTime || currentTime > endTime) return -1;
-        return ((currentTime - startTime) / visibleDuration) * 100;
-    }, [currentTime, startTime, endTime, visibleDuration]);
+    // Keep smoothTimeRef in sync with smoothTime state
+    useEffect(() => {
+        smoothTimeRef.current = smoothTime;
+    }, [smoothTime]);
 
-    // Handle drag-to-scroll
-    const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        if (!trackRef.current || duration <= 0) return;
-        e.preventDefault();
-        setIsDragging(true);
-        dragStartXRef.current = e.clientX;
-        dragStartOffsetRef.current = scrollOffset;
-    }, [scrollOffset, duration]);
+    // Keep refs in sync with props
+    useEffect(() => {
+        lastAudioTimeRef.current = {
+            time: storeCurrentTime,
+            timestamp: performance.now(),
+        };
+    }, [storeCurrentTime]);
 
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-        if (!isDragging || !trackRef.current || duration <= 0) return;
+    // Track previous isPlaying state to detect transitions
+    const prevIsPlayingRef = useRef(isPlaying);
 
-        const deltaX = e.clientX - dragStartXRef.current;
-        const timePerPixel = visibleDuration / containerWidth;
-        const deltaTime = -deltaX * timePerPixel;
-        const newOffset = Math.max(0, Math.min(duration - visibleDuration, dragStartOffsetRef.current + deltaTime));
-        onScroll(newOffset);
-    }, [isDragging, visibleDuration, containerWidth, duration, onScroll]);
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
 
-    const handleMouseUp = useCallback(() => {
-        setIsDragging(false);
-    }, []);
+        const playbackJustStarted = isPlaying && !prevIsPlayingRef.current;
+        if (playbackJustStarted) {
+            lastAudioTimeRef.current = {
+                time: storeCurrentTime,
+                timestamp: performance.now(),
+            };
+            setSmoothTime(storeCurrentTime);
+        }
+
+        prevIsPlayingRef.current = isPlaying;
+    }, [isPlaying, storeCurrentTime]);
+
+    /**
+     * Animation loop for smooth scrolling
+     */
+    useEffect(() => {
+        if (!isPlaying) {
+            setSmoothTime(storeCurrentTime);
+            return;
+        }
+
+        const animate = () => {
+            const now = performance.now();
+            const { time: lastAudioTime, timestamp: lastUpdateTimestamp } = lastAudioTimeRef.current;
+            const elapsedMs = now - lastUpdateTimestamp;
+            const elapsedSeconds = elapsedMs / 1000;
+            const interpolatedTime = lastAudioTime + elapsedSeconds;
+            const clampedTime = duration > 0 ? Math.min(interpolatedTime, duration) : interpolatedTime;
+            setSmoothTime(clampedTime);
+
+            if (isPlayingRef.current && (duration <= 0 || clampedTime < duration)) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+            }
+        };
+
+        animationFrameRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
+            }
+        };
+    }, [isPlaying, duration]);
+
+    /**
+     * Handle seek events
+     */
+    useEffect(() => {
+        if (!isPlaying) {
+            setSmoothTime(storeCurrentTime);
+        }
+    }, [storeCurrentTime, isPlaying]);
+
+    // ========================================
+    // Drag-to-scrub and click-to-seek functionality
+    // ========================================
+
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartXRef = useRef<number>(0);
+    const dragStartTimeRef = useRef<number>(0);
+
+    // Total visible time window
+    const totalWindow = pastWindow + anticipationWindow;
+
+    const handleMouseDown = useCallback(
+        (event: React.MouseEvent<HTMLDivElement>) => {
+            if (!trackRef.current || duration === 0) return;
+
+            event.preventDefault();
+            setIsDragging(true);
+            dragStartXRef.current = event.clientX;
+            dragStartTimeRef.current = smoothTimeRef.current;
+        },
+        [duration]
+    );
+
+    const handleMouseMove = useCallback(
+        (event: MouseEvent) => {
+            if (!isDragging || !trackRef.current || duration === 0) return;
+
+            const rect = trackRef.current.getBoundingClientRect();
+            const trackWidth = rect.width;
+            const deltaX = event.clientX - dragStartXRef.current;
+
+            if (Math.abs(deltaX) > DRAG_THRESHOLD) {
+                const timePerPixel = totalWindow / trackWidth;
+                const deltaTime = -deltaX * timePerPixel;
+                const newTime = Math.max(0, Math.min(duration, dragStartTimeRef.current + deltaTime));
+                seek(newTime);
+            }
+        },
+        [isDragging, totalWindow, duration, seek]
+    );
+
+    const handleMouseUp = useCallback(
+        (event: MouseEvent) => {
+            if (!isDragging || !trackRef.current || duration === 0) return;
+
+            const rect = trackRef.current.getBoundingClientRect();
+            const deltaX = event.clientX - dragStartXRef.current;
+
+            if (Math.abs(deltaX) <= DRAG_THRESHOLD) {
+                const clickX = event.clientX - rect.left;
+                const trackWidth = rect.width;
+                const positionRatio = clickX / trackWidth;
+                const timeFromPastStart = positionRatio * totalWindow;
+                const newTime = Math.max(0, Math.min(duration, (smoothTimeRef.current - pastWindow) + timeFromPastStart));
+                seek(newTime);
+            }
+
+            setIsDragging(false);
+        },
+        [isDragging, pastWindow, totalWindow, duration, seek]
+    );
 
     useEffect(() => {
         if (isDragging) {
@@ -199,16 +308,34 @@ function VariantRow({
         }
     }, [isDragging, handleMouseMove, handleMouseUp]);
 
-    // Handle click-to-seek
-    const handleClick = useCallback((e: React.MouseEvent) => {
-        if (!onSeek || !trackRef.current || duration <= 0) return;
+    // ========================================
+    // Beat Filtering and Positioning
+    // ========================================
 
-        const rect = trackRef.current.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const clickPercent = clickX / rect.width;
-        const clickTime = startTime + clickPercent * visibleDuration;
-        onSeek(Math.max(0, Math.min(duration, clickTime)));
-    }, [onSeek, startTime, visibleDuration, duration]);
+    // Calculate time window for visible beats
+    const minTime = smoothTime - pastWindow;
+    const maxTime = smoothTime + anticipationWindow;
+
+    // Get visible beats with centered playhead positioning
+    const visibleBeats = useMemo(() => {
+        return beats
+            .map((beat, index) => {
+                const timeUntilBeat = beat.timestamp - smoothTime;
+                // Position: 0.5 is center (now), beats in past are < 0.5, beats in future are > 0.5
+                const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
+                return {
+                    beat,
+                    index,
+                    position,
+                    isPast: beat.timestamp < smoothTime - 0.05,
+                };
+            })
+            .filter((item) => {
+                const timeMatch = item.beat.timestamp >= minTime && item.beat.timestamp <= maxTime;
+                const positionMatch = item.position >= 0 && item.position <= 1;
+                return timeMatch && positionMatch;
+            });
+    }, [beats, smoothTime, minTime, maxTime, anticipationWindow]);
 
     // Get beat color
     const getBeatColor = useCallback((beat: VariantBeat): string => {
@@ -223,7 +350,7 @@ function VariantRow({
 
     return (
         <div
-            className={`variant-comparison-row ${isNatural ? 'variant-comparison-row--natural' : ''}`}
+            className="variant-comparison-row"
             style={{ '--variant-color': color } as React.CSSProperties}
         >
             {/* Row label */}
@@ -234,11 +361,6 @@ function VariantRow({
                 <span className="variant-comparison-row-count">
                     {beats.length} beats
                 </span>
-                {isNatural && (
-                    <span className="variant-comparison-row-natural">
-                        Natural
-                    </span>
-                )}
             </div>
 
             {/* Timeline track */}
@@ -246,22 +368,26 @@ function VariantRow({
                 ref={trackRef}
                 className={`variant-comparison-track ${isDragging ? 'variant-comparison-track--dragging' : ''}`}
                 onMouseDown={handleMouseDown}
-                onClick={handleClick}
+                role="slider"
+                tabIndex={0}
+                aria-label={`${difficulty} difficulty timeline`}
+                aria-valuemin={0}
+                aria-valuemax={duration}
+                aria-valuenow={smoothTime}
             >
                 {/* Background */}
                 <div className="variant-comparison-track-bg" />
 
                 {/* Beat markers */}
-                {visibleBeats.map((beat, index) => {
-                    const position = getBeatPosition(beat.timestamp);
+                {visibleBeats.map(({ beat, index, position, isPast }) => {
                     const size = 6 + beat.intensity * 8;
 
                     return (
                         <div
                             key={`beat-${beat.timestamp.toFixed(3)}-${index}`}
-                            className="variant-comparison-beat"
+                            className={`variant-comparison-beat ${isPast ? 'variant-comparison-beat--past' : ''}`}
                             style={{
-                                left: `${position}%`,
+                                left: `${position * 100}%`,
                                 width: `${size}px`,
                                 height: `${size}px`,
                                 backgroundColor: getBeatColor(beat),
@@ -272,13 +398,10 @@ function VariantRow({
                     );
                 })}
 
-                {/* Playhead */}
-                {playheadPercent >= 0 && playheadPercent <= 100 && (
-                    <div
-                        className="variant-comparison-playhead"
-                        style={{ left: `${playheadPercent}%` }}
-                    />
-                )}
+                {/* Now line (playhead) - always centered */}
+                <div className="variant-comparison-now-line">
+                    <div className="variant-comparison-now-line-inner" style={{ backgroundColor: color }} />
+                </div>
             </div>
 
             {/* Density bar */}
@@ -293,7 +416,7 @@ function VariantRow({
             </div>
         </div>
     );
-}
+});
 
 // ============================================================
 // Main Component
@@ -302,21 +425,18 @@ function VariantRow({
 /**
  * VariantComparisonView
  *
- * Displays all three difficulty variants as stacked timelines with synchronized
- * zoom and scroll. Provides a visual density comparison at a glance.
+ * Displays all three difficulty variants as stacked timelines with centered playhead.
+ * Provides a visual density comparison at a glance.
  */
 export function VariantComparisonView({
     rhythm,
-    currentTime = 0,
+    currentTime: _currentTime = 0,
     duration: propDuration,
     isPlaying: _isPlaying = false,
-    onSeek,
+    onSeek: _onSeek,
     className,
 }: VariantComparisonViewProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [containerWidth, setContainerWidth] = useState(800);
-    const [zoom, setZoom] = useState(1);
-    const [scrollOffset, setScrollOffset] = useState(0);
 
     // Quick scroll state
     const quickScrollRef = useRef<HTMLDivElement>(null);
@@ -338,7 +458,6 @@ export function VariantComparisonView({
     const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);
 
     const variants = rhythm.difficultyVariants;
-    const naturalDifficulty = rhythm.metadata.naturalDifficulty;
 
     // Calculate duration from beat timestamps
     const duration = useMemo(() => {
@@ -354,51 +473,27 @@ export function VariantComparisonView({
         return maxTime + 1;
     }, [propDuration, variants]);
 
-    // Track container width for scroll calculations
-    useEffect(() => {
-        const updateWidth = () => {
-            if (containerRef.current) {
-                setContainerWidth(containerRef.current.offsetWidth);
-            }
-        };
-
-        updateWidth();
-        window.addEventListener('resize', updateWidth);
-        return () => window.removeEventListener('resize', updateWidth);
-    }, []);
-
-    // Auto-scroll to follow playback
-    useEffect(() => {
-        if (duration <= 0) return;
-
-        const visibleDuration = duration / zoom;
-        const margin = visibleDuration * 0.1; // 10% margin
-
-        // If playhead is outside visible range, scroll to it
-        if (currentTime < scrollOffset + margin || currentTime > scrollOffset + visibleDuration - margin) {
-            // Center on current time
-            const newOffset = Math.max(0, Math.min(duration - visibleDuration, currentTime - visibleDuration / 2));
-            setScrollOffset(newOffset);
-        }
-    }, [currentTime, zoom, duration, scrollOffset]);
+    // Zoom state - controls the visible time window
+    const [zoomLevel, setZoomLevel] = useState(1);
+    // Base windows at zoom level 1
+    const baseAnticipationWindow = 2.0;
+    const basePastWindow = 4.0;
+    // Calculate windows based on zoom (higher zoom = smaller windows = more detail)
+    const anticipationWindow = baseAnticipationWindow / zoomLevel;
+    const pastWindow = basePastWindow / zoomLevel;
+    const totalWindow = pastWindow + anticipationWindow;
 
     // Zoom controls
     const handleZoomIn = useCallback(() => {
-        setZoom(prev => Math.min(10, prev * 1.5));
+        setZoomLevel(prev => Math.min(4, prev * 1.5));
     }, []);
 
     const handleZoomOut = useCallback(() => {
-        setZoom(prev => Math.max(0.5, prev / 1.5));
+        setZoomLevel(prev => Math.max(0.5, prev / 1.5));
     }, []);
 
     const handleResetZoom = useCallback(() => {
-        setZoom(1);
-        setScrollOffset(0);
-    }, []);
-
-    // Shared scroll handler
-    const handleScroll = useCallback((offset: number) => {
-        setScrollOffset(offset);
+        setZoomLevel(1);
     }, []);
 
     // ========================================
@@ -504,9 +599,6 @@ export function VariantComparisonView({
         return allBeats.filter((_, idx) => idx % sampleRate === 0);
     }, [variants]);
 
-    // Calculate visible duration for viewport indicator
-    const visibleDuration = duration / zoom;
-
     // Calculate comparison stats
     const comparisonStats = useMemo(() => {
         const counts = {
@@ -523,13 +615,6 @@ export function VariantComparisonView({
             total: counts.easy + counts.medium + counts.hard,
         };
     }, [variants]);
-
-    // Format time for display
-    const formatTime = useCallback((seconds: number): string => {
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }, []);
 
     // Guard against invalid duration - this can happen if audioPlayerStore hasn't loaded yet
     // or if the duration prop is NaN/undefined
@@ -562,7 +647,7 @@ export function VariantComparisonView({
                         <ZoomOut size={16} />
                     </button>
                     <span className="variant-comparison-zoom-level">
-                        {zoom.toFixed(1)}x
+                        {zoomLevel.toFixed(1)}x
                     </span>
                     <button
                         className="variant-comparison-control"
@@ -599,30 +684,6 @@ export function VariantComparisonView({
                 </div>
             </div>
 
-            {/* Time ruler */}
-            <div className="variant-comparison-ruler">
-                <div className="variant-comparison-ruler-label">Time</div>
-                <div className="variant-comparison-ruler-track">
-                    {Array.from({ length: Math.ceil(duration / 10) + 1 }, (_, i) => {
-                        const time = i * 10;
-                        if (time > duration) return null;
-                        const position = ((time - scrollOffset) / (duration / zoom)) * 100;
-                        if (position < -5 || position > 105) return null;
-                        return (
-                            <div
-                                key={time}
-                                className="variant-comparison-ruler-tick"
-                                style={{ left: `${position}%` }}
-                            >
-                                <span className="variant-comparison-ruler-time">
-                                    {formatTime(time)}
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
             {/* Stacked timelines */}
             <div className="variant-comparison-rows" ref={containerRef}>
                 {DIFFICULTY_ORDER.map((difficulty) => (
@@ -632,13 +693,8 @@ export function VariantComparisonView({
                         variant={variants[difficulty]}
                         duration={duration}
                         color={DIFFICULTY_COLORS[difficulty]}
-                        isNatural={difficulty === naturalDifficulty}
-                        currentTime={currentTime}
-                        zoom={zoom}
-                        scrollOffset={scrollOffset}
-                        onScroll={handleScroll}
-                        onSeek={onSeek}
-                        containerWidth={containerWidth}
+                        pastWindow={pastWindow}
+                        anticipationWindow={anticipationWindow}
                     />
                 ))}
             </div>
@@ -682,9 +738,9 @@ export function VariantComparisonView({
 
             {/* Instructions */}
             <div className="variant-comparison-instructions">
-                <span>Drag to scroll</span>
+                <span>Drag to scrub</span>
                 <span>Click to seek</span>
-                <span>Use zoom controls to adjust view</span>
+                <span>Use zoom controls to adjust detail</span>
             </div>
 
             {/* Quick scrollbar for fast navigation */}
@@ -715,8 +771,8 @@ export function VariantComparisonView({
                         <div
                             className="variant-comparison-quickscroll-viewport"
                             style={{
-                                left: `${Math.max(0, (scrollOffset / duration) * 100)}%`,
-                                width: `${Math.min(100, (visibleDuration / duration) * 100)}%`,
+                                left: `${Math.max(0, ((storeCurrentTime - pastWindow) / duration) * 100)}%`,
+                                width: `${Math.min(100, (totalWindow / duration) * 100)}%`,
                             }}
                         />
 
