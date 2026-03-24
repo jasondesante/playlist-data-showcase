@@ -18,7 +18,7 @@
  * Part of Phase 2: DifficultyConversionPanel (Task 2.1)
  */
 
-import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import { useMemo, useState, useRef, useEffect, useCallback, memo } from 'react';
 import { GitBranch, CheckCircle, TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import './DifficultyConversionPanel.css';
 import { ZoomControls } from '../../ZoomControls';
@@ -87,6 +87,46 @@ const EDIT_TYPE_ICONS: Record<EditType, React.ElementType> = {
 const DRAG_THRESHOLD = 5;
 
 // ============================================================
+// Binary Search Utilities for O(log n) filtering
+// ============================================================
+
+/**
+ * Find the index of the first beat at or after the given timestamp.
+ * Assumes beats array is sorted by timestamp.
+ */
+function findFirstBeatIndexAfter(beats: CompositeBeat[], timestamp: number): number {
+    let left = 0;
+    let right = beats.length;
+    while (left < right) {
+        const mid = Math.floor((left + right) / 2);
+        if (beats[mid].timestamp < timestamp) {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+    return left;
+}
+
+/**
+ * Find the index of the last beat at or before the given timestamp.
+ * Assumes beats array is sorted by timestamp.
+ */
+function findLastBeatIndexBefore(beats: CompositeBeat[], timestamp: number): number {
+    let left = -1;
+    let right = beats.length - 1;
+    while (left < right) {
+        const mid = Math.floor((left + right + 1) / 2);
+        if (beats[mid].timestamp > timestamp) {
+            right = mid - 1;
+        } else {
+            left = mid;
+        }
+    }
+    return left;
+}
+
+// ============================================================
 // Utility Functions
 // ============================================================
 
@@ -121,6 +161,37 @@ function detectAddedBeats(
 // ============================================================
 // Sub-components
 // ============================================================
+
+/**
+ * Memoized baseline marker component for performance.
+ * Prevents unnecessary re-renders when parent updates.
+ */
+interface BaselineMarkerProps {
+    beat: CompositeBeat;
+    leftPercent: number;
+    color: string;
+}
+
+const BaselineMarker = memo(function BaselineMarker({
+    beat,
+    leftPercent,
+    color,
+}: BaselineMarkerProps) {
+    const size = 4 + (beat.intensity || 0.5) * 6;
+
+    return (
+        <div
+            className="difficulty-conversion-baseline-marker"
+            style={{
+                left: `${leftPercent}%`,
+                width: `${size}px`,
+                height: `${size}px`,
+                backgroundColor: color,
+            }}
+            title={`${beat.timestamp.toFixed(3)}s`}
+        />
+    );
+});
 
 /**
  * Header for a difficulty conversion column
@@ -298,6 +369,14 @@ function CompositeBaselineTimeline({
     const dragStartXRef = useRef<number>(0);
     const dragStartTimeRef = useRef<number>(0);
 
+    // RAF throttling for smooth drag performance
+    const pendingSeekRef = useRef<number | null>(null);
+    const rafIdRef = useRef<number | null>(null);
+    
+    // Lock scroll offset during drag to prevent viewport jumping
+    const lockedScrollOffsetRef = useRef<number | null>(null);
+    const [lockedScrollOffset, setLockedScrollOffset] = useState<number | null>(null);
+
     const handleMouseDown = useCallback(
         (event: React.MouseEvent<HTMLDivElement>) => {
             if (!trackRef.current || duration === 0) return;
@@ -306,6 +385,9 @@ function CompositeBaselineTimeline({
             setIsDragging(true);
             dragStartXRef.current = event.clientX;
             dragStartTimeRef.current = smoothTimeRef.current;
+            // Lock the current scroll offset so viewport doesn't jump during drag
+            lockedScrollOffsetRef.current = scrollOffset;
+            setLockedScrollOffset(scrollOffset);
         },
         [duration]
     );
@@ -320,9 +402,20 @@ function CompositeBaselineTimeline({
 
             if (Math.abs(deltaX) > DRAG_THRESHOLD) {
                 const timePerPixel = duration / trackWidth;
-                const deltaTime = -deltaX * timePerPixel;
+                const deltaTime = deltaX * timePerPixel; //dont fucking change this
                 const newTime = Math.max(0, Math.min(duration, dragStartTimeRef.current + deltaTime));
-                seek(newTime);
+                
+                // RAF throttle: only seek once per animation frame
+                pendingSeekRef.current = newTime;
+                if (!rafIdRef.current) {
+                    rafIdRef.current = requestAnimationFrame(() => {
+                        if (pendingSeekRef.current !== null) {
+                            seek(pendingSeekRef.current);
+                            pendingSeekRef.current = null;
+                        }
+                        rafIdRef.current = null;
+                    });
+                }
             }
         },
         [isDragging, duration, seek]
@@ -331,6 +424,16 @@ function CompositeBaselineTimeline({
     const handleMouseUp = useCallback(
         (event: MouseEvent) => {
             if (!isDragging || !trackRef.current || duration === 0) return;
+
+            // Cancel any pending RAF
+            if (rafIdRef.current) {
+                cancelAnimationFrame(rafIdRef.current);
+                rafIdRef.current = null;
+            }
+            
+            // Unlock scroll offset
+            lockedScrollOffsetRef.current = null;
+            setLockedScrollOffset(null);
 
             const rect = trackRef.current.getBoundingClientRect();
             const deltaX = event.clientX - dragStartXRef.current;
@@ -342,6 +445,10 @@ function CompositeBaselineTimeline({
                 const positionRatio = clickX / trackWidth;
                 const newTime = Math.max(0, Math.min(duration, positionRatio * duration));
                 seek(newTime);
+            } else if (pendingSeekRef.current !== null) {
+                // Finalize any pending seek from drag
+                seek(pendingSeekRef.current);
+                pendingSeekRef.current = null;
             }
 
             setIsDragging(false);
@@ -368,23 +475,40 @@ function CompositeBaselineTimeline({
     const visibleDuration = duration / zoomLevel;
 
     // Calculate scroll offset to center on current time when zoomed
+    // Use locked offset during drag to prevent viewport jumping
     const scrollOffset = useMemo(() => {
+        // During drag, use the locked offset to keep viewport stable
+        if (lockedScrollOffset !== null) {
+            return lockedScrollOffset;
+        }
         if (zoomLevel <= 1) return 0;
         const halfVisible = visibleDuration / 2;
         return Math.max(0, Math.min(duration - visibleDuration, currentTime - halfVisible));
-    }, [currentTime, duration, visibleDuration, zoomLevel]);
+    }, [currentTime, duration, visibleDuration, zoomLevel, lockedScrollOffset]);
 
     const startTime = scrollOffset;
     const endTime = scrollOffset + visibleDuration;
 
-    // Filter beats to visible range
+    // Filter beats to visible range using binary search for O(log n) performance
     const displayBeats = useMemo(() => {
-        const visible = beats.filter(beat =>
-            beat.timestamp >= startTime - 0.1 &&
-            beat.timestamp <= endTime + 0.1
-        );
+        if (beats.length === 0) return [];
 
-        // Limit for performance
+        const minTime = startTime - 0.1;
+        const maxTime = endTime + 0.1;
+
+        // Binary search to find the range of visible beats
+        const startIndex = findFirstBeatIndexAfter(beats, minTime);
+        const endIndex = findLastBeatIndexBefore(beats, maxTime);
+
+        // If no beats in range, return empty
+        if (startIndex > endIndex || startIndex >= beats.length) {
+            return [];
+        }
+
+        // Extract visible beats
+        const visible = beats.slice(startIndex, endIndex + 1);
+
+        // Limit for performance (sample if too many)
         if (visible.length <= 150) return visible;
         const step = visible.length / 150;
         const sampled: CompositeBeat[] = [];
@@ -417,21 +541,15 @@ function CompositeBaselineTimeline({
                     aria-valuemax={duration}
                     aria-valuenow={currentTime}
                 >
-                    {displayBeats.map((beat, index) => {
+                    {displayBeats.map((beat) => {
                         const leftPercent = ((beat.timestamp - startTime) / visibleDuration) * 100;
-                        const size = 4 + (beat.intensity || 0.5) * 6;
 
                         return (
-                            <div
-                                key={index}
-                                className="difficulty-conversion-baseline-marker"
-                                style={{
-                                    left: `${leftPercent}%`,
-                                    width: `${size}px`,
-                                    height: `${size}px`,
-                                    backgroundColor: DIFFICULTY_COLORS.medium,
-                                }}
-                                title={`${beat.timestamp.toFixed(3)}s`}
+                            <BaselineMarker
+                                key={`baseline-${beat.timestamp.toFixed(4)}`}
+                                beat={beat}
+                                leftPercent={leftPercent}
+                                color={DIFFICULTY_COLORS.medium}
                             />
                         );
                     })}
@@ -594,7 +712,7 @@ function ConversionStats({ variant, ghostBeatCount, addedBeatCount }: Conversion
         const { conversionMetadata } = variant;
         const reductionPercent = conversionMetadata.totalBeatsBefore > 0
             ? ((conversionMetadata.totalBeatsBefore - conversionMetadata.totalBeatsAfter) /
-               conversionMetadata.totalBeatsBefore) * 100
+                conversionMetadata.totalBeatsBefore) * 100
             : 0;
 
         return (
@@ -627,7 +745,7 @@ function ConversionStats({ variant, ghostBeatCount, addedBeatCount }: Conversion
         const { enhancementMetadata } = variant;
         const increasePercent = enhancementMetadata.totalBeatsBefore > 0
             ? ((enhancementMetadata.totalBeatsAfter - enhancementMetadata.totalBeatsBefore) /
-               enhancementMetadata.totalBeatsBefore) * 100
+                enhancementMetadata.totalBeatsBefore) * 100
             : 0;
 
         return (
