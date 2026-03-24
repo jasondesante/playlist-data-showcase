@@ -82,7 +82,7 @@ export function ChartPreviewTimeline({
     const currentTime = useAudioPlayerStore((state) => state.currentTime);
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
     const currentUrl = useAudioPlayerStore((state) => state.currentUrl);
-    const seek = useAudioPlayerStore((state) => state.seek);
+    const storeSeek = useAudioPlayerStore((state) => state.seek);
     const resume = useAudioPlayerStore((state) => state.resume);
     const pause = useAudioPlayerStore((state) => state.pause);
     const play = useAudioPlayerStore((state) => state.play);
@@ -91,6 +91,11 @@ export function ChartPreviewTimeline({
     const duration = useTrackDuration();
 
     const isPlaying = playbackState === 'playing';
+
+    // Smart seek wrapper: loads audio first if not loaded
+    const seek = useCallback((time: number) => {
+        storeSeek(time, currentUrl || selectedTrack?.audio_url);
+    }, [storeSeek, currentUrl, selectedTrack?.audio_url]);
 
     // Animation state
     const [smoothTime, setSmoothTime] = useState(currentTime);

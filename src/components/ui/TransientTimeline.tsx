@@ -17,6 +17,7 @@ import { useRef, useState, useEffect, useCallback, useMemo, memo } from 'react';
 import './TransientTimeline.css';
 import type { TransientResult, Band } from '../../types/rhythmGeneration';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
+import { usePlaylistStore } from '../../store/playlistStore';
 
 // ============================================================
 // Constants
@@ -212,11 +213,20 @@ export function TransientTimeline({
     const trackRef = useRef<HTMLDivElement>(null);
 
     // Direct store access for responsive seeking (same pattern as SubdivisionPreviewTimeline)
-    const seek = useAudioPlayerStore((state) => state.seek);
+    const storeSeek = useAudioPlayerStore((state) => state.seek);
+    const currentAudioUrl = useAudioPlayerStore((state) => state.currentUrl);
     // Subscribe directly to currentTime and playbackState for immediate updates
     const currentTime = useAudioPlayerStore((state) => state.currentTime);
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
     const isPlaying = playbackState === 'playing';
+
+    // Get selected track from playlist store (for initiating playback when audio not loaded)
+    const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
+
+    // Smart seek wrapper: loads audio first if not loaded
+    const seek = useCallback((time: number) => {
+        storeSeek(time, currentAudioUrl || selectedTrack?.audio_url);
+    }, [storeSeek, currentAudioUrl, selectedTrack?.audio_url]);
 
     // ========================================
     // Smooth Animation with requestAnimationFrame

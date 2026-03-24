@@ -23,6 +23,7 @@ import './QuantizedBeatTimeline.css';
 import type { GeneratedBeat, Band, GridType, HighlightedRegion } from '../../types/rhythmGeneration';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useUnifiedBeatMap } from '../../store/beatDetectionStore';
+import { usePlaylistStore } from '../../store/playlistStore';
 
 // ============================================================
 // Types
@@ -159,9 +160,18 @@ export function QuantizedBeatTimeline({
     const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
     const storeIsPlaying = playbackState === 'playing';
+    const currentAudioUrl = useAudioPlayerStore((state) => state.currentUrl);
 
-    // Use store values if no prop override
-    const seek = propOnSeek || storeSeek;
+    // Get selected track from playlist store (for initiating playback when audio not loaded)
+    const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
+
+    // Smart seek wrapper: loads audio first if not loaded
+    const smartSeek = useCallback((time: number) => {
+        storeSeek(time, currentAudioUrl || selectedTrack?.audio_url);
+    }, [storeSeek, currentAudioUrl, selectedTrack?.audio_url]);
+
+    // Use prop callback if provided, otherwise use smart seek
+    const seek = propOnSeek || smartSeek;
     const currentTime = propCurrentTime !== undefined || !storeCurrentTime ? propCurrentTime : storeCurrentTime;
     const isPlaying = propIsPlaying !== undefined ? propIsPlaying : storeIsPlaying;
 

@@ -36,7 +36,7 @@ interface AudioPlayerState {
     resume: () => void;
     togglePlay: (url: string) => Promise<void>;  // Toggle play/pause for given URL
     stop: () => void;
-    seek: (time: number) => void;
+    seek: (time: number, url?: string) => void;
     setVolume: (volume: number) => void;
     toggleMute: () => void;
     updateTime: (time: number) => void;
@@ -298,9 +298,41 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
         }
     },
 
-    seek: (time: number) => {
+    seek: (time: number, url?: string) => {
         const audio = getAudioElement();
-        if (get().currentUrl) {
+        const currentUrl = get().currentUrl;
+
+        // If no audio is loaded but a URL is provided, load it first
+        if (!currentUrl && url) {
+            // Load the audio and seek once it's ready
+            audio.src = url;
+            set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading' });
+
+            // Start playback briefly to establish seekable range, then seek and pause
+            audio.play().catch((err) => {
+                console.error('[seek] Playback failed during seek-initiated load:', err);
+                set({ error: err.message, playbackState: 'error' });
+                return;
+            });
+
+            // Wait for audio to be ready before seeking
+            const seekOnCanPlay = () => {
+                const duration = get().duration;
+                const maxTime = Number.isFinite(duration) && duration > 0 ? duration : Infinity;
+                const targetTime = Math.max(0, Math.min(time, maxTime));
+
+                audio.currentTime = targetTime;
+                set({ currentTime: targetTime });
+                // Pause since user initiated a seek, not play
+                audio.pause();
+                audio.removeEventListener('canplay', seekOnCanPlay);
+            };
+            audio.addEventListener('canplay', seekOnCanPlay);
+            return;
+        }
+
+        // Normal seek when audio is already loaded
+        if (currentUrl) {
             const duration = get().duration;
             const maxTime = Number.isFinite(duration) && duration > 0 ? duration : Infinity;
             const targetTime = Math.max(0, Math.min(time, maxTime));

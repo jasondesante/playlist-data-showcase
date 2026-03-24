@@ -14,7 +14,7 @@
  * - Metadata display on successful generation
  */
 
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, Trophy, GitCompare, Combine, GitBranch } from 'lucide-react';
 import './RhythmGenerationTab.css';
 import { Card } from '../../ui/Card';
@@ -540,48 +540,11 @@ export function RhythmGenerationTab({
         }
     };
 
-    // Ref to track pending seek timeout for cleanup
-    const seekTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    // Cleanup seek timeout on unmount
-    useEffect(() => {
-        return () => {
-            if (seekTimeoutRef.current) {
-                clearTimeout(seekTimeoutRef.current);
-            }
-        };
-    }, []);
-
     // Handle seek from visualization panels
     // Smart seek: loads audio first if not loaded, then seeks to target position
     const handleSeek = useCallback((time: number) => {
-        // Clear any pending seek timeout
-        if (seekTimeoutRef.current) {
-            clearTimeout(seekTimeoutRef.current);
-            seekTimeoutRef.current = null;
-        }
-
-        if (currentUrl) {
-            // Audio already loaded - seek directly
-            seek(time);
-        } else if (selectedTrack?.audio_url) {
-            // No audio loaded yet - load it, start playback briefly to establish
-            // seekable range, then seek and pause (user initiated seek, not play)
-            play(selectedTrack.audio_url);
-
-            // Wait for audio to be ready before seeking
-            const performSeek = () => {
-                seek(time);
-                // Pause since user initiated a seek, not play
-                pause();
-                seekTimeoutRef.current = null;
-            };
-
-            // Use a short timeout to allow the audio to start loading and establish seekable range
-            // This is needed because the seekable range isn't available immediately after setting src
-            seekTimeoutRef.current = setTimeout(performSeek, 100);
-        }
-    }, [currentUrl, selectedTrack, seek, play, pause]);
+        seek(time, currentUrl || selectedTrack?.audio_url);
+    }, [currentUrl, selectedTrack, seek]);
 
     // Handle play/pause toggle (Part of Task 9.3)
     const handlePlayPause = useCallback(() => {

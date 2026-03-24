@@ -15,6 +15,7 @@ import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Trophy, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import './VariantComparisonView.css';
 import { useAudioPlayerStore } from '../../../../store/audioPlayerStore';
+import { usePlaylistStore } from '../../../../store/playlistStore';
 import type {
     GeneratedRhythm,
     DifficultyLevel,
@@ -322,7 +323,16 @@ export function VariantComparisonView({
     const [isQuickScrollDragging, setIsQuickScrollDragging] = useState(false);
 
     // Direct store access for responsive seeking
-    const seek = useAudioPlayerStore((state) => state.seek);
+    const storeSeek = useAudioPlayerStore((state) => state.seek);
+    const currentAudioUrl = useAudioPlayerStore((state) => state.currentUrl);
+
+    // Get selected track from playlist store (for initiating playback when audio not loaded)
+    const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
+
+    // Smart seek wrapper: loads audio first if not loaded
+    const seek = useCallback((time: number) => {
+        storeSeek(time, currentAudioUrl || selectedTrack?.audio_url);
+    }, [storeSeek, currentAudioUrl, selectedTrack?.audio_url]);
 
     // Subscribe to current time for quick scrollbar
     const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);

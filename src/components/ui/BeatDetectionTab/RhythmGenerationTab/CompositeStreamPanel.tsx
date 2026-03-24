@@ -18,6 +18,7 @@ import { Combine, PieChart, Layers, Info } from 'lucide-react';
 import './CompositeStreamPanel.css';
 import { ZoomControls } from '../../ZoomControls';
 import { useAudioPlayerStore } from '../../../../store/audioPlayerStore';
+import { usePlaylistStore } from '../../../../store/playlistStore';
 import type {
     GeneratedRhythm,
     GeneratedBeat,
@@ -229,10 +230,19 @@ function BandStreamTimeline({
     const quickScrollRef = useRef<HTMLDivElement>(null);
 
     // Direct store access for responsive seeking
-    const seek = useAudioPlayerStore((state) => state.seek);
+    const storeSeek = useAudioPlayerStore((state) => state.seek);
+    const currentAudioUrl = useAudioPlayerStore((state) => state.currentUrl);
     const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
     const isPlaying = playbackState === 'playing';
+
+    // Get selected track from playlist store (for initiating playback when audio not loaded)
+    const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
+
+    // Smart seek wrapper: loads audio first if not loaded
+    const seek = useCallback((time: number) => {
+        storeSeek(time, currentAudioUrl || selectedTrack?.audio_url);
+    }, [storeSeek, currentAudioUrl, selectedTrack?.audio_url]);
 
     // ========================================
     // Smooth Animation with requestAnimationFrame
@@ -809,10 +819,19 @@ function CompositeTimeline({
     const quickScrollRef = useRef<HTMLDivElement>(null);
 
     // Direct store access for responsive seeking
-    const seek = useAudioPlayerStore((state) => state.seek);
+    const storeSeek = useAudioPlayerStore((state) => state.seek);
+    const currentAudioUrl = useAudioPlayerStore((state) => state.currentUrl);
     const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
     const isPlaying = playbackState === 'playing';
+
+    // Get selected track from playlist store (for initiating playback when audio not loaded)
+    const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
+
+    // Smart seek wrapper: loads audio first if not loaded
+    const seek = useCallback((time: number) => {
+        storeSeek(time, currentAudioUrl || selectedTrack?.audio_url);
+    }, [storeSeek, currentAudioUrl, selectedTrack?.audio_url]);
 
     // ========================================
     // Smooth Animation with requestAnimationFrame
@@ -1321,10 +1340,19 @@ function SharedQuickScroll({
     const scrollRef = useRef<HTMLDivElement>(null);
 
     // Direct store access for responsive seeking
-    const seek = useAudioPlayerStore((state) => state.seek);
+    const storeSeek = useAudioPlayerStore((state) => state.seek);
+    const currentAudioUrl = useAudioPlayerStore((state) => state.currentUrl);
     const storeCurrentTime = useAudioPlayerStore((state) => state.currentTime);
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
     const isPlaying = playbackState === 'playing';
+
+    // Get selected track from playlist store (for initiating playback when audio not loaded)
+    const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
+
+    // Smart seek wrapper: loads audio first if not loaded
+    const seek = useCallback((time: number) => {
+        storeSeek(time, currentAudioUrl || selectedTrack?.audio_url);
+    }, [storeSeek, currentAudioUrl, selectedTrack?.audio_url]);
 
     // Smooth animation state
     const animationFrameRef = useRef<number | null>(null);
