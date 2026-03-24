@@ -50,6 +50,9 @@ interface AudioPlayerState {
 // Global HTML5 Audio instance
 let audioElement: HTMLAudioElement | null = null;
 
+// Track pending seek to prevent timeupdate from overwriting target position
+let pendingSeekTarget: number | null = null;
+
 const setupAudioEventListeners = (audio: HTMLAudioElement) => {
     audio.addEventListener('loadstart', () => {
         useAudioPlayerStore.getState().setPlaybackState('loading');
@@ -57,6 +60,11 @@ const setupAudioEventListeners = (audio: HTMLAudioElement) => {
 
     audio.addEventListener('canplay', () => {
         const store = useAudioPlayerStore.getState();
+
+        // If we have a pending seek, let the seek handler deal with it
+        if (pendingSeekTarget !== null) {
+            return;
+        }
 
         // CRITICAL: Check the actual audio element state, not the store state
         const isActuallyPlaying = !audio.paused && audio.readyState >= 2;
@@ -102,6 +110,10 @@ const setupAudioEventListeners = (audio: HTMLAudioElement) => {
     });
 
     audio.addEventListener('timeupdate', () => {
+        // Don't override currentTime if we have a pending seek
+        if (pendingSeekTarget !== null) {
+            return;
+        }
         useAudioPlayerStore.getState().updateTime(audio.currentTime);
     });
 
@@ -301,71 +313,79 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     seek: (time: number, url?: string) => {
         const audio = getAudioElement();
         const currentUrl = get().currentUrl;
+        const duration = get().duration;
+        const maxTime = Number.isFinite(duration) && duration > 0 ? duration : Infinity;
+        const targetTime = Math.max(0, Math.min(time, maxTime));
+
+        // Update store immediately for responsive UI
+        set({ currentTime: targetTime });
 
         // If no audio is loaded but a URL is provided, load it first
         if (!currentUrl && url) {
-            // Load the audio and seek once it's ready
+            // Set pending seek flag ONLY for initial load case
+            pendingSeekTarget = targetTime;
+
+            // Load the audio without starting playback
             audio.src = url;
-            set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading' });
+            set({ currentUrl: url, error: null, playbackState: 'loading' });
 
-            // Start playback briefly to establish seekable range, then seek and pause
-            audio.play().catch((err) => {
-                console.error('[seek] Playback failed during seek-initiated load:', err);
-                set({ error: err.message, playbackState: 'error' });
-                return;
-            });
+            // Wait for seekable range to be established before seeking
+            const trySeek = () => {
+                // Use current pendingSeekTarget in case user dragged to new position
+                const currentTarget = pendingSeekTarget;
+                if (currentTarget === null) return;
 
-            // Wait for audio to be ready before seeking
-            const seekOnCanPlay = () => {
-                const duration = get().duration;
-                const maxTime = Number.isFinite(duration) && duration > 0 ? duration : Infinity;
-                const targetTime = Math.max(0, Math.min(time, maxTime));
+                const canSeek = audio.seekable.length > 0 &&
+                    (audio.seekable.end(audio.seekable.length - 1) === Infinity ||
+                        audio.seekable.end(audio.seekable.length - 1) >= currentTarget);
 
-                audio.currentTime = targetTime;
-                set({ currentTime: targetTime });
-                // Pause since user initiated a seek, not play
-                audio.pause();
-                audio.removeEventListener('canplay', seekOnCanPlay);
+                if (canSeek) {
+                    audio.currentTime = currentTarget;
+                    set({ currentTime: currentTarget, playbackState: 'paused' });
+                    // Clear pending flag only if target hasn't changed
+                    if (pendingSeekTarget === currentTarget) {
+                        pendingSeekTarget = null;
+                    }
+                    audio.removeEventListener('canplay', trySeek);
+                    audio.removeEventListener('progress', trySeek);
+                }
             };
-            audio.addEventListener('canplay', seekOnCanPlay);
+
+            audio.addEventListener('canplay', trySeek);
+            audio.addEventListener('progress', trySeek);
             return;
         }
 
-        // Normal seek when audio is already loaded
+        // Normal seek when audio is already loaded - no pending flag needed
         if (currentUrl) {
-            const duration = get().duration;
-            const maxTime = Number.isFinite(duration) && duration > 0 ? duration : Infinity;
-            const targetTime = Math.max(0, Math.min(time, maxTime));
-
-            // Check if seekable range is valid
             const hasValidSeekable = audio.seekable.length > 0 &&
                 (audio.seekable.end(audio.seekable.length - 1) === Infinity ||
                     audio.seekable.end(audio.seekable.length - 1) >= targetTime);
 
             if (!hasValidSeekable) {
-                // Seekable range is broken - force reload the audio
+                // Seekable range not ready - reload audio to fix it
                 console.log('[seek] seekable range broken, reloading audio');
                 const wasPlaying = !audio.paused;
                 const currentSrc = audio.src;
                 audio.src = '';
                 audio.src = currentSrc;
 
-                // If audio was playing, resume playback after reload completes
-                if (wasPlaying) {
-                    const resumeOnCanPlay = () => {
-                        audio.currentTime = targetTime;
+                // Wait for reload to complete before seeking
+                const seekOnCanPlay = () => {
+                    audio.currentTime = targetTime;
+                    // If audio was playing, resume playback
+                    if (wasPlaying) {
                         audio.play().catch((err) => {
                             console.error('Resume after seek reload failed:', err);
                         });
-                        audio.removeEventListener('canplay', resumeOnCanPlay);
-                    };
-                    audio.addEventListener('canplay', resumeOnCanPlay);
-                    return; // Exit early - the event handler will set currentTime and resume
-                }
+                    }
+                    audio.removeEventListener('canplay', seekOnCanPlay);
+                };
+                audio.addEventListener('canplay', seekOnCanPlay);
+                return;
             }
 
             audio.currentTime = targetTime;
-            set({ currentTime: targetTime });
         }
     },
 
