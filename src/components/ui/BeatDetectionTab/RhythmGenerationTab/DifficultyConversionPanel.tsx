@@ -1053,6 +1053,10 @@ interface DifficultyConversionColumnProps {
     color: string;
     currentTime?: number;
     zoomLevel?: number;
+    /** Density (notes per quarter note) for this variant */
+    density?: number;
+    /** Total quarter notes in the track */
+    totalQuarterNotes?: number;
 }
 
 const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
@@ -1066,7 +1070,31 @@ const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
     color,
     currentTime,
     zoomLevel = 1,
+    density,
+    totalQuarterNotes,
 }: DifficultyConversionColumnProps) {
+    // Determine if this density is within the expected range for this difficulty
+    const densityStatus = useMemo(() => {
+        if (density === undefined) return 'unknown';
+        if (difficulty === 'easy') {
+            return density < DENSITY_THRESHOLDS.sparse ? 'correct' : 'too-high';
+        } else if (difficulty === 'medium') {
+            return density >= DENSITY_THRESHOLDS.sparse && density <= DENSITY_THRESHOLDS.dense
+                ? 'correct'
+                : density < DENSITY_THRESHOLDS.sparse
+                    ? 'too-low'
+                    : 'too-high';
+        } else {
+            return density > DENSITY_THRESHOLDS.dense ? 'correct' : 'too-low';
+        }
+    }, [density, difficulty]);
+
+    // Calculate density bar position (clamped to 0-100%)
+    const densityBarPercent = useMemo(() => {
+        if (density === undefined) return 0;
+        return Math.min(100, (density / MAX_DENSITY_DISPLAY) * 100);
+    }, [density]);
+
     return (
         <div
             className={`difficulty-conversion-column ${isNatural ? 'difficulty-conversion-column--natural' : ''}`}
@@ -1083,6 +1111,69 @@ const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
                 <span className="difficulty-conversion-beat-count-value">{variant.beats.length}</span>
                 <span className="difficulty-conversion-beat-count-label">beats</span>
             </div>
+
+            {/* Density display */}
+            {density !== undefined && totalQuarterNotes !== undefined && (
+                <div className={`difficulty-conversion-density difficulty-conversion-density--${densityStatus}`}>
+                    <div className="difficulty-conversion-density-header">
+                        <span className="difficulty-conversion-density-label">Density</span>
+                        <span className="difficulty-conversion-density-value">{density.toFixed(2)}</span>
+                        <span className="difficulty-conversion-density-unit">notes/beat</span>
+                    </div>
+                    <div className="difficulty-conversion-density-bar">
+                        <div className="difficulty-conversion-density-bar-track">
+                            {/* Zone indicators */}
+                            <div
+                                className="difficulty-conversion-density-bar-zone difficulty-conversion-density-bar-zone--easy"
+                                style={{ width: `${(DENSITY_THRESHOLDS.sparse / MAX_DENSITY_DISPLAY) * 100}%` }}
+                            />
+                            <div
+                                className="difficulty-conversion-density-bar-zone difficulty-conversion-density-bar-zone--medium"
+                                style={{
+                                    left: `${(DENSITY_THRESHOLDS.sparse / MAX_DENSITY_DISPLAY) * 100}%`,
+                                    width: `${((DENSITY_THRESHOLDS.dense - DENSITY_THRESHOLDS.sparse) / MAX_DENSITY_DISPLAY) * 100}%`
+                                }}
+                            />
+                            <div
+                                className="difficulty-conversion-density-bar-zone difficulty-conversion-density-bar-zone--hard"
+                                style={{
+                                    left: `${(DENSITY_THRESHOLDS.dense / MAX_DENSITY_DISPLAY) * 100}%`,
+                                    width: `${100 - (DENSITY_THRESHOLDS.dense / MAX_DENSITY_DISPLAY) * 100}%`
+                                }}
+                            />
+                            {/* Current density indicator */}
+                            <div
+                                className="difficulty-conversion-density-bar-indicator"
+                                style={{ left: `${densityBarPercent}%` }}
+                            />
+                        </div>
+                        {/* Threshold markers */}
+                        <div
+                            className="difficulty-conversion-density-bar-threshold"
+                            style={{ left: `${(DENSITY_THRESHOLDS.sparse / MAX_DENSITY_DISPLAY) * 100}%` }}
+                        >
+                            <span>{DENSITY_THRESHOLDS.sparse}</span>
+                        </div>
+                        <div
+                            className="difficulty-conversion-density-bar-threshold"
+                            style={{ left: `${(DENSITY_THRESHOLDS.dense / MAX_DENSITY_DISPLAY) * 100}%` }}
+                        >
+                            <span>{DENSITY_THRESHOLDS.dense}</span>
+                        </div>
+                    </div>
+                    <div className="difficulty-conversion-density-info">
+                        <span className="difficulty-conversion-density-quarters">
+                            {totalQuarterNotes} quarter notes
+                        </span>
+                        <span className={`difficulty-conversion-density-status difficulty-conversion-density-status--${densityStatus}`}>
+                            {densityStatus === 'correct' && '✓ In range'}
+                            {densityStatus === 'too-high' && '⚠ Too high'}
+                            {densityStatus === 'too-low' && '⚠ Too low'}
+                            {densityStatus === 'unknown' && ''}
+                        </span>
+                    </div>
+                </div>
+            )}
 
             <DiffTimeline
                 compositeBeats={compositeBeats}
@@ -1172,6 +1263,31 @@ export function DifficultyConversionPanel({
         };
     }, [variants, compositeBeats, naturalDifficulty]);
 
+    // Calculate total quarter notes from the composite (max beatIndex + 1)
+    const totalQuarterNotes = useMemo(() => {
+        if (compositeBeats.length === 0) return 0;
+        return Math.max(...compositeBeats.map(b => b.beatIndex)) + 1;
+    }, [compositeBeats]);
+
+    // Calculate composite density (notes per quarter note) using merged beats
+    // This is consistent with how variant densities are calculated
+    const compositeDensity = useMemo(() => {
+        if (totalQuarterNotes === 0) return 0;
+        return compositeBeats.length / totalQuarterNotes;
+    }, [compositeBeats, totalQuarterNotes]);
+
+    // Calculate density (notes per quarter note) for each variant
+    const variantDensities = useMemo(() => {
+        if (totalQuarterNotes === 0) {
+            return { easy: 0, medium: 0, hard: 0 };
+        }
+        return {
+            easy: variants.easy.beats.length / totalQuarterNotes,
+            medium: variants.medium.beats.length / totalQuarterNotes,
+            hard: variants.hard.beats.length / totalQuarterNotes,
+        };
+    }, [variants, totalQuarterNotes]);
+
     return (
         <div className={`difficulty-conversion-panel ${className || ''}`}>
             {/* Header */}
@@ -1202,7 +1318,7 @@ export function DifficultyConversionPanel({
 
             {/* Density Meter - shows note density, thresholds, and natural difficulty */}
             <DensityMeter
-                transientsPerBeat={rhythm.analysis.densityAnalysis.combinedMetrics.transientsPerBeat}
+                transientsPerBeat={compositeDensity}
                 naturalDifficulty={naturalDifficulty}
                 densityCategory={rhythm.analysis.densityAnalysis.combinedMetrics.densityCategory}
             />
@@ -1230,6 +1346,8 @@ export function DifficultyConversionPanel({
                         color={DIFFICULTY_COLORS[difficulty]}
                         currentTime={currentTime}
                         zoomLevel={zoomLevel}
+                        density={variantDensities[difficulty]}
+                        totalQuarterNotes={totalQuarterNotes}
                     />
                 ))}
             </div>

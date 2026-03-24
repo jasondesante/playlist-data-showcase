@@ -462,6 +462,161 @@
 }
 
 /* ============================================
+   DENSITY DISPLAY PER VARIANT
+   ============================================ */
+
+.difficulty-conversion-density {
+    padding: 0.625rem 1rem;
+    background: hsl(var(--surface-1));
+    border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.difficulty-conversion-density-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.difficulty-conversion-density-label {
+    font-size: 0.625rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
+}
+
+.difficulty-conversion-density-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--variant-color);
+}
+
+.difficulty-conversion-density-unit {
+    font-size: 0.625rem;
+    font-weight: 400;
+    color: hsl(var(--muted-foreground));
+    margin-left: 0.25rem;
+}
+
+/* Density bar - mini visual showing where this variant falls */
+.difficulty-conversion-density-bar {
+    position: relative;
+    margin-top: 0.375rem;
+}
+
+.difficulty-conversion-density-bar-track {
+    position: relative;
+    height: 8px;
+    background: hsl(var(--surface-2));
+    border-radius: 4px;
+    overflow: visible;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+/* Zone backgrounds within the mini bar */
+.difficulty-conversion-density-bar-zone {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    opacity: 0.3;
+}
+
+.difficulty-conversion-density-bar-zone--easy {
+    left: 0;
+    background: hsl(142 76% 36%);
+    border-radius: 3px 0 0 3px;
+}
+
+.difficulty-conversion-density-bar-zone--medium {
+    background: hsl(38 92% 50%);
+}
+
+.difficulty-conversion-density-bar-zone--hard {
+    right: 0;
+    background: hsl(0 84% 60%);
+    border-radius: 0 3px 3px 0;
+}
+
+/* Current density indicator on mini bar */
+.difficulty-conversion-density-bar-indicator {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 3px;
+    background: var(--variant-color);
+    border-radius: 2px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 0 2px hsl(var(--background)),
+                0 1px 4px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+}
+
+/* Threshold markers on mini bar */
+.difficulty-conversion-density-bar-threshold {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 1px;
+    background: hsl(var(--border));
+    z-index: 1;
+}
+
+.difficulty-conversion-density-bar-threshold span {
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.5rem;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    white-space: nowrap;
+}
+
+/* Info row below the bar */
+.difficulty-conversion-density-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+    padding-top: 0.375rem;
+}
+
+.difficulty-conversion-density-quarters {
+    font-size: 0.5625rem;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+}
+
+/* Density status indicator */
+.difficulty-conversion-density-status {
+    font-size: 0.5625rem;
+    font-weight: 600;
+    padding: 0.125rem 0.375rem;
+    border-radius: 2px;
+}
+
+.difficulty-conversion-density-status--correct {
+    color: hsl(142 76% 36%);
+    background: hsl(142 76% 36% / 0.15);
+}
+
+.difficulty-conversion-density-status--too-high {
+    color: hsl(0 84% 60%);
+    background: hsl(0 84% 60% / 0.15);
+}
+
+.difficulty-conversion-density-status--too-low {
+    color: hsl(38 92% 50%);
+    background: hsl(38 92% 50% / 0.15);
+}
+
+.difficulty-conversion-density-status--unknown {
+    color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
    DIFF TIMELINE
    ============================================ */
 
