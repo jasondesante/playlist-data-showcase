@@ -64,6 +64,26 @@ const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
 };
 
 /**
+ * Density thresholds for determining natural difficulty
+ * These values come from DensityAnalyzer in playlist-data-engine
+ */
+const DENSITY_THRESHOLDS = {
+    /** Below this = sparse (easy) */
+    sparse: 1.0,
+    /** Above this = dense (hard) */
+    dense: 1.75,
+} as const;
+
+/**
+ * Density category descriptions
+ */
+const DENSITY_DESCRIPTIONS: Record<string, string> = {
+    sparse: 'Mostly quarter notes, minimal subdivisions',
+    moderate: 'Eighth notes with some sixteenths',
+    dense: 'Heavy sixteenth notes and triplets',
+};
+
+/**
  * Edit type display labels
  */
 const EDIT_TYPE_LABELS: Record<EditType, string> = {
@@ -85,6 +105,136 @@ const EDIT_TYPE_ICONS: Record<EditType, React.ElementType> = {
 
 /** Pixels of movement before treating as drag (vs click) */
 const DRAG_THRESHOLD = 5;
+
+/**
+ * Maximum density to show on the meter (for scaling)
+ */
+const MAX_DENSITY_DISPLAY = 2.5;
+
+// ============================================================
+// DensityMeter Component
+// ============================================================
+
+interface DensityMeterProps {
+    /** The actual transients per beat value from analysis */
+    transientsPerBeat: number;
+    /** The determined natural difficulty */
+    naturalDifficulty: DifficultyLevel;
+    /** The density category from analysis */
+    densityCategory: 'sparse' | 'moderate' | 'dense';
+}
+
+/**
+ * Visual meter showing where the track's density falls on the difficulty scale.
+ * Displays threshold markers and the current position with explanation.
+ */
+function DensityMeter({ transientsPerBeat, naturalDifficulty, densityCategory }: DensityMeterProps) {
+    // Calculate threshold positions
+    const sparseThresholdPercent = (DENSITY_THRESHOLDS.sparse / MAX_DENSITY_DISPLAY) * 100;
+    const denseThresholdPercent = (DENSITY_THRESHOLDS.dense / MAX_DENSITY_DISPLAY) * 100;
+
+    // Calculate position as percentage, clamped to stay within readable bounds
+    // Leave 8% padding on each side so the label doesn't go off-screen
+    const minPosition = 8;
+    const maxPosition = 92;
+    const rawPercent = (transientsPerBeat / MAX_DENSITY_DISPLAY) * 100;
+    const positionPercent = Math.max(minPosition, Math.min(maxPosition, rawPercent));
+
+    return (
+        <div className="density-meter">
+            <div className="density-meter-header">
+                <span className="density-meter-title">Note Density Analysis</span>
+                <span className="density-meter-value">
+                    {transientsPerBeat.toFixed(2)} notes/beat
+                </span>
+            </div>
+
+            <div className="density-meter-scale">
+                {/* Zone backgrounds */}
+                <div
+                    className="density-meter-zone density-meter-zone--easy"
+                    style={{ width: `${sparseThresholdPercent}%` }}
+                    title={`Easy zone: < ${DENSITY_THRESHOLDS.sparse} notes/beat`}
+                />
+                <div
+                    className="density-meter-zone density-meter-zone--medium"
+                    style={{
+                        left: `${sparseThresholdPercent}%`,
+                        width: `${denseThresholdPercent - sparseThresholdPercent}%`
+                    }}
+                    title={`Medium zone: ${DENSITY_THRESHOLDS.sparse} - ${DENSITY_THRESHOLDS.dense} notes/beat`}
+                />
+                <div
+                    className="density-meter-zone density-meter-zone--hard"
+                    style={{
+                        left: `${denseThresholdPercent}%`,
+                        width: `${100 - denseThresholdPercent}%`
+                    }}
+                    title={`Hard zone: > ${DENSITY_THRESHOLDS.dense} notes/beat`}
+                />
+
+                {/* Threshold markers */}
+                <div
+                    className="density-meter-threshold"
+                    style={{ left: `${sparseThresholdPercent}%` }}
+                >
+                    <span className="density-meter-threshold-label">{DENSITY_THRESHOLDS.sparse}</span>
+                </div>
+                <div
+                    className="density-meter-threshold"
+                    style={{ left: `${denseThresholdPercent}%` }}
+                >
+                    <span className="density-meter-threshold-label">{DENSITY_THRESHOLDS.dense}</span>
+                </div>
+
+                {/* Current position indicator */}
+                <div
+                    className="density-meter-indicator"
+                    style={{ left: `${positionPercent}%` }}
+                >
+                    <div
+                        className="density-meter-indicator-marker"
+                        style={{ backgroundColor: DIFFICULTY_COLORS[naturalDifficulty] }}
+                    />
+                    <div
+                        className="density-meter-indicator-label"
+                        style={{ color: DIFFICULTY_COLORS[naturalDifficulty] }}
+                    >
+                        {naturalDifficulty.charAt(0).toUpperCase() + naturalDifficulty.slice(1)}
+                    </div>
+                </div>
+            </div>
+
+            <div className="density-meter-legend">
+                <div className="density-meter-legend-item">
+                    <span className="density-meter-legend-color density-meter-legend-color--easy" />
+                    <span className="density-meter-legend-label">
+                        Easy: &lt;{DENSITY_THRESHOLDS.sparse}
+                    </span>
+                </div>
+                <div className="density-meter-legend-item">
+                    <span className="density-meter-legend-color density-meter-legend-color--medium" />
+                    <span className="density-meter-legend-label">
+                        Medium: {DENSITY_THRESHOLDS.sparse}-{DENSITY_THRESHOLDS.dense}
+                    </span>
+                </div>
+                <div className="density-meter-legend-item">
+                    <span className="density-meter-legend-color density-meter-legend-color--hard" />
+                    <span className="density-meter-legend-label">
+                        Hard: &gt;{DENSITY_THRESHOLDS.dense}
+                    </span>
+                </div>
+            </div>
+
+            <div className="density-meter-description">
+                <span className="density-meter-category">{densityCategory}</span>
+                <span className="density-meter-description-text">
+                    {DENSITY_DESCRIPTIONS[densityCategory]}
+                </span>
+            </div>
+        </div>
+    );
+}
 
 // ============================================================
 // Binary Search Utilities for O(log n) filtering
@@ -1050,19 +1200,12 @@ export function DifficultyConversionPanel({
                 />
             </div>
 
-            {/* Natural difficulty info banner */}
-            <div className="difficulty-conversion-natural-info">
-                <span className="difficulty-conversion-natural-label">Natural Difficulty:</span>
-                <span
-                    className="difficulty-conversion-natural-value"
-                    style={{ color: DIFFICULTY_COLORS[naturalDifficulty] }}
-                >
-                    {naturalDifficulty.charAt(0).toUpperCase() + naturalDifficulty.slice(1)}
-                </span>
-                <span className="difficulty-conversion-natural-hint">
-                    (The unedited variant closest to the detected rhythm density)
-                </span>
-            </div>
+            {/* Density Meter - shows note density, thresholds, and natural difficulty */}
+            <DensityMeter
+                transientsPerBeat={rhythm.analysis.densityAnalysis.combinedMetrics.transientsPerBeat}
+                naturalDifficulty={naturalDifficulty}
+                densityCategory={rhythm.analysis.densityAnalysis.combinedMetrics.densityCategory}
+            />
 
             {/* Composite baseline timeline */}
             <CompositeBaselineTimeline

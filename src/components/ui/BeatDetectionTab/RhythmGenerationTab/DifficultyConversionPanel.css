@@ -52,34 +52,219 @@
 }
 
 /* ============================================
-   NATURAL DIFFICULTY INFO
+   DENSITY METER
+   Visual display of note density and thresholds
    ============================================ */
 
-.difficulty-conversion-natural-info {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
+.density-meter {
+    padding: 1rem;
     background: hsl(var(--surface-2));
     border-radius: 0.5rem;
     border: 1px solid hsl(var(--border));
-    font-size: 0.8125rem;
 }
 
-.difficulty-conversion-natural-label {
-    color: hsl(var(--muted-foreground));
+.density-meter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
 }
 
-.difficulty-conversion-natural-value {
+.density-meter-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.density-meter-value {
+    font-size: 0.875rem;
     font-weight: 700;
-    text-transform: capitalize;
+    font-family: var(--font-mono);
+    color: hsl(var(--primary));
 }
 
-.difficulty-conversion-natural-hint {
+.density-meter-scale {
+    position: relative;
+    height: 24px;
+    background: linear-gradient(
+        to right,
+        hsl(142 76% 36% / 0.2) 0%,
+        hsl(142 76% 36% / 0.2) 40%,
+        hsl(38 92% 50% / 0.2) 40%,
+        hsl(38 92% 50% / 0.2) 70%,
+        hsl(0 84% 60% / 0.2) 70%,
+        hsl(0 84% 60% / 0.2) 100%
+    );
+    border-radius: 0.25rem;
+    border: 1px solid hsl(var(--border));
+    margin-bottom: 1.75rem; /* Space for labels below */
+}
+
+/* Threshold markers */
+.density-meter-threshold {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: hsl(var(--border));
+    z-index: 1;
+}
+
+.density-meter-threshold::after {
+    content: attr(data-threshold);
+    position: absolute;
+    bottom: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.625rem;
     color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    white-space: nowrap;
+}
+
+.density-meter-threshold--sparse {
+    left: 40%;
+}
+
+.density-meter-threshold--dense {
+    left: 70%;
+}
+
+/* Current density indicator */
+.density-meter-indicator {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    transform: translateX(-50%);
+    z-index: 2;
+}
+
+/* The colored marker line on the bar */
+.density-meter-indicator-marker {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    left: 0;
+    width: 4px;
+    border-radius: 2px;
+    box-shadow: 0 0 0 2px hsl(var(--background)),
+                0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* The label below the marker */
+.density-meter-indicator-label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 6px;
     font-size: 0.6875rem;
-    font-style: italic;
-    margin-left: auto;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    padding: 0px 6px;
+    background: hsl(var(--background));
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    border: 1px solid hsl(var(--border) / 0.4);
+}
+
+/* Zone labels on the scale */
+.density-meter-zones {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 0.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.density-meter-zone {
+    font-size: 0.625rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.density-meter-zone--easy {
+    color: hsl(142 76% 36%);
+}
+
+.density-meter-zone--medium {
+    color: hsl(38 92% 50%);
+}
+
+.density-meter-zone--hard {
+    color: hsl(0 84% 60%);
+}
+
+/* Legend */
+.density-meter-legend {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding: 0.5rem;
+    background: hsl(var(--surface-1));
+    border-radius: 0.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.density-meter-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.density-meter-legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.density-meter-legend-color--easy {
+    background: hsl(142 76% 36%);
+}
+
+/* Legend colors with better contrast */
+.density-meter-legend-color--easy {
+    background: hsl(142 76% 36% / 0.6);
+    border: 1px solid hsl(142 76% 36%);
+}
+
+.density-meter-legend-color--medium {
+    background: hsl(38 92% 50% / 0.6);
+    border: 1px solid hsl(38 92% 50%);
+}
+
+.density-meter-legend-color--hard {
+    background: hsl(0 84% 60% / 0.6);
+    border: 1px solid hsl(0 84% 60%);
+}
+
+/* Description */
+.density-meter-description {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--surface-1));
+    border-radius: 0.25rem;
+    border-left: 3px solid hsl(var(--primary));
+}
+
+.density-meter-category {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--primary));
+}
+
+.density-meter-description-text {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
 }
 
 /* ============================================
@@ -497,16 +682,6 @@
 
     .difficulty-conversion-panel-summary {
         flex-wrap: wrap;
-    }
-
-    .difficulty-conversion-natural-info {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.25rem;
-    }
-
-    .difficulty-conversion-natural-hint {
-        margin-left: 0;
     }
 
     .difficulty-conversion-legend {
