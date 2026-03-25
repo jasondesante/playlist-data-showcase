@@ -509,14 +509,14 @@ Container component with:
 - [x] Show note labels at key points
 
 ### Task 5.4: IntervalDistributionChart Component
-- [ ] Bar/pie chart for interval categories
-- [ ] Categories:
+- [x] Bar/pie chart for interval categories
+- [x] Categories:
   - Unison (0 semitones)
   - Small (1-2 semitones)
   - Medium (3-4 semitones)
   - Large (5-7 semitones)
-  - Very Large (8+ semitones)
-- [ ] Show musical interval names (e.g., "Minor 3rd")
+  - Very large (8+ semitones)
+- [x] Show musical interval names (e.g., "Minor 3rd")
 
 ### Task 5.5: MelodySegmentTimeline Component
 - [ ] Show detected melody segments

@@ -1,0 +1,639 @@
+/**
+ * IntervalDistributionChart Styles
+ *
+ * Styling for the interval distribution chart visualization (Task 5.4).
+ * Uses consistent design language with other melody contour components.
+ *
+ * Color scheme for intervals:
+ * - Unison (0 st): Purple (#8b5cf6)
+ * - Small (1-2 st): Green (#22c55e)
+ * - Medium (3-4 st): Amber (#f59e0b)
+ * - Large (5-7 st): Orange (#f97316)
+ * - Very Large (8+ st): Red (#ef4444)
+ */
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+
+.interval-distribution-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+    border: 1px solid var(--border-color, #2a2a4a);
+}
+
+.interval-distribution-chart--empty {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.5rem;
+    min-height: 180px;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.interval-chart__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.interval-chart__icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+}
+
+.interval-chart__title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.interval-chart__total {
+    font-size: 0.6875rem;
+    color: var(--text-muted, #6a6a7a);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    margin-left: auto;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.interval-chart__empty-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    color: var(--text-secondary, #a0a0b0);
+    font-size: 0.875rem;
+}
+
+.interval-chart__empty-content p {
+    margin: 0;
+}
+
+.interval-chart__empty-icon {
+    opacity: 0.5;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.interval-chart__empty-hint {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+/* ============================================
+   VERTICAL LAYOUT
+   ============================================ */
+
+.interval-chart__vertical {
+    display: flex;
+    gap: 0.5rem;
+    position: relative;
+    min-height: 120px;
+}
+
+/* Y-Axis */
+.interval-chart__y-axis {
+    width: 32px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 0.625rem;
+    color: var(--text-muted, #6a6a7a);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    padding-right: 0.25rem;
+    border-right: 1px solid var(--border-color-light, #1a1a2a);
+}
+
+.interval-chart__y-axis span {
+    position: absolute;
+    right: 0.5rem;
+    transform: translateY(50%);
+}
+
+/* Bars Container */
+.interval-chart__bars {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    position: relative;
+    background: var(--bg-secondary, #12121f);
+    border-radius: 4px;
+    padding: 0.5rem;
+    padding-bottom: 3.5rem; /* Space for labels */
+}
+
+/* Individual Vertical Bar */
+.interval-chart__bar-wrapper {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.interval-chart__bar {
+    width: 100%;
+    max-width: 60px;
+    min-height: 4px;
+    border-radius: 3px 3px 0 0;
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.interval-chart__bar:hover {
+    filter: brightness(1.2);
+    transform: scaleY(1.02);
+}
+
+/* Bar Value */
+.interval-chart__bar-value {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.625rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+    background: var(--bg-secondary, #12121f);
+    padding: 1px 4px;
+    border-radius: 2px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.interval-chart__bar:hover .interval-chart__bar-value {
+    opacity: 1;
+}
+
+/* Bar Labels */
+.interval-chart__bar-label {
+    position: absolute;
+    bottom: -3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding-top: 0.25rem;
+}
+
+.interval-chart__bar-name {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+    white-space: nowrap;
+}
+
+.interval-chart__bar-range {
+    font-size: 0.5rem;
+    color: var(--text-muted, #6a6a7a);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Interval Names (shown below bar on hover/always) */
+.interval-chart__interval-names {
+    position: absolute;
+    bottom: -5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    width: 100%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.interval-chart__bar-wrapper:hover .interval-chart__interval-names {
+    opacity: 1;
+}
+
+.interval-chart__interval-name {
+    font-size: 0.5rem;
+    color: var(--text-secondary, #a0a0b0);
+    white-space: nowrap;
+}
+
+/* Category-specific glow effects */
+.interval-chart__bar-wrapper--purple .interval-chart__bar {
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);
+}
+
+.interval-chart__bar-wrapper--green .interval-chart__bar {
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+}
+
+.interval-chart__bar-wrapper--amber .interval-chart__bar {
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+}
+
+.interval-chart__bar-wrapper--orange .interval-chart__bar {
+    box-shadow: 0 0 8px rgba(249, 115, 22, 0.3);
+}
+
+.interval-chart__bar-wrapper--red .interval-chart__bar {
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================
+   HORIZONTAL LAYOUT
+   ============================================ */
+
+.interval-chart__horizontal {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.interval-chart__hbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-secondary, #12121f);
+    border-radius: 6px;
+    border-left: 3px solid transparent;
+    transition: background 0.2s ease;
+}
+
+.interval-chart__hbar:hover {
+    background: var(--bg-tertiary-hover, #151525);
+}
+
+.interval-chart__hbar-header {
+    display: flex;
+    flex-direction: column;
+    min-width: 90px;
+}
+
+.interval-chart__hbar-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.interval-chart__hbar-range {
+    font-size: 0.625rem;
+    color: var(--text-muted, #6a6a7a);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.interval-chart__hbar-symbol {
+    font-size: 0.5rem;
+    color: var(--text-secondary, #a0a0b0);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    margin-top: 2px;
+}
+
+/* Bar Track */
+.interval-chart__hbar-track {
+    flex: 1;
+    height: 10px;
+    background: var(--bg-primary, #0a0a14);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.interval-chart__hbar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+/* Stats */
+.interval-chart__hbar-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 55px;
+}
+
+.interval-chart__hbar-count {
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.interval-chart__hbar-percent {
+    font-size: 0.625rem;
+    color: var(--text-muted, #6a6a7a);
+}
+
+/* Interval names for horizontal layout */
+.interval-chart__hbar-intervals {
+    display: none;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--border-color-light, #1a1a2a);
+}
+
+.interval-chart__hbar:hover .interval-chart__hbar-intervals {
+    display: flex;
+}
+
+.interval-chart__hbar-interval {
+    font-size: 0.5rem;
+    padding: 1px 4px;
+    background: var(--bg-primary, #0a0a14);
+    border-radius: 2px;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+/* Category colors for horizontal bars */
+.interval-chart__hbar--purple {
+    border-left-color: #8b5cf6;
+}
+
+.interval-chart__hbar--purple .interval-chart__hbar-label {
+    color: #a78bfa;
+}
+
+.interval-chart__hbar--green {
+    border-left-color: #22c55e;
+}
+
+.interval-chart__hbar--green .interval-chart__hbar-label {
+    color: #4ade80;
+}
+
+.interval-chart__hbar--amber {
+    border-left-color: #f59e0b;
+}
+
+.interval-chart__hbar--amber .interval-chart__hbar-label {
+    color: #fbbf24;
+}
+
+.interval-chart__hbar--orange {
+    border-left-color: #f97316;
+}
+
+.interval-chart__hbar--orange .interval-chart__hbar-label {
+    color: #fb923c;
+}
+
+.interval-chart__hbar--red {
+    border-left-color: #ef4444;
+}
+
+.interval-chart__hbar--red .interval-chart__hbar-label {
+    color: #f87171;
+}
+
+/* ============================================
+   LEGEND
+   ============================================ */
+
+.interval-chart__legend {
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color-light, #1a1a2a);
+}
+
+.interval-chart__legend-title {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-secondary, #a0a0b0);
+    margin-bottom: 0.5rem;
+}
+
+.interval-chart__legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.interval-chart__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.interval-chart__legend-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.interval-chart__legend-label {
+    font-size: 0.6875rem;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.interval-chart__legend-range {
+    font-size: 0.5625rem;
+    color: var(--text-muted, #6a6a7a);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ============================================
+   INTERVAL REFERENCE
+   ============================================ */
+
+.interval-chart__reference {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary, #12121f);
+    border-radius: 6px;
+    border: 1px solid var(--border-color-light, #1a1a2a);
+}
+
+.interval-chart__reference-title {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-secondary, #a0a0b0);
+    margin-bottom: 0.5rem;
+}
+
+.interval-chart__reference-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 0.375rem;
+}
+
+.interval-chart__reference-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.375rem;
+    background: var(--bg-primary, #0a0a14);
+    border-radius: 3px;
+}
+
+.interval-chart__reference-semitone {
+    font-size: 0.5625rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-muted, #6a6a7a);
+    min-width: 16px;
+}
+
+.interval-chart__reference-name {
+    font-size: 0.625rem;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+/* Entrance animation for vertical bars */
+.interval-chart__bar {
+    animation: intervalBarGrow 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform-origin: bottom;
+}
+
+@keyframes intervalBarGrow {
+    0% {
+        transform: scaleY(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scaleY(1);
+        opacity: 1;
+    }
+}
+
+/* Staggered animation delays for vertical bars */
+.interval-chart__bar-wrapper:nth-child(1) .interval-chart__bar { animation-delay: 0ms; }
+.interval-chart__bar-wrapper:nth-child(2) .interval-chart__bar { animation-delay: 50ms; }
+.interval-chart__bar-wrapper:nth-child(3) .interval-chart__bar { animation-delay: 100ms; }
+.interval-chart__bar-wrapper:nth-child(4) .interval-chart__bar { animation-delay: 150ms; }
+.interval-chart__bar-wrapper:nth-child(5) .interval-chart__bar { animation-delay: 200ms; }
+
+/* Entrance animation for horizontal bars */
+.interval-chart__hbar {
+    animation: intervalHBarSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateX(-10px);
+}
+
+@keyframes intervalHBarSlide {
+    0% {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Staggered animation delays for horizontal bars */
+.interval-chart__hbar:nth-child(1) { animation-delay: 0ms; }
+.interval-chart__hbar:nth-child(2) { animation-delay: 50ms; }
+.interval-chart__hbar:nth-child(3) { animation-delay: 100ms; }
+.interval-chart__hbar:nth-child(4) { animation-delay: 150ms; }
+.interval-chart__hbar:nth-child(5) { animation-delay: 200ms; }
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 640px) {
+    .interval-distribution-chart {
+        padding: 0.5rem;
+    }
+
+    .interval-chart__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .interval-chart__total {
+        margin-left: 0;
+        margin-top: 0.25rem;
+    }
+
+    .interval-chart__bars {
+        gap: 2px;
+        padding-bottom: 3rem;
+    }
+
+    .interval-chart__bar {
+        max-width: 40px;
+    }
+
+    .interval-chart__bar-label {
+        bottom: -2.5rem;
+    }
+
+    .interval-chart__bar-name {
+        font-size: 0.5rem;
+    }
+
+    .interval-chart__interval-names {
+        display: none !important;
+    }
+
+    .interval-chart__hbar {
+        flex-wrap: wrap;
+    }
+
+    .interval-chart__hbar-track {
+        width: 100%;
+        order: 3;
+    }
+
+    .interval-chart__legend-items {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .interval-chart__reference-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .interval-chart__bar,
+    .interval-chart__hbar {
+        animation: none;
+        transform: none;
+        opacity: 1;
+    }
+
+    .interval-chart__bar:hover,
+    .interval-chart__hbar:hover {
+        transform: none;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: more) {
+    .interval-chart__bar {
+        border: 1px solid var(--text-primary, #e0e0e0);
+    }
+
+    .interval-chart__hbar {
+        border-left-width: 4px;
+    }
+
+    .interval-chart__hbar-track {
+        border: 1px solid var(--border-color, #2a2a4a);
+    }
+}

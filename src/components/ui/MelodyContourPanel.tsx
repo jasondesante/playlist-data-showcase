@@ -16,7 +16,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Activity, TrendingUp, TrendingDown, Minus, Circle, BarChart3 } from 'lucide-react';
+import { Activity, TrendingUp, TrendingDown, Minus, Circle } from 'lucide-react';
 import './MelodyContourPanel.css';
 import { cn } from '../../utils/cn';
 import {
@@ -29,13 +29,13 @@ import {
 import type {
     MelodyContourAnalysisResult,
     DirectionStats,
-    IntervalStats,
     AllDifficultiesWithNatural,
     PitchAtBeat,
 } from '../../types/levelGeneration';
 import type { GeneratedLevel } from 'playlist-data-engine';
 import MelodyDirectionTimeline from './MelodyDirectionTimeline';
 import PitchContourGraph from './PitchContourGraph';
+import IntervalDistributionChart from './IntervalDistributionChart';
 
 // ============================================================
 // Types
@@ -54,14 +54,6 @@ interface DirectionConfig {
     color: string;
 }
 
-/** Interval configuration for display */
-interface IntervalConfig {
-    key: keyof IntervalStats;
-    label: string;
-    semitoneRange: string;
-    color: string;
-}
-
 // ============================================================
 // Constants
 // ============================================================
@@ -71,14 +63,6 @@ const DIRECTION_CONFIGS: DirectionConfig[] = [
     { key: 'down', label: 'Down', icon: <TrendingDown size={14} />, color: 'red' },
     { key: 'stable', label: 'Stable', icon: <Minus size={14} />, color: 'blue' },
     { key: 'none', label: 'None', icon: <Circle size={14} />, color: 'gray' },
-];
-
-const INTERVAL_CONFIGS: IntervalConfig[] = [
-    { key: 'unison', label: 'Unison', semitoneRange: '0', color: 'purple' },
-    { key: 'small', label: 'Small', semitoneRange: '1-2', color: 'green' },
-    { key: 'medium', label: 'Medium', semitoneRange: '3-4', color: 'amber' },
-    { key: 'large', label: 'Large', semitoneRange: '5-7', color: 'orange' },
-    { key: 'very_large', label: 'Very Large', semitoneRange: '8+', color: 'red' },
 ];
 
 // ============================================================
@@ -153,51 +137,6 @@ function DirectionDistribution({ stats }: DirectionDistributionProps) {
                             <div className="melody-direction-stats">
                                 <span className="melody-direction-count">{count}</span>
                                 <span className="melody-direction-percent">{percent}%</span>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}
-
-interface IntervalDistributionProps {
-    stats: IntervalStats;
-}
-
-function IntervalDistribution({ stats }: IntervalDistributionProps) {
-    const total = stats.unison + stats.small + stats.medium + stats.large + stats.very_large;
-
-    return (
-        <div className="melody-interval-distribution">
-            <h4 className="melody-distribution-title">
-                <BarChart3 size={14} />
-                Interval Distribution
-            </h4>
-            <div className="melody-interval-bars">
-                {INTERVAL_CONFIGS.map((interval) => {
-                    const count = stats[interval.key];
-                    const percent = calculatePercent(count, total);
-
-                    return (
-                        <div
-                            key={interval.key}
-                            className={cn('melody-interval-bar', `melody-interval-${interval.color}`)}
-                        >
-                            <div className="melody-interval-header">
-                                <span className="melody-interval-label">{interval.label}</span>
-                                <span className="melody-interval-range">({interval.semitoneRange} st)</span>
-                            </div>
-                            <div className="melody-interval-bar-track">
-                                <div
-                                    className="melody-interval-bar-fill"
-                                    style={{ width: `${percent}%` }}
-                                />
-                            </div>
-                            <div className="melody-interval-stats">
-                                <span className="melody-interval-count">{count}</span>
-                                <span className="melody-interval-percent">{percent}%</span>
                             </div>
                         </div>
                     );
@@ -316,9 +255,14 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
                 <DirectionDistribution stats={pitchAnalysis.directionStats} />
             )}
 
-            {/* Interval Distribution */}
+            {/* Interval Distribution (Task 5.4) */}
             {pitchAnalysis.intervalStats && (
-                <IntervalDistribution stats={pitchAnalysis.intervalStats} />
+                <IntervalDistributionChart
+                    stats={pitchAnalysis.intervalStats}
+                    showIntervalNames={true}
+                    showLegend={true}
+                    layout="horizontal"
+                />
             )}
 
             {/* Visualization Views Section */}
