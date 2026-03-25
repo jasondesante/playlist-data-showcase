@@ -26,6 +26,7 @@ import { RhythmGenerationTab } from './BeatDetectionTab/RhythmGenerationTab';
 import type { AutoLevelSettings as AutoLevelSettingsType } from '../../types/rhythmGeneration';
 import { DEFAULT_AUTO_LEVEL_SETTINGS } from '../../types/rhythmGeneration';
 import { useRhythmGeneration } from '../../hooks/useRhythmGeneration';
+import { useLevelGeneration } from '../../hooks/useLevelGeneration';
 import { logger } from '../../utils/logger';
 
 /**
@@ -92,12 +93,28 @@ export function BeatDetectionTab() {
         rhythm: generatedRhythm,
     } = useRhythmGeneration();
 
+    // Task 0.3: Level generation hook for auto-continue pipeline
+    const {
+        generate: generateLevel,
+        isGenerating: isLevelGenerating,
+        allDifficulties,
+    } = useLevelGeneration();
+
     // Track if we were generating to detect analysis completion
     const wasGeneratingRef = useRef(isBeatGenerating);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Task 2.5: Flag to trigger auto-start of rhythm generation in auto mode
     const shouldAutoStartRhythmGenerationRef = useRef(false);
+
+    // Task 0.3: Track if we were generating rhythm to detect rhythm completion
+    const wasRhythmGeneratingRef = useRef(isRhythmGenerating);
+
+    // Task 0.3: Flag to trigger auto-start of level generation in auto mode
+    const shouldAutoStartLevelGenerationRef = useRef(false);
+
+    // Task 0.3: Track if we were generating level to detect level completion
+    const wasLevelGeneratingRef = useRef(isLevelGenerating);
 
     // Compute completed steps set
     const completedSteps = useMemo(() => {
@@ -292,6 +309,83 @@ export function BeatDetectionTab() {
         autoLevelSettings,
         generateRhythm,
     ]);
+
+    /**
+     * Task 0.3: Detect when rhythm generation completes in auto mode.
+     * When it completes successfully, set flag to auto-start level generation.
+     */
+    useEffect(() => {
+        // Check if we just finished rhythm generation
+        if (wasRhythmGeneratingRef.current && !isRhythmGenerating && generatedRhythm) {
+            // Task 0.3: In auto mode, flag that we should auto-start level generation
+            if (generationMode === 'automatic') {
+                shouldAutoStartLevelGenerationRef.current = true;
+                logger.info('BeatDetection', 'Auto mode: rhythm generation complete, setting flag to auto-start level generation');
+            }
+        }
+        // Update the ref for the next render
+        wasRhythmGeneratingRef.current = isRhythmGenerating;
+    }, [isRhythmGenerating, generatedRhythm, generationMode]);
+
+    /**
+     * Task 0.3: Auto-start level generation when in auto mode.
+     * Triggers when:
+     * - We're in automatic mode
+     * - The auto-start flag is set
+     * - We have an audio URL and generated rhythm
+     * - We're not already generating level
+     * - We don't already have difficulty levels
+     */
+    useEffect(() => {
+        // Check if we should auto-start level generation
+        if (
+            generationMode === 'automatic' &&
+            shouldAutoStartLevelGenerationRef.current &&
+            selectedTrack?.audio_url &&
+            generatedRhythm &&
+            !isLevelGenerating &&
+            !allDifficulties
+        ) {
+            // Clear the flag so we don't trigger again
+            shouldAutoStartLevelGenerationRef.current = false;
+
+            logger.info('BeatDetection', 'Auto-starting level generation', {
+                difficulty: autoLevelSettings.difficulty,
+                outputMode: autoLevelSettings.outputMode,
+            });
+
+            // Start level generation
+            generateLevel(selectedTrack.audio_url, {
+                difficulty: autoLevelSettings.difficulty,
+                controllerMode: 'ddr', // Default to DDR mode
+            });
+        }
+    }, [
+        generationMode,
+        selectedTrack?.audio_url,
+        generatedRhythm,
+        isLevelGenerating,
+        allDifficulties,
+        autoLevelSettings,
+        generateLevel,
+    ]);
+
+    /**
+     * Task 0.3: Detect when level generation completes in auto mode.
+     * When it completes successfully, auto-advance to Step 3 (Ready).
+     */
+    useEffect(() => {
+        // Check if we just finished level generation
+        if (wasLevelGeneratingRef.current && !isLevelGenerating && allDifficulties) {
+            // Task 0.3: In auto mode, advance to Step 3 (Ready)
+            if (generationMode === 'automatic' && currentStep === 2) {
+                logger.info('BeatDetection', 'Auto mode: level generation complete, advancing to Step 3');
+                setCurrentStep(3);
+            }
+        }
+        // Update the ref for the next render
+        wasLevelGeneratingRef.current = isLevelGenerating;
+    }, [isLevelGenerating, allDifficulties, generationMode, currentStep, setCurrentStep]);
 
     /**
      * Map beat generation phases to human-readable labels
