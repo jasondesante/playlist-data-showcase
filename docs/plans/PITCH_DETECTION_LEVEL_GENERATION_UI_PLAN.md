@@ -526,10 +526,10 @@ Container component with:
 - [x] Sync with audio
 
 ### Task 5.6: DirectionStatsSummary Component
-- [ ] Card with direction statistics
-- [ ] Visual percentage bars
-- [ ] Average interval size
-- [ ] Largest leap detected
+- [x] Card with direction statistics
+- [x] Visual percentage bars
+- [x] Average interval size
+- [x] Largest leap detected
 
 ---
 

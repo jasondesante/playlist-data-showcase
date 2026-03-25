@@ -16,7 +16,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Activity, TrendingUp, TrendingDown, Minus, Circle } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import './MelodyContourPanel.css';
 import { cn } from '../../utils/cn';
 import {
@@ -28,7 +28,6 @@ import {
 } from '../../hooks/useLevelGeneration';
 import type {
     MelodyContourAnalysisResult,
-    DirectionStats,
     AllDifficultiesWithNatural,
     PitchAtBeat,
 } from '../../types/levelGeneration';
@@ -37,6 +36,7 @@ import MelodyDirectionTimeline from './MelodyDirectionTimeline';
 import PitchContourGraph from './PitchContourGraph';
 import IntervalDistributionChart from './IntervalDistributionChart';
 import MelodySegmentTimeline from './MelodySegmentTimeline';
+import DirectionStatsSummary from './DirectionStatsSummary';
 
 // ============================================================
 // Types
@@ -47,36 +47,9 @@ export interface MelodyContourPanelProps {
     className?: string;
 }
 
-/** Direction configuration for display */
-interface DirectionConfig {
-    key: keyof DirectionStats;
-    label: string;
-    icon: React.ReactNode;
-    color: string;
-}
-
-// ============================================================
-// Constants
-// ============================================================
-
-const DIRECTION_CONFIGS: DirectionConfig[] = [
-    { key: 'up', label: 'Up', icon: <TrendingUp size={14} />, color: 'green' },
-    { key: 'down', label: 'Down', icon: <TrendingDown size={14} />, color: 'red' },
-    { key: 'stable', label: 'Stable', icon: <Minus size={14} />, color: 'blue' },
-    { key: 'none', label: 'None', icon: <Circle size={14} />, color: 'gray' },
-];
-
 // ============================================================
 // Helper Functions
 // ============================================================
-
-/**
- * Calculate percentage from count and total.
- */
-function calculatePercent(count: number, total: number): number {
-    if (total === 0) return 0;
-    return Math.round((count / total) * 100);
-}
 
 /**
  * Get the melody contour data from the generated level.
@@ -101,51 +74,6 @@ function getMelodyContourData(level: GeneratedLevel | undefined | null): {
 // ============================================================
 // Sub-components
 // ============================================================
-
-interface DirectionDistributionProps {
-    stats: DirectionStats;
-}
-
-function DirectionDistribution({ stats }: DirectionDistributionProps) {
-    const total = stats.up + stats.down + stats.stable + stats.none;
-
-    return (
-        <div className="melody-direction-distribution">
-            <h4 className="melody-distribution-title">
-                <Activity size={14} />
-                Direction Distribution
-            </h4>
-            <div className="melody-direction-bars">
-                {DIRECTION_CONFIGS.map((dir) => {
-                    const count = stats[dir.key];
-                    const percent = calculatePercent(count, total);
-
-                    return (
-                        <div
-                            key={dir.key}
-                            className={cn('melody-direction-bar', `melody-direction-${dir.color}`)}
-                        >
-                            <div className="melody-direction-header">
-                                <span className="melody-direction-icon">{dir.icon}</span>
-                                <span className="melody-direction-label">{dir.label}</span>
-                            </div>
-                            <div className="melody-direction-bar-track">
-                                <div
-                                    className="melody-direction-bar-fill"
-                                    style={{ width: `${percent}%` }}
-                                />
-                            </div>
-                            <div className="melody-direction-stats">
-                                <span className="melody-direction-count">{count}</span>
-                                <span className="melody-direction-percent">{percent}%</span>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}
 
 interface SummaryStatsProps {
     totalBeats: number;
@@ -251,9 +179,13 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
                 pitchRange={pitchAnalysis.pitchRange}
             />
 
-            {/* Direction Distribution */}
+            {/* Direction Stats Summary (Task 5.6) */}
             {pitchAnalysis.directionStats && (
-                <DirectionDistribution stats={pitchAnalysis.directionStats} />
+                <DirectionStatsSummary
+                    directionStats={pitchAnalysis.directionStats}
+                    pitchByBeat={melodyData.pitchByBeat ?? undefined}
+                    showDetails={true}
+                />
             )}
 
             {/* Interval Distribution (Task 5.4) */}
