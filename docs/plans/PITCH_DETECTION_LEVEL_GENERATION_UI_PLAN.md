@@ -354,11 +354,11 @@ After completing Phase 0, you should be able to:
 - [x] Auto-advance from Step 2 (Rhythm) to Step 3 (Pitch & Level) after rhythm completes
 
 ### Task 2.4: Implement Auto-Continue Pipeline
-- [ ] When rhythm generation completes, auto-start level generation
-- [ ] No additional user clicks needed
-- [ ] Progress transitions from rhythm stages to level stages
-- [ ] Auto-advance to Step 3 when level generation starts
-- [ ] Show two-stage progress in LevelGenerationProgress
+- [x] When rhythm generation completes, auto-start level generation
+- [x] No additional user clicks needed
+- [x] Progress transitions from rhythm stages to level stages
+- [x] Auto-advance to Step 3 when level generation starts
+- [x] Show two-stage progress in LevelGenerationProgress
 
 ---
 
