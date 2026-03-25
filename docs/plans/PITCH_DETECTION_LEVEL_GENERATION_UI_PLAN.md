@@ -560,13 +560,13 @@ Container component with:
 ```
 
 ### Task 6.2: ButtonTimeline Component (Primary View)
-- [ ] **Horizontal timeline** showing button at each beat position
-- [ ] Color-coded by button (configurable for DDR or Guitar Hero mode)
-- [ ] DDR: 4 colors (up=yellow, down=blue, left=purple, right=green)
-- [ ] Guitar Hero: 5 colors (1-5 gradient red→blue)
-- [ ] Sync with audio playback (playhead)
-- [ ] Hover shows mapping decision (pitch vs pattern influenced)
-- [ ] Click to see beat details
+- [x] **Horizontal timeline** showing button at each beat position
+- [x] Color-coded by button (configurable for DDR or Guitar Hero mode)
+- [x] DDR: 4 colors (up=yellow, down=blue, left=purple, right=green)
+- [x] Guitar Hero: 5 colors (1-5 gradient red→blue)
+- [x] Sync with audio playback (playhead)
+- [x] Hover shows mapping decision (pitch vs pattern influenced)
+- [x] Click to see beat details
 
 ### Task 6.3: DDRModeVisualization Component (Secondary View)
 - [ ] Circular motion representation (optional/expandable)

@@ -13,8 +13,8 @@
  * Task 6.1: Create ButtonMappingPanel Component
  */
 
-import { useMemo } from 'react';
-import { Gamepad2, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Music } from 'lucide-react';
+import { useMemo, useCallback, useState } from 'react';
+import { Gamepad2, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import './ButtonMappingPanel.css';
 import { cn } from '../../utils/cn';
 import {
@@ -27,6 +27,7 @@ import type {
     AllDifficultiesWithNatural,
 } from '../../types/levelGeneration';
 import type { GeneratedLevel, ControllerMode } from 'playlist-data-engine';
+import ButtonTimeline, { type ButtonBeat } from './ButtonTimeline';
 
 // ============================================================
 // Types
@@ -86,6 +87,7 @@ function getButtonMappingData(level: GeneratedLevel | undefined | null): {
     patternsUsed: string[];
     totalBeats: number;
     buttonDistribution: Map<string, number>;
+    buttonBeats: ButtonBeat[];
 } | null {
     if (!level?.metadata?.buttonMetadata) {
         return null;
@@ -101,10 +103,23 @@ function getButtonMappingData(level: GeneratedLevel | undefined | null): {
 
     // Calculate button distribution from chart beats
     const buttonDistribution = new Map<string, number>();
+    const buttonBeats: ButtonBeat[] = [];
+
     if (level.chart?.beats) {
-        level.chart.beats.forEach((beat: any) => {
+        level.chart.beats.forEach((beat: any, index: number) => {
             if (beat.key) {
                 buttonDistribution.set(beat.key, (buttonDistribution.get(beat.key) ?? 0) + 1);
+
+                // Create ButtonBeat for timeline
+                buttonBeats.push({
+                    timestamp: beat.timestamp,
+                    beatIndex: beat.beatIndex ?? index,
+                    key: beat.key,
+                    isDetected: beat.isDetected ?? true,
+                    isDownbeat: beat.isDownbeat ?? false,
+                    intensity: beat.intensity ?? 0.5,
+                    isPitchInfluenced: beat.isPitchInfluenced ?? undefined,
+                });
             }
         });
     }
@@ -117,6 +132,7 @@ function getButtonMappingData(level: GeneratedLevel | undefined | null): {
         patternsUsed: buttonMeta.patternsUsed ?? [],
         totalBeats,
         buttonDistribution,
+        buttonBeats,
     };
 }
 
@@ -309,12 +325,21 @@ export function ButtonMappingPanel({ className }: ButtonMappingPanelProps) {
     const allDifficulties = useAllDifficultyLevels();
     const selectedDifficulty = useSelectedDifficulty();
 
+    // Selected beat state for timeline interaction
+    const [selectedBeatIndex, setSelectedBeatIndex] = useState<number | undefined>(undefined);
+
     // Get button mapping data from the selected difficulty level
     const mappingData = useMemo(() => {
         const levels = allDifficulties as AllDifficultiesWithNatural | null;
         const level = levels?.[selectedDifficulty as keyof AllDifficultiesWithNatural] as GeneratedLevel | undefined;
         return getButtonMappingData(level);
     }, [allDifficulties, selectedDifficulty]);
+
+    // Handle beat click
+    const handleBeatClick = useCallback((beat: ButtonBeat) => {
+        setSelectedBeatIndex(beat.beatIndex);
+        // Could also seek to beat timestamp here if desired
+    }, []);
 
     // Don't render if no button mapping data available
     if (!mappingData) {
@@ -376,20 +401,19 @@ export function ButtonMappingPanel({ className }: ButtonMappingPanelProps) {
                 <PatternsUsed patternsUsed={mappingData.patternsUsed} />
             )}
 
-            {/* Button Timeline - Task 6.2 (placeholder) */}
+            {/* Button Timeline - Task 6.2 */}
             <div className="button-timeline-section">
                 <h4 className="button-timeline-title">Button Timeline</h4>
                 <p className="button-timeline-description">
                     Horizontal timeline showing button assignments at each beat position.
                     Synced with audio playback.
                 </p>
-                <div className="button-timeline-placeholder">
-                    <div className="button-timeline-placeholder-content">
-                        <Music size={24} className="button-timeline-placeholder-icon" />
-                        <p>ButtonTimeline visualization coming soon</p>
-                        <span className="button-timeline-placeholder-task">Task 6.2</span>
-                    </div>
-                </div>
+                <ButtonTimeline
+                    beats={mappingData.buttonBeats}
+                    controllerMode={mappingData.controllerMode}
+                    onBeatClick={handleBeatClick}
+                    selectedBeatIndex={selectedBeatIndex}
+                />
             </div>
         </div>
     );
