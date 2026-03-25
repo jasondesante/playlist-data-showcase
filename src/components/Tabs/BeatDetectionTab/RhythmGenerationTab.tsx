@@ -15,7 +15,7 @@
  */
 
 import { useState, useMemo, useCallback, useRef } from 'react';
-import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, GitCompare, Combine, GitBranch, Bug } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, GitCompare, Combine, GitBranch, Bug, Shield } from 'lucide-react';
 import './RhythmGenerationTab.css';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
@@ -31,6 +31,7 @@ import { VariantComparisonView } from '../../ui/BeatDetectionTab/RhythmGeneratio
 import { PhraseDetectionPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/PhraseDetectionPanel';
 import { TimelineControls } from '../../ui/BeatDetectionTab/RhythmGenerationTab/TimelineControls';
 import { LevelGenerationDebugPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/LevelGenerationDebugPanel';
+import { DataContractValidator } from '../../ui/DataContractValidator';
 import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,
@@ -147,7 +148,7 @@ interface RhythmGenerationResultProps {
 }
 
 // Section identifiers for accordion behavior
-type SectionId = 'transients' | 'multiband' | 'quantization' | 'composite' | 'conversion' | 'comparison' | 'phrases' | 'debug' | null;
+type SectionId = 'transients' | 'multiband' | 'quantization' | 'composite' | 'conversion' | 'comparison' | 'phrases' | 'validation' | 'debug' | null;
 
 function RhythmGenerationResult({
     rhythm,
@@ -181,6 +182,7 @@ function RhythmGenerationResult({
         conversion: null,
         comparison: null,
         phrases: null,
+        validation: null,
         debug: null,
     });
 
@@ -417,6 +419,21 @@ function RhythmGenerationResult({
                             onSeek={onSeek}
                             onPhraseSelect={handlePhraseSelect}
                             selectedPhrase={selectedPhrase}
+                        />
+                    </CollapsibleSection>
+                </div>
+
+                {/* Task 0.6: Data Contract Validation - validates rhythm output before level generation */}
+                <div ref={(el) => { sectionRefs.current.validation = el; }}>
+                    <CollapsibleSection
+                        title="Data Contract Validation"
+                        subtitle="Verify rhythm output is ready for level generation"
+                        icon={<Shield size={18} />}
+                        collapsed={openSection !== 'validation'}
+                        onCollapsedChange={() => handleSectionToggle('validation')}
+                    >
+                        <DataContractValidator
+                            rhythm={rhythm}
                         />
                     </CollapsibleSection>
                 </div>

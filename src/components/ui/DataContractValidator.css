@@ -1,0 +1,240 @@
+/**
+ * DataContractValidator Styles
+ *
+ * Styles for the data contract validation panel.
+ * Task 0.6: Create Data Contract Validation UI
+ */
+
+.data-contract-validator {
+    padding: 16px;
+    background: var(--card-bg, #1a1a2e);
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #2a2a4a);
+}
+
+/* Header */
+.data-contract-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color, #2a2a4a);
+}
+
+.data-contract-header-icon {
+    color: var(--text-muted, #6a6a7a);
+    flex-shrink: 0;
+}
+
+.data-contract-header-icon.valid {
+    color: #22c55e;
+}
+
+.data-contract-header-icon.invalid {
+    color: #ef4444;
+}
+
+.data-contract-header-icon.spinning {
+    animation: spin 1s linear infinite;
+    color: var(--accent-primary, #6366f1);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.data-contract-header-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+    flex: 1;
+}
+
+.data-contract-status-badge {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-contract-status-badge.valid {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.data-contract-status-badge.invalid {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* Summary */
+.data-contract-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.data-contract-summary.valid {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.data-contract-summary.invalid {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Fields List */
+.data-contract-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.data-contract-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.data-contract-field.valid {
+    border-left: 3px solid #22c55e;
+}
+
+.data-contract-field.invalid {
+    border-left: 3px solid #ef4444;
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.data-contract-field-icon {
+    flex-shrink: 0;
+}
+
+.data-contract-field.valid .data-contract-field-icon {
+    color: #22c55e;
+}
+
+.data-contract-field.invalid .data-contract-field-icon {
+    color: #ef4444;
+}
+
+.data-contract-field-name {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--text-secondary, #a0a0b0);
+    min-width: 180px;
+}
+
+.data-contract-field-message {
+    color: var(--text-primary, #e0e0e0);
+    flex: 1;
+}
+
+/* Errors Section */
+.data-contract-errors {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+}
+
+.data-contract-errors-title {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ef4444;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-contract-errors-list {
+    margin: 0;
+    padding: 0 0 0 20px;
+    list-style-type: disc;
+}
+
+.data-contract-error-item {
+    font-size: 12px;
+    color: var(--text-primary, #e0e0e0);
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.data-contract-error-item:last-child {
+    margin-bottom: 0;
+}
+
+.data-contract-retry-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 8px 16px;
+    background: var(--accent-primary, #6366f1);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.data-contract-retry-button:hover {
+    background: var(--accent-primary-hover, #4f46e5);
+}
+
+.data-contract-retry-button:active {
+    transform: scale(0.98);
+}
+
+/* Success Message */
+.data-contract-success {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 6px;
+    color: #22c55e;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .data-contract-field {
+        flex-wrap: wrap;
+    }
+
+    .data-contract-field-name {
+        min-width: auto;
+        width: 100%;
+        margin-bottom: 4px;
+    }
+
+    .data-contract-field-message {
+        padding-left: 26px;
+    }
+}

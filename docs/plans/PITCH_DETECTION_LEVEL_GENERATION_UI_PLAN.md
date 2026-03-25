@@ -198,12 +198,12 @@ This phase creates the **minimum viable data pipeline** to verify:
 - [x] Add to `src/types/index.ts`
 
 ### Task 0.6: Create Data Contract Validation UI
-- [ ] Create `src/components/ui/DataContractValidator.tsx` - validation panel
-- [ ] Validate rhythm generation output has all required fields for level generation:
+- [x] Create `src/components/ui/DataContractValidator.tsx` - validation panel
+- [x] Validate rhythm generation output has all required fields for level generation:
   ```
   Required from GeneratedRhythm:
   - bandStreams.low.beats[] ✓/✗
-  - bandStreams.mid.beats[] ✓/✗  
+  - bandStreams.mid.beats[] ✓/✗
   - bandStreams.high.beats[] ✓/✗
   - composite.stream[] ✓/✗
   - difficultyVariants.easy.stream[] ✓/✗
@@ -213,7 +213,7 @@ This phase creates the **minimum viable data pipeline** to verify:
   - phrases[] ✓/✗
   - metadata.transientsDetected ✓/✗
   ```
-- [ ] Validate each beat has required fields:
+- [x] Validate each beat has required fields:
   ```
   Required from GeneratedBeat:
   - timestamp ✓/✗
@@ -222,11 +222,11 @@ This phase creates the **minimum viable data pipeline** to verify:
   - band ✓/✗
   - quantizationError ✓/✗
   ```
-- [ ] Color coding: Green ✓ for pass, Red ✗ for fail with explanation
-- [ ] Show actual counts/values where helpful (e.g., "low.beats: 234 found")
-- [ ] "Ready for Level Generation" message only when all checks pass
-- [ ] If validation fails, show specific error: "Missing field X on beats[42]"
-- [ ] Export `validateGeneratedRhythm()` function for reuse in testing
+- [x] Color coding: Green ✓ for pass, Red ✗ for fail with explanation
+- [x] Show actual counts/values where helpful (e.g., "low.beats: 234 found")
+- [x] "Ready for Level Generation" message only when all checks pass
+- [x] If validation fails, show specific error: "Missing field X on beats[42]"
+- [x] Export `validateGeneratedRhythm()` function for reuse in testing
 
 ### Task 0.7: Integrate Validator into Pipeline
 - [ ] Add validator panel to RhythmGenerationTab (shown after rhythm completes)
