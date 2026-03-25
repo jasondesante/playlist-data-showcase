@@ -154,13 +154,13 @@ This phase creates the **minimum viable data pipeline** to verify:
 - [x] Clear level state when switching from auto to manual mode
 
 ### Task 0.2: Create useLevelGeneration Hook
-- [ ] Create `src/hooks/useLevelGeneration.ts`
-- [ ] Import `LevelGenerator` from playlist-data-engine
-- [ ] Accept cached `GeneratedRhythm` from store (avoid re-generation)
-- [ ] Call `generateAllDifficulties()` to generate all 4 at once
-- [ ] Map engine progress phases to UI progress phases
-- [ ] Return: `{ generate, isGenerating, progress, error, level, allDifficulties }`
-- [ ] Support retry on error
+- [x] Create `src/hooks/useLevelGeneration.ts`
+- [x] Import `LevelGenerator` from playlist-data-engine
+- [x] Accept cached `GeneratedRhythm` from store (avoid re-generation)
+- [x] Call `generateAllDifficulties()` to generate all 4 at once
+- [x] Map engine progress phases to UI progress phases
+- [x] Return: `{ generate, isGenerating, progress, error, level, allDifficulties }`
+- [x] Support retry on error
 
 ### Task 0.3: Wire Auto-Continue Pipeline
 - [ ] In BeatDetectionTab, when rhythm generation completes in auto mode:

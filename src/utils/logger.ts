@@ -38,6 +38,7 @@ type LogCategory =
     | 'BeatDetection'
     | 'SubdivisionPlayback'
     | 'RhythmGeneration'
+    | 'LevelGeneration'
     | 'ArweaveGateway'
     | 'BatchImagePersistence';
 

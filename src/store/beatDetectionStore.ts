@@ -6048,6 +6048,22 @@ export const useRhythmGenerationProgress = () =>
     useBeatDetectionStore((state) => state.rhythmGenerationProgress);
 
 /**
+ * Selector to get all difficulty levels of the generated level.
+ * Returns the AllDifficultiesResult containing easy, medium, hard, and natural variants.
+ * This is session-only state (not persisted to localStorage).
+ */
+export const useAllDifficultyLevels = () =>
+    useBeatDetectionStore((state) => state.allDifficultyLevels);
+
+/**
+ * Selector to get the level generation progress.
+ * Returns progress information during level generation, or null if not generating.
+ * Tracks stages: rhythm → pitch → buttons → conversion → finalizing
+ */
+export const useLevelGenerationProgress = () =>
+    useBeatDetectionStore((state) => state.levelGenerationProgress);
+
+/**
  * Navigation direction for step content animations.
  * - 'forward': Navigating to a higher step number (slide left animation)
  * - 'backward': Navigating to a lower step number (slide right animation)
