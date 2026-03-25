@@ -1,0 +1,293 @@
+/**
+ * LevelGenerationDebugPanel Styles
+ *
+ * Temporary debug panel styling for Task 0.4.
+ * Uses consistent styling with RhythmGenerationTab components.
+ */
+
+.level-generation-debug-panel {
+    padding: 16px;
+    background: var(--card-bg, #1a1a2e);
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #2a2a4a);
+}
+
+/* Header */
+.level-debug-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color, #2a2a4a);
+}
+
+.level-debug-header-icon {
+    color: #22c55e;
+    animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.level-debug-header-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+}
+
+/* Sections */
+.level-debug-section {
+    margin-bottom: 20px;
+}
+
+.level-debug-section:last-child {
+    margin-bottom: 0;
+}
+
+.level-debug-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary, #a0a0b0);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.level-debug-subsection-title {
+    margin: 12px 0 8px 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+/* Stats Container */
+.level-debug-stats-container {
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.level-debug-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-color-light, #1a1a2a);
+}
+
+.level-debug-stat-row:last-child {
+    border-bottom: none;
+}
+
+.level-debug-stat-label {
+    font-size: 13px;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.level-debug-stat-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary, #e0e0e0);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.level-debug-badge {
+    background: var(--accent-primary, #6366f1);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Beat Counts Grid */
+.level-debug-beat-counts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.level-debug-beat-count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--bg-tertiary, #0f0f1a);
+    border: 1px solid var(--border-color, #2a2a4a);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.level-debug-beat-count:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.beat-count-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #a0a0b0);
+    margin-bottom: 4px;
+}
+
+.beat-count-value {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Difficulty Colors */
+.difficulty-natural .beat-count-value {
+    color: #8b5cf6;
+}
+
+.difficulty-natural {
+    border-color: #8b5cf6;
+}
+
+.difficulty-easy .beat-count-value {
+    color: #22c55e;
+}
+
+.difficulty-easy {
+    border-color: #22c55e;
+}
+
+.difficulty-medium .beat-count-value {
+    color: #f59e0b;
+}
+
+.difficulty-medium {
+    border-color: #f59e0b;
+}
+
+.difficulty-hard .beat-count-value {
+    color: #ef4444;
+}
+
+.difficulty-hard {
+    border-color: #ef4444;
+}
+
+/* Direction Stats */
+.level-debug-direction-stats,
+.level-debug-interval-stats {
+    margin-top: 12px;
+}
+
+.level-debug-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+}
+
+.level-debug-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    border-radius: 6px;
+    background: var(--bg-tertiary, #0f0f1a);
+    font-size: 11px;
+}
+
+.level-debug-direction-arrow {
+    font-size: 18px;
+    margin-bottom: 2px;
+}
+
+.level-debug-direction-label,
+.level-debug-interval-label {
+    color: var(--text-secondary, #a0a0b0);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.level-debug-direction-count,
+.level-debug-interval-count {
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.level-debug-direction-percent,
+.level-debug-interval-percent {
+    font-size: 10px;
+    color: var(--text-muted, #6a6a7a);
+    margin-top: 2px;
+}
+
+/* Direction Colors */
+.direction-up .level-debug-direction-arrow {
+    color: #22c55e;
+}
+
+.direction-down .level-debug-direction-arrow {
+    color: #ef4444;
+}
+
+.direction-stable .level-debug-direction-arrow {
+    color: #3b82f6;
+}
+
+.direction-none .level-debug-direction-arrow {
+    color: #6b7280;
+}
+
+/* Interval Colors */
+.interval-unison {
+    border-left: 3px solid #8b5cf6;
+}
+
+.interval-small {
+    border-left: 3px solid #22c55e;
+}
+
+.interval-medium {
+    border-left: 3px solid #f59e0b;
+}
+
+.interval-large {
+    border-left: 3px solid #f97316;
+}
+
+.interval-very-large {
+    border-left: 3px solid #ef4444;
+}
+
+/* Debug Note */
+.level-debug-note {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 6px;
+}
+
+.level-debug-note p {
+    margin: 0;
+    font-size: 12px;
+    color: #fbbf24;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .level-debug-beat-counts {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .level-debug-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

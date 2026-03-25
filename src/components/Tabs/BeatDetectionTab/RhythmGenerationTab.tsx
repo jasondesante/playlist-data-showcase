@@ -15,7 +15,7 @@
  */
 
 import { useState, useMemo, useCallback, useRef } from 'react';
-import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, GitCompare, Combine, GitBranch } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, GitCompare, Combine, GitBranch, Bug } from 'lucide-react';
 import './RhythmGenerationTab.css';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
@@ -30,6 +30,7 @@ import { DifficultyConversionPanel } from '../../ui/BeatDetectionTab/RhythmGener
 import { VariantComparisonView } from '../../ui/BeatDetectionTab/RhythmGenerationTab/VariantComparisonView';
 import { PhraseDetectionPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/PhraseDetectionPanel';
 import { TimelineControls } from '../../ui/BeatDetectionTab/RhythmGenerationTab/TimelineControls';
+import { LevelGenerationDebugPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/LevelGenerationDebugPanel';
 import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,
@@ -146,7 +147,7 @@ interface RhythmGenerationResultProps {
 }
 
 // Section identifiers for accordion behavior
-type SectionId = 'transients' | 'multiband' | 'quantization' | 'composite' | 'conversion' | 'comparison' | 'phrases' | null;
+type SectionId = 'transients' | 'multiband' | 'quantization' | 'composite' | 'conversion' | 'comparison' | 'phrases' | 'debug' | null;
 
 function RhythmGenerationResult({
     rhythm,
@@ -180,6 +181,7 @@ function RhythmGenerationResult({
         conversion: null,
         comparison: null,
         phrases: null,
+        debug: null,
     });
 
     const handleSectionToggle = (sectionId: Exclude<SectionId, null>) => {
@@ -416,6 +418,19 @@ function RhythmGenerationResult({
                             onPhraseSelect={handlePhraseSelect}
                             selectedPhrase={selectedPhrase}
                         />
+                    </CollapsibleSection>
+                </div>
+
+                {/* Task 0.4: Level Generation Debug Panel - temporary for data pipeline verification */}
+                <div ref={(el) => { sectionRefs.current.debug = el; }}>
+                    <CollapsibleSection
+                        title="Level Generation Debug"
+                        subtitle="Pitch detection & button mapping results (temporary)"
+                        icon={<Bug size={18} />}
+                        collapsed={openSection !== 'debug'}
+                        onCollapsedChange={() => handleSectionToggle('debug')}
+                    >
+                        <LevelGenerationDebugPanel />
                     </CollapsibleSection>
                 </div>
             </div>

@@ -163,15 +163,15 @@ This phase creates the **minimum viable data pipeline** to verify:
 - [x] Support retry on error
 
 ### Task 0.3: Wire Auto-Continue Pipeline
-- [ ] In BeatDetectionTab, when rhythm generation completes in auto mode:
+- [x] In BeatDetectionTab, when rhythm generation completes in auto mode:
   1. Auto-start level generation using cached rhythm
   2. Store results in beatDetectionStore
-  3. Auto-advance to Step 3 (Pitch & Level)
-- [ ] Ensure pitch detection runs on the same band-filtered audio as rhythm
+  3. Auto-advance to Step 3 (Ready)
+- [x] Ensure pitch detection runs on the same band-filtered audio as rhythm
 
 ### Task 0.4: Add Debug Display for Testing
-- [ ] Add temporary debug panel in RhythmGenerationTab (or create PitchLevelTab skeleton)
-- [ ] Display:
+- [x] Add temporary debug panel in RhythmGenerationTab (or create PitchLevelTab skeleton)
+- [x] Display:
   - "Level Generation Complete!" message
   - `generatedLevel.metadata` (difficulty, controller mode, total beats)
   - `pitchAnalysis.directionStats` (up/down/stable/none counts)
@@ -180,7 +180,7 @@ This phase creates the **minimum viable data pipeline** to verify:
   - `allDifficultyLevels.medium.chart.beats.length`
   - `allDifficultyLevels.hard.chart.beats.length`
   - `allDifficultyLevels.natural.chart.beats.length`
-- [ ] This panel is temporary - will be replaced by proper visualizations in later phases
+- [x] This panel is temporary - will be replaced by proper visualizations in later phases
 
 ### Task 0.5: Create Level Generation Types
 - [ ] Create `src/types/levelGeneration.ts`

@@ -6056,6 +6056,20 @@ export const useAllDifficultyLevels = () =>
     useBeatDetectionStore((state) => state.allDifficultyLevels);
 
 /**
+ * Selector to get the generated level for the selected difficulty.
+ * Returns the GeneratedLevel or null if none generated.
+ */
+export const useGeneratedLevel = () =>
+    useBeatDetectionStore((state) => state.generatedLevel);
+
+/**
+ * Selector to get the pitch analysis result.
+ * Returns the MelodyContourAnalysisResult containing direction stats, interval stats, etc.
+ */
+export const usePitchAnalysis = () =>
+    useBeatDetectionStore((state) => state.pitchAnalysis);
+
+/**
  * Selector to get the level generation progress.
  * Returns progress information during level generation, or null if not generating.
  * Tracks stages: rhythm → pitch → buttons → conversion → finalizing
