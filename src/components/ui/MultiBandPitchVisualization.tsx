@@ -25,6 +25,7 @@ import {
     BAND_RANGES,
     type Band
 } from './BandPitchTimeline';
+import { DominantBandSelector } from './DominantBandSelector';
 import type { PitchAtBeat, BandPitchAtBeat } from '../../types/levelGeneration';
 import { useTrackDuration } from '../../hooks/useTrackDuration';
 import { cn } from '../../utils/cn';
@@ -186,6 +187,12 @@ export function MultiBandPitchVisualization({
                     size="sm"
                 />
             </div>
+
+            {/* Dominant Band Selector (Task 4.3) */}
+            <DominantBandSelector
+                bandPitches={bandPitchesMap}
+                dominantBand={dominantBand}
+            />
 
             {/* Stacked timelines - using extracted BandPitchTimeline component */}
             <div className="multi-pitch-timelines">

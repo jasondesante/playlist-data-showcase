@@ -449,12 +449,12 @@ Container component with:
 - [x] Enhanced styling for dominant band
 
 ### Task 4.3: DominantBandSelector Visualization
-- [ ] Visual comparison of all bands with scores
-- [ ] Show scoring metrics:
+- [x] Visual comparison of all bands with scores
+- [x] Show scoring metrics:
   - Average probability (70% weight)
   - Voiced/total ratio (30% weight)
-- [ ] Highlight winner with explanation
-- [ ] Display as horizontal bar comparison
+- [x] Highlight winner with explanation
+- [x] Display as horizontal bar comparison
 
 ---
 
