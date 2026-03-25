@@ -584,9 +584,9 @@ Container component with:
 - [x] Adapts to DDR (4 bars) or Guitar Hero (5 bars)
 
 ### Task 6.6: MappingInfluenceBreakdown Component
-- [ ] Pitch vs Pattern influence pie chart
-- [ ] Display `pitchInfluenceWeight` setting from Step 1
-- [ ] Explain probability threshold effects
+- [x] Pitch vs Pattern influence pie chart
+- [x] Display `pitchInfluenceWeight` setting from Step 1
+- [x] Explain probability threshold effects
 
 ### Task 6.7: PatternLibraryUsage Component
 - [ ] Show patterns used from library

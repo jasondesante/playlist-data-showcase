@@ -30,6 +30,7 @@ import type { GeneratedLevel, ControllerMode } from 'playlist-data-engine';
 import DDRModeVisualization, { type DDRVisualizationBeat } from './DDRModeVisualization';
 import GuitarHeroModeVisualization, { type GuitarHeroVisualizationBeat } from './GuitarHeroModeVisualization';
 import ButtonDistributionChart from './ButtonDistributionChart';
+import MappingInfluenceBreakdown from './MappingInfluenceBreakdown';
 
 // ============================================================
 // Types
@@ -38,6 +39,10 @@ import ButtonDistributionChart from './ButtonDistributionChart';
 export interface ButtonMappingPanelProps {
     /** Additional CSS class names */
     className?: string;
+    /** Pitch influence weight setting from Step 1 (0-1) */
+    pitchInfluenceWeight?: number;
+    /** Voicing threshold setting from Step 1 (0-1) */
+    voicingThreshold?: number;
 }
 
 /** Internal beat type for visualization components */
@@ -167,49 +172,6 @@ function SummaryStats({
 }
 
 
-interface InfluenceBreakdownProps {
-    pitchInfluencedBeats: number;
-    patternInfluencedBeats: number;
-    totalBeats: number;
-}
-
-function InfluenceBreakdown({ pitchInfluencedBeats, patternInfluencedBeats, totalBeats }: InfluenceBreakdownProps) {
-    const pitchPercent = totalBeats > 0 ? (pitchInfluencedBeats / totalBeats) * 100 : 0;
-    const patternPercent = totalBeats > 0 ? (patternInfluencedBeats / totalBeats) * 100 : 0;
-
-    return (
-        <div className="button-influence-breakdown">
-            <h4 className="button-influence-title">Mapping Influence</h4>
-            <div className="button-influence-bar">
-                <div
-                    className="button-influence-pitch"
-                    style={{ width: `${pitchPercent}%` }}
-                    title={`Pitch influenced: ${pitchInfluencedBeats} beats`}
-                />
-                <div
-                    className="button-influence-pattern"
-                    style={{ width: `${patternPercent}%` }}
-                    title={`Pattern influenced: ${patternInfluencedBeats} beats`}
-                />
-            </div>
-            <div className="button-influence-legend">
-                <div className="button-influence-legend-item">
-                    <span className="button-influence-legend-color button-influence-legend-pitch" />
-                    <span className="button-influence-legend-label">
-                        Pitch ({pitchInfluencedBeats})
-                    </span>
-                </div>
-                <div className="button-influence-legend-item">
-                    <span className="button-influence-legend-color button-influence-legend-pattern" />
-                    <span className="button-influence-legend-label">
-                        Pattern ({patternInfluencedBeats})
-                    </span>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 interface PatternsUsedProps {
     patternsUsed: string[];
 }
@@ -242,7 +204,7 @@ function PatternsUsed({ patternsUsed }: PatternsUsedProps) {
 // Main Component
 // ============================================================
 
-export function ButtonMappingPanel({ className }: ButtonMappingPanelProps) {
+export function ButtonMappingPanel({ className, pitchInfluenceWeight, voicingThreshold }: ButtonMappingPanelProps) {
     // Get data from store
     const allDifficulties = useAllDifficultyLevels();
     const selectedDifficulty = useSelectedDifficulty();
@@ -309,11 +271,14 @@ export function ButtonMappingPanel({ className }: ButtonMappingPanelProps) {
                 keysUsed={mappingData.keysUsed}
             />
 
-            {/* Influence Breakdown */}
-            <InfluenceBreakdown
+            {/* Influence Breakdown - Task 6.6 */}
+            <MappingInfluenceBreakdown
                 pitchInfluencedBeats={mappingData.pitchInfluencedBeats}
                 patternInfluencedBeats={mappingData.patternInfluencedBeats}
                 totalBeats={mappingData.totalBeats}
+                pitchInfluenceWeight={pitchInfluenceWeight}
+                voicingThreshold={voicingThreshold}
+                size={150}
             />
 
             {/* Button Distribution - Task 6.5 */}

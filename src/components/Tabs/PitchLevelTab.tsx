@@ -60,6 +60,10 @@ export interface PitchLevelTabProps {
     onProceed?: () => void;
     /** Callback when user wants to switch to manual mode */
     onSwitchToManual?: () => void;
+    /** Pitch influence weight setting from Step 1 (0-1) */
+    pitchInfluenceWeight?: number;
+    /** Voicing threshold setting from Step 1 (0-1) */
+    voicingThreshold?: number;
     /** Additional CSS class names */
     className?: string;
 }
@@ -110,9 +114,13 @@ function PitchLevelError({ error, onRetry, onSwitchToManual }: PitchLevelErrorPr
  */
 interface PitchLevelResultProps {
     onProceed?: () => void;
+    /** Pitch influence weight setting from Step 1 (0-1) */
+    pitchInfluenceWeight?: number;
+    /** Voicing threshold setting from Step 1 (0-1) */
+    voicingThreshold?: number;
 }
 
-function PitchLevelResult({ onProceed }: PitchLevelResultProps) {
+function PitchLevelResult({ onProceed, pitchInfluenceWeight, voicingThreshold }: PitchLevelResultProps) {
     // Accordion state - default to 'final' expanded
     const [openSection, setOpenSection] = useState<SectionId>('final');
 
@@ -180,7 +188,10 @@ function PitchLevelResult({ onProceed }: PitchLevelResultProps) {
                     collapsed={openSection !== 'buttons'}
                     onCollapsedChange={() => handleSectionToggle('buttons')}
                 >
-                    <ButtonMappingPanel />
+                    <ButtonMappingPanel
+                        pitchInfluenceWeight={pitchInfluenceWeight}
+                        voicingThreshold={voicingThreshold}
+                    />
                 </CollapsibleSection>
             </div>
 
@@ -232,6 +243,8 @@ export function PitchLevelTab({
     onRetry,
     onProceed,
     onSwitchToManual,
+    pitchInfluenceWeight,
+    voicingThreshold,
     className,
 }: PitchLevelTabProps) {
     const generatedRhythm = useGeneratedRhythm();
@@ -298,6 +311,8 @@ export function PitchLevelTab({
             return (
                 <PitchLevelResult
                     onProceed={onProceed}
+                    pitchInfluenceWeight={pitchInfluenceWeight}
+                    voicingThreshold={voicingThreshold}
                 />
             );
         }

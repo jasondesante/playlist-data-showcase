@@ -801,6 +801,8 @@ export function BeatDetectionTab() {
                             }}
                             onProceed={() => setCurrentStep(4)}
                             onSwitchToManual={() => setGenerationMode('manual')}
+                            pitchInfluenceWeight={autoLevelSettings.pitchInfluenceWeight}
+                            voicingThreshold={autoLevelSettings.voicingThreshold}
                         />
                     );
                 }

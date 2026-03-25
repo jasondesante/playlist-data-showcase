@@ -1,0 +1,377 @@
+/**
+ * MappingInfluenceBreakdown Styles
+ *
+ * Styling for the mapping influence breakdown visualization (Task 6.6).
+ * Uses consistent design language with other button mapping components.
+ *
+ * Color scheme:
+ * - Pitch-influenced: Green (#22c55e)
+ * - Pattern-influenced: Amber (#f59e0b)
+ */
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+
+.mapping-influence-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+    border: 1px solid var(--border-color, #2a2a4a);
+}
+
+.mapping-influence-breakdown--compact {
+    padding: 0.5rem;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.mapping-influence-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color-light, #1a1a2a);
+}
+
+.mapping-influence-icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+}
+
+.mapping-influence-title {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+}
+
+/* ============================================
+   CONTENT LAYOUT
+   ============================================ */
+
+.mapping-influence-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.mapping-influence-breakdown:not(.mapping-influence-breakdown--compact) .mapping-influence-content {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+/* ============================================
+   CHART SECTION
+   ============================================ */
+
+.mapping-chart-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   PIE CHART SVG
+   ============================================ */
+
+.mapping-pie-chart {
+    display: block;
+}
+
+.mapping-pie-chart--empty {
+    opacity: 0.5;
+}
+
+.mapping-pie-slice {
+    cursor: pointer;
+}
+
+.mapping-pie-path {
+    transition: transform 0.2s ease, filter 0.2s ease;
+    transform-origin: center;
+}
+
+.mapping-pie-slice:hover .mapping-pie-path {
+    filter: brightness(1.15);
+    transform: scale(1.02);
+}
+
+/* Center text */
+.mapping-pie-center-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    fill: var(--text-primary, #e0e0e0);
+}
+
+.mapping-pie-center-label {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    fill: var(--text-muted, #6a6a7a);
+}
+
+.mapping-pie-empty-text {
+    font-size: 0.75rem;
+    fill: var(--text-muted, #6a6a7a);
+}
+
+/* ============================================
+   CHART LEGEND
+   ============================================ */
+
+.mapping-chart-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.mapping-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    background: var(--bg-secondary, #12121f);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.mapping-legend-item:hover {
+    background: var(--bg-tertiary-hover, #151525);
+}
+
+.mapping-legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.mapping-legend-pitch .mapping-legend-color {
+    background: #22c55e;
+}
+
+.mapping-legend-pattern .mapping-legend-color {
+    background: #f59e0b;
+}
+
+.mapping-legend-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-primary, #e0e0e0);
+    min-width: 50px;
+}
+
+.mapping-legend-stats {
+    font-size: 0.6875rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-muted, #6a6a7a);
+    margin-left: auto;
+}
+
+/* ============================================
+   SETTINGS INFO SECTION
+   ============================================ */
+
+.mapping-settings-info {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.mapping-settings-header {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color-light, #1a1a2a);
+}
+
+.mapping-settings-icon {
+    color: hsl(var(--primary));
+}
+
+.mapping-settings-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary, #a0a0b0);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mapping-settings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.mapping-setting-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.mapping-setting-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.6875rem;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.mapping-setting-value {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+    font-weight: 600;
+}
+
+.mapping-setting-bar {
+    height: 6px;
+    background: var(--bg-primary, #0a0a14);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.mapping-setting-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.mapping-setting-bar-fill--pitch {
+    background: linear-gradient(90deg, #22c55e, #4ade80);
+}
+
+.mapping-setting-bar-fill--threshold {
+    background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}
+
+.mapping-setting-description {
+    font-size: 0.625rem;
+    color: var(--text-muted, #6a6a7a);
+    line-height: 1.4;
+}
+
+/* ============================================
+   HOW IT WORKS SECTION
+   ============================================ */
+
+.mapping-how-it-works {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary, #12121f);
+    border-radius: 6px;
+    border: 1px solid var(--border-color-light, #1a1a2a);
+}
+
+.mapping-how-header {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-secondary, #a0a0b0);
+    margin-bottom: 0.5rem;
+}
+
+.mapping-how-header svg {
+    color: hsl(var(--primary));
+}
+
+.mapping-how-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mapping-how-content p {
+    margin: 0;
+    font-size: 0.625rem;
+    color: var(--text-muted, #6a6a7a);
+    line-height: 1.5;
+}
+
+.mapping-how-content strong {
+    color: var(--text-secondary, #a0a0b0);
+    font-weight: 500;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 640px) {
+    .mapping-influence-content {
+        flex-direction: column !important;
+    }
+
+    .mapping-chart-section {
+        width: 100%;
+    }
+
+    .mapping-settings-info {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .mapping-pie-center-value {
+        font-size: 1rem;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .mapping-pie-path {
+        transition: none;
+    }
+
+    .mapping-pie-slice:hover .mapping-pie-path {
+        transform: none;
+    }
+
+    .mapping-setting-bar-fill {
+        transition: none;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: more) {
+    .mapping-pie-path {
+        stroke: var(--text-primary, #e0e0e0);
+        stroke-width: 1px;
+    }
+
+    .mapping-legend-item {
+        border: 1px solid var(--border-color, #2a2a4a);
+    }
+
+    .mapping-setting-bar {
+        border: 1px solid var(--border-color-light, #1a1a2a);
+    }
+}
+
+/* Focus states */
+.mapping-pie-slice:focus {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+.mapping-legend-item:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
