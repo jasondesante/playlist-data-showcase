@@ -24,6 +24,7 @@ import { AutoLevelToggle } from '../ui/AutoLevelToggle';
 import { AutoLevelSettings } from '../ui/AutoLevelSettings';
 import { RhythmGenerationTab } from './BeatDetectionTab/RhythmGenerationTab';
 import { PitchLevelTab } from './PitchLevelTab';
+import { AutoReadyPanel } from '../ui/AutoReadyPanel';
 import type { AutoLevelSettings as AutoLevelSettingsType } from '../../types/rhythmGeneration';
 import { DEFAULT_AUTO_LEVEL_SETTINGS } from '../../types/rhythmGeneration';
 import { useRhythmGeneration } from '../../hooks/useRhythmGeneration';
@@ -840,6 +841,7 @@ export function BeatDetectionTab() {
             case 4:
                 // Step 4: Ready/Practice - Beat map summary, practice mode, export
                 // Task 1.2: Now works for both manual and auto mode (4 steps each)
+                // Task 8.1: In auto mode with generated levels, show AutoReadyPanel
                 if (!beatMap) {
                     return wrapContent(
                         <Card variant="elevated" padding="lg" className="beat-detection-results-card">
@@ -853,6 +855,16 @@ export function BeatDetectionTab() {
                         </Card>
                     );
                 }
+
+                // Task 8.1: In auto mode with generated levels, show AutoReadyPanel with difficulty switcher
+                if (generationMode === 'automatic' && allDifficulties) {
+                    return wrapContent(
+                        <AutoReadyPanel
+                            onStartPractice={handleStartPracticeMode}
+                        />
+                    );
+                }
+
                 return wrapContent(
                     <Card variant="elevated" padding="lg" className="beat-detection-results-card">
                         {isBeatGenerating ? (
@@ -932,6 +944,8 @@ export function BeatDetectionTab() {
         stepCompletion,
         chartStatistics,
         fileInputRef,
+        generationMode,
+        allDifficulties,
     ]);
 
     return (

@@ -661,10 +661,10 @@ Container component with:
 > The Ready step now shows the full BeatStream practice mode for the generated level.
 
 ### Task 8.1: Update ReadyTab for Auto Mode
-- [ ] When in auto mode, show BeatStream practice component
-- [ ] Load generated ChartedBeatMap from store
-- [ ] Pass selected difficulty level to BeatStream
-- [ ] Include difficulty switcher in Ready step too
+- [x] When in auto mode, show BeatStream practice component
+- [x] Load generated ChartedBeatMap from store
+- [x] Pass selected difficulty level to BeatStream
+- [x] Include difficulty switcher in Ready step too
 
 ### Task 8.2: BeatStream Practice Mode Integration
 - [ ] Import and render BeatStream component

@@ -6158,6 +6158,14 @@ export const useLevelGenerationProgress = () =>
     useBeatDetectionStore((state) => state.levelGenerationProgress);
 
 /**
+ * Selector to get the selected difficulty level.
+ * Returns the current selected difficulty (default: 'medium').
+ * Task 8.1: Used in Ready step for difficulty switcher.
+ */
+export const useSelectedDifficulty = () =>
+    useBeatDetectionStore((state) => state.selectedDifficulty);
+
+/**
  * Navigation direction for step content animations.
  * - 'forward': Navigating to a higher step number (slide left animation)
  * - 'backward': Navigating to a lower step number (slide right animation)

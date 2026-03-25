@@ -1,0 +1,214 @@
+/**
+ * AutoReadyPanel Component Styles
+ *
+ * Styles for the auto-mode Ready step content.
+ * Includes difficulty switcher, chart preview, and practice button.
+ *
+ * Task 8.1: Update ReadyTab for Auto Mode
+ */
+
+/* ============================================================
+   Main Container
+   ============================================================ */
+
+.auto-ready-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.auto-ready-panel--empty {
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ============================================================
+   Header
+   ============================================================ */
+
+.auto-ready-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.auto-ready-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary, #f8fafc);
+    margin: 0;
+}
+
+.auto-ready-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #94a3b8);
+    margin: 0;
+}
+
+/* ============================================================
+   Difficulty Section
+   ============================================================ */
+
+.auto-ready-difficulty-section {
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 0;
+}
+
+/* ============================================================
+   Level Summary
+   ============================================================ */
+
+.auto-ready-summary {
+    background: var(--bg-secondary, #1e293b);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color, #334155);
+}
+
+.auto-ready-summary--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    color: var(--text-secondary, #94a3b8);
+}
+
+.auto-ready-summary-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.auto-ready-summary-difficulty {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: white;
+}
+
+.auto-ready-summary-mode {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary, #94a3b8);
+}
+
+.auto-ready-summary-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+}
+
+.auto-ready-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.125rem;
+}
+
+.auto-ready-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary, #f8fafc);
+}
+
+.auto-ready-stat-label {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary, #94a3b8);
+}
+
+/* ============================================================
+   Chart Section
+   ============================================================ */
+
+.auto-ready-chart-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.auto-ready-section-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary, #94a3b8);
+    margin: 0;
+}
+
+/* ============================================================
+   Actions
+   ============================================================ */
+
+.auto-ready-actions {
+    display: flex;
+    justify-content: center;
+    padding-top: 0.5rem;
+}
+
+.auto-ready-start-btn {
+    min-width: 180px;
+}
+
+/* ============================================================
+   Placeholder
+   ============================================================ */
+
+.auto-ready-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+.auto-ready-placeholder-icon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary, #1e293b);
+    border-radius: 50%;
+    color: var(--text-secondary, #94a3b8);
+}
+
+.auto-ready-placeholder-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary, #f8fafc);
+    margin: 0;
+}
+
+.auto-ready-placeholder-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #94a3b8);
+    margin: 0;
+    max-width: 280px;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 640px) {
+    .auto-ready-summary-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .auto-ready-difficulty-section {
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+}
