@@ -441,12 +441,12 @@ Container component with:
 - [x] Sync with audio playback
 
 ### Task 4.2: BandPitchTimeline Component (Inline Reusable)
-- [ ] Single band's pitch timeline (reused 3 times)
-- [ ] Props: band, pitches, currentTime, isPlaying, isDominant
-- [ ] Band color coding
-- [ ] Note names on hover
-- [ ] Unvoiced markers as gray dots
-- [ ] Enhanced styling for dominant band
+- [x] Single band's pitch timeline (reused 3 times)
+- [x] Props: band, pitches, currentTime, isPlaying, isDominant
+- [x] Band color coding
+- [x] Note names on hover
+- [x] Unvoiced markers as gray dots
+- [x] Enhanced styling for dominant band
 
 ### Task 4.3: DominantBandSelector Visualization
 - [ ] Visual comparison of all bands with scores

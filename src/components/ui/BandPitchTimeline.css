@@ -1,0 +1,509 @@
+/**
+ * BandPitchTimeline Styles (Task 4.2)
+ *
+ * Styling for the standalone reusable band pitch timeline component.
+ * Displays a single band's pitch data (Low/Mid/High).
+ *
+ * Color scheme:
+ * - Low band: Blue (#3b82f6)
+ * - Mid band: Green (#22c55e)
+ * - High band: Orange (#f97316)
+ * - Unvoiced: Gray (#6b7280)
+ */
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+
+.band-pitch-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    background: hsl(var(--surface-1));
+    border-radius: 0.75rem;
+    border: 1px solid hsl(var(--border) / 0.2);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.band-pitch-timeline--empty {
+    opacity: 0.6;
+}
+
+/* Dominant band highlight with glow effect */
+.band-pitch-timeline--dominant {
+    border-color: hsl(var(--primary) / 0.4);
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.15),
+                0 0 4px hsl(var(--primary) / 0.1) inset;
+}
+
+.band-pitch-timeline--dominant .band-pitch-timeline-header {
+    background: hsl(var(--primary) / 0.1);
+    border-radius: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    margin: -0.125rem;
+}
+
+/* ============================================
+   BAND HEADER
+   ============================================ */
+
+.band-pitch-timeline-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.band-pitch-timeline-label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-width: 3.5rem;
+}
+
+.band-pitch-dominant-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: hsl(var(--primary));
+    animation: band-pitch-pulse 2s ease-in-out infinite;
+}
+
+@keyframes band-pitch-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.band-pitch-timeline-range {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+}
+
+.band-pitch-timeline-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-left: auto;
+}
+
+.band-pitch-timeline-count {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+.band-pitch-timeline-divider {
+    color: hsl(var(--border));
+}
+
+.band-pitch-timeline-prob {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.375rem;
+    background: hsl(var(--surface-3));
+    border-radius: 0.25rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   TIMELINE CONTAINER (Y-axis + track)
+   ============================================ */
+
+.band-pitch-timeline-container {
+    display: flex;
+    flex-direction: row;
+    min-height: 4.5rem;
+}
+
+/* Y-Axis */
+.band-pitch-y-axis {
+    position: relative;
+    width: 36px;
+    min-width: 36px;
+    background: hsl(var(--surface-3));
+    border-radius: 0.5rem 0 0 0.5rem;
+    border-right: 1px solid hsl(var(--border) / 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.band-pitch-y-label {
+    position: absolute;
+    left: 3px;
+    font-size: 0.5rem;
+    font-family: var(--font-mono);
+    color: hsl(var(--muted-foreground) / 0.7);
+    transform: translateY(50%);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Timeline track */
+.band-pitch-timeline-track {
+    flex: 1;
+    position: relative;
+    min-height: 4.5rem;
+    border-radius: 0 0.5rem 0.5rem 0;
+    overflow: hidden;
+    cursor: default;
+    transition: box-shadow 0.15s ease;
+}
+
+.band-pitch-timeline-track--draggable {
+    cursor: grab;
+}
+
+.band-pitch-timeline-track--draggable:hover {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3) inset;
+}
+
+.band-pitch-timeline-track--dragging {
+    cursor: grabbing;
+}
+
+.band-pitch-timeline-track--dragging:hover {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5) inset;
+}
+
+.band-pitch-timeline-track:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.4) inset;
+}
+
+/* Background */
+.band-pitch-timeline-background {
+    position: absolute;
+    inset: 0;
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+/* Band color accent line (left edge) */
+.band-pitch-timeline-accent {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    opacity: 0.8;
+}
+
+/* Horizontal grid lines (pitch reference) */
+.band-pitch-grid-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: hsl(var(--border) / 0.4);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ============================================
+   PITCH MARKERS
+   ============================================ */
+
+.band-pitch-marker {
+    position: absolute;
+    transform: translate(-50%, 50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.band-pitch-marker-dot {
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Voiced markers */
+.band-pitch-marker--voiced .band-pitch-marker-dot {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Unvoiced markers (gray dots) */
+.band-pitch-marker--unvoiced .band-pitch-marker-dot {
+    border: 1px dashed rgba(107, 114, 128, 0.5);
+}
+
+.band-pitch-marker:hover .band-pitch-marker-dot {
+    transform: scale(1.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Past markers (faded) */
+.band-pitch-marker--past {
+    opacity: 0.5;
+}
+
+.band-pitch-marker--past .band-pitch-marker-dot {
+    opacity: 0.6;
+}
+
+/* Selected marker */
+.band-pitch-marker--selected {
+    z-index: 20;
+}
+
+.band-pitch-marker--selected .band-pitch-marker-dot {
+    transform: scale(1.5);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.4),
+                0 0 6px currentColor;
+    border-color: white;
+}
+
+/* Note label on hover */
+.band-pitch-marker-label {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 4px;
+    padding: 2px 5px;
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 3px;
+    font-size: 0.5625rem;
+    font-family: var(--font-mono);
+    color: white;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.band-pitch-marker:hover .band-pitch-marker-label {
+    opacity: 1;
+}
+
+/* ============================================
+   NOW LINE (Playhead)
+   ============================================ */
+
+.band-pitch-now-line {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 100%;
+    width: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 15;
+    pointer-events: none;
+}
+
+.band-pitch-now-line-inner {
+    width: 2px;
+    height: 100%;
+    opacity: 0.7;
+    box-shadow: 0 0 4px currentColor;
+}
+
+.band-pitch-now-label {
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1px 4px;
+    background: hsl(var(--primary));
+    border-radius: 2px;
+    font-size: 0.5rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================
+   QUICK SCROLL BAR
+   ============================================ */
+
+.band-pitch-quickscroll {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    padding-left: 36px; /* Offset for Y-axis */
+}
+
+.band-pitch-quickscroll-track {
+    position: relative;
+    flex: 1;
+    height: 0.5rem;
+    background: hsl(var(--surface-3));
+    border-radius: 0.25rem;
+    cursor: pointer;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.band-pitch-quickscroll-track:hover {
+    background: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.3);
+}
+
+/* Pitch markers in quick scroll */
+.band-pitch-quickscroll-marker {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    width: 1px;
+    transform: translateX(-50%);
+    opacity: 0.4;
+}
+
+.band-pitch-quickscroll-marker--unvoiced {
+    opacity: 0.2;
+}
+
+/* Viewport indicator */
+.band-pitch-quickscroll-viewport {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: hsl(var(--primary) / 0.2);
+    border-left: 1px solid hsl(var(--primary) / 0.5);
+    border-right: 1px solid hsl(var(--primary) / 0.5);
+    border-radius: 0.125rem;
+    pointer-events: none;
+    min-width: 4px;
+}
+
+/* Current position indicator (playhead) */
+.band-pitch-quickscroll-position {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 2px;
+    background: hsl(var(--primary));
+    transform: translateX(-50%);
+    pointer-events: none;
+    box-shadow: 0 0 4px hsl(var(--primary) / 0.8);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.band-pitch-empty-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 768px) {
+    .band-pitch-timeline-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .band-pitch-timeline-stats {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .band-pitch-timeline-container {
+        min-height: 3.5rem;
+    }
+
+    .band-pitch-timeline-track {
+        min-height: 3.5rem;
+    }
+
+    .band-pitch-y-axis {
+        width: 28px;
+        min-width: 28px;
+    }
+
+    .band-pitch-y-label {
+        font-size: 0.4375rem;
+    }
+
+    .band-pitch-quickscroll {
+        padding-left: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+    .band-pitch-timeline-range {
+        display: none;
+    }
+
+    .band-pitch-timeline-container {
+        min-height: 3rem;
+    }
+
+    .band-pitch-timeline-track {
+        min-height: 3rem;
+    }
+
+    .band-pitch-y-axis {
+        width: 24px;
+        min-width: 24px;
+    }
+
+    .band-pitch-quickscroll {
+        padding-left: 24px;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .band-pitch-marker-dot {
+        transition: none;
+    }
+
+    .band-pitch-marker:hover .band-pitch-marker-dot {
+        transform: none;
+    }
+
+    .band-pitch-timeline-track {
+        transition: none;
+    }
+
+    .band-pitch-dominant-badge {
+        animation: none;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: more) {
+    .band-pitch-marker--voiced .band-pitch-marker-dot {
+        border-width: 2px;
+    }
+
+    .band-pitch-now-line-inner {
+        width: 3px;
+    }
+
+    .band-pitch-grid-line {
+        background: hsl(var(--border) / 0.6);
+    }
+
+    .band-pitch-timeline--dominant {
+        border-width: 2px;
+    }
+}
