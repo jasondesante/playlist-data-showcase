@@ -45,6 +45,7 @@ const PRESETS: { value: RhythmPresetName; label: string; description: string }[]
 ];
 
 const DIFFICULTIES: { value: DifficultyLevel; label: string; description: string }[] = [
+    { value: 'natural', label: 'Natural', description: 'Unedited composite stream as detected' },
     { value: 'easy', label: 'Easy', description: 'Simplified patterns for beginners' },
     { value: 'medium', label: 'Medium', description: 'Standard patterns for normal play' },
     { value: 'hard', label: 'Hard', description: 'Dense patterns for advanced players' },

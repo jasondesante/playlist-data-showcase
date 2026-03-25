@@ -135,7 +135,7 @@ export interface AutoLevelSettings {
     /** Selected preset for rhythm generation */
     preset: RhythmPresetName;
     /** Target difficulty level */
-    difficulty: 'easy' | 'medium' | 'hard';
+    difficulty: 'natural' | 'easy' | 'medium' | 'hard';
     /** Output mode - which band stream to use */
     outputMode: OutputMode;
     /** Minimum intensity threshold for transients (0.0-1.0) - deprecated, use transientConfig instead */

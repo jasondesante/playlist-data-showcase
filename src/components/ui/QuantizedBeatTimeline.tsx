@@ -82,6 +82,7 @@ const BAND_COLORS: Record<Band, string> = {
  * Grid type display labels
  */
 const GRID_TYPE_LABELS: Record<GridType, string> = {
+    straight_8th: '8th',
     straight_16th: '16th',
     triplet_8th: 'Triplet',
 };

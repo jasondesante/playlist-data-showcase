@@ -5,7 +5,7 @@
 Add two new visualization components between `QuantizationPanel` and `DifficultyVariantsPanel` to show the intermediate processing steps in the rhythm generation pipeline:
 
 1. **CompositeStreamPanel** - Visualizes how 3 quantized band streams are combined into a composite stream
-2. **DifficultyConversionPanel** - Shows how the composite stream is converted to 3 difficulty variants
+2. **DifficultyConversionPanel** - Shows how the composite stream is converted to 4 difficulty variants (Natural, Easy, Medium, Hard)
 
 ## Problem Statement
 
@@ -113,7 +113,7 @@ Visualize how 3 quantized band streams are scored, sectioned, and combined into 
 ## Phase 2: DifficultyConversionPanel
 
 ### Purpose
-Visualize how the composite stream is converted to 3 difficulty variants through simplification or enhancement.
+Visualize how the composite stream is converted to 4 difficulty variants (Natural, Easy, Medium, Hard) through simplification or enhancement.
 
 ### Data Sources
 - `rhythm.composite.beats` - Source composite stream (baseline)
@@ -144,13 +144,13 @@ Visualize how the composite stream is converted to 3 difficulty variants through
 │  │ Baseline  │●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●││
 │  └─────────────────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────────────────┤
-│ 3 Difficulty Columns (side-by-side with diff visualization):    │
-│  ┌──────────────┬──────────────┬──────────────┐                │
-│  │ Easy         │ Medium       │ Hard         │                │
-│  │ [Simplified] │ [Natural]    │ [Enhanced]   │                │
-│  ├──────────────┼──────────────┼──────────────┤                │
-│  │ ○ ◉ ○ ◉ ○    │ ● ● ● ● ●    │ ● ★ ● ★ ●    │                │
-│  │ (ghost beats)│ (unchanged)  │ (added beats)│                │
+│ 4 Difficulty Columns (side-by-side with diff visualization):    │
+│  ┌──────────────┬──────────────┬──────────────┬──────────────┐  │
+│  │ Natural      │ Easy         │ Medium       │ Hard         │  │
+│  │ [Unedited]   │ [Simplified] │ [As-is/Edit] │ [Enhanced]   │  │
+│  ├──────────────┼──────────────┼──────────────┼──────────────┤  │
+│  │ ● ● ● ● ●    │ ○ ◉ ○ ◉ ○    │ ● ● ● ● ●    │ ● ★ ● ★ ●    │  │
+│  │ (composite)  │ (ghost beats)│ (unchanged)  │ (added beats)│  │
 │  │ ─ ─ ─ ─ ─    │ ─ ─ ─ ─ ─    │ ─ ─ ─ ─ ─    │                │
 │  │ ◉ ○ ◉ ○ ◉    │ ● ● ● ● ●    │ ● ★ ● ★ ●    │                │
 │  ├──────────────┼──────────────┼──────────────┤                │
@@ -250,7 +250,7 @@ const sectionRefs = useRef<Record<Exclude<SectionId, null>, HTMLDivElement | nul
 <div ref={(el) => { sectionRefs.current.conversion = el; }}>
     <CollapsibleSection
         title="Difficulty Conversion"
-        subtitle="How composite becomes Easy/Medium/Hard"
+        subtitle="How composite becomes Natural/Easy/Medium/Hard"
         icon={<GitBranch size={18} />}
         collapsed={openSection !== 'conversion'}
         onCollapsedChange={() => handleSectionToggle('conversion')}

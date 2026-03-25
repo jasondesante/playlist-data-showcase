@@ -79,6 +79,7 @@ export interface VariantTimelineProps {
  * Difficulty color scheme
  */
 const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
+    natural: '#8b5cf6', // Purple (unedited composite)
     easy: '#22c55e',    // Green
     medium: '#f59e0b',  // Amber
     hard: '#ef4444',    // Red

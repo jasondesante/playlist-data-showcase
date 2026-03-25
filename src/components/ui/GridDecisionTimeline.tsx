@@ -52,6 +52,7 @@ export interface GridDecisionTimelineProps {
  * Blue for straight_16th, Purple for triplet_8th
  */
 const GRID_COLORS: Record<GridType, string> = {
+    straight_8th: '#06b6d4',    // Cyan
     straight_16th: '#3b82f6',  // Blue
     triplet_8th: '#a855f7',     // Purple
 };
@@ -60,6 +61,7 @@ const GRID_COLORS: Record<GridType, string> = {
  * Grid type labels for display
  */
 const GRID_LABELS: Record<GridType, string> = {
+    straight_8th: '8th',
     straight_16th: '16th',
     triplet_8th: 'Triplet',
 };
@@ -647,13 +649,13 @@ export function GridDecisionTimeline({
                         <div className="grid-decision-tooltip-stat">
                             <span className="grid-decision-tooltip-stat-label">16th Offset</span>
                             <span className="grid-decision-tooltip-stat-value">
-                                {formatMs(hoveredDecision.straightAvgOffset)}
+                                {formatMs(hoveredDecision.straightAvgOffset ?? 0)}
                             </span>
                         </div>
                         <div className="grid-decision-tooltip-stat">
                             <span className="grid-decision-tooltip-stat-label">Triplet Offset</span>
                             <span className="grid-decision-tooltip-stat-value">
-                                {formatMs(hoveredDecision.tripletAvgOffset)}
+                                {formatMs(hoveredDecision.tripletAvgOffset ?? 0)}
                             </span>
                         </div>
                     </div>

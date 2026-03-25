@@ -29,7 +29,7 @@ The user still only clicks "Analyze" once - all phases happen automatically in s
 | Settings location | Extend existing AutoLevelSettings panel in Step 1 |
 | Multi-band pitch view | 3-band stacked timelines (Low/Mid/High) - all bands visible |
 | Button sequence view | Simple horizontal timeline only (no circular/fretboard secondary views) |
-| Difficulty output | Pre-generate all 3 difficulties; switcher just changes view |
+| Difficulty output | Pre-generate all 4 difficulties (Natural/Easy/Medium/Hard); switcher just changes view |
 | Melody visualization | Both direction timeline (arrows) AND pitch contour line graph (SVG) |
 | Pitch inspector | Fixed side panel always visible on the right |
 | Final summary | Compact stats card with key numbers |
@@ -139,16 +139,16 @@ PitchResult → PitchAtBeat → MelodyContourAnalysisResult → ButtonMappingMet
 This phase creates the **minimum viable data pipeline** to verify:
 1. Rhythm generation output → Level generation input (data contract)
 2. LevelGenerator can use cached rhythm (no re-generation)
-3. All 3 difficulties generate successfully
+3. All 4 difficulties generate successfully (Natural/Easy/Medium/Hard)
 4. Results are stored in the beatDetectionStore
 5. The auto-continue pipeline triggers correctly
 
 ### Task 0.1: Add Level Generation State to Store
 - [ ] Add `generatedLevel: GeneratedLevel | null` to beatDetectionStore
-- [ ] Add `allDifficultyLevels: AllDifficultiesResult | null` for all 3 difficulties
+- [ ] Add `allDifficultyLevels: AllDifficultiesResult | null` for all 4 difficulties (Natural/Easy/Medium/Hard)
 - [ ] Add `levelGenerationProgress: LevelGenerationProgress | null`
 - [ ] Add `pitchAnalysis: MelodyContourAnalysisResult | null`
-- [ ] Add `selectedDifficulty: 'easy' | 'medium' | 'hard'` (from Step 1)
+- [ ] Add `selectedDifficulty: 'natural' | 'easy' | 'medium' | 'hard'` (from Step 1)
 - [ ] Add actions: `setGeneratedLevel()`, `clearGeneratedLevel()`, `setLevelGenerationProgress()`, `setSelectedDifficulty()`
 - [ ] Reset all level state when track changes
 - [ ] Clear level state when switching from auto to manual mode
@@ -157,7 +157,7 @@ This phase creates the **minimum viable data pipeline** to verify:
 - [ ] Create `src/hooks/useLevelGeneration.ts`
 - [ ] Import `LevelGenerator` from playlist-data-engine
 - [ ] Accept cached `GeneratedRhythm` from store (avoid re-generation)
-- [ ] Call `generateAllDifficulties()` to generate all 3 at once
+- [ ] Call `generateAllDifficulties()` to generate all 4 at once
 - [ ] Map engine progress phases to UI progress phases
 - [ ] Return: `{ generate, isGenerating, progress, error, level, allDifficulties }`
 - [ ] Support retry on error
@@ -179,6 +179,7 @@ This phase creates the **minimum viable data pipeline** to verify:
   - `allDifficultyLevels.easy.chart.beats.length`
   - `allDifficultyLevels.medium.chart.beats.length`
   - `allDifficultyLevels.hard.chart.beats.length`
+  - `allDifficultyLevels.natural.chart.beats.length`
 - [ ] This panel is temporary - will be replaced by proper visualizations in later phases
 
 ### Task 0.5: Create Level Generation Types
@@ -208,6 +209,7 @@ This phase creates the **minimum viable data pipeline** to verify:
   - difficultyVariants.easy.stream[] ✓/✗
   - difficultyVariants.medium.stream[] ✓/✗
   - difficultyVariants.hard.stream[] ✓/✗
+  - difficultyVariants.natural.stream[] ✓/✗
   - phrases[] ✓/✗
   - metadata.transientsDetected ✓/✗
   ```
@@ -252,7 +254,7 @@ After completing Phase 0, you should be able to:
    - Total beats in generated level
    - Direction stats (up/down/stable/none counts)
    - Interval stats (unison/small/medium/large/very_large)
-   - Beat counts for each difficulty (Easy/Medium/Hard)
+   - Beat counts for each difficulty (Natural/Easy/Medium/Hard)
 7. **Inspect Redux/store** to see full data structure
 
 **If Phase 0 works**: The data pipeline is verified. All green checkmarks. Continue to Phase 1+ to build visualizations.
@@ -275,10 +277,10 @@ After completing Phase 0, you should be able to:
 
 ### Task 1.1: Add Level Generation State to Store
 - [ ] Add `generatedLevel: GeneratedLevel | null` to beatDetectionStore
-- [ ] Add `allDifficultyLevels: AllDifficultiesResult | null` for all 3 difficulties
+- [ ] Add `allDifficultyLevels: AllDifficultiesResult | null` for all 4 difficulties (Natural/Easy/Medium/Hard)
 - [ ] Add `levelGenerationProgress: LevelGenerationProgress | null`
 - [ ] Add `pitchAnalysis: MelodyContourAnalysisResult | null`
-- [ ] Add `selectedDifficulty: 'easy' | 'medium' | 'hard'` (from Step 1)
+- [ ] Add `selectedDifficulty: 'natural' | 'easy' | 'medium' | 'hard'` (from Step 1)
 - [ ] Add actions: `setGeneratedLevel()`, `clearGeneratedLevel()`, `setLevelGenerationProgress()`, `setSelectedDifficulty()`
 - [ ] Reset all level state when track changes
 - [ ] Clear level state when switching from auto to manual mode
@@ -311,13 +313,13 @@ After completing Phase 0, you should be able to:
 - [ ] Return: `{ generate, isGenerating, progress, error, level, allDifficulties }`
 - [ ] Use cached rhythm from store to avoid re-generation
 - [ ] Support retry on error
-- [ ] Call `generateAllDifficulties()` to generate all 3 difficulties at once
+- [ ] Call `generateAllDifficulties()` to generate all 4 difficulties at once
 
 ### Task 1.5: Extend AutoLevelSettings in Step 1
 - [ ] Add controller mode selector (DDR / Guitar Hero) with toggle
 - [ ] Add pitch influence weight slider (0.0-1.0, default 0.8)
 - [ ] Add voicing threshold slider (0.0-1.0, default 0.5)
-- [ ] Add difficulty selector (Easy/Medium/Hard) - determines default level shown
+- [ ] Add difficulty selector (Natural/Easy/Medium/Hard) - determines default level shown
 - [ ] Group new settings in collapsible "Level Settings" subsection
 
 ---
@@ -600,7 +602,7 @@ Container component with:
 
 ## Phase 7: Final Level Output
 
-> Combines everything into a playable ChartedBeatMap. Shows selected difficulty by default with switcher for Easy/Medium/Hard.
+> Combines everything into a playable ChartedBeatMap. Shows selected difficulty by default with switcher for Natural/Easy/Medium/Hard.
 
 ### Task 7.1: LevelGenerationPanel Component
 - [ ] Container for final output
@@ -609,12 +611,12 @@ Container component with:
   - Controller mode
   - Total beats
   - Processing time
-- [ ] **Difficulty switcher** (Easy | Medium | Hard) - shows selected by default
+- [ ] **Difficulty switcher** (Natural | Easy | Medium | Hard) - shows selected by default
 - [ ] Default expanded panel in PitchLevelTab
 
 ```
 ┌─ Final Level ─────────────────────────────────────────────┐
-│ [Easy] [Medium ✓] [Hard]    ← Difficulty Switcher         │
+│ [Natural] [Easy] [Medium ✓] [Hard]    ← Difficulty Switcher  │
 │                                                            │
 │ ┌─ Compact Stats ──────────────────────────────────────┐  │
 │ │ Difficulty: Medium | Controller: DDR | Beats: 847    │  │
@@ -645,14 +647,14 @@ Container component with:
 - [ ] Detailed metadata is in the other panels (Pitch, Melody, Button)
 
 ### Task 7.4: DifficultySwitcher Component
-- [ ] Three buttons/tabs: Easy | Medium | Hard
+- [ ] Four buttons/tabs: Natural | Easy | Medium | Hard
 - [ ] Shows selected difficulty from Step 1 by default
 - [ ] Clicking switches the displayed ChartedBeatMapPreview
 - [ ] Updates the compact stats to show selected difficulty's numbers
 - [ ] Visual indicator for currently selected
 
 ### Task 7.5: DifficultyComparisonForLevel Component (Optional Expandable)
-- [ ] Side-by-side Easy/Medium/Hard comparison
+- [ ] Side-by-side Natural/Easy/Medium/Hard comparison
 - [ ] Button assignment differences
 - [ ] Beat count and density per difficulty
 - [ ] Collapsible/expandable section
@@ -722,6 +724,14 @@ Container component with:
 | Low | Blue | `#3b82f6` |
 | Mid | Green | `#22c55e` |
 | High | Orange | `#f97316` |
+
+### Difficulty Colors
+| Difficulty | Color | Hex | Description |
+|-----------|-------|-----|-------------|
+| Natural | Purple | `#8b5cf6` | Unedited composite stream |
+| Easy | Green | `#22c55e` | Simplified for beginners |
+| Medium | Amber | `#f59e0b` | Default difficulty |
+| Hard | Red | `#ef4444` | Maximum density |
 
 ### Pitch Probability Colors
 | Probability | Color | Hex |
@@ -796,7 +806,7 @@ Container component with:
 | `src/components/ui/LevelGenerationPanel.tsx` | Final level container |
 | `src/components/ui/LevelGenerationPanel.css` | Styles |
 | `src/components/ui/ChartedBeatMapPreview.tsx` | Final chart preview |
-| `src/components/ui/DifficultySwitcher.tsx` | Easy/Medium/Hard switcher |
+| `src/components/ui/DifficultySwitcher.tsx` | Natural/Easy/Medium/Hard switcher |
 | `src/components/ui/DifficultySwitcher.css` | Switcher styles |
 
 ## Files to Modify
@@ -878,6 +888,7 @@ interface AllDifficultiesResult {
   easy: GeneratedLevel;
   medium: GeneratedLevel;
   hard: GeneratedLevel;
+  natural?: GeneratedLevel;  // Optional: unedited composite stream
 }
 ```
 

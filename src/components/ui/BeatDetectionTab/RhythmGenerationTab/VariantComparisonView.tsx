@@ -72,6 +72,7 @@ export interface VariantComparisonViewProps {
  * Difficulty color scheme
  */
 const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
+    natural: '#8b5cf6', // Purple (unedited composite)
     easy: '#22c55e',    // Green
     medium: '#f59e0b',  // Amber
     hard: '#ef4444',    // Red
@@ -99,7 +100,7 @@ const EDIT_TYPE_COLORS: Record<EditType, string> = {
 /**
  * Difficulty display order
  */
-const DIFFICULTY_ORDER: DifficultyLevel[] = ['easy', 'medium', 'hard'];
+const DIFFICULTY_ORDER: DifficultyLevel[] = ['natural', 'easy', 'medium', 'hard'];
 
 // ============================================================
 // Sub-components
@@ -716,7 +717,8 @@ export function VariantComparisonView({
 
     // Calculate comparison stats
     const comparisonStats = useMemo(() => {
-        const counts = {
+        const counts: Record<DifficultyLevel, number> = {
+            natural: variants.natural.beats.length,
             easy: variants.easy.beats.length,
             medium: variants.medium.beats.length,
             hard: variants.hard.beats.length,

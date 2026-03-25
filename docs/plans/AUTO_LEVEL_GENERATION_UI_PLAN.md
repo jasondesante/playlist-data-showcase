@@ -24,7 +24,7 @@ Implement a debug/learning UI for the automatic rhythm generation feature in the
 | Export | Not in first pass - add after core functionality is stable |
 | Band colors | Default: Low (blue), Mid (green), High (orange) |
 | Progress UI | Pipeline stages with status indicators (Multi-Band → Transients → Quantize → Phrases → Composite → Variants) |
-| Difficulty view | Side-by-side comparison of all 3 difficulties (Easy/Medium/Hard) |
+| Difficulty view | Side-by-side comparison of all 4 difficulties (Natural/Easy/Medium/Hard) |
 | Error handling | Show error message with retry button |
 | Phrase UI | List of detected phrases with click-to-highlight on timeline |
 | Step count in auto mode | 3 steps (Analyze → Rhythm Generation → Ready) |
@@ -48,7 +48,7 @@ When "Automatic Level Generation" is toggled on:
   - Transient detection results
   - Multi-band analysis (3 frequency bands)
   - Quantized rhythms with grid decisions
-  - Difficulty variants (Easy/Medium/Hard)
+  - Difficulty variants (Natural/Easy/Medium/Hard)
   - Phrase detection patterns
 
 ```
@@ -171,7 +171,7 @@ interface GeneratedRhythm {
   - [x] Collapsible/expandable section that appears when auto mode is toggled ON
   - [x] Position: Below the toggle, within Step 1 (Analyze)
   - [x] Preset dropdown (casual, standard, challenge, bass)
-  - [x] Difficulty selector (Easy/Medium/Hard)
+  - [x] Difficulty selector (Natural/Easy/Medium/Hard)
   - [x] Output mode selector (Composite/Low/Mid/High)
   - [x] Intensity threshold slider (0.0-1.0, default 0.2)
   - [x] Collapsible "Advanced Options" within this panel
@@ -319,12 +319,13 @@ interface GeneratedRhythm {
 
 ---
 
-## Phase 7: Difficulty Variants Visualization (Side-by-Side Comparison)
+## Phase 7: Difficulty Variants Visualization (Side-by-Side Comparison of 4 Difficulties)
 
 - [x] **Task 7.1: Create DifficultyVariantsPanel component**
   - [x] Container for side-by-side comparison view
-  - [x] Three columns: Easy | Medium | Hard
-  - [x] Highlight "natural" difficulty (unedited variant) with badge
+  - [x] Four columns: Natural | Easy | Medium | Hard
+  - [x] Highlight "natural" difficulty (unedited composite stream) with badge
+  - [x] Show all 4 difficulty columns: Natural, Easy, Medium, Hard
   - [x] Stats for each variant (beat count, density, edit type)
   - [x] Mini timeline visualization for each difficulty
   - [x] Conversion/enhancement metadata display
@@ -337,11 +338,11 @@ interface GeneratedRhythm {
   - [x] Reusable for each difficulty column
 
 - [x] **Task 7.3: Create VariantComparisonView component**
-  - [x] Stacked view of all three difficulties (3 rows)
+  - [x] Stacked view of all four difficulties (4 rows: Natural, Easy, Medium, Hard)
   - [x] Visual density comparison at a glance
   - [x] Beat count labels for each difficulty
-  - [x] Vertical alignment so beats line up by time across all three
-  - [x] Shared zoom/scroll across all three timelines
+  - [x] Vertical alignment so beats line up by time across all four
+  - [x] Shared zoom/scroll across all four timelines
 
 ---
 
@@ -519,7 +520,7 @@ interface GeneratedRhythm {
 | `src/components/ui/QuantizationPanel.css` | Quantization styles |
 | `src/components/ui/GridDecisionTimeline.tsx` | Grid choice timeline |
 | `src/components/ui/QuantizedBeatTimeline.tsx` | Quantized output timeline |
-| `src/components/ui/DifficultyVariantsPanel.tsx` | Side-by-side Easy/Med/Hard comparison |
+| `src/components/ui/DifficultyVariantsPanel.tsx` | Side-by-side Natural/Easy/Med/Hard comparison |
 | `src/components/ui/DifficultyVariantsPanel.css` | Variants styles |
 | `src/components/ui/PhraseDetectionPanel.tsx` | Phrase patterns list with highlight |
 | `src/components/ui/PhraseDetectionPanel.css` | Phrase styles |
@@ -563,6 +564,14 @@ All timeline visualizations use **DOM elements** (not canvas) to match existing 
 | Low | Blue | `#3b82f6` |
 | Mid | Green | `#22c55e` |
 | High | Orange | `#f97316` |
+
+### Difficulty Color Scheme
+| Difficulty | Color | Hex | Description |
+|-----------|-------|-----|-------------|
+| Natural | Blue/Purple | `#8b5cf6` | Unedited composite stream |
+| Easy | Green | `#22c55e` | Simplified for beginners |
+| Medium | Amber | `#f59e0b` | Default difficulty |
+| Hard | Red | `#ef4444` | Maximum density |
 
 ---
 

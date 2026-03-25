@@ -34,6 +34,8 @@ export function getBandColor(band: Band): string {
  * Used by GridDecisionTimeline.
  */
 export const GRID_TYPE_COLORS = {
+  /** Straight 8th notes - Cyan */
+  straight_8th: '#06b6d4',
   /** Straight 16th notes - Blue */
   straight_16th: '#3b82f6',
   /** Triplet 8th notes - Purple */
@@ -78,6 +80,8 @@ export function getEditTypeColor(editType: EditType): string {
  * Used by DifficultyVariantsPanel.
  */
 export const DIFFICULTY_COLORS = {
+  /** Natural difficulty - Purple (unedited composite stream) */
+  natural: '#8b5cf6',
   /** Easy difficulty - Green */
   easy: '#22c55e',
   /** Medium difficulty - Yellow/Amber */

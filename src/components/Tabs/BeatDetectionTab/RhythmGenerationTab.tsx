@@ -55,7 +55,7 @@ export interface RhythmGenerationTabProps {
     /** Audio URL for retry functionality */
     audioUrl?: string;
     /** Difficulty setting from Step 1 */
-    difficulty?: 'easy' | 'medium' | 'hard';
+    difficulty?: 'natural' | 'easy' | 'medium' | 'hard';
     /** Output mode setting from Step 1 */
     outputMode?: 'composite' | 'low' | 'mid' | 'high';
     /** Intensity threshold setting from Step 1 */

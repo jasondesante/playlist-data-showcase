@@ -58,6 +58,7 @@ export interface DifficultyConversionPanelProps {
  * Difficulty color scheme
  */
 const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
+    natural: '#8b5cf6', // Purple (unedited composite)
     easy: '#22c55e',    // Green
     medium: '#f59e0b',  // Amber
     hard: '#ef4444',    // Red
@@ -1281,7 +1282,7 @@ export function DifficultyConversionPanel({
     }, [propDuration, rhythm.metadata.duration, compositeBeats]);
 
     // Difficulty levels in display order
-    const difficulties: DifficultyLevel[] = ['easy', 'medium', 'hard'];
+    const difficulties: DifficultyLevel[] = ['natural', 'easy', 'medium', 'hard'];
 
     // Calculate ghost and added beats for each difficulty (memoized for performance)
     // These are pre-computed once and passed to each DifficultyConversionColumn
@@ -1298,7 +1299,8 @@ export function DifficultyConversionPanel({
 
     // Calculate summary stats
     const summaryStats = useMemo(() => {
-        const counts = {
+        const counts: Record<DifficultyLevel, number> = {
+            natural: variants.natural.beats.length,
             easy: variants.easy.beats.length,
             medium: variants.medium.beats.length,
             hard: variants.hard.beats.length,
@@ -1327,9 +1329,10 @@ export function DifficultyConversionPanel({
     // Calculate density (notes per quarter note) for each variant
     const variantDensities = useMemo(() => {
         if (totalQuarterNotes === 0) {
-            return { easy: 0, medium: 0, hard: 0 };
+            return { natural: 0, easy: 0, medium: 0, hard: 0 };
         }
         return {
+            natural: variants.natural.beats.length / totalQuarterNotes,
             easy: variants.easy.beats.length / totalQuarterNotes,
             medium: variants.medium.beats.length / totalQuarterNotes,
             hard: variants.hard.beats.length / totalQuarterNotes,
