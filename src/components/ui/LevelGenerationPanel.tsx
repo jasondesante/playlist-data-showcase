@@ -26,6 +26,7 @@ import {
 import { ChartedBeatMapPreview } from './ChartedBeatMapPreview';
 import { LevelMetadataSummary } from './LevelMetadataSummary';
 import { DifficultySwitcher } from './DifficultySwitcher';
+import { DifficultyComparisonForLevel } from './DifficultyComparisonForLevel';
 import type {
     AllDifficultiesWithNatural,
     DifficultyLevel,
@@ -139,6 +140,9 @@ export function LevelGenerationPanel({ className }: LevelGenerationPanelProps) {
                 height={120}
                 showBeatIndices={true}
             />
+
+            {/* Difficulty Comparison (Task 7.5 - Optional Expandable) */}
+            <DifficultyComparisonForLevel defaultExpanded={false} />
 
             {/* Action Button */}
             <div className="level-panel-actions">
