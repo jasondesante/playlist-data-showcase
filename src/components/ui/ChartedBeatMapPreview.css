@@ -1,0 +1,680 @@
+/**
+ * ChartedBeatMapPreview Styles
+ *
+ * Styling for the full chart timeline visualization (Task 7.2).
+ * Shows all beats in a ChartedBeatMap with button colors and beat type indicators.
+ *
+ * Color scheme for DDR buttons:
+ * - Up: Yellow (#eab308)
+ * - Down: Blue (#3b82f6)
+ * - Left: Purple (#a855f7)
+ * - Right: Green (#22c55e)
+ *
+ * Color scheme for Guitar Hero buttons:
+ * - Fret 1: Red (#ef4444)
+ * - Fret 2: Orange (#f97316)
+ * - Fret 3: Yellow (#eab308)
+ * - Fret 4: Green (#22c55e)
+ * - Fret 5: Blue (#3b82f6)
+ *
+ * Beat type indicators:
+ * - Detected: Solid border
+ * - Generated: Dashed border
+ * - Downbeat: Extra marker with dot
+ */
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+
+.charted-beat-map-preview {
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg, #1a1a2e);
+    border-radius: 6px;
+    border: 1px solid var(--border-color, #2a2a4a);
+    overflow: hidden;
+}
+
+.charted-beat-map-preview--empty {
+    justify-content: center;
+    align-items: center;
+    min-height: 80px;
+}
+
+.charted-beat-map-preview-empty-message {
+    margin: 0;
+    color: var(--text-muted, #6a6a7a);
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   TIMELINE TRACK
+   ============================================ */
+
+.charted-beat-map-track {
+    flex: 1;
+    position: relative;
+    cursor: grab;
+    overflow: hidden;
+    min-height: 80px;
+    user-select: none;
+}
+
+.charted-beat-map-track.dragging {
+    cursor: grabbing;
+}
+
+.charted-beat-map-track.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.charted-beat-map-track:focus {
+    outline: 2px solid hsl(var(--primary)) inset;
+    outline-offset: -2px;
+}
+
+/* Background */
+.charted-beat-map-background {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.2) 0%,
+        rgba(0, 0, 0, 0.1) 50%,
+        rgba(0, 0, 0, 0.2) 100%
+    );
+}
+
+/* Grid for measure lines */
+.charted-beat-map-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.charted-beat-map-measure-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--border-color-light, #1a1a2a);
+    opacity: 0.5;
+}
+
+/* ============================================
+   BEAT MARKERS
+   ============================================ */
+
+.charted-beat-map-marker {
+    position: absolute;
+    top: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    cursor: default;
+    transition: transform 0.1s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    z-index: 10;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid currentColor;
+    transform: translate(-50%, -50%);
+}
+
+.charted-beat-map-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.charted-beat-map-fret {
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: inherit;
+}
+
+/* Detected beats - solid border */
+.charted-beat-map-marker--detected {
+    border-style: solid;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Generated beats - dashed border */
+.charted-beat-map-marker--generated {
+    border-style: dashed;
+    opacity: 0.85;
+}
+
+/* Past markers are faded */
+.charted-beat-map-marker--past {
+    opacity: 0.4;
+}
+
+/* Current beat highlight */
+.charted-beat-map-marker--current {
+    opacity: 1;
+    animation: charted-beat-pulse 0.3s ease-in-out;
+    box-shadow: 0 0 12px currentColor;
+}
+
+@keyframes charted-beat-pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.3);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Selectable markers */
+.charted-beat-map-marker--selectable {
+    cursor: pointer;
+}
+
+.charted-beat-map-marker--selectable:hover {
+    transform: translate(-50%, -50%) scale(1.25);
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.3);
+}
+
+.charted-beat-map-marker--selectable:focus {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+/* Selected marker */
+.charted-beat-map-marker--selected {
+    transform: translate(-50%, -50%) scale(1.35);
+    z-index: 30;
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 20px currentColor;
+}
+
+/* Downbeat indicator */
+.charted-beat-map-marker--downbeat {
+    border-width: 3px;
+    width: 28px;
+    height: 28px;
+}
+
+.charted-beat-map-marker--downbeat::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background: currentColor;
+    border-radius: 50%;
+}
+
+/* ============================================
+   PLAYHEAD
+   ============================================ */
+
+.charted-beat-map-playhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-50%);
+    z-index: 50;
+    pointer-events: none;
+}
+
+.charted-beat-map-playhead-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.5);
+}
+
+.charted-beat-map-playhead-head {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid hsl(var(--primary));
+}
+
+/* ============================================
+   TIME MARKERS
+   ============================================ */
+
+.charted-beat-map-time-markers {
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    right: 0;
+    height: 16px;
+    pointer-events: none;
+}
+
+.charted-beat-map-time-marker {
+    position: absolute;
+    font-size: 0.625rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-muted, #6a6a7a);
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+
+/* ============================================
+   TOOLTIP
+   ============================================ */
+
+.charted-beat-map-tooltip {
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-top: 1px solid var(--border-color, #2a2a4a);
+    min-height: 48px;
+}
+
+.charted-beat-map-tooltip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.charted-beat-map-tooltip-button {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.charted-beat-map-tooltip-beat {
+    font-size: 0.6875rem;
+    color: var(--text-muted, #6a6a7a);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.charted-beat-map-tooltip-details {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    font-size: 0.6875rem;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.charted-beat-map-tooltip-time {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.charted-beat-map-tooltip-separator {
+    color: var(--text-muted, #6a6a7a);
+    margin: 0 0.25rem;
+}
+
+.charted-beat-map-tooltip-source {
+    text-transform: capitalize;
+}
+
+.charted-beat-map-tooltip-downbeat {
+    color: #eab308;
+    font-weight: 500;
+}
+
+.charted-beat-map-tooltip-band {
+    text-transform: capitalize;
+}
+
+.charted-beat-map-tooltip-extra {
+    margin-top: 0.25rem;
+    font-size: 0.625rem;
+    color: var(--text-muted, #6a6a7a);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ============================================
+   CONTROLS
+   ============================================ */
+
+.charted-beat-map-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-top: 1px solid var(--border-color, #2a2a4a);
+}
+
+.charted-beat-map-controls-left,
+.charted-beat-map-controls-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.charted-beat-map-controls-center {
+    display: flex;
+    align-items: center;
+}
+
+.charted-beat-map-play-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: hsl(var(--primary));
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.charted-beat-map-play-btn:hover:not(:disabled) {
+    background: hsl(var(--primary) / 0.8);
+}
+
+.charted-beat-map-play-btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.charted-beat-map-play-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.charted-beat-map-play-btn:focus {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+.charted-beat-map-time {
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.charted-beat-map-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.charted-beat-map-stat {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.charted-beat-map-stat-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.charted-beat-map-stat--detected {
+    color: #22c55e;
+}
+
+.charted-beat-map-stat--generated {
+    color: #f59e0b;
+}
+
+.charted-beat-map-stat-label {
+    font-size: 0.625rem;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.charted-beat-map-stat-separator {
+    color: var(--border-color, #2a2a4a);
+    margin: 0 0.25rem;
+}
+
+/* Zoom controls */
+.charted-beat-map-zoom-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--border-color, #2a2a4a);
+    border-radius: 4px;
+    color: var(--text-secondary, #a0a0b0);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.charted-beat-map-zoom-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--text-secondary, #a0a0b0);
+}
+
+.charted-beat-map-zoom-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.charted-beat-map-zoom-reset {
+    width: auto;
+    padding: 0 0.5rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+}
+
+.charted-beat-map-zoom-level {
+    font-size: 0.625rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-muted, #6a6a7a);
+    min-width: 36px;
+    text-align: center;
+}
+
+/* ============================================
+   LEGEND
+   ============================================ */
+
+.charted-beat-map-legend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-secondary, #12121f);
+    border-top: 1px solid var(--border-color, #2a2a4a);
+    flex-wrap: wrap;
+}
+
+.charted-beat-map-legend-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.charted-beat-map-legend-title {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.charted-beat-map-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.charted-beat-map-legend-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.charted-beat-map-legend-fret {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    border-radius: 2px;
+    color: white;
+}
+
+.charted-beat-map-legend-label {
+    font-size: 0.6875rem;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+/* Beat type indicators */
+.charted-beat-map-legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    border: 2px solid;
+}
+
+.charted-beat-map-legend-dot--detected {
+    border-color: #22c55e;
+    border-style: solid;
+    background: rgba(34, 197, 94, 0.2);
+}
+
+.charted-beat-map-legend-dot--generated {
+    border-color: #f59e0b;
+    border-style: dashed;
+    background: transparent;
+}
+
+.charted-beat-map-legend-dot--downbeat {
+    border-color: #eab308;
+    border-width: 3px;
+    background: rgba(234, 179, 8, 0.2);
+    position: relative;
+}
+
+.charted-beat-map-legend-dot--downbeat::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: #eab308;
+    border-radius: 50%;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 640px) {
+    .charted-beat-map-controls {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .charted-beat-map-controls-left,
+    .charted-beat-map-controls-center,
+    .charted-beat-map-controls-right {
+        flex-wrap: wrap;
+    }
+
+    .charted-beat-map-controls-center {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .charted-beat-map-legend {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .charted-beat-map-legend-group {
+        flex-wrap: wrap;
+    }
+
+    .charted-beat-map-tooltip-details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.125rem;
+    }
+
+    .charted-beat-map-tooltip-separator {
+        display: none;
+    }
+
+    .charted-beat-map-marker {
+        width: 20px;
+        height: 20px;
+    }
+
+    .charted-beat-map-marker--downbeat {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .charted-beat-map-marker {
+        transition: none;
+    }
+
+    .charted-beat-map-marker--selectable:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    @keyframes charted-beat-pulse {
+        0%, 100% {
+            transform: translate(-50%, -50%) scale(1);
+        }
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: more) {
+    .charted-beat-map-marker {
+        border-width: 3px;
+    }
+
+    .charted-beat-map-marker--downbeat {
+        border-width: 4px;
+    }
+
+    .charted-beat-map-playhead-line {
+        width: 3px;
+    }
+
+    .charted-beat-map-measure-line {
+        background: var(--border-color, #2a2a4a);
+        opacity: 1;
+    }
+}

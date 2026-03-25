@@ -625,11 +625,11 @@ Container component with:
 ```
 
 ### Task 7.2: ChartedBeatMapPreview Component
-- [ ] Full timeline with all beats
-- [ ] Show beat types (detected/interpolated/generated)
-- [ ] Downbeat indicators
-- [ ] Audio sync with playhead
-- [ ] Button colors based on controller mode
+- [x] Full timeline with all beats
+- [x] Show beat types (detected/interpolated/generated)
+- [x] Downbeat indicators
+- [x] Audio sync with playhead
+- [x] Button colors based on controller mode
 
 ### Task 7.3: LevelMetadataSummary Component (Compact)
 - [ ] **Compact stats card** - not full breakdown

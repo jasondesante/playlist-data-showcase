@@ -23,6 +23,7 @@ import {
 import {
     useSelectedDifficulty,
 } from '../../hooks/useLevelGeneration';
+import { ChartedBeatMapPreview } from './ChartedBeatMapPreview';
 import type {
     AllDifficultiesWithNatural,
     DifficultyLevel,
@@ -198,56 +199,6 @@ function CompactStatsCard({
     );
 }
 
-interface LevelPreviewPlaceholderProps {
-    totalBeats: number;
-    difficulty: DifficultyLevel;
-}
-
-/**
- * Placeholder for the ChartedBeatMapPreview (Task 7.2).
- * Shows a brief preview of the level data.
- */
-function LevelPreviewPlaceholder({ totalBeats, difficulty }: LevelPreviewPlaceholderProps) {
-    return (
-        <div className="level-preview-placeholder">
-            <div className="level-preview-header">
-                <h4 className="level-preview-title">Charted Beat Map</h4>
-                <span className="level-preview-badge">Task 7.2</span>
-            </div>
-            <div className="level-preview-content">
-                <div className="level-preview-info">
-                    <p className="level-preview-text">
-                        <strong>{totalBeats.toLocaleString()}</strong> beats ready for{' '}
-                        <span style={{ color: DIFFICULTY_COLORS[difficulty] }}>
-                            {difficulty}
-                        </span> difficulty.
-                    </p>
-                    <p className="level-preview-hint">
-                        Full timeline visualization coming in Task 7.2 (ChartedBeatMapPreview)
-                    </p>
-                </div>
-                <div className="level-preview-visual">
-                    {/* Simple visual representation of beats */}
-                    <div className="level-preview-beats">
-                        {Array.from({ length: Math.min(20, totalBeats) }, (_, i) => (
-                            <div
-                                key={i}
-                                className="level-preview-beat"
-                                style={{
-                                    backgroundColor: DIFFICULTY_COLORS[difficulty],
-                                    opacity: 0.3 + (Math.random() * 0.7),
-                                }}
-                            />
-                        ))}
-                        {totalBeats > 20 && (
-                            <span className="level-preview-more">+{totalBeats - 20} more</span>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 // ============================================================
 // Main Component
@@ -326,10 +277,12 @@ export function LevelGenerationPanel({ className }: LevelGenerationPanelProps) {
                 generatedBeats={generatedBeats}
             />
 
-            {/* Level Preview (Task 7.2 placeholder) */}
-            <LevelPreviewPlaceholder
-                totalBeats={totalBeats}
-                difficulty={selectedDifficulty}
+            {/* Chart Preview (Task 7.2) */}
+            <ChartedBeatMapPreview
+                chart={currentLevel?.chart ?? null}
+                controllerMode={controllerMode}
+                height={120}
+                showBeatIndices={true}
             />
 
             {/* Action Button */}
