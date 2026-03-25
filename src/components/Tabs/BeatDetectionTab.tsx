@@ -15,15 +15,9 @@ import { ChartEditor } from '../ui/ChartEditor';
 import { ChartEditorToolbar } from '../ui/ChartEditorToolbar';
 import { ChartPreviewTimeline } from '../ui/ChartPreviewTimeline';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
-            { onExit: handleExitPracticeMode }
-            } else if (generationMode === 'automatic' && allDifficulties) {
-                return (
-            }
-        }
-    } else {
-                // Manual mode uses BeatPracticeView
-                <BeatPracticeView onExit={handleExitPracticeMode} />
-            }
+import { AutoBeatPracticeView } from '../ui/BeatDetectionTab/AutoBeatPracticeView';
+import { BeatPracticeView } from '../ui/BeatDetectionTab/BeatPracticeView';
+import { StepCompletionPrompt } from '../ui/StepCompletionPrompt';
 import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection, useStepsForMode, useGenerationMode } from '../../store/beatDetectionStore';
 import { StepNav } from '../ui/StepNav';
 import { Tooltip } from '../ui/Tooltip';

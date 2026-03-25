@@ -35,15 +35,16 @@ export function chartedBeatMapToBeatMap(chart: ChartedBeatMap): BeatMap {
             noiseFloorThreshold: 0,
             hopSizeMs: 4,
             fftSize: 2048,
-            rollingBpmWindowSize: 8,
             dpAlpha: 680,
             melBands: 40,
             highPassCutoff: 1.0,
             gaussianSmoothMs: 20,
             tempoCenter: 0.5,
             tempoWidth: 1.4,
+            useOctaveResolution: false,
+            useTripleMeter: false,
+            generatedAt: new Date().toISOString(),
         },
         downbeatConfig: chart.downbeatConfig,
     };
 }
-
