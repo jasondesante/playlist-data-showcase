@@ -429,6 +429,34 @@
     color: var(--text-secondary, #a0a0b0);
 }
 
+/* Visualization section (replaces placeholder for completed components) */
+.melody-viz-section {
+    margin-bottom: 1rem;
+}
+
+.melody-viz-section-title {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.melody-viz-section-text {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.75rem;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.melody-viz-empty {
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-muted, #6a6a7a);
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+    border: 1px dashed var(--border-color, #2a2a4a);
+}
+
 /* Visualization placeholder */
 .melody-viz-placeholder {
     margin-bottom: 1rem;

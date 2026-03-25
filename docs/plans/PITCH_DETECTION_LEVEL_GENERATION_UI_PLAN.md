@@ -488,15 +488,15 @@ Container component with:
 ```
 
 ### Task 5.2: MelodyDirectionTimeline Component
-- [ ] Timeline showing direction at each beat
-- [ ] Color-coded arrows:
+- [x] Timeline showing direction at each beat
+- [x] Color-coded arrows:
   - Up (ascending) → green ↑
   - Down (descending) → red ↓
   - Stable → blue ─
   - None (no pitch) → gray ●
-- [ ] Size based on interval magnitude
-- [ ] Hover shows semitones
-- [ ] Sync with audio playback
+- [x] Size based on interval magnitude
+- [x] Hover shows semitones
+- [x] Sync with audio playback
 
 ### Task 5.3: PitchContourGraph Component (NEW)
 - [ ] Line graph showing pitch contour over time

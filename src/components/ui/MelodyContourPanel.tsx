@@ -15,7 +15,7 @@
  * Task 5.1: Create MelodyContourPanel Component
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Activity, TrendingUp, TrendingDown, Minus, Circle, BarChart3 } from 'lucide-react';
 import './MelodyContourPanel.css';
 import { cn } from '../../utils/cn';
@@ -34,6 +34,7 @@ import type {
     PitchAtBeat,
 } from '../../types/levelGeneration';
 import type { GeneratedLevel } from 'playlist-data-engine';
+import MelodyDirectionTimeline from './MelodyDirectionTimeline';
 
 // ============================================================
 // Types
@@ -254,12 +255,20 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
     const selectedDifficulty = useSelectedDifficulty();
     const pitchAnalysis = usePitchAnalysis();
 
+    // Selected beat for timeline interaction
+    const [selectedBeatIndex, setSelectedBeatIndex] = useState<number | undefined>(undefined);
+
     // Get melody contour data from the selected difficulty level
     const melodyData = useMemo(() => {
         const levels = allDifficulties as AllDifficultiesWithNatural | null;
         const level = levels?.[selectedDifficulty as keyof AllDifficultiesWithNatural] as GeneratedLevel | undefined;
         return getMelodyContourData(level);
     }, [allDifficulties, selectedDifficulty]);
+
+    // Handle beat selection from timeline
+    const handleBeatClick = useMemo(() => (beat: PitchAtBeat) => {
+        setSelectedBeatIndex(beat.beatIndex);
+    }, []);
 
     // Calculate total segments from contour data
     const totalSegments = useMemo(() => {
@@ -315,45 +324,26 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
             <div className="melody-visualizations-section">
                 <h4 className="melody-visualizations-title">Melody Visualizations</h4>
 
-                {/* Direction Timeline Placeholder (Task 5.2) */}
-                <div className="melody-viz-placeholder">
-                    <h5 className="melody-viz-placeholder-title">Direction Timeline</h5>
-                    <p className="melody-viz-placeholder-text">
-                        Timeline showing direction at each beat with color-coded arrows.
+                {/* Direction Timeline (Task 5.2) */}
+                <div className="melody-viz-section">
+                    <h5 className="melody-viz-section-title">Direction Timeline</h5>
+                    <p className="melody-viz-section-text">
+                        Timeline showing pitch direction at each beat with color-coded arrows.
+                        Size indicates interval magnitude.
                     </p>
-                    <div className="melody-viz-placeholder-coming">
-                        <span>Coming in Task 5.2</span>
-                    </div>
-                    <div className="melody-viz-preview melody-direction-preview">
-                        {melodyData.pitchByBeat && melodyData.pitchByBeat.length > 0 ? (
-                            <div className="melody-direction-preview-arrows">
-                                {melodyData.pitchByBeat.slice(0, 30).map((beat, index) => (
-                                    <span
-                                        key={index}
-                                        className={cn(
-                                            'melody-preview-arrow',
-                                            `melody-arrow-${beat.direction}`
-                                        )}
-                                        title={`Beat ${beat.beatIndex}: ${beat.direction}`}
-                                    >
-                                        {beat.direction === 'up' && '↑'}
-                                        {beat.direction === 'down' && '↓'}
-                                        {beat.direction === 'stable' && '→'}
-                                        {beat.direction === 'none' && '○'}
-                                    </span>
-                                ))}
-                                {melodyData.pitchByBeat.length > 30 && (
-                                    <span className="melody-preview-more">
-                                        +{melodyData.pitchByBeat.length - 30} more
-                                    </span>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="melody-preview-empty">
-                                No beat data available
-                            </div>
-                        )}
-                    </div>
+                    {melodyData.pitchByBeat && melodyData.pitchByBeat.length > 0 ? (
+                        <MelodyDirectionTimeline
+                            pitchesByBeat={melodyData.pitchByBeat}
+                            onBeatClick={handleBeatClick}
+                            selectedBeatIndex={selectedBeatIndex}
+                            anticipationWindow={5.0}
+                            pastWindow={2.5}
+                        />
+                    ) : (
+                        <div className="melody-viz-empty">
+                            No beat data available
+                        </div>
+                    )}
                 </div>
 
                 {/* Pitch Contour Graph Placeholder (Task 5.3) */}
