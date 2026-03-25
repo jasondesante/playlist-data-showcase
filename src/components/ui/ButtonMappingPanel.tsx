@@ -14,7 +14,7 @@
  */
 
 import { useMemo, useCallback, useState } from 'react';
-import { Gamepad2, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Gamepad2 } from 'lucide-react';
 import './ButtonMappingPanel.css';
 import { cn } from '../../utils/cn';
 import {
@@ -27,9 +27,9 @@ import type {
     AllDifficultiesWithNatural,
 } from '../../types/levelGeneration';
 import type { GeneratedLevel, ControllerMode } from 'playlist-data-engine';
-import ButtonTimeline, { type ButtonBeat } from './ButtonTimeline';
 import DDRModeVisualization, { type DDRVisualizationBeat } from './DDRModeVisualization';
 import GuitarHeroModeVisualization, { type GuitarHeroVisualizationBeat } from './GuitarHeroModeVisualization';
+import ButtonDistributionChart from './ButtonDistributionChart';
 
 // ============================================================
 // Types
@@ -40,39 +40,13 @@ export interface ButtonMappingPanelProps {
     className?: string;
 }
 
-/** DDR button configuration for display */
-interface DDRButtonConfig {
-    name: string;
-    label: string;
-    icon: React.ReactNode;
-    color: string;
+/** Internal beat type for visualization components */
+interface InternalBeat {
+    timestamp: number;
+    beatIndex: number;
+    key: string;
+    isPitchInfluenced?: boolean;
 }
-
-/** Guitar Hero button configuration for display */
-interface GuitarHeroButtonConfig {
-    name: string;
-    label: string;
-    color: string;
-}
-
-// ============================================================
-// Constants
-// ============================================================
-
-const DDR_BUTTON_CONFIGS: DDRButtonConfig[] = [
-    { name: 'up', label: 'Up', icon: <ArrowUp size={14} />, color: 'yellow' },
-    { name: 'down', label: 'Down', icon: <ArrowDown size={14} />, color: 'blue' },
-    { name: 'left', label: 'Left', icon: <ArrowLeft size={14} />, color: 'purple' },
-    { name: 'right', label: 'Right', icon: <ArrowRight size={14} />, color: 'green' },
-];
-
-const GUITAR_HERO_BUTTON_CONFIGS: GuitarHeroButtonConfig[] = [
-    { name: '1', label: 'Fret 1', color: 'red' },
-    { name: '2', label: 'Fret 2', color: 'orange' },
-    { name: '3', label: 'Fret 3', color: 'yellow' },
-    { name: '4', label: 'Fret 4', color: 'green' },
-    { name: '5', label: 'Fret 5', color: 'blue' },
-];
 
 // ============================================================
 // Helper Functions
@@ -89,7 +63,7 @@ function getButtonMappingData(level: GeneratedLevel | undefined | null): {
     patternsUsed: string[];
     totalBeats: number;
     buttonDistribution: Map<string, number>;
-    buttonBeats: ButtonBeat[];
+    buttonBeats: InternalBeat[];
 } | null {
     if (!level?.metadata?.buttonMetadata) {
         return null;
@@ -105,21 +79,18 @@ function getButtonMappingData(level: GeneratedLevel | undefined | null): {
 
     // Calculate button distribution from chart beats
     const buttonDistribution = new Map<string, number>();
-    const buttonBeats: ButtonBeat[] = [];
+    const buttonBeats: InternalBeat[] = [];
 
     if (level.chart?.beats) {
         level.chart.beats.forEach((beat: any, index: number) => {
             if (beat.key) {
                 buttonDistribution.set(beat.key, (buttonDistribution.get(beat.key) ?? 0) + 1);
 
-                // Create ButtonBeat for timeline
+                // Create InternalBeat for visualizations
                 buttonBeats.push({
                     timestamp: beat.timestamp,
                     beatIndex: beat.beatIndex ?? index,
                     key: beat.key,
-                    isDetected: beat.isDetected ?? true,
-                    isDownbeat: beat.isDownbeat ?? false,
-                    intensity: beat.intensity ?? 0.5,
                     isPitchInfluenced: beat.isPitchInfluenced ?? undefined,
                 });
             }
@@ -195,57 +166,6 @@ function SummaryStats({
     );
 }
 
-interface ButtonDistributionProps {
-    controllerMode: ControllerMode;
-    buttonDistribution: Map<string, number>;
-    totalBeats: number;
-}
-
-function ButtonDistribution({ controllerMode, buttonDistribution, totalBeats }: ButtonDistributionProps) {
-    const isDDR = controllerMode === 'ddr';
-    const configs = isDDR ? DDR_BUTTON_CONFIGS : GUITAR_HERO_BUTTON_CONFIGS;
-
-    return (
-        <div className="button-distribution">
-            <h4 className="button-distribution-title">Button Distribution</h4>
-            <div className="button-distribution-bars">
-                {configs.map((config) => {
-                    const count = buttonDistribution.get(config.name) ?? 0;
-                    const percent = totalBeats > 0 ? Math.round((count / totalBeats) * 100) : 0;
-
-                    return (
-                        <div
-                            key={config.name}
-                            className={cn(
-                                'button-distribution-bar',
-                                `button-distribution-${config.color}`
-                            )}
-                        >
-                            <div className="button-distribution-header">
-                                {isDDR ? (
-                                    <span className="button-distribution-icon">{(config as DDRButtonConfig).icon}</span>
-                                ) : (
-                                    <span className="button-distribution-fret">{config.name}</span>
-                                )}
-                                <span className="button-distribution-label">{config.label}</span>
-                            </div>
-                            <div className="button-distribution-track">
-                                <div
-                                    className="button-distribution-fill"
-                                    style={{ width: `${percent}%` }}
-                                />
-                            </div>
-                            <div className="button-distribution-stats">
-                                <span className="button-distribution-count">{count}</span>
-                                <span className="button-distribution-percent">{percent}%</span>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}
 
 interface InfluenceBreakdownProps {
     pitchInfluencedBeats: number;
@@ -338,7 +258,12 @@ export function ButtonMappingPanel({ className }: ButtonMappingPanelProps) {
     }, [allDifficulties, selectedDifficulty]);
 
     // Handle beat click
-    const handleBeatClick = useCallback((beat: ButtonBeat) => {
+    const handleDDRBeatClick = useCallback((beat: DDRVisualizationBeat) => {
+        setSelectedBeatIndex(beat.beatIndex);
+        // Could also seek to beat timestamp here if desired
+    }, []);
+
+    const handleGuitarHeroBeatClick = useCallback((beat: GuitarHeroVisualizationBeat) => {
         setSelectedBeatIndex(beat.beatIndex);
         // Could also seek to beat timestamp here if desired
     }, []);
@@ -391,11 +316,13 @@ export function ButtonMappingPanel({ className }: ButtonMappingPanelProps) {
                 totalBeats={mappingData.totalBeats}
             />
 
-            {/* Button Distribution */}
-            <ButtonDistribution
+            {/* Button Distribution - Task 6.5 */}
+            <ButtonDistributionChart
                 controllerMode={mappingData.controllerMode}
-                buttonDistribution={mappingData.buttonDistribution}
+                distribution={mappingData.buttonDistribution}
                 totalBeats={mappingData.totalBeats}
+                showHeader={true}
+                layout="horizontal"
             />
 
             {/* Patterns Used */}
@@ -403,19 +330,40 @@ export function ButtonMappingPanel({ className }: ButtonMappingPanelProps) {
                 <PatternsUsed patternsUsed={mappingData.patternsUsed} />
             )}
 
-            {/* Button Timeline - Task 6.2 */}
-            <div className="button-timeline-section">
-                <h4 className="button-timeline-title">Button Timeline</h4>
-                <p className="button-timeline-description">
-                    Horizontal timeline showing button assignments at each beat position.
-                    Synced with audio playback.
+            {/* Secondary Visualization - Task 6.3 & 6.4 */}
+            <div className="button-secondary-section">
+                <h4 className="button-secondary-title">Secondary Visualization</h4>
+                <p className="button-secondary-description">
+                    {mappingData.controllerMode === 'ddr'
+                        ? 'Circular motion representation showing button sequence progression'
+                        : 'Fretboard-style visualization showing 5 lanes with notes'
+                    }
                 </p>
-                <ButtonTimeline
-                    beats={mappingData.buttonBeats}
-                    controllerMode={mappingData.controllerMode}
-                    onBeatClick={handleBeatClick}
-                    selectedBeatIndex={selectedBeatIndex}
-                />
+                {mappingData.controllerMode === 'ddr' ? (
+                    <DDRModeVisualization
+                        beats={mappingData.buttonBeats.map((beat): DDRVisualizationBeat => ({
+                            timestamp: beat.timestamp,
+                            beatIndex: beat.beatIndex,
+                            key: beat.key as 'up' | 'down' | 'left' | 'right',
+                            isPitchInfluenced: beat.isPitchInfluenced,
+                        }))}
+                        onBeatClick={handleDDRBeatClick}
+                        selectedBeatIndex={selectedBeatIndex}
+                        defaultCollapsed={true}
+                    />
+                ) : (
+                    <GuitarHeroModeVisualization
+                        beats={mappingData.buttonBeats.map((beat): GuitarHeroVisualizationBeat => ({
+                            timestamp: beat.timestamp,
+                            beatIndex: beat.beatIndex,
+                            key: beat.key as '1' | '2' | '3' | '4' | '5',
+                            isPitchInfluenced: beat.isPitchInfluenced,
+                        }))}
+                        onBeatClick={handleGuitarHeroBeatClick}
+                        selectedBeatIndex={selectedBeatIndex}
+                        defaultCollapsed={true}
+                    />
+                )}
             </div>
         </div>
     );

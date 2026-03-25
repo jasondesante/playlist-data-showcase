@@ -578,10 +578,10 @@ Container component with:
 `
 
 ### Task 6.5: ButtonDistributionChart Component
-- [ ] Bar chart of button usage
-- [ ] Count and percentage
-- [ ] Color-coded to buttons
-- [ ] Adapts to DDR (4 bars) or Guitar Hero (5 bars)
+- [x] Bar chart of button usage
+- [x] Count and percentage
+- [x] Color-coded to buttons
+- [x] Adapts to DDR (4 bars) or Guitar Hero (5 bars)
 
 ### Task 6.6: MappingInfluenceBreakdown Component
 - [ ] Pitch vs Pattern influence pie chart
