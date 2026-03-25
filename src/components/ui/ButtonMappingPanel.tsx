@@ -31,6 +31,7 @@ import DDRModeVisualization, { type DDRVisualizationBeat } from './DDRModeVisual
 import GuitarHeroModeVisualization, { type GuitarHeroVisualizationBeat } from './GuitarHeroModeVisualization';
 import ButtonDistributionChart from './ButtonDistributionChart';
 import MappingInfluenceBreakdown from './MappingInfluenceBreakdown';
+import PatternLibraryUsage from './PatternLibraryUsage';
 
 // ============================================================
 // Types
@@ -171,35 +172,6 @@ function SummaryStats({
     );
 }
 
-
-interface PatternsUsedProps {
-    patternsUsed: string[];
-}
-
-function PatternsUsed({ patternsUsed }: PatternsUsedProps) {
-    if (patternsUsed.length === 0) {
-        return null;
-    }
-
-    return (
-        <div className="button-patterns-used">
-            <h4 className="button-patterns-title">Patterns Used</h4>
-            <div className="button-patterns-list">
-                {patternsUsed.slice(0, 10).map((pattern) => (
-                    <span key={pattern} className="button-pattern-tag">
-                        {pattern}
-                    </span>
-                ))}
-                {patternsUsed.length > 10 && (
-                    <span className="button-pattern-more">
-                        +{patternsUsed.length - 10} more
-                    </span>
-                )}
-            </div>
-        </div>
-    );
-}
-
 // ============================================================
 // Main Component
 // ============================================================
@@ -290,9 +262,14 @@ export function ButtonMappingPanel({ className, pitchInfluenceWeight, voicingThr
                 layout="horizontal"
             />
 
-            {/* Patterns Used */}
+            {/* Pattern Library Usage - Task 6.7 */}
             {mappingData.patternsUsed.length > 0 && (
-                <PatternsUsed patternsUsed={mappingData.patternsUsed} />
+                <PatternLibraryUsage
+                    patternsUsed={mappingData.patternsUsed}
+                    controllerMode={mappingData.controllerMode}
+                    maxVisible={6}
+                    defaultCollapsed={false}
+                />
             )}
 
             {/* Secondary Visualization - Task 6.3 & 6.4 */}

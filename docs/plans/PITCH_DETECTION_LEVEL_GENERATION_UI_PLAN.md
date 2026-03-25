@@ -589,9 +589,9 @@ Container component with:
 - [x] Explain probability threshold effects
 
 ### Task 6.7: PatternLibraryUsage Component
-- [ ] Show patterns used from library
-- [ ] Pattern IDs and usage counts
-- [ ] Visual pattern representations
+- [x] Show patterns used from library
+- [x] Pattern IDs and usage counts
+- [x] Visual pattern representations
 
 ---
 
