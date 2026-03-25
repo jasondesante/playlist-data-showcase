@@ -28,6 +28,7 @@ import { DEFAULT_AUTO_LEVEL_SETTINGS } from '../../types/rhythmGeneration';
 import { useRhythmGeneration } from '../../hooks/useRhythmGeneration';
 import { useLevelGeneration } from '../../hooks/useLevelGeneration';
 import { logger } from '../../utils/logger';
+import { validateGeneratedRhythm } from '../ui/DataContractValidator';
 
 /**
  * BeatDetectionTab Component
@@ -329,6 +330,7 @@ export function BeatDetectionTab() {
 
     /**
      * Task 0.3: Auto-start level generation when in auto mode.
+     * Task 0.7: Validate rhythm data contract before proceeding.
      * Triggers when:
      * - We're in automatic mode
      * - The auto-start flag is set
@@ -349,9 +351,40 @@ export function BeatDetectionTab() {
             // Clear the flag so we don't trigger again
             shouldAutoStartLevelGenerationRef.current = false;
 
-            logger.info('BeatDetection', 'Auto-starting level generation', {
+            // Task 0.7: Validate the rhythm data contract before level generation
+            const validation = validateGeneratedRhythm(generatedRhythm);
+
+            // Log validation results to console for debugging
+            console.log('[Task 0.7] Rhythm Validation Results:', {
+                isValid: validation.isValid,
+                summary: validation.summary,
+                errors: validation.errors,
+                fieldCount: validation.fields.length,
+                validFields: validation.fields.filter(f => f.valid).length,
+                invalidFields: validation.fields.filter(f => !f.valid).length,
+            });
+
+            // Store validation result in the store
+            useBeatDetectionStore.getState().actions.setRhythmValidation({
+                isValid: validation.isValid,
+                errors: validation.errors,
+                summary: validation.summary,
+            });
+
+            // Task 0.7: Only proceed to level generation if validation passes
+            if (!validation.isValid) {
+                logger.error('BeatDetection', 'Rhythm validation failed - not proceeding to level generation', {
+                    errors: validation.errors,
+                    summary: validation.summary,
+                });
+                console.error('[Task 0.7] Validation failed. Errors:', validation.errors);
+                return;
+            }
+
+            logger.info('BeatDetection', 'Rhythm validation passed - auto-starting level generation', {
                 difficulty: autoLevelSettings.difficulty,
                 outputMode: autoLevelSettings.outputMode,
+                validationSummary: validation.summary,
             });
 
             // Start level generation

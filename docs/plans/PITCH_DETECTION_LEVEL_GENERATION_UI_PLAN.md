@@ -229,12 +229,12 @@ This phase creates the **minimum viable data pipeline** to verify:
 - [x] Export `validateGeneratedRhythm()` function for reuse in testing
 
 ### Task 0.7: Integrate Validator into Pipeline
-- [ ] Add validator panel to RhythmGenerationTab (shown after rhythm completes)
-- [ ] Auto-validate when rhythm generation completes
-- [ ] Show validation status in the auto-continue flow:
+- [x] Add validator panel to RhythmGenerationTab (shown after rhythm completes)
+- [x] Auto-validate when rhythm generation completes
+- [x] Show validation status in the auto-continue flow:
   - If validation passes → proceed to level generation
   - If validation fails → show error, don't proceed, offer "Retry" or "Debug"
-- [ ] Log validation results to console for debugging
+- [x] Log validation results to console for debugging
 
 ### Testing Phase 0
 

@@ -732,6 +732,21 @@ interface BeatDetectionState {
      * Default: 'medium'
      */
     selectedDifficulty: 'natural' | 'easy' | 'medium' | 'hard';
+
+    // ============================================================
+    // Rhythm Validation State (Task 0.7)
+    // ============================================================
+
+    /**
+     * Validation result for the generated rhythm.
+     * Used to verify the data contract before level generation.
+     * This is session-only state (NOT persisted to localStorage).
+     */
+    rhythmValidation: {
+        isValid: boolean;
+        errors: string[];
+        summary: string;
+    } | null;
 }
 
 interface BeatDetectionActions {
@@ -1438,6 +1453,17 @@ interface BeatDetectionActions {
     setLevelGenerationProgress: (progress: LevelGenerationProgress | null) => void;
 
     /**
+     * Set the rhythm validation result.
+     * Used to verify the data contract before level generation.
+     * @param validation - The validation result, or null to clear
+     */
+    setRhythmValidation: (validation: {
+        isValid: boolean;
+        errors: string[];
+        summary: string;
+    } | null) => void;
+
+    /**
      * Set the pitch analysis results.
      * @param analysis - The melody contour analysis result, or null to clear
      */
@@ -1641,6 +1667,9 @@ const createInitialState = (): BeatDetectionState => ({
     levelGenerationProgress: null, // Session-only
     pitchAnalysis: null, // Session-only
     selectedDifficulty: 'medium', // Default to medium difficulty
+
+    // Rhythm Validation state (Task 0.7)
+    rhythmValidation: null, // Session-only
 });
 
 /**
@@ -4483,6 +4512,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             set({
                                 generatedRhythm: null,
                                 rhythmGenerationProgress: null,
+                                rhythmValidation: null, // Task 0.7: Clear validation when rhythm is cleared
                             });
                         }
                         // Also clear level generation state since it depends on rhythm
@@ -4587,6 +4617,23 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     setSelectedDifficulty: (difficulty) => {
                         logger.info('BeatDetection', 'Setting selected difficulty', { difficulty });
                         set({ selectedDifficulty: difficulty });
+                    },
+
+                    /**
+                     * Set the rhythm validation result.
+                     * Task 0.7: Used to verify data contract before level generation.
+                     */
+                    setRhythmValidation: (validation) => {
+                        if (validation) {
+                            logger.info('BeatDetection', 'Setting rhythm validation', {
+                                isValid: validation.isValid,
+                                errorCount: validation.errors.length,
+                                summary: validation.summary,
+                            });
+                        } else {
+                            logger.debug('BeatDetection', 'Clearing rhythm validation');
+                        }
+                        set({ rhythmValidation: validation });
                     },
                 },
             };
@@ -6046,6 +6093,14 @@ export const useGeneratedRhythm = () =>
  */
 export const useRhythmGenerationProgress = () =>
     useBeatDetectionStore((state) => state.rhythmGenerationProgress);
+
+/**
+ * Selector to get the rhythm validation result.
+ * Returns validation information for the generated rhythm, or null if not validated.
+ * Task 0.7: Used to verify data contract before level generation.
+ */
+export const useRhythmValidation = () =>
+    useBeatDetectionStore((state) => state.rhythmValidation);
 
 /**
  * Selector to get all difficulty levels of the generated level.
