@@ -10,6 +10,8 @@
 // Import types needed for local interface definitions
 import type {
     GeneratedLevel as GeneratedLevelType,
+    PitchAtBeat,
+    BandPitchAtBeat,
 } from 'playlist-data-engine';
 
 // ============================================================================
@@ -188,6 +190,10 @@ export interface MelodyContourAnalysisResult {
     } | null;
     /** Melody contour segments and shape */
     contour?: MelodyContour;
+    /** Pitch data linked to beats (from engine) */
+    pitchByBeat?: PitchAtBeat[];
+    /** Band-specific pitch data (from engine) */
+    bandPitches?: Map<string, BandPitchAtBeat> | Record<string, BandPitchAtBeat>;
 }
 
 // ============================================================================

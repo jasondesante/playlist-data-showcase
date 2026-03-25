@@ -35,6 +35,7 @@ import { CollapsibleSection } from '../Party/CollapsibleSection';
 import { LevelGenerationDebugPanel } from '../ui/BeatDetectionTab/RhythmGenerationTab/LevelGenerationDebugPanel';
 import { LevelGenerationProgress } from '../ui/LevelGenerationProgress';
 import { PitchDetectionPanel } from '../ui/PitchDetectionPanel';
+import { MelodyContourPanel } from '../ui/MelodyContourPanel';
 import {
     useGeneratedRhythm,
     useGeneratedLevel,
@@ -159,7 +160,7 @@ function PitchLevelResult({ onProceed }: PitchLevelResultProps) {
                     <PitchDetectionPanel />
                 </CollapsibleSection>
 
-                {/* Melody Contour - Future Phase 5 */}
+                {/* Melody Contour - Phase 5 (Task 5.1) */}
                 <CollapsibleSection
                     title="Melody Contour"
                     subtitle="Direction and interval analysis"
@@ -167,16 +168,7 @@ function PitchLevelResult({ onProceed }: PitchLevelResultProps) {
                     collapsed={openSection !== 'melody'}
                     onCollapsedChange={() => handleSectionToggle('melody')}
                 >
-                    <div className="pitch-level-panel-placeholder">
-                        <p>
-                            Melody contour visualization will be added in Phase 5.
-                        </p>
-                        <ul>
-                            <li>MelodyDirectionTimeline - arrows at beats</li>
-                            <li>PitchContourGraph - line graph of pitch</li>
-                            <li>IntervalDistributionChart - interval stats</li>
-                        </ul>
-                    </div>
+                    <MelodyContourPanel />
                 </CollapsibleSection>
 
                 {/* Button Mapping - Future Phase 6 */}

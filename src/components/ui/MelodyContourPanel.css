@@ -1,0 +1,739 @@
+/**
+ * MelodyContourPanel Styles
+ *
+ * Styling for the melody contour visualization panel (Task 5.1).
+ * Uses consistent design language with PitchDetectionPanel.
+ *
+ * Color scheme for directions:
+ * - Up (ascending): Green (#22c55e)
+ * - Down (descending): Red (#ef4444)
+ * - Stable: Blue (#3b82f6)
+ * - None (no pitch): Gray (#6b7280)
+ *
+ * Color scheme for intervals:
+ * - Unison: Purple (#8b5cf6)
+ * - Small (1-2 st): Green (#22c55e)
+ * - Medium (3-4 st): Amber (#f59e0b)
+ * - Large (5-7 st): Orange (#f97316)
+ * - Very Large (8+ st): Red (#ef4444)
+ */
+
+/* ============================================
+   MAIN PANEL CONTAINER
+   ============================================ */
+
+.melody-contour-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--card-bg, #1a1a2e);
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #2a2a4a);
+}
+
+.melody-contour-panel-empty {
+    align-items: center;
+    text-align: center;
+    min-height: 200px;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.melody-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color, #2a2a4a);
+}
+
+.melody-panel-icon {
+    color: hsl(var(--primary));
+}
+
+.melody-panel-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+}
+
+/* Empty state content */
+.melody-panel-empty-content {
+    padding: 2rem;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.melody-panel-empty-content p {
+    margin: 0.5rem 0;
+}
+
+.melody-panel-empty-hint {
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+/* ============================================
+   SUMMARY STATS
+   ============================================ */
+
+.melody-summary-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+}
+
+.melody-summary-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+    padding: 0.5rem;
+}
+
+.melody-summary-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.melody-summary-label {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #a0a0b0);
+    margin-top: 0.25rem;
+}
+
+/* Specific stat styling */
+.melody-voiced-percent {
+    color: #22c55e;
+}
+
+.melody-overall-direction {
+    font-size: 1rem;
+    text-transform: capitalize;
+}
+
+.melody-summary-range .melody-summary-value {
+    font-size: 0.875rem;
+}
+
+.melody-summary-range .melody-summary-label {
+    font-size: 0.625rem;
+}
+
+/* ============================================
+   DIRECTION DISTRIBUTION
+   ============================================ */
+
+.melody-direction-distribution {
+    margin-top: 0.5rem;
+}
+
+.melody-distribution-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.75rem 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.melody-direction-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.melody-direction-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+    border-left: 3px solid transparent;
+}
+
+.melody-direction-header {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 80px;
+}
+
+.melody-direction-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.melody-direction-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-primary, #e0e0e0);
+}
+
+/* Direction colors */
+.melody-direction-green {
+    border-left-color: #22c55e;
+}
+
+.melody-direction-green .melody-direction-icon {
+    color: #22c55e;
+}
+
+.melody-direction-red {
+    border-left-color: #ef4444;
+}
+
+.melody-direction-red .melody-direction-icon {
+    color: #ef4444;
+}
+
+.melody-direction-blue {
+    border-left-color: #3b82f6;
+}
+
+.melody-direction-blue .melody-direction-icon {
+    color: #3b82f6;
+}
+
+.melody-direction-gray {
+    border-left-color: #6b7280;
+}
+
+.melody-direction-gray .melody-direction-icon {
+    color: #6b7280;
+}
+
+/* Direction bar track */
+.melody-direction-bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-secondary, #12121f);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.melody-direction-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.melody-direction-green .melody-direction-bar-fill {
+    background: linear-gradient(90deg, #22c55e, #4ade80);
+}
+
+.melody-direction-red .melody-direction-bar-fill {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.melody-direction-blue .melody-direction-bar-fill {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+.melody-direction-gray .melody-direction-bar-fill {
+    background: linear-gradient(90deg, #6b7280, #9ca3af);
+}
+
+/* Direction stats */
+.melody-direction-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 60px;
+}
+
+.melody-direction-count {
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.melody-direction-percent {
+    font-size: 0.6875rem;
+    color: var(--text-muted, #6a6a7a);
+}
+
+/* ============================================
+   INTERVAL DISTRIBUTION
+   ============================================ */
+
+.melody-interval-distribution {
+    margin-top: 0.75rem;
+}
+
+.melody-interval-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.melody-interval-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+    border-left: 3px solid transparent;
+}
+
+.melody-interval-header {
+    display: flex;
+    flex-direction: column;
+    min-width: 100px;
+}
+
+.melody-interval-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.melody-interval-range {
+    font-size: 0.625rem;
+    color: var(--text-muted, #6a6a7a);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Interval colors */
+.melody-interval-purple {
+    border-left-color: #8b5cf6;
+}
+
+.melody-interval-purple .melody-interval-label {
+    color: #a78bfa;
+}
+
+.melody-interval-green {
+    border-left-color: #22c55e;
+}
+
+.melody-interval-green .melody-interval-label {
+    color: #4ade80;
+}
+
+.melody-interval-amber {
+    border-left-color: #f59e0b;
+}
+
+.melody-interval-amber .melody-interval-label {
+    color: #fbbf24;
+}
+
+.melody-interval-orange {
+    border-left-color: #f97316;
+}
+
+.melody-interval-orange .melody-interval-label {
+    color: #fb923c;
+}
+
+.melody-interval-red {
+    border-left-color: #ef4444;
+}
+
+.melody-interval-red .melody-interval-label {
+    color: #f87171;
+}
+
+/* Interval bar track */
+.melody-interval-bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-secondary, #12121f);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.melody-interval-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.melody-interval-purple .melody-interval-bar-fill {
+    background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}
+
+.melody-interval-green .melody-interval-bar-fill {
+    background: linear-gradient(90deg, #22c55e, #4ade80);
+}
+
+.melody-interval-amber .melody-interval-bar-fill {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.melody-interval-orange .melody-interval-bar-fill {
+    background: linear-gradient(90deg, #f97316, #fb923c);
+}
+
+.melody-interval-red .melody-interval-bar-fill {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+/* Interval stats */
+.melody-interval-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 60px;
+}
+
+.melody-interval-count {
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.melody-interval-percent {
+    font-size: 0.6875rem;
+    color: var(--text-muted, #6a6a7a);
+}
+
+/* ============================================
+   VISUALIZATIONS SECTION
+   ============================================ */
+
+.melody-visualizations-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color, #2a2a4a);
+}
+
+.melody-visualizations-title {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+/* Visualization placeholder */
+.melody-viz-placeholder {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+    border: 1px dashed var(--border-color, #2a2a4a);
+}
+
+.melody-viz-placeholder-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.melody-viz-placeholder-text {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.75rem;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.melody-viz-placeholder-coming {
+    display: inline-flex;
+    padding: 0.25rem 0.5rem;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+
+.melody-viz-placeholder-coming span {
+    font-size: 0.6875rem;
+    color: #a78bfa;
+    font-weight: 500;
+}
+
+/* Preview area */
+.melody-viz-preview {
+    padding: 0.75rem;
+    background: var(--bg-secondary, #12121f);
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+/* Direction preview arrows */
+.melody-direction-preview-arrows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.melody-preview-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.melody-arrow-up {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.melody-arrow-down {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.melody-arrow-stable {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+
+.melody-arrow-none {
+    background: rgba(107, 114, 128, 0.2);
+    color: #6b7280;
+}
+
+.melody-preview-more {
+    font-size: 0.625rem;
+    color: var(--text-muted, #6a6a7a);
+    padding: 0.25rem 0.5rem;
+}
+
+/* Contour preview */
+.melody-contour-preview-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.melody-contour-range {
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.melody-contour-semitones {
+    font-size: 0.6875rem;
+    color: var(--text-muted, #6a6a7a);
+}
+
+/* Segment preview */
+.melody-segment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.melody-segment-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 4px;
+    border-left: 3px solid transparent;
+}
+
+.melody-segment-up {
+    border-left-color: #22c55e;
+}
+
+.melody-segment-down {
+    border-left-color: #ef4444;
+}
+
+.melody-segment-stable {
+    border-left-color: #3b82f6;
+}
+
+.melody-segment-none {
+    border-left-color: #6b7280;
+}
+
+.melody-segment-range {
+    font-size: 0.6875rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-muted, #6a6a7a);
+    min-width: 80px;
+}
+
+.melody-segment-direction {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-primary, #e0e0e0);
+    min-width: 90px;
+}
+
+.melody-segment-notes {
+    font-size: 0.6875rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.melody-segment-more {
+    font-size: 0.6875rem;
+    color: var(--text-muted, #6a6a7a);
+    text-align: center;
+    padding: 0.25rem;
+}
+
+/* Empty preview */
+.melody-preview-empty {
+    font-size: 0.75rem;
+    color: var(--text-muted, #6a6a7a);
+    text-align: center;
+    padding: 0.5rem;
+}
+
+/* ============================================
+   CONTOUR SHAPE INDICATOR
+   ============================================ */
+
+.melody-shape-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+    margin-top: 0.5rem;
+}
+
+.melody-shape-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.melody-shape-value {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.melody-shape-ascending {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.melody-shape-descending {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.melody-shape-arch {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+
+.melody-shape-valley {
+    background: rgba(168, 85, 247, 0.2);
+    color: #a855f7;
+}
+
+.melody-shape-mixed {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.melody-shape-flat {
+    background: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 640px) {
+    .melody-contour-panel {
+        padding: 0.75rem;
+    }
+
+    .melody-summary-stats {
+        flex-direction: column;
+    }
+
+    .melody-summary-item {
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color-light, #1a1a2a);
+    }
+
+    .melody-summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .melody-direction-bar,
+    .melody-interval-bar {
+        flex-wrap: wrap;
+    }
+
+    .melody-direction-bar-track,
+    .melody-interval-bar-track {
+        width: 100%;
+        order: 3;
+    }
+
+    .melody-segment-item {
+        flex-wrap: wrap;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.melody-contour-panel .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: more) {
+    .melody-direction-bar,
+    .melody-interval-bar,
+    .melody-segment-item {
+        border-left-width: 4px;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .melody-direction-bar-fill,
+    .melody-interval-bar-fill {
+        transition: none;
+    }
+}

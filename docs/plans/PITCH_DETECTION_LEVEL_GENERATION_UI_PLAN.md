@@ -463,12 +463,12 @@ Container component with:
 > Melody contour tracks pitch direction (up/down/stable) and intervals between beats for button mapping. Shows BOTH direction timeline and pitch contour line graph.
 
 ### Task 5.1: MelodyContourPanel Component
-- [ ] Container for contour visualizations
-- [ ] Summary stats:
+- [x] Container for contour visualizations
+- [x] Summary stats:
   - Direction distribution (up/down/stable/none %)
   - Interval distribution by category
   - Total segments detected
-- [ ] Two visualization views:
+- [x] Two visualization views:
   - MelodyDirectionTimeline (arrows at beats)
   - PitchContourGraph (line graph of pitch over time)
 
