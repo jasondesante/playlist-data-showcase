@@ -368,10 +368,10 @@ After completing Phase 0, you should be able to:
 
 ### Task 3.1: PitchDetectionPanel Component
 Container component with:
-- [ ] Header showing dominant band selection
-- [ ] Summary stats (voiced/unvoiced ratio, avg probability, pitch range)
-- [ ] Band breakdown cards (inline subcomponent)
-- [ ] **Side panel** for selected pitch details (always visible on right)
+- [x] Header showing dominant band selection
+- [x] Summary stats (voiced/unvoiced ratio, avg probability, pitch range)
+- [x] Band breakdown cards (inline subcomponent)
+- [x] **Side panel** for selected pitch details (always visible on right)
 
 ```
 ┌─ Pitch Detection ──────────────────────────────────────────┐

@@ -1,0 +1,669 @@
+/**
+ * PitchDetectionPanel Styles
+ *
+ * Styling for the pitch detection visualization panel (Task 3.1).
+ * Uses consistent design language with other beat detection components.
+ *
+ * Color scheme:
+ * - Low band: Blue (#3b82f6)
+ * - Mid band: Green (#22c55e)
+ * - High band: Orange (#f97316)
+ * - High probability: Green (#22c55e)
+ * - Medium probability: Yellow (#eab308)
+ * - Low probability: Orange (#f97316)
+ */
+
+/* ============================================
+   MAIN PANEL CONTAINER
+   ============================================ */
+
+.pitch-detection-panel {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem;
+    background: var(--card-bg, #1a1a2e);
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #2a2a4a);
+    min-height: 400px;
+}
+
+.pitch-detection-panel-empty {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Main content area (left side) */
+.pitch-panel-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.pitch-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color, #2a2a4a);
+}
+
+.pitch-panel-icon {
+    color: hsl(var(--primary));
+}
+
+.pitch-panel-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+}
+
+/* Empty state content */
+.pitch-panel-empty-content {
+    padding: 2rem;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.pitch-panel-empty-content p {
+    margin: 0.5rem 0;
+}
+
+.pitch-panel-empty-hint {
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+/* ============================================
+   SUMMARY STATS
+   ============================================ */
+
+.pitch-summary-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+}
+
+.pitch-summary-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+    padding: 0.5rem;
+}
+
+.pitch-summary-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pitch-summary-label {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #a0a0b0);
+    margin-top: 0.25rem;
+}
+
+/* Specific stat styling */
+.pitch-voiced-percent {
+    color: #22c55e;
+}
+
+.pitch-probability {
+    color: #eab308;
+}
+
+.pitch-dominant-star {
+    color: #fbbf24;
+    margin-left: 0.25rem;
+}
+
+.pitch-summary-range .pitch-summary-value {
+    font-size: 1rem;
+}
+
+/* ============================================
+   BAND BREAKDOWN
+   ============================================ */
+
+.pitch-band-breakdown {
+    margin-top: 0.5rem;
+}
+
+.pitch-band-breakdown-title {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.pitch-band-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+/* Individual band card */
+.pitch-band-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pitch-band-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.pitch-band-card:focus {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+/* Band colors */
+.pitch-band-blue {
+    border-color: #3b82f6;
+}
+
+.pitch-band-blue.pitch-band-selected {
+    background: rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.pitch-band-green {
+    border-color: #22c55e;
+}
+
+.pitch-band-green.pitch-band-selected {
+    background: rgba(34, 197, 94, 0.1);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+}
+
+.pitch-band-orange {
+    border-color: #f97316;
+}
+
+.pitch-band-orange.pitch-band-selected {
+    background: rgba(249, 115, 22, 0.1);
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+}
+
+/* Dominant band styling */
+.pitch-band-dominant {
+    position: relative;
+}
+
+.pitch-band-dominant::after {
+    content: '';
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    width: 12px;
+    height: 12px;
+    background: #fbbf24;
+    border-radius: 0 6px 0 6px;
+}
+
+/* Band card header */
+.pitch-band-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.pitch-band-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.pitch-band-range {
+    font-size: 0.625rem;
+    color: var(--text-muted, #6a6a7a);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.pitch-band-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fbbf24;
+}
+
+/* Band stats */
+.pitch-band-stats {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.pitch-band-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pitch-band-stat-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.pitch-band-stat-label {
+    font-size: 0.5625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted, #6a6a7a);
+}
+
+/* Band notes range */
+.pitch-band-notes {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.6875rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color-light, #1a1a2a);
+}
+
+.pitch-band-note-label {
+    color: var(--text-muted, #6a6a7a);
+}
+
+.pitch-band-note-value {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+/* ============================================
+   PITCH TIMELINE SECTION (Placeholder for Task 3.2)
+   ============================================ */
+
+.pitch-timeline-section {
+    margin-top: 0.5rem;
+}
+
+.pitch-timeline-title {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #a0a0b0);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pitch-timeline-band-label {
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-transform: none;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.pitch-timeline-placeholder {
+    padding: 1rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+    border: 1px dashed var(--border-color, #2a2a4a);
+    text-align: center;
+}
+
+.pitch-timeline-placeholder-text {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.pitch-timeline-placeholder-detail {
+    margin: 0 0 1rem 0;
+    font-size: 0.75rem;
+    color: var(--text-muted, #6a6a7a);
+}
+
+/* Quick preview of pitches */
+.pitch-timeline-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    justify-content: center;
+    margin-top: 0.75rem;
+}
+
+.pitch-preview-dot {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.pitch-preview-dot:hover {
+    transform: scale(1.1);
+}
+
+.pitch-preview-dot:focus {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 1px;
+}
+
+.pitch-preview-voiced {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.5);
+    color: #22c55e;
+}
+
+.pitch-preview-unvoiced {
+    background: rgba(107, 114, 128, 0.2);
+    border: 1px solid rgba(107, 114, 128, 0.3);
+    color: #6b7280;
+}
+
+.pitch-preview-more {
+    font-size: 0.6875rem;
+    color: var(--text-muted, #6a6a7a);
+    align-self: center;
+}
+
+/* ============================================
+   PITCH INSPECTOR (Side Panel)
+   ============================================ */
+
+.pitch-inspector {
+    width: 220px;
+    min-width: 220px;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-radius: 6px;
+    border: 1px solid var(--border-color, #2a2a4a);
+    display: flex;
+    flex-direction: column;
+}
+
+.pitch-inspector-empty {
+    opacity: 0.8;
+}
+
+.pitch-inspector-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color, #2a2a4a);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.pitch-inspector-content {
+    padding: 0.75rem;
+    flex: 1;
+}
+
+.pitch-inspector-placeholder {
+    margin: 1rem 0;
+    font-size: 0.8125rem;
+    color: var(--text-muted, #6a6a7a);
+    text-align: center;
+}
+
+.pitch-inspector-band-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.pitch-band-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.pitch-band-dot-low {
+    background: #3b82f6;
+}
+
+.pitch-band-dot-mid {
+    background: #22c55e;
+}
+
+.pitch-band-dot-high {
+    background: #f97316;
+}
+
+/* Inspector rows */
+.pitch-inspector-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.375rem 0;
+}
+
+.pitch-inspector-label {
+    font-size: 0.75rem;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.pitch-inspector-value {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.pitch-inspector-divider {
+    height: 1px;
+    background: var(--border-color-light, #1a1a2a);
+    margin: 0.5rem 0;
+}
+
+/* Note name styling */
+.pitch-note-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: hsl(var(--primary));
+}
+
+/* Probability badge */
+.pitch-probability-badge {
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.6875rem;
+}
+
+.pitch-prob-high {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.pitch-prob-medium {
+    background: rgba(234, 179, 8, 0.2);
+    color: #eab308;
+}
+
+.pitch-prob-low {
+    background: rgba(249, 115, 22, 0.2);
+    color: #f97316;
+}
+
+/* Voiced badge */
+.pitch-voiced-badge {
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.6875rem;
+}
+
+.pitch-voiced-yes {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.pitch-voiced-no {
+    background: rgba(107, 114, 128, 0.2);
+    color: #6b7280;
+}
+
+/* Direction value */
+.pitch-direction-value {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.pitch-direction-icon {
+    flex-shrink: 0;
+}
+
+.pitch-direction-up {
+    color: #22c55e;
+}
+
+.pitch-direction-down {
+    color: #ef4444;
+}
+
+.pitch-direction-stable {
+    color: #3b82f6;
+}
+
+.pitch-direction-none {
+    color: #6b7280;
+}
+
+/* No pitch state */
+.pitch-inspector-no-pitch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 0;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.pitch-no-pitch-icon {
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}
+
+.pitch-inspector-no-pitch p {
+    margin: 0;
+    font-size: 0.8125rem;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 900px) {
+    .pitch-detection-panel {
+        flex-direction: column;
+    }
+
+    .pitch-inspector {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+@media (max-width: 640px) {
+    .pitch-detection-panel {
+        padding: 0.75rem;
+    }
+
+    .pitch-band-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .pitch-summary-stats {
+        flex-direction: column;
+    }
+
+    .pitch-summary-item {
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color-light, #1a1a2a);
+    }
+
+    .pitch-summary-item:last-child {
+        border-bottom: none;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.pitch-detection-panel .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: more) {
+    .pitch-band-card {
+        border-width: 3px;
+    }
+
+    .pitch-inspector-row {
+        border-bottom: 1px solid var(--border-color, #2a2a4a);
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .pitch-band-card,
+    .pitch-preview-dot {
+        transition: none;
+    }
+
+    .pitch-band-card:hover {
+        transform: none;
+    }
+
+    .pitch-preview-dot:hover {
+        transform: none;
+    }
+}

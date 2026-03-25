@@ -34,6 +34,7 @@ import { Tooltip } from '../ui/Tooltip';
 import { CollapsibleSection } from '../Party/CollapsibleSection';
 import { LevelGenerationDebugPanel } from '../ui/BeatDetectionTab/RhythmGenerationTab/LevelGenerationDebugPanel';
 import { LevelGenerationProgress } from '../ui/LevelGenerationProgress';
+import { PitchDetectionPanel } from '../ui/PitchDetectionPanel';
 import {
     useGeneratedRhythm,
     useGeneratedLevel,
@@ -147,7 +148,7 @@ function PitchLevelResult({ onProceed }: PitchLevelResultProps) {
                     </div>
                 </CollapsibleSection>
 
-                {/* Pitch Detection - Future Phase 3 */}
+                {/* Pitch Detection - Phase 3 */}
                 <CollapsibleSection
                     title="Pitch Detection"
                     subtitle="Per-beat pitch analysis"
@@ -155,16 +156,7 @@ function PitchLevelResult({ onProceed }: PitchLevelResultProps) {
                     collapsed={openSection !== 'pitch'}
                     onCollapsedChange={() => handleSectionToggle('pitch')}
                 >
-                    <div className="pitch-level-panel-placeholder">
-                        <p>
-                            Pitch detection visualization will be added in Phase 3.
-                        </p>
-                        <ul>
-                            <li>PitchTimeline - pitches at beat timestamps</li>
-                            <li>BandPitchBreakdown - Low/Mid/High bands</li>
-                            <li>PitchInspector - selected pitch details</li>
-                        </ul>
-                    </div>
+                    <PitchDetectionPanel />
                 </CollapsibleSection>
 
                 {/* Melody Contour - Future Phase 5 */}
