@@ -140,9 +140,31 @@
    ============================================ */
 
 .phrase-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    /* Layout managed by react-window when virtualized */
+}
+
+.phrase-list--virtualized {
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--surface-1));
+}
+
+.phrase-list--virtualized::-webkit-scrollbar {
+    width: 8px;
+}
+
+.phrase-list--virtualized::-webkit-scrollbar-track {
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+}
+
+.phrase-list--virtualized::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 0.5rem;
+}
+
+.phrase-list--virtualized::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.3);
 }
 
 /* Note: Phrase card styles are in PhrasePatternCard.css */

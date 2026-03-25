@@ -12,6 +12,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { List } from 'react-window';
 import { Music, TrendingUp, Hash, Clock, Layers, ChevronUp, ChevronDown } from 'lucide-react';
 import { PhrasePatternCard } from '../../PhrasePatternCard';
 import './PhraseDetectionPanel.css';
@@ -182,6 +183,44 @@ function SummaryStats({ phrases }: SummaryStatsProps) {
 }
 
 // ============================================================
+// Virtualization
+// ============================================================
+
+const PHRASE_ITEM_HEIGHT = 150; // Fixed height per phrase card row (includes visual gap)
+const PHRASE_LIST_HEIGHT = 500; // Max height of the virtualized scrollable container
+
+interface PhraseRowData {
+    phrases: RhythmicPhrase[];
+    selectedPhraseId: string | undefined;
+    onPhraseSelect: (phrase: RhythmicPhrase) => void;
+}
+
+function PhraseRow({
+    index,
+    style,
+    phrases,
+    selectedPhraseId,
+    onPhraseSelect,
+}: {
+    index: number;
+    style: React.CSSProperties;
+} & PhraseRowData) {
+    const phrase = phrases[index];
+    if (!phrase) return null;
+
+    return (
+        <div style={style}>
+            <PhrasePatternCard
+                phrase={phrase}
+                index={index}
+                isSelected={selectedPhraseId === phrase.id}
+                onSelect={() => onPhraseSelect(phrase)}
+            />
+        </div>
+    );
+}
+
+// ============================================================
 // Main Component
 // ============================================================
 
@@ -204,9 +243,11 @@ export function PhraseDetectionPanel({
     const phraseAnalysis = rhythm.analysis.phraseAnalysis;
     const allPhrases = phraseAnalysis.phrases;
 
-    // Sort state
-    const [sortBy, setSortBy] = useState<SortOption>('significance');
-    const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+    // Sort state (single object to avoid stale closure issues with dual setState)
+    const [sort, setSort] = useState<{ by: SortOption; direction: SortDirection }>({
+        by: 'significance',
+        direction: 'desc',
+    });
 
     // Internal selection state (used if no external control)
     const [internalSelectedPhrase, setInternalSelectedPhrase] = useState<RhythmicPhrase | null>(null);
@@ -223,7 +264,7 @@ export function PhraseDetectionPanel({
         sorted.sort((a, b) => {
             let comparison = 0;
 
-            switch (sortBy) {
+            switch (sort.by) {
                 case 'significance':
                     comparison = a.significance - b.significance;
                     break;
@@ -235,24 +276,20 @@ export function PhraseDetectionPanel({
                     break;
             }
 
-            return sortDirection === 'desc' ? -comparison : comparison;
+            return sort.direction === 'desc' ? -comparison : comparison;
         });
 
         return sorted;
-    }, [allPhrases, sortBy, sortDirection]);
+    }, [allPhrases, sort.by, sort.direction]);
 
-    // Handle sort change using functional updates to avoid stale closures
+    // Handle sort change — single setState with functional update, no stale closures
     const handleSortChange = useCallback((option: SortOption) => {
-        setSortBy(prev => {
-            if (prev === option) {
-                // Same option — toggle direction
-                setSortDirection(d => d === 'desc' ? 'asc' : 'desc');
-            } else {
-                // New option — default to descending
-                setSortDirection('desc');
-            }
-            return option;
-        });
+        setSort(prev => ({
+            by: option,
+            direction: prev.by === option
+                ? (prev.direction === 'desc' ? 'asc' : 'desc')
+                : 'desc',
+        }));
     }, []);
 
     // Handle phrase selection
@@ -291,23 +328,25 @@ export function PhraseDetectionPanel({
 
                     {/* Sort controls */}
                     <SortControl
-                        sortBy={sortBy}
-                        sortDirection={sortDirection}
+                        sortBy={sort.by}
+                        sortDirection={sort.direction}
                         onSortChange={handleSortChange}
                     />
 
-                    {/* Phrase list using extracted PhrasePatternCard component */}
-                    <div className="phrase-list">
-                        {sortedPhrases.map((phrase, index) => (
-                            <PhrasePatternCard
-                                key={phrase.id}
-                                phrase={phrase}
-                                index={index}
-                                isSelected={selectedPhrase?.id === phrase.id}
-                                onSelect={() => handlePhraseSelect(phrase)}
-                            />
-                        ))}
-                    </div>
+                    {/* Phrase list - virtualized with react-window */}
+                    <List<PhraseRowData>
+                        key={`${sort.by}:${sort.direction}`}
+                        className="phrase-list phrase-list--virtualized"
+                        style={{ height: PHRASE_LIST_HEIGHT }}
+                        rowCount={sortedPhrases.length}
+                        rowHeight={PHRASE_ITEM_HEIGHT}
+                        rowComponent={PhraseRow}
+                        rowProps={{
+                            phrases: sortedPhrases,
+                            selectedPhraseId: selectedPhrase?.id,
+                            onPhraseSelect: handlePhraseSelect,
+                        }}
+                    />
 
                     {/* Selection hint */}
                     {selectedPhrase && (
