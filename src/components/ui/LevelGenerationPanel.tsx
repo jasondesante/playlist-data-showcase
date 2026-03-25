@@ -25,6 +25,7 @@ import {
 } from '../../hooks/useLevelGeneration';
 import { ChartedBeatMapPreview } from './ChartedBeatMapPreview';
 import { LevelMetadataSummary } from './LevelMetadataSummary';
+import { DifficultySwitcher } from './DifficultySwitcher';
 import type {
     AllDifficultiesWithNatural,
     DifficultyLevel,
@@ -40,32 +41,6 @@ export interface LevelGenerationPanelProps {
     className?: string;
 }
 
-/** Difficulty option for the switcher */
-interface DifficultyOption {
-    id: DifficultyLevel;
-    label: string;
-    colorClass: string;
-}
-
-// ============================================================
-// Constants
-// ============================================================
-
-const DIFFICULTY_OPTIONS: DifficultyOption[] = [
-    { id: 'natural', label: 'Natural', colorClass: 'difficulty-natural' },
-    { id: 'easy', label: 'Easy', colorClass: 'difficulty-easy' },
-    { id: 'medium', label: 'Medium', colorClass: 'difficulty-medium' },
-    { id: 'hard', label: 'Hard', colorClass: 'difficulty-hard' },
-];
-
-// Difficulty colors from the plan
-const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
-    natural: '#8b5cf6', // Purple
-    easy: '#22c55e',    // Green
-    medium: '#f59e0b',  // Amber
-    hard: '#ef4444',    // Red
-};
-
 // ============================================================
 // Helper Functions
 // ============================================================
@@ -79,53 +54,6 @@ function getLevelForDifficulty(
 ): GeneratedLevel | undefined {
     if (!allDifficulties) return undefined;
     return allDifficulties[difficulty] as GeneratedLevel | undefined;
-}
-
-// ============================================================
-// Sub-components
-// ============================================================
-
-interface DifficultySwitcherProps {
-    selected: DifficultyLevel;
-    onChange: (difficulty: DifficultyLevel) => void;
-    beatCounts?: Record<DifficultyLevel, number>;
-}
-
-/**
- * Difficulty switcher component with 4 buttons.
- */
-function DifficultySwitcher({ selected, onChange, beatCounts }: DifficultySwitcherProps) {
-    return (
-        <div className="level-difficulty-switcher" role="radiogroup" aria-label="Difficulty level">
-            {DIFFICULTY_OPTIONS.map((option) => {
-                const isSelected = selected === option.id;
-                const beatCount = beatCounts?.[option.id];
-
-                return (
-                    <button
-                        key={option.id}
-                        type="button"
-                        className={cn(
-                            'level-difficulty-btn',
-                            option.colorClass,
-                            isSelected && 'level-difficulty-btn--active'
-                        )}
-                        onClick={() => onChange(option.id)}
-                        role="radio"
-                        aria-checked={isSelected}
-                        style={{
-                            '--difficulty-color': DIFFICULTY_COLORS[option.id],
-                        } as React.CSSProperties}
-                    >
-                        <span className="level-difficulty-label">{option.label}</span>
-                        {beatCount !== undefined && (
-                            <span className="level-difficulty-count">{beatCount}</span>
-                        )}
-                    </button>
-                );
-            })}
-        </div>
-    );
 }
 
 // ============================================================

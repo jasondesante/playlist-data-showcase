@@ -642,11 +642,11 @@ Container component with:
 - [x] Detailed metadata is in the other panels (Pitch, Melody, Button)
 
 ### Task 7.4: DifficultySwitcher Component
-- [ ] Four buttons/tabs: Natural | Easy | Medium | Hard
-- [ ] Shows selected difficulty from Step 1 by default
-- [ ] Clicking switches the displayed ChartedBeatMapPreview
-- [ ] Updates the compact stats to show selected difficulty's numbers
-- [ ] Visual indicator for currently selected
+- [x] Four buttons/tabs: Natural | Easy | Medium | Hard
+- [x] Shows selected difficulty from Step 1 by default
+- [x] Clicking switches the displayed ChartedBeatMapPreview
+- [x] Updates the compact stats to show selected difficulty's numbers
+- [x] Visual indicator for currently selected
 
 ### Task 7.5: DifficultyComparisonForLevel Component (Optional Expandable)
 - [ ] Side-by-side Natural/Easy/Medium/Hard comparison

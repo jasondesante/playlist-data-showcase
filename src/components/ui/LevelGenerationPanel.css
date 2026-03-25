@@ -80,92 +80,6 @@
 }
 
 /* ============================================
-   DIFFICULTY SWITCHER
-   ============================================ */
-
-.level-difficulty-switcher {
-    display: flex;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: var(--bg-tertiary, #0f0f1a);
-    border-radius: 8px;
-}
-
-.level-difficulty-btn {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.625rem 0.5rem;
-    background: transparent;
-    border: 2px solid transparent;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.level-difficulty-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.level-difficulty-btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3);
-}
-
-.level-difficulty-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-secondary, #a0a0b0);
-    transition: color 0.2s ease;
-}
-
-.level-difficulty-count {
-    font-size: 0.6875rem;
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    color: var(--text-muted, #6a6a7a);
-}
-
-/* Active state */
-.level-difficulty-btn--active {
-    background: rgba(var(--difficulty-color-rgb, 139, 92, 246), 0.15);
-    border-color: var(--difficulty-color, #8b5cf6);
-}
-
-.level-difficulty-btn--active .level-difficulty-label {
-    color: var(--difficulty-color, #8b5cf6);
-}
-
-.level-difficulty-btn--active .level-difficulty-count {
-    color: var(--difficulty-color, #8b5cf6);
-    opacity: 0.8;
-}
-
-/* Difficulty-specific colors */
-.difficulty-natural {
-    --difficulty-color: #8b5cf6;
-    --difficulty-color-rgb: 139, 92, 246;
-}
-
-.difficulty-easy {
-    --difficulty-color: #22c55e;
-    --difficulty-color-rgb: 34, 197, 94;
-}
-
-.difficulty-medium {
-    --difficulty-color: #f59e0b;
-    --difficulty-color-rgb: 245, 158, 11;
-}
-
-.difficulty-hard {
-    --difficulty-color: #ef4444;
-    --difficulty-color-rgb: 239, 68, 68;
-}
-
-/* ============================================
    COMPACT STATS CARD
    ============================================ */
 
@@ -386,15 +300,6 @@
         padding: 0.75rem;
     }
 
-    .level-difficulty-switcher {
-        flex-wrap: wrap;
-    }
-
-    .level-difficulty-btn {
-        flex: 1 1 45%;
-        min-width: 80px;
-    }
-
     .level-compact-stats {
         flex-wrap: wrap;
         gap: 0.5rem;
@@ -438,10 +343,6 @@
 
 /* High contrast mode adjustments */
 @media (prefers-contrast: more) {
-    .level-difficulty-btn--active {
-        border-width: 3px;
-    }
-
     .level-stat-divider {
         width: 2px;
     }
@@ -449,7 +350,6 @@
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-    .level-difficulty-btn,
     .level-practice-btn,
     .level-preview-beat,
     .level-practice-arrow {
