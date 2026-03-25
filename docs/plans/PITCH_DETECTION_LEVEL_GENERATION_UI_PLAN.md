@@ -397,14 +397,14 @@ Container component with:
 - [x] Click to select pitch for inspector
 
 ### Task 3.3: BandPitchBreakdown Component (Inline in Panel)
-- [ ] Three cards for Low/Mid/High bands
-- [ ] Each card displays:
+- [x] Three cards for Low/Mid/High bands
+- [x] Each card displays:
   - Band name and frequency range
   - Voiced beat count
   - Average probability
   - Pitch range (min/max frequency or notes)
   - Most common notes detected
-- [ ] Highlight dominant band with ⭐ badge
+- [x] Highlight dominant band with ⭐ badge
 
 ### Task 3.4: PitchInspector Component (Side Panel)
 - [ ] **Fixed side panel** (not tooltip) for selected pitch details

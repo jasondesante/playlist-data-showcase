@@ -85,23 +85,26 @@ function calculateBandStats(bandData: BandPitchAtBeat | undefined): {
     avgProbability: number;
     minNote: string | null;
     maxNote: string | null;
+    commonNotes: string[];
 } {
     if (!bandData) {
-        return { voicedCount: 0, totalCount: 0, avgProbability: 0, minNote: null, maxNote: null };
+        return { voicedCount: 0, totalCount: 0, avgProbability: 0, minNote: null, maxNote: null, commonNotes: [] };
     }
 
     const voicedCount = bandData.voicedBeatCount;
     const totalCount = bandData.totalBeatCount;
     const avgProbability = bandData.avgProbability;
 
-    // Find min/max notes from pitches
+    // Find min/max notes from pitches and count occurrences
     let minNote: string | null = null;
     let maxNote: string | null = null;
     const notes: string[] = [];
+    const noteCounts: Map<string, number> = new Map();
 
     bandData.pitches.forEach(p => {
         if (p.pitch?.noteName) {
             notes.push(p.pitch.noteName);
+            noteCounts.set(p.pitch.noteName, (noteCounts.get(p.pitch.noteName) ?? 0) + 1);
         }
     });
 
@@ -112,7 +115,13 @@ function calculateBandStats(bandData: BandPitchAtBeat | undefined): {
         maxNote = notes[notes.length - 1];
     }
 
-    return { voicedCount, totalCount, avgProbability, minNote, maxNote };
+    // Get the 3 most common notes
+    const sortedNotes = Array.from(noteCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([note]) => note);
+
+    return { voicedCount, totalCount, avgProbability, minNote, maxNote, commonNotes: sortedNotes };
 }
 
 /**
@@ -247,6 +256,18 @@ function BandBreakdownCard({ band, bandData, isDominant, onSelectBand, isSelecte
                 <div className="pitch-band-notes">
                     <span className="pitch-band-note-label">Range:</span>
                     <span className="pitch-band-note-value">{stats.minNote} - {stats.maxNote}</span>
+                </div>
+            )}
+            {stats.commonNotes.length > 0 && (
+                <div className="pitch-band-common-notes">
+                    <span className="pitch-band-note-label">Common:</span>
+                    <div className="pitch-band-common-notes-list">
+                        {stats.commonNotes.map((note) => (
+                            <span key={note} className="pitch-band-common-note">
+                                {note}
+                            </span>
+                        ))}
+                    </div>
                 </div>
             )}
         </div>

@@ -300,6 +300,31 @@
     color: var(--text-secondary, #a0a0b0);
 }
 
+/* Common notes section (Task 3.3) */
+.pitch-band-common-notes {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.6875rem;
+    padding-top: 0.375rem;
+}
+
+.pitch-band-common-notes-list {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.pitch-band-common-note {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-secondary, #a0a0b0);
+    padding: 0.125rem 0.375rem;
+    background: var(--bg-secondary, #12121f);
+    border-radius: 3px;
+    font-size: 0.625rem;
+    border: 1px solid var(--border-color-light, #1a1a2a);
+}
+
 /* ============================================
    PITCH TIMELINE SECTION (Task 3.2)
    ============================================ */
