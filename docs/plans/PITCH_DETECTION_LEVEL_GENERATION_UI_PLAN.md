@@ -538,13 +538,13 @@ Container component with:
 > Button mapping converts pitch analysis into DDR/Guitar Hero button assignments. Primary view is a horizontal timeline synced with audio.
 
 ### Task 6.1: ButtonMappingPanel Component
-- [ ] Container for mapping visualizations
-- [ ] Controller mode display (DDR vs Guitar Hero) - determined by Step 1 setting
-- [ ] Summary stats:
+- [x] Container for mapping visualizations
+- [x] Controller mode display (DDR vs Guitar Hero) - determined by Step 1 setting
+- [x] Summary stats:
   - Total beats mapped
   - Pitch-influenced vs pattern-influenced counts
   - Unique keys used
-- [ ] Primary visualization: ButtonTimeline (horizontal, synced with audio)
+- [x] Primary visualization: ButtonTimeline (horizontal, synced with audio)
 
 ```
 ┌─ Button Mapping ──────────────────────────────────────────┐

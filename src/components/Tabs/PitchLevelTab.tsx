@@ -36,6 +36,7 @@ import { LevelGenerationDebugPanel } from '../ui/BeatDetectionTab/RhythmGenerati
 import { LevelGenerationProgress } from '../ui/LevelGenerationProgress';
 import { PitchDetectionPanel } from '../ui/PitchDetectionPanel';
 import { MelodyContourPanel } from '../ui/MelodyContourPanel';
+import { ButtonMappingPanel } from '../ui/ButtonMappingPanel';
 import {
     useGeneratedRhythm,
     useGeneratedLevel,
@@ -171,7 +172,7 @@ function PitchLevelResult({ onProceed }: PitchLevelResultProps) {
                     <MelodyContourPanel />
                 </CollapsibleSection>
 
-                {/* Button Mapping - Future Phase 6 */}
+                {/* Button Mapping - Phase 6 (Task 6.1) */}
                 <CollapsibleSection
                     title="Button Mapping"
                     subtitle="DDR/Guitar Hero button assignments"
@@ -179,16 +180,7 @@ function PitchLevelResult({ onProceed }: PitchLevelResultProps) {
                     collapsed={openSection !== 'buttons'}
                     onCollapsedChange={() => handleSectionToggle('buttons')}
                 >
-                    <div className="pitch-level-panel-placeholder">
-                        <p>
-                            Button mapping visualization will be added in Phase 6.
-                        </p>
-                        <ul>
-                            <li>ButtonTimeline - horizontal timeline with buttons</li>
-                            <li>ButtonDistributionChart - button usage stats</li>
-                            <li>MappingInfluenceBreakdown - pitch vs pattern</li>
-                        </ul>
-                    </div>
+                    <ButtonMappingPanel />
                 </CollapsibleSection>
             </div>
 
