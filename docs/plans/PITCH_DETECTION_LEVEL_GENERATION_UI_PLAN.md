@@ -338,14 +338,14 @@ After completing Phase 0, you should be able to:
 - [x] Default expanded: Final Level Output panel
 
 ### Task 2.2: Create LevelGenerationProgress Component
-- [ ] Create `src/components/ui/LevelGenerationProgress.tsx` and `.css`
-- [ ] **Two-stage progress display**:
+- [x] Create `src/components/ui/LevelGenerationProgress.tsx` and `.css`
+- [x] **Two-stage progress display**:
   - Stage 1: "Rhythm Generation ✓" (7 phases, already complete)
   - Stage 2: "Level Generation" (4 phases - current)
-- [ ] Phases: `pitchDetection` → `melodyAnalysis` → `buttonMapping` → `levelAssembly`
-- [ ] Match RhythmGenerationProgress visual style
-- [ ] Show phase timing for completed stages
-- [ ] Overall progress bar
+- [x] Phases: `pitchDetection` → `melodyAnalysis` → `buttonMapping` → `levelAssembly`
+- [x] Match RhythmGenerationProgress visual style
+- [x] Show phase timing for completed stages
+- [x] Overall progress bar
 
 ### Task 2.3: Update BeatDetectionTab for 4-Step Auto Mode
 - [x] Import PitchLevelTab

@@ -33,6 +33,7 @@ import { Button } from '../ui/Button';
 import { Tooltip } from '../ui/Tooltip';
 import { CollapsibleSection } from '../Party/CollapsibleSection';
 import { LevelGenerationDebugPanel } from '../ui/BeatDetectionTab/RhythmGenerationTab/LevelGenerationDebugPanel';
+import { LevelGenerationProgress } from '../ui/LevelGenerationProgress';
 import {
     useGeneratedRhythm,
     useGeneratedLevel,
@@ -96,43 +97,6 @@ function PitchLevelError({ error, onRetry, onSwitchToManual }: PitchLevelErrorPr
                         Switch to Manual Mode
                     </Button>
                 )}
-            </div>
-        </div>
-    );
-}
-
-/**
- * Loading state UI with progress indicator.
- */
-interface PitchLevelLoadingProps {
-    progress: {
-        stage: string;
-        progress: number;
-        message: string;
-    };
-}
-
-function PitchLevelLoading({ progress }: PitchLevelLoadingProps) {
-    return (
-        <div className="pitch-level-loading">
-            <div className="pitch-level-loading-icon">
-                <Activity size={32} />
-            </div>
-            <h4 className="pitch-level-loading-title">Generating Levels...</h4>
-            <div className="pitch-level-progress-bar-container">
-                <div
-                    className="pitch-level-progress-bar"
-                    style={{ width: `${progress.progress}%` }}
-                    role="progressbar"
-                    aria-valuenow={progress.progress}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                />
-            </div>
-            <p className="pitch-level-loading-message">{progress.message}</p>
-            <div className="pitch-level-loading-stage">
-                <span className="pitch-level-stage-label">Current Stage:</span>
-                <span className="pitch-level-stage-value">{progress.stage}</span>
             </div>
         </div>
     );
@@ -333,7 +297,12 @@ export function PitchLevelTab({
 
         // Loading state - show progress
         if (isGenerating && progress) {
-            return <PitchLevelLoading progress={progress} />;
+            return (
+                <LevelGenerationProgress
+                    progress={progress}
+                    showTiming={true}
+                />
+            );
         }
 
         // Error state
