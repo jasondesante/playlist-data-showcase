@@ -15,8 +15,15 @@ import { ChartEditor } from '../ui/ChartEditor';
 import { ChartEditorToolbar } from '../ui/ChartEditorToolbar';
 import { ChartPreviewTimeline } from '../ui/ChartPreviewTimeline';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
-import { BeatPracticeView } from '../ui/BeatDetectionTab/BeatPracticeView';
-import { StepCompletionPrompt } from '../ui/StepCompletionPrompt';
+            { onExit: handleExitPracticeMode }
+            } else if (generationMode === 'automatic' && allDifficulties) {
+                return (
+            }
+        }
+    } else {
+                // Manual mode uses BeatPracticeView
+                <BeatPracticeView onExit={handleExitPracticeMode} />
+            }
 import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection, useStepsForMode, useGenerationMode } from '../../store/beatDetectionStore';
 import { StepNav } from '../ui/StepNav';
 import { Tooltip } from '../ui/Tooltip';
@@ -1015,8 +1022,13 @@ export function BeatDetectionTab() {
             )}
 
             {/* Beat Practice View - Full-width immersive experience */}
+            {/* Task 8.2: Use AutoBeatPracticeView for auto mode with generated levels */}
             {selectedTrack && practiceModeActive && beatMap && (
-                <BeatPracticeView onExit={handleExitPracticeMode} />
+                generationMode === 'automatic' && allDifficulties ? (
+                    <AutoBeatPracticeView onExit={handleExitPracticeMode} />
+                ) : (
+                    <BeatPracticeView onExit={handleExitPracticeMode} />
+                )
             )}
         </div>
     );
