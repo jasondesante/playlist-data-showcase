@@ -331,6 +331,7 @@ export function BeatDetectionTab() {
     /**
      * Task 0.3: Auto-start level generation when in auto mode.
      * Task 0.7: Validate rhythm data contract before proceeding.
+     * Task 1.2: Advance to Step 3 (Pitch & Level) when level generation starts.
      * Triggers when:
      * - We're in automatic mode
      * - The auto-start flag is set
@@ -387,6 +388,9 @@ export function BeatDetectionTab() {
                 validationSummary: validation.summary,
             });
 
+            // Task 1.2: Advance to Step 3 (Pitch & Level) when level generation starts
+            setCurrentStep(3);
+
             // Start level generation
             generateLevel(selectedTrack.audio_url, {
                 difficulty: autoLevelSettings.difficulty,
@@ -401,19 +405,20 @@ export function BeatDetectionTab() {
         allDifficulties,
         autoLevelSettings,
         generateLevel,
+        setCurrentStep,
     ]);
 
     /**
      * Task 0.3: Detect when level generation completes in auto mode.
-     * When it completes successfully, auto-advance to Step 3 (Ready).
+     * Task 1.2: When it completes successfully, auto-advance to Step 4 (Ready).
      */
     useEffect(() => {
         // Check if we just finished level generation
         if (wasLevelGeneratingRef.current && !isLevelGenerating && allDifficulties) {
-            // Task 0.3: In auto mode, advance to Step 3 (Ready)
-            if (generationMode === 'automatic' && currentStep === 2) {
-                logger.info('BeatDetection', 'Auto mode: level generation complete, advancing to Step 3');
-                setCurrentStep(3);
+            // Task 1.2: In auto mode, advance to Step 4 (Ready) when level generation completes
+            if (generationMode === 'automatic' && currentStep === 3) {
+                logger.info('BeatDetection', 'Auto mode: level generation complete, advancing to Step 4 (Ready)');
+                setCurrentStep(4);
             }
         }
         // Update the ref for the next render
@@ -647,7 +652,7 @@ export function BeatDetectionTab() {
                                 },
                                 {
                                     label: 'Skip to practice',
-                                    onClick: () => setCurrentStep(generationMode === 'automatic' ? 3 : 4),
+                                    onClick: () => setCurrentStep(4), // Task 1.2: Always Step 4 now (Ready)
                                     variant: 'secondary',
                                     icon: SkipForward,
                                 },
@@ -778,70 +783,67 @@ export function BeatDetectionTab() {
 
             case 3:
                 // Step 3: Mode-dependent content
-                // - Auto mode: Ready (practice mode, export) - same as Step 4 in manual
+                // - Auto mode: Pitch & Level (Task 1.2) - level generation happens here
                 // - Manual mode: Chart Editor
                 if (generationMode === 'automatic') {
-                    // Task 2.3: In auto mode, Step 3 is the Ready step
-                    if (!beatMap) {
+                    // Task 1.2: In auto mode, Step 3 is Pitch & Level
+                    if (!generatedRhythm) {
                         return wrapContent(
                             <Card variant="elevated" padding="lg" className="beat-detection-results-card">
                                 <div className="audio-analysis-step-placeholder">
-                                    <div className="audio-analysis-step-placeholder-icon">🀽</div>
-                                    <h4 className="audio-analysis-step-placeholder-title">Not Ready</h4>
+                                    <div className="audio-analysis-step-placeholder-icon">🎵</div>
+                                    <h4 className="audio-analysis-step-placeholder-title">Rhythm Required</h4>
                                     <p className="audio-analysis-step-placeholder-text">
-                                        Complete Step 1 (Analyze) to access practice mode and export options.
+                                        Complete Step 2 (Rhythm Generation) to start pitch detection and level generation.
                                     </p>
                                 </div>
                             </Card>
                         );
                     }
+                    // Task 1.2: Show level generation progress and results
+                    // Note: Full PitchLevelTab component will be created in Phase 2
                     return wrapContent(
                         <Card variant="elevated" padding="lg" className="beat-detection-results-card">
-                            {isBeatGenerating ? (
-                                <BeatMapSummarySkeleton />
-                            ) : (
-                                <>
-                                    <BeatMapSummary
-                                        beatMap={beatMap}
-                                        onStartPractice={handleStartPracticeMode}
-                                    />
-                                    {interpolatedBeatMap && (
-                                        <div className="audio-analysis-export-section">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={handleExportBeatMap}
-                                                leftIcon={Download}
-                                                className="audio-analysis-export-btn"
-                                            >
-                                                Export Beat Map
-                                            </Button>
-                                            <input
-                                                ref={fileInputRef}
-                                                type="file"
-                                                accept=".json,application/json"
-                                                onChange={handleImportBeatMap}
-                                                style={{ display: 'none' }}
-                                                aria-hidden="true"
-                                            />
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => fileInputRef.current?.click()}
-                                                leftIcon={Upload}
-                                                className="audio-analysis-import-btn"
-                                            >
-                                                Import Beat Map
-                                            </Button>
-                                            <span className="audio-analysis-export-hint">
-                                                {subdividedBeatMap
-                                                    ? 'Full chart with beats, subdivisions, and keys'
-                                                    : 'Detected beats and timing data'}
-                                            </span>
+                            <div className="audio-analysis-pitch-level-section">
+                                <h3 className="audio-analysis-step-title">
+                                    Pitch & Level Generation
+                                    <Tooltip content="Pitch detection and button mapping for the generated rhythm" />
+                                </h3>
+                                {isLevelGenerating ? (
+                                    <div className="audio-analysis-level-generating">
+                                        <div className="audio-analysis-level-generating-icon">🔄</div>
+                                        <p>Generating levels...</p>
+                                    </div>
+                                ) : allDifficulties ? (
+                                    <div className="audio-analysis-level-complete">
+                                        <div className="audio-analysis-level-complete-icon">✅</div>
+                                        <p className="audio-analysis-level-complete-text">Level generation complete!</p>
+                                        <div className="audio-analysis-level-stats">
+                                            <p><strong>Easy:</strong> {allDifficulties.easy?.chart?.beats?.length || 0} beats</p>
+                                            <p><strong>Medium:</strong> {allDifficulties.medium?.chart?.beats?.length || 0} beats</p>
+                                            <p><strong>Hard:</strong> {allDifficulties.hard?.chart?.beats?.length || 0} beats</p>
                                         </div>
-                                    )}
-                                </>
-                            )}
+                                    </div>
+                                ) : (
+                                    <div className="audio-analysis-level-pending">
+                                        <p>Waiting for level generation to start...</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Post-completion prompt for Step 3 (Pitch & Level) */}
+                            <StepCompletionPrompt
+                                message="Level generation complete!"
+                                visible={stepCompletion.step3 && !isLevelGenerating}
+                                actions={[
+                                    {
+                                        label: 'Go to Practice',
+                                        onClick: () => setCurrentStep(4),
+                                        variant: 'primary',
+                                        icon: ArrowRight,
+                                    },
+                                ]}
+                            />
                         </Card>
                     );
                 }
@@ -878,7 +880,7 @@ export function BeatDetectionTab() {
 
             case 4:
                 // Step 4: Ready/Practice - Beat map summary, practice mode, export
-                // Note: This step only exists in manual mode (4 steps). In auto mode, Step 3 is Ready.
+                // Task 1.2: Now works for both manual and auto mode (4 steps each)
                 if (!beatMap) {
                     return wrapContent(
                         <Card variant="elevated" padding="lg" className="beat-detection-results-card">

@@ -276,25 +276,25 @@ After completing Phase 0, you should be able to:
 ## Phase 1: Infrastructure & State Management
 
 ### Task 1.1: Add Level Generation State to Store
-- [ ] Add `generatedLevel: GeneratedLevel | null` to beatDetectionStore
-- [ ] Add `allDifficultyLevels: AllDifficultiesResult | null` for all 4 difficulties (Natural/Easy/Medium/Hard)
-- [ ] Add `levelGenerationProgress: LevelGenerationProgress | null`
-- [ ] Add `pitchAnalysis: MelodyContourAnalysisResult | null`
-- [ ] Add `selectedDifficulty: 'natural' | 'easy' | 'medium' | 'hard'` (from Step 1)
-- [ ] Add actions: `setGeneratedLevel()`, `clearGeneratedLevel()`, `setLevelGenerationProgress()`, `setSelectedDifficulty()`
-- [ ] Reset all level state when track changes
-- [ ] Clear level state when switching from auto to manual mode
+- [x] Add `generatedLevel: GeneratedLevel | null` to beatDetectionStore
+- [x] Add `allDifficultyLevels: AllDifficultiesResult | null` for all 4 difficulties (Natural/Easy/Medium/Hard)
+- [x] Add `levelGenerationProgress: LevelGenerationProgress | null`
+- [x] Add `pitchAnalysis: MelodyContourAnalysisResult | null`
+- [x] Add `selectedDifficulty: 'natural' | 'easy' | 'medium' | 'hard'` (from Step 1)
+- [x] Add actions: `setGeneratedLevel()`, `clearGeneratedLevel()`, `setLevelGenerationProgress()`, `setSelectedDifficulty()`
+- [x] Reset all level state when track changes
+- [x] Clear level state when switching from auto to manual mode
 
 ### Task 1.2: Update Step Availability Logic for 4-Step Auto Mode
-- [ ] Update `useStepsForMode()` hook:
+- [x] Update `useStepsForMode()` hook:
   - Manual: 4 steps (Analyze, Subdivide, Chart, Ready)
   - Automatic: 4 steps (Analyze, Rhythm Generation, Pitch & Level, Ready)
-- [ ] Step 3 (Pitch & Level) available when step 2 (Rhythm Generation) complete
-- [ ] Step 4 (Ready) available when step 3 complete
+- [x] Step 3 (Pitch & Level) available when step 2 (Rhythm Generation) complete
+- [x] Step 4 (Ready) available when step 3 complete
 
 ### Task 1.3: Create Level Generation Types
-- [ ] Create `src/types/levelGeneration.ts`
-- [ ] Re-export from playlist-data-engine:
+- [x] Create `src/types/levelGeneration.ts`
+- [x] Re-export from playlist-data-engine:
   - `PitchResult`, `PitchDetectorConfig`
   - `PitchAtBeat`, `BandPitchAtBeat`, `LinkedPitchAnalysis`
   - `MelodyContourAnalysisResult`, `MelodyContour`, `MelodySegment`
@@ -307,13 +307,13 @@ After completing Phase 0, you should be able to:
   - `AllDifficultiesResult`
 
 ### Task 1.4: Create useLevelGeneration Hook
-- [ ] Integrate with `LevelGenerator` from playlist-data-engine
-- [ ] Handle progress callbacks for pipeline stages
-- [ ] Pipeline phases: `pitchDetection` → `melodyAnalysis` → `buttonMapping` → `levelAssembly`
-- [ ] Return: `{ generate, isGenerating, progress, error, level, allDifficulties }`
-- [ ] Use cached rhythm from store to avoid re-generation
-- [ ] Support retry on error
-- [ ] Call `generateAllDifficulties()` to generate all 4 difficulties at once
+- [x] Integrate with `LevelGenerator` from playlist-data-engine
+- [x] Handle progress callbacks for pipeline stages
+- [x] Pipeline phases: `pitchDetection` → `melodyAnalysis` → `buttonMapping` → `levelAssembly`
+- [x] Return: `{ generate, isGenerating, progress, error, level, allDifficulties }`
+- [x] Use cached rhythm from store to avoid re-generation
+- [x] Support retry on error
+- [x] Call `generateAllDifficulties()` to generate all 4 difficulties at once
 
 ### Task 1.5: Extend AutoLevelSettings in Step 1
 - [ ] Add controller mode selector (DDR / Guitar Hero) with toggle

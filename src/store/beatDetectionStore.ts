@@ -5896,28 +5896,39 @@ export const useCurrentStep = (): 1 | 2 | 3 | 4 =>
 
 /**
  * Step completion status for the beat detection wizard.
+ * Task 1.2: Updated to support 4 steps in both manual and automatic modes.
  */
 export interface StepCompletionStatus {
     /** Step 1 (Analyze) is complete when beatMap exists */
     step1: boolean;
-    /** Step 2 (Subdivide) is complete when subdividedBeatMap exists */
+    /** Step 2 is complete when:
+     *   - Manual: subdividedBeatMap exists
+     *   - Automatic: generatedRhythm exists
+     */
     step2: boolean;
-    /** Step 3 (Chart) is complete when chartStatistics.keyCount > 0 */
+    /** Step 3 is complete when:
+     *   - Manual: chartStatistics.keyCount > 0
+     *   - Automatic: allDifficultyLevels exists (level generation complete)
+     */
     step3: boolean;
+    /** Step 4 (Ready) - final step, no completion status */
+    step4: boolean;
 }
 
 /**
  * Hook to get the completion status of each step in the beat detection wizard.
  *
- * Manual Mode:
+ * Manual Mode (4 steps):
  * - step1 (Analyze): complete when beatMap exists
  * - step2 (Subdivide): complete when subdividedBeatMap exists
  * - step3 (Chart): complete when keys are assigned
+ * - step4 (Ready): not applicable (final step, no completion)
  *
- * Automatic Mode:
+ * Automatic Mode (4 steps - Task 1.2):
  * - step1 (Analyze): complete when beatMap exists
  * - step2 (Rhythm Generation): complete when generatedRhythm exists
- * - step3 (Ready): not applicable (final step, no completion)
+ * - step3 (Pitch & Level): complete when allDifficultyLevels exists
+ * - step4 (Ready): not applicable (final step, no completion)
  *
  * Uses a two-step approach to prevent infinite loops:
  * 1. First, select raw data with useShallow for stable references
@@ -5929,16 +5940,18 @@ export const useStepCompletion = (): StepCompletionStatus => {
     const beatMap = useBeatDetectionStore(useShallow((state) => state.beatMap));
     const subdividedBeatMap = useBeatDetectionStore(useShallow((state) => state.subdividedBeatMap));
     const generatedRhythm = useBeatDetectionStore(useShallow((state) => state.generatedRhythm));
+    const allDifficultyLevels = useBeatDetectionStore(useShallow((state) => state.allDifficultyLevels));
     const generationMode = useBeatDetectionStore(useShallow((state) => state.generationMode));
 
     // Step 2: Memoize the computed result based on stable raw data
     return useMemo(() => {
         if (generationMode === 'automatic') {
-            // Automatic mode: 3 steps
+            // Task 1.2: Automatic mode now has 4 steps
             return {
                 step1: beatMap !== null,
                 step2: generatedRhythm !== null,
-                step3: false, // Ready step has no completion status
+                step3: allDifficultyLevels !== null, // Pitch & Level complete when levels are generated
+                step4: false, // Ready step has no completion status
             };
         }
 
@@ -5957,8 +5970,9 @@ export const useStepCompletion = (): StepCompletionStatus => {
             step1: beatMap !== null,
             step2: subdividedBeatMap !== null,
             step3: keyCount > 0,
+            step4: false, // Ready step has no completion status
         };
-    }, [beatMap, subdividedBeatMap, generatedRhythm, generationMode]);
+    }, [beatMap, subdividedBeatMap, generatedRhythm, allDifficultyLevels, generationMode]);
 };
 
 /**
@@ -5970,10 +5984,11 @@ export const useStepCompletion = (): StepCompletionStatus => {
  * - step3: available when step2 is complete (subdividedBeatMap exists)
  * - step4: available when step1 is complete (beatMap exists)
  *
- * Automatic Mode Step availability rules:
+ * Automatic Mode Step availability rules (Task 1.2: 4 steps):
  * - step1: always available (assumes track is selected)
  * - step2 (Rhythm Generation): available when step1 is complete (beatMap exists)
- * - step3 (Ready): available when step1 is complete (beatMap exists)
+ * - step3 (Pitch & Level): available when step2 is complete (generatedRhythm exists)
+ * - step4 (Ready): available when step1 is complete (beatMap exists)
  *
  * Uses a two-step approach to prevent infinite loops.
  * @returns Set of available step numbers
@@ -5982,6 +5997,7 @@ export const useStepAvailability = (): Set<number> => {
     // Step 1: Select raw data with useShallow for stable references
     const beatMap = useBeatDetectionStore(useShallow((state) => state.beatMap));
     const subdividedBeatMap = useBeatDetectionStore(useShallow((state) => state.subdividedBeatMap));
+    const generatedRhythm = useBeatDetectionStore(useShallow((state) => state.generatedRhythm));
     const generationMode = useBeatDetectionStore(useShallow((state) => state.generationMode));
 
     // Step 2: Memoize the computed Set based on stable raw data
@@ -5992,11 +6008,16 @@ export const useStepAvailability = (): Set<number> => {
         available.add(1);
 
         if (generationMode === 'automatic') {
-            // Automatic mode: 3 steps (Analyze → Rhythm Generation → Ready)
+            // Task 1.2: Automatic mode now has 4 steps (Analyze → Rhythm Generation → Pitch & Level → Ready)
             // Step 2 (Rhythm Generation) available when step 1 complete
-            // Step 3 (Ready) available when step 1 complete
             if (beatMap !== null) {
                 available.add(2);
+                // Step 4 (Ready) available when step 1 complete (allows skipping to practice)
+                available.add(4);
+            }
+
+            // Step 3 (Pitch & Level) available when step 2 complete (rhythm generated)
+            if (generatedRhythm !== null) {
                 available.add(3);
             }
         } else {
@@ -6015,7 +6036,7 @@ export const useStepAvailability = (): Set<number> => {
         }
 
         return available;
-    }, [beatMap, subdividedBeatMap, generationMode]);
+    }, [beatMap, subdividedBeatMap, generatedRhythm, generationMode]);
 };
 
 /**
@@ -6047,19 +6068,23 @@ const MANUAL_STEPS: StepConfig[] = [
 ];
 
 /**
- * Automatic mode step configuration (3 steps).
+ * Automatic mode step configuration (4 steps).
+ * Task 1.2: Updated from 3 to 4 steps with Pitch & Level as Step 3.
  */
 const AUTOMATIC_STEPS: StepConfig[] = [
     { id: 1, label: 'Analyze' },
     { id: 2, label: 'Rhythm Generation' },
-    { id: 3, label: 'Ready', dynamicLabel: { available: 'Ready', disabled: 'Not Ready' } },
+    { id: 3, label: 'Pitch & Level', dynamicLabel: { available: 'Pitch & Level', disabled: 'Not Ready' } },
+    { id: 4, label: 'Ready', dynamicLabel: { available: 'Ready', disabled: 'Not Ready' } },
 ];
 
 /**
  * Hook to get step configuration based on current generation mode.
  *
  * Manual Mode: 4 steps (Analyze → Subdivide → Chart → Ready)
- * Automatic Mode: 3 steps (Analyze → Rhythm Generation → Ready)
+ * Automatic Mode: 4 steps (Analyze → Rhythm Generation → Pitch & Level → Ready)
+ *
+ * Task 1.2: Automatic mode now has 4 steps with Pitch & Level as Step 3.
  *
  * @returns Array of step configurations
  */
