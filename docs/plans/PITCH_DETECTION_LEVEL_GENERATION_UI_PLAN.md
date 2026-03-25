@@ -632,14 +632,14 @@ Container component with:
 - [x] Button colors based on controller mode
 
 ### Task 7.3: LevelMetadataSummary Component (Compact)
-- [ ] **Compact stats card** - not full breakdown
-- [ ] Key numbers only:
+- [x] **Compact stats card** - not full breakdown
+- [x] Key numbers only:
   - Difficulty
   - Controller mode
   - Total beats
   - BPM
-  - Processing time
-- [ ] Detailed metadata is in the other panels (Pitch, Melody, Button)
+  - ~~Processing time~~ (not available in metadata - replaced with detected/generated beats in Task 7.1)
+- [x] Detailed metadata is in the other panels (Pitch, Melody, Button)
 
 ### Task 7.4: DifficultySwitcher Component
 - [ ] Four buttons/tabs: Natural | Easy | Medium | Hard

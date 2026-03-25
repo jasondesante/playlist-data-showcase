@@ -13,7 +13,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
-import { Gamepad2, Music, Layers } from 'lucide-react';
+import { Gamepad2 } from 'lucide-react';
 import './LevelGenerationPanel.css';
 import { cn } from '../../utils/cn';
 import {
@@ -24,11 +24,12 @@ import {
     useSelectedDifficulty,
 } from '../../hooks/useLevelGeneration';
 import { ChartedBeatMapPreview } from './ChartedBeatMapPreview';
+import { LevelMetadataSummary } from './LevelMetadataSummary';
 import type {
     AllDifficultiesWithNatural,
     DifficultyLevel,
 } from '../../types/levelGeneration';
-import type { GeneratedLevel, ControllerMode } from 'playlist-data-engine';
+import type { GeneratedLevel } from 'playlist-data-engine';
 
 // ============================================================
 // Types
@@ -80,14 +81,6 @@ function getLevelForDifficulty(
     return allDifficulties[difficulty] as GeneratedLevel | undefined;
 }
 
-/**
- * Format controller mode for display.
- */
-function formatControllerMode(mode: ControllerMode | undefined): string {
-    if (!mode) return 'DDR';
-    return mode === 'ddr' ? 'DDR' : 'Guitar Hero';
-}
-
 // ============================================================
 // Sub-components
 // ============================================================
@@ -134,71 +127,6 @@ function DifficultySwitcher({ selected, onChange, beatCounts }: DifficultySwitch
         </div>
     );
 }
-
-interface CompactStatsCardProps {
-    difficulty: DifficultyLevel;
-    controllerMode: ControllerMode | undefined;
-    totalBeats: number;
-    detectedBeats: number;
-    generatedBeats: number;
-}
-
-/**
- * Compact stats card showing key numbers.
- */
-function CompactStatsCard({
-    difficulty,
-    controllerMode,
-    totalBeats,
-    detectedBeats,
-    generatedBeats,
-}: CompactStatsCardProps) {
-    return (
-        <div className="level-compact-stats">
-            <div className="level-stat-item">
-                <span
-                    className="level-stat-value level-stat-difficulty"
-                    style={{ color: DIFFICULTY_COLORS[difficulty] }}
-                >
-                    {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-                </span>
-                <span className="level-stat-label">Difficulty</span>
-            </div>
-            <div className="level-stat-divider" />
-            <div className="level-stat-item">
-                <span className="level-stat-value level-stat-mode">
-                    <Gamepad2 size={14} />
-                    {formatControllerMode(controllerMode)}
-                </span>
-                <span className="level-stat-label">Mode</span>
-            </div>
-            <div className="level-stat-divider" />
-            <div className="level-stat-item">
-                <span className="level-stat-value level-stat-beats">
-                    <Music size={14} />
-                    {totalBeats.toLocaleString()}
-                </span>
-                <span className="level-stat-label">Beats</span>
-            </div>
-            <div className="level-stat-divider" />
-            <div className="level-stat-item">
-                <span className="level-stat-value level-stat-detected">
-                    <Layers size={14} />
-                    {detectedBeats}
-                </span>
-                <span className="level-stat-label">Detected</span>
-            </div>
-            <div className="level-stat-divider" />
-            <div className="level-stat-item">
-                <span className="level-stat-value level-stat-generated">
-                    {generatedBeats}
-                </span>
-                <span className="level-stat-label">Generated</span>
-            </div>
-        </div>
-    );
-}
-
 
 // ============================================================
 // Main Component
@@ -249,9 +177,9 @@ export function LevelGenerationPanel({ className }: LevelGenerationPanelProps) {
     const metadata = currentLevel?.metadata;
     const controllerMode = metadata?.controllerMode;
     const chartMetadata = metadata?.chartMetadata;
-    const totalBeats = chartMetadata?.totalBeats ?? currentLevel?.chart?.beats?.length ?? 0;
-    const detectedBeats = chartMetadata?.detectedBeats ?? 0;
-    const generatedBeats = chartMetadata?.generatedBeats ?? 0;
+    const chart = currentLevel?.chart;
+    const totalBeats = chartMetadata?.totalBeats ?? chart?.beats?.length ?? 0;
+    const bpm = chart?.bpm ?? 120;
 
     return (
         <div className={cn('level-generation-panel', className)}>
@@ -268,18 +196,17 @@ export function LevelGenerationPanel({ className }: LevelGenerationPanelProps) {
                 beatCounts={beatCounts}
             />
 
-            {/* Compact Stats Card */}
-            <CompactStatsCard
+            {/* Compact Metadata Summary (Task 7.3) */}
+            <LevelMetadataSummary
                 difficulty={selectedDifficulty}
                 controllerMode={controllerMode}
                 totalBeats={totalBeats}
-                detectedBeats={detectedBeats}
-                generatedBeats={generatedBeats}
+                bpm={bpm}
             />
 
             {/* Chart Preview (Task 7.2) */}
             <ChartedBeatMapPreview
-                chart={currentLevel?.chart ?? null}
+                chart={chart ?? null}
                 controllerMode={controllerMode}
                 height={120}
                 showBeatIndices={true}
