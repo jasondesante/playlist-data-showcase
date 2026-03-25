@@ -600,14 +600,14 @@ Container component with:
 > Combines everything into a playable ChartedBeatMap. Shows selected difficulty by default with switcher for Natural/Easy/Medium/Hard.
 
 ### Task 7.1: LevelGenerationPanel Component
-- [ ] Container for final output
-- [ ] **Compact stats card** with key numbers:
+- [x] Container for final output
+- [x] **Compact stats card** with key numbers:
   - Difficulty level
   - Controller mode
   - Total beats
-  - Processing time
-- [ ] **Difficulty switcher** (Natural | Easy | Medium | Hard) - shows selected by default
-- [ ] Default expanded panel in PitchLevelTab
+  - Detected beats / Generated beats (replaced processing time - not available in metadata)
+- [x] **Difficulty switcher** (Natural | Easy | Medium | Hard) - shows selected by default
+- [x] Default expanded panel in PitchLevelTab
 
 ```
 ┌─ Final Level ─────────────────────────────────────────────┐

@@ -32,8 +32,8 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Tooltip } from '../ui/Tooltip';
 import { CollapsibleSection } from '../Party/CollapsibleSection';
-import { LevelGenerationDebugPanel } from '../ui/BeatDetectionTab/RhythmGenerationTab/LevelGenerationDebugPanel';
 import { LevelGenerationProgress } from '../ui/LevelGenerationProgress';
+import { LevelGenerationPanel } from '../ui/LevelGenerationPanel';
 import { PitchDetectionPanel } from '../ui/PitchDetectionPanel';
 import { MelodyContourPanel } from '../ui/MelodyContourPanel';
 import { ButtonMappingPanel } from '../ui/ButtonMappingPanel';
@@ -141,7 +141,7 @@ function PitchLevelResult({ onProceed, pitchInfluenceWeight, voicingThreshold }:
 
             {/* Visualization panels with accordion behavior */}
             <div className="pitch-level-visualizations">
-                {/* Final Level Output - Default expanded */}
+                {/* Final Level Output - Default expanded - Task 7.1 */}
                 <CollapsibleSection
                     title="Final Level Output"
                     subtitle="Generated beat map preview"
@@ -149,13 +149,7 @@ function PitchLevelResult({ onProceed, pitchInfluenceWeight, voicingThreshold }:
                     collapsed={openSection !== 'final'}
                     onCollapsedChange={() => handleSectionToggle('final')}
                 >
-                    <div className="pitch-level-panel-placeholder">
-                        <LevelGenerationDebugPanel />
-                        <p className="pitch-level-panel-note">
-                            <strong>Note:</strong> This is a temporary debug panel.
-                            Full visualization will be added in Phase 7 (Tasks 7.1-7.5).
-                        </p>
-                    </div>
+                    <LevelGenerationPanel />
                 </CollapsibleSection>
 
                 {/* Pitch Detection - Phase 3 */}
