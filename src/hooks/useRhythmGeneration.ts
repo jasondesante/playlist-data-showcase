@@ -264,6 +264,8 @@ export const useRhythmGeneration = (): UseRhythmGenerationReturn => {
                 densityValidation: options?.densityValidation,
                 // Pass scoring config (includes factor weights AND band bias)
                 scoringConfig: options?.scoringConfig,
+                // Pass phrase analyzer config
+                phraseAnalyzerConfig: options?.phraseAnalyzerConfig,
                 verbose: options?.verbose ?? false,
             };
 

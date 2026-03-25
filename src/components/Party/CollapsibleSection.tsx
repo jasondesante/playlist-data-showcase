@@ -155,8 +155,13 @@ export function CollapsibleSection({
         }}
         ref={contentRef}
       >
-        <div className="collapsible-section-inner" ref={innerRef}>
-          {!isCollapsed && children}
+        <div
+          className="collapsible-section-inner"
+          ref={innerRef}
+          aria-hidden={isCollapsed}
+          style={{ display: isCollapsed ? 'none' : undefined }}
+        >
+          {children}
         </div>
       </div>
     </div>

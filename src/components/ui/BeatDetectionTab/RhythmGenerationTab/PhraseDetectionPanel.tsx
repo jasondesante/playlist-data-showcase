@@ -11,7 +11,7 @@
  * Part of Phase 8: Phrase Detection Visualization (Task 8.1)
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Music, TrendingUp, Hash, Clock, Layers, ChevronUp, ChevronDown } from 'lucide-react';
 import { PhrasePatternCard } from '../../PhrasePatternCard';
 import './PhraseDetectionPanel.css';
@@ -55,18 +55,12 @@ type SortDirection = 'asc' | 'desc';
 interface SortControlProps {
     sortBy: SortOption;
     sortDirection: SortDirection;
-    onSortChange: (option: SortOption, direction: SortDirection) => void;
+    onSortChange: (option: SortOption) => void;
 }
 
 function SortControl({ sortBy, sortDirection, onSortChange }: SortControlProps) {
     const handleSortClick = (option: SortOption) => {
-        if (sortBy === option) {
-            // Toggle direction
-            onSortChange(option, sortDirection === 'desc' ? 'asc' : 'desc');
-        } else {
-            // New sort option, default to descending
-            onSortChange(option, 'desc');
-        }
+        onSortChange(option);
     };
 
     return (
@@ -247,11 +241,19 @@ export function PhraseDetectionPanel({
         return sorted;
     }, [allPhrases, sortBy, sortDirection]);
 
-    // Handle sort change
-    const handleSortChange = (option: SortOption, direction: SortDirection) => {
-        setSortBy(option);
-        setSortDirection(direction);
-    };
+    // Handle sort change using functional updates to avoid stale closures
+    const handleSortChange = useCallback((option: SortOption) => {
+        setSortBy(prev => {
+            if (prev === option) {
+                // Same option — toggle direction
+                setSortDirection(d => d === 'desc' ? 'asc' : 'desc');
+            } else {
+                // New option — default to descending
+                setSortDirection('desc');
+            }
+            return option;
+        });
+    }, []);
 
     // Handle phrase selection
     const handlePhraseSelect = (phrase: RhythmicPhrase) => {
