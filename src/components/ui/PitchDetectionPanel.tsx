@@ -32,6 +32,7 @@ import type {
 import type { GeneratedLevel } from 'playlist-data-engine';
 import { PitchTimeline } from './PitchTimeline';
 import { PitchInspector, type SelectedPitchData, type PitchBandName } from './PitchInspector';
+import { PitchProbabilityHistogram } from './PitchProbabilityHistogram';
 
 // ============================================================
 // Types
@@ -396,6 +397,16 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
                             />
                         ))}
                     </div>
+                </div>
+
+                {/* Probability Distribution Histogram (Task 3.5) */}
+                <div className="pitch-histogram-section">
+                    <PitchProbabilityHistogram
+                        pitches={selectedBandPitches}
+                        voicingThreshold={0.5}
+                        binCount={10}
+                        height={140}
+                    />
                 </div>
 
                 {/* Pitch Timeline (Task 3.2) */}

@@ -333,6 +333,14 @@
     margin-top: 0.5rem;
 }
 
+/* ============================================
+   PROBABILITY HISTOGRAM SECTION (Task 3.5)
+   ============================================ */
+
+.pitch-histogram-section {
+    margin-top: 0.5rem;
+}
+
 .pitch-timeline-title {
     margin: 0 0 0.75rem 0;
     font-size: 0.8125rem;

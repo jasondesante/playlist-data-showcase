@@ -419,11 +419,11 @@ Container component with:
 - [x] Updates when user clicks different pitches on timeline
 
 ### Task 3.5: PitchProbabilityHistogram Component
-- [ ] Distribution of pitch probabilities
-- [ ] X-axis: probability ranges (0.0-1.0)
-- [ ] Y-axis: count of beats
-- [ ] Color-code: high (>0.8), medium (0.5-0.8), low (<0.5)
-- [ ] Show voicing threshold line
+- [x] Distribution of pitch probabilities
+- [x] X-axis: probability ranges (0.0-1.0)
+- [x] Y-axis: count of beats
+- [x] Color-code: high (>0.8), medium (0.5-0.8), low (<0.5)
+- [x] Show voicing threshold line
 
 ---
 
