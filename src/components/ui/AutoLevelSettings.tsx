@@ -14,7 +14,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import { ChevronDown, Settings2, Sliders, RotateCcw, Info, Waves, Target, Scale } from 'lucide-react';
+import { ChevronDown, Settings2, Sliders, RotateCcw, Info, Waves, Target, Scale, Joystick, Music2 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { CollapsibleSection } from '../Party/CollapsibleSection';
 import type {
@@ -25,6 +25,7 @@ import type {
     BandTransientConfig,
     BandTransientConfigOverrides,
     BandBiasWeights,
+    ControllerMode,
 } from '../../types/rhythmGeneration';
 import type { StreamScorerConfig } from 'playlist-data-engine';
 import {
@@ -99,6 +100,7 @@ export function AutoLevelSettings({
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
     const [isTransientConfigOpen, setIsTransientConfigOpen] = useState(false);
     const [isScoringConfigOpen, setIsScoringConfigOpen] = useState(false);
+    const [isLevelSettingsOpen, setIsLevelSettingsOpen] = useState(false);
 
     const handleChange = useCallback(
         <K extends keyof AutoLevelSettingsType>(key: K, value: AutoLevelSettingsType[K]) => {
@@ -198,6 +200,33 @@ export function AutoLevelSettings({
         onChange({ ...DEFAULT_AUTO_LEVEL_SETTINGS });
         setIsTransientConfigOpen(false);
     }, [onChange]);
+
+    // ============================================================================
+    // Level Settings Handlers (Task 1.5)
+    // ============================================================================
+
+    const handleControllerModeChange = useCallback(
+        (mode: ControllerMode) => {
+            handleChange('controllerMode', mode);
+        },
+        [handleChange]
+    );
+
+    const handlePitchInfluenceWeightChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const value = parseFloat(e.target.value);
+            handleChange('pitchInfluenceWeight', value);
+        },
+        [handleChange]
+    );
+
+    const handleVoicingThresholdChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const value = parseFloat(e.target.value);
+            handleChange('voicingThreshold', value);
+        },
+        [handleChange]
+    );
 
     // ============================================================================
     // Scoring Config Handlers
@@ -351,6 +380,167 @@ export function AutoLevelSettings({
                             Filter out transients below this threshold. Higher values filter more
                             transients.
                         </p>
+                    </div>
+
+                    {/* Level Settings Toggle (Task 1.5) */}
+                    <div className="auto-level-settings__level-settings-toggle">
+                        <button
+                            type="button"
+                            className={cn(
+                                'auto-level-settings__advanced-toggle-btn',
+                                isLevelSettingsOpen && 'auto-level-settings__advanced-toggle-btn--active'
+                            )}
+                            onClick={() => setIsLevelSettingsOpen(!isLevelSettingsOpen)}
+                            aria-expanded={isLevelSettingsOpen}
+                            disabled={disabled}
+                        >
+                            <Joystick size={16} />
+                            <span>Level Settings</span>
+                            <ChevronDown
+                                size={18}
+                                className={cn(
+                                    'auto-level-settings__advanced-chevron',
+                                    isLevelSettingsOpen && 'auto-level-settings__advanced-chevron--rotated'
+                                )}
+                            />
+                        </button>
+
+                        {isLevelSettingsOpen && (
+                            <div className="auto-level-settings__level-settings-content">
+                                {/* Controller Mode Selection */}
+                                <div className="auto-level-settings__form-group">
+                                    <label className="auto-level-settings__form-label">Controller Mode</label>
+                                    <div className="auto-level-settings__controller-mode-buttons">
+                                        <button
+                                            type="button"
+                                            className={cn(
+                                                'auto-level-settings__controller-mode-button',
+                                                settings.controllerMode === 'ddr' && 'auto-level-settings__controller-mode-button--active'
+                                            )}
+                                            onClick={() => handleControllerModeChange('ddr')}
+                                            disabled={disabled}
+                                            title="4 directional buttons: Up, Down, Left, Right"
+                                        >
+                                            <span className="auto-level-settings__controller-mode-button-text">
+                                                DDR
+                                            </span>
+                                            <span className="auto-level-settings__controller-mode-button-desc">
+                                                ↑ ↓ ← →
+                                            </span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={cn(
+                                                'auto-level-settings__controller-mode-button',
+                                                settings.controllerMode === 'guitar_hero' && 'auto-level-settings__controller-mode-button--active'
+                                            )}
+                                            onClick={() => handleControllerModeChange('guitar_hero')}
+                                            disabled={disabled}
+                                            title="5 fret buttons: 1-5"
+                                        >
+                                            <span className="auto-level-settings__controller-mode-button-text">
+                                                Guitar Hero
+                                            </span>
+                                            <span className="auto-level-settings__controller-mode-button-desc">
+                                                1 2 3 4 5
+                                            </span>
+                                        </button>
+                                    </div>
+                                    <p className="auto-level-settings__slider-help">
+                                        Determines button layout for gameplay. DDR uses 4 directional buttons; Guitar Hero uses 5 fret buttons.
+                                    </p>
+                                </div>
+
+                                {/* Pitch Influence Weight Slider */}
+                                <div className="auto-level-settings__form-group">
+                                    <div className="auto-level-settings__slider-header">
+                                        <label className="auto-level-settings__slider-label">
+                                            <Music2 size={14} style={{ marginRight: '0.375rem', verticalAlign: 'middle' }} />
+                                            Pitch Influence
+                                        </label>
+                                        <span className="auto-level-settings__slider-value">
+                                            {(settings.pitchInfluenceWeight * 100).toFixed(0)}%
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="1"
+                                        step="0.05"
+                                        value={settings.pitchInfluenceWeight}
+                                        onChange={handlePitchInfluenceWeightChange}
+                                        className="auto-level-settings__slider"
+                                        disabled={disabled}
+                                        aria-label="Pitch influence weight"
+                                    />
+                                    <div className="auto-level-settings__slider-labels">
+                                        <span>Pattern (0%)</span>
+                                        <span>Pitch (100%)</span>
+                                    </div>
+                                    <p className="auto-level-settings__slider-help">
+                                        How strongly pitch analysis affects button mapping. Lower values rely more on rhythmic patterns.
+                                    </p>
+                                </div>
+
+                                {/* Voicing Threshold Slider */}
+                                <div className="auto-level-settings__form-group">
+                                    <div className="auto-level-settings__slider-header">
+                                        <label className="auto-level-settings__slider-label">
+                                            Voicing Threshold
+                                        </label>
+                                        <span className="auto-level-settings__slider-value">
+                                            {settings.voicingThreshold.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="1"
+                                        step="0.05"
+                                        value={settings.voicingThreshold}
+                                        onChange={handleVoicingThresholdChange}
+                                        className="auto-level-settings__slider"
+                                        disabled={disabled}
+                                        aria-label="Voicing threshold"
+                                    />
+                                    <div className="auto-level-settings__slider-labels">
+                                        <span>Lenient (0.0)</span>
+                                        <span>Strict (1.0)</span>
+                                    </div>
+                                    <p className="auto-level-settings__slider-help">
+                                        Minimum confidence for pitch detection. Higher values require stronger pitch signals to be considered valid.
+                                    </p>
+                                </div>
+
+                                {/* Difficulty Selection */}
+                                <div className="auto-level-settings__form-group">
+                                    <label className="auto-level-settings__form-label">Difficulty</label>
+                                    <div className="auto-level-settings__difficulty-buttons">
+                                        {DIFFICULTIES.map((diff) => (
+                                            <button
+                                                key={diff.value}
+                                                type="button"
+                                                className={cn(
+                                                    'auto-level-settings__difficulty-button',
+                                                    settings.difficulty === diff.value &&
+                                                    'auto-level-settings__difficulty-button--active'
+                                                )}
+                                                onClick={() => handleDifficultyChange(diff.value)}
+                                                disabled={disabled}
+                                                title={diff.description}
+                                            >
+                                                <span className="auto-level-settings__difficulty-button-text">
+                                                    {diff.label}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p className="auto-level-settings__slider-help">
+                                        Default difficulty for the generated level. All difficulties are generated and can be switched later.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Advanced Options Toggle */}
@@ -934,31 +1124,6 @@ export function AutoLevelSettings({
                                             >
                                                 <span className="auto-level-settings__preset-button-text">
                                                     {preset.label}
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Difficulty Selection */}
-                                <div className="auto-level-settings__form-group">
-                                    <label className="auto-level-settings__form-label">Difficulty</label>
-                                    <div className="auto-level-settings__difficulty-buttons">
-                                        {DIFFICULTIES.map((diff) => (
-                                            <button
-                                                key={diff.value}
-                                                type="button"
-                                                className={cn(
-                                                    'auto-level-settings__difficulty-button',
-                                                    settings.difficulty === diff.value &&
-                                                    'auto-level-settings__difficulty-button--active'
-                                                )}
-                                                onClick={() => handleDifficultyChange(diff.value)}
-                                                disabled={disabled}
-                                                title={diff.description}
-                                            >
-                                                <span className="auto-level-settings__difficulty-button-text">
-                                                    {diff.label}
                                                 </span>
                                             </button>
                                         ))}

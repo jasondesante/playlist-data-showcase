@@ -316,11 +316,11 @@ After completing Phase 0, you should be able to:
 - [x] Call `generateAllDifficulties()` to generate all 4 difficulties at once
 
 ### Task 1.5: Extend AutoLevelSettings in Step 1
-- [ ] Add controller mode selector (DDR / Guitar Hero) with toggle
-- [ ] Add pitch influence weight slider (0.0-1.0, default 0.8)
-- [ ] Add voicing threshold slider (0.0-1.0, default 0.5)
-- [ ] Add difficulty selector (Natural/Easy/Medium/Hard) - determines default level shown
-- [ ] Group new settings in collapsible "Level Settings" subsection
+- [x] Add controller mode selector (DDR / Guitar Hero) with toggle
+- [x] Add pitch influence weight slider (0.0-1.0, default 0.8)
+- [x] Add voicing threshold slider (0.0-1.0, default 0.5)
+- [x] Add difficulty selector (Natural/Easy/Medium/Hard) - determines default level shown
+- [x] Group new settings in collapsible "Level Settings" subsection
 
 ---
 

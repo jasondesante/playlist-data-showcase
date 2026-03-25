@@ -13,6 +13,7 @@ import type {
     RhythmPresetName,
     OutputMode,
     StreamScorerConfig,
+    ControllerMode,
 } from 'playlist-data-engine';
 
 // Re-export types from playlist-data-engine
@@ -24,6 +25,7 @@ export type {
     CachePhase,
     RhythmPresetName,
     RhythmPresetConfig,
+    ControllerMode,
 } from 'playlist-data-engine';
 
 // Re-export the RhythmGenerator class and utilities
@@ -155,6 +157,32 @@ export interface AutoLevelSettings {
      * When undefined, engine defaults are used.
      */
     scoringConfig?: Partial<StreamScorerConfig>;
+
+    // ============================================================
+    // Level Settings (Task 1.5)
+    // ============================================================
+
+    /**
+     * Controller mode for button mapping.
+     * 'ddr' = 4 directional buttons (up, down, left, right)
+     * 'guitar_hero' = 5 fret buttons
+     */
+    controllerMode: ControllerMode;
+
+    /**
+     * How strongly pitch analysis influences button mapping.
+     * 0.0 = purely pattern-based mapping
+     * 1.0 = strong pitch influence
+     * Default: 0.8
+     */
+    pitchInfluenceWeight: number;
+
+    /**
+     * Probability threshold for voiced/unvoiced decision in pitch detection.
+     * Higher values require stronger pitch signal to be considered "voiced".
+     * Default: 0.5
+     */
+    voicingThreshold: number;
 }
 
 /**
@@ -170,6 +198,10 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     enableDensityValidation: false,  // Density validation disabled by default (opt-in)
     densityMaxRetries: 0,       // No retries by default
     scoringConfig: undefined,   // Uses engine defaults when undefined
+    // Level Settings (Task 1.5)
+    controllerMode: 'ddr',      // DDR mode by default
+    pitchInfluenceWeight: 0.8,  // Strong pitch influence
+    voicingThreshold: 0.5,      // Default voicing threshold
 };
 
 /**
