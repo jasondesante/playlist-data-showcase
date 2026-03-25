@@ -33,6 +33,7 @@ import type { GeneratedLevel } from 'playlist-data-engine';
 import { PitchTimeline } from './PitchTimeline';
 import { PitchInspector, type SelectedPitchData, type PitchBandName } from './PitchInspector';
 import { PitchProbabilityHistogram } from './PitchProbabilityHistogram';
+import { MultiBandPitchVisualization } from './MultiBandPitchVisualization';
 
 // ============================================================
 // Types
@@ -420,6 +421,23 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
                     <PitchTimeline
                         pitches={selectedBandPitches}
                         band={selectedBand}
+                        onPitchClick={handleSelectPitch}
+                        selectedPitchIndex={selectedPitch?.beatIndex}
+                        anticipationWindow={3.0}
+                        pastWindow={3.0}
+                    />
+                </div>
+
+                {/* Multi-Band Pitch Visualization (Task 4.1) */}
+                <div className="pitch-multiband-section">
+                    <h4 className="pitch-multiband-title">Multi-Band Pitch View</h4>
+                    <p className="pitch-multiband-description">
+                        Three stacked timelines showing pitch detection for all frequency bands simultaneously.
+                        The dominant band is highlighted with a glow effect.
+                    </p>
+                    <MultiBandPitchVisualization
+                        bandPitches={bandDataMap}
+                        dominantBand={dominantBand}
                         onPitchClick={handleSelectPitch}
                         selectedPitchIndex={selectedPitch?.beatIndex}
                         anticipationWindow={3.0}

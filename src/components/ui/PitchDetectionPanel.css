@@ -341,6 +341,32 @@
     margin-top: 0.5rem;
 }
 
+/* ============================================
+   MULTI-BAND PITCH SECTION (Task 4.1)
+   ============================================ */
+
+.pitch-multiband-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color, #2a2a4a);
+}
+
+.pitch-multiband-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.pitch-multiband-description {
+    margin: 0 0 1rem 0;
+    font-size: 0.75rem;
+    color: var(--text-muted, #6a6a7a);
+    line-height: 1.5;
+}
+
 .pitch-timeline-title {
     margin: 0 0 0.75rem 0;
     font-size: 0.8125rem;

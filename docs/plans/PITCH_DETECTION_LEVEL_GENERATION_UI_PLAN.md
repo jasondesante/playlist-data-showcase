@@ -432,13 +432,13 @@ Container component with:
 > Pitch detection runs on each frequency band independently. The engine selects the dominant band based on probability scores. Show all 3 bands in stacked view.
 
 ### Task 4.1: MultiBandPitchVisualization Component
-- [ ] Three stacked timelines (Low/Mid/High) - similar to rhythm multi-band
-- [ ] Each shows pitches for that band only
-- [ ] Probability shown as opacity
-- [ ] Voiced/unvoiced status visible
-- [ ] Vertical time alignment
-- [ ] Highlight dominant band with border/glow effect
-- [ ] Sync with audio playback
+- [x] Three stacked timelines (Low/Mid/High) - similar to rhythm multi-band
+- [x] Each shows pitches for that band only
+- [x] Probability shown as opacity
+- [x] Voiced/unvoiced status visible
+- [x] Vertical time alignment
+- [x] Highlight dominant band with border/glow effect
+- [x] Sync with audio playback
 
 ### Task 4.2: BandPitchTimeline Component (Inline Reusable)
 - [ ] Single band's pitch timeline (reused 3 times)
