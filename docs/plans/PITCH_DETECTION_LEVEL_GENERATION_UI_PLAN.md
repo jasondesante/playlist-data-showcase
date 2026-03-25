@@ -519,11 +519,11 @@ Container component with:
 - [x] Show musical interval names (e.g., "Minor 3rd")
 
 ### Task 5.5: MelodySegmentTimeline Component
-- [ ] Show detected melody segments
-- [ ] Consecutive same-direction beats grouped
-- [ ] Color by direction
-- [ ] Label with note span
-- [ ] Sync with audio
+- [x] Show detected melody segments
+- [x] Consecutive same-direction beats grouped
+- [x] Color by direction
+- [x] Label with note span
+- [x] Sync with audio
 
 ### Task 5.6: DirectionStatsSummary Component
 - [ ] Card with direction statistics

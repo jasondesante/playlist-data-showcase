@@ -36,6 +36,7 @@ import type { GeneratedLevel } from 'playlist-data-engine';
 import MelodyDirectionTimeline from './MelodyDirectionTimeline';
 import PitchContourGraph from './PitchContourGraph';
 import IntervalDistributionChart from './IntervalDistributionChart';
+import MelodySegmentTimeline from './MelodySegmentTimeline';
 
 // ============================================================
 // Types
@@ -314,49 +315,21 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
                     )}
                 </div>
 
-                {/* Melody Segment Timeline Placeholder (Task 5.5) */}
+                {/* Melody Segment Timeline (Task 5.5) */}
                 {melodyData.contour && melodyData.contour.segments && melodyData.contour.segments.length > 0 && (
-                    <div className="melody-viz-placeholder">
-                        <h5 className="melody-viz-placeholder-title">Melody Segments</h5>
-                        <p className="melody-viz-placeholder-text">
-                            Consecutive same-direction beats grouped into segments.
+                    <div className="melody-viz-section">
+                        <h5 className="melody-viz-section-title">Melody Segments</h5>
+                        <p className="melody-viz-section-text">
+                            Consecutive same-direction beats grouped into segments. Shows note span and direction.
                         </p>
-                        <div className="melody-viz-placeholder-coming">
-                            <span>Coming in Task 5.5</span>
-                        </div>
-                        <div className="melody-viz-preview melody-segment-preview">
-                            <div className="melody-segment-list">
-                                {melodyData.contour.segments.slice(0, 5).map((segment, index) => (
-                                    <div
-                                        key={index}
-                                        className={cn(
-                                            'melody-segment-item',
-                                            `melody-segment-${segment.direction}`
-                                        )}
-                                    >
-                                        <span className="melody-segment-range">
-                                            Beats {segment.startBeat}-{segment.endBeat}
-                                        </span>
-                                        <span className="melody-segment-direction">
-                                            {segment.direction === 'up' && '↑ Ascending'}
-                                            {segment.direction === 'down' && '↓ Descending'}
-                                            {segment.direction === 'stable' && '→ Stable'}
-                                            {segment.direction === 'none' && '○ No pitch'}
-                                        </span>
-                                        {segment.startNote && segment.endNote && (
-                                            <span className="melody-segment-notes">
-                                                {segment.startNote} → {segment.endNote}
-                                            </span>
-                                        )}
-                                    </div>
-                                ))}
-                                {melodyData.contour.segments.length > 5 && (
-                                    <span className="melody-segment-more">
-                                        +{melodyData.contour.segments.length - 5} more segments
-                                    </span>
-                                )}
-                            </div>
-                        </div>
+                        <MelodySegmentTimeline
+                            segments={melodyData.contour.segments}
+                            pitchesByBeat={melodyData.pitchByBeat ?? []}
+                            anticipationWindow={6.0}
+                            pastWindow={3.0}
+                            showSegmentIndices={false}
+                            segmentHeight={36}
+                        />
                     </div>
                 )}
             </div>
