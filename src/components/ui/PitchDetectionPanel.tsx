@@ -14,7 +14,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
-import { Music, TrendingUp, TrendingDown, Minus, Circle, Star } from 'lucide-react';
+import { Music, Star } from 'lucide-react';
 import './PitchDetectionPanel.css';
 import { cn } from '../../utils/cn';
 import {
@@ -26,11 +26,12 @@ import {
 import type {
     PitchAtBeat,
     BandPitchAtBeat,
-    PitchResult,
+    IntervalCategory,
     AllDifficultiesWithNatural,
 } from '../../types/levelGeneration';
 import type { GeneratedLevel } from 'playlist-data-engine';
 import { PitchTimeline } from './PitchTimeline';
+import { PitchInspector, type SelectedPitchData, type PitchBandName } from './PitchInspector';
 
 // ============================================================
 // Types
@@ -39,19 +40,6 @@ import { PitchTimeline } from './PitchTimeline';
 export interface PitchDetectionPanelProps {
     /** Additional CSS class names */
     className?: string;
-}
-
-/** Band name type from the engine */
-type PitchBandName = 'low' | 'mid' | 'high';
-
-/** Selected pitch data for the inspector */
-interface SelectedPitch {
-    beatIndex: number;
-    timestamp: number;
-    band: PitchBandName;
-    pitch: PitchResult | null;
-    direction: string;
-    intervalFromPrevious: number;
 }
 
 /** Band configuration for display */
@@ -125,35 +113,10 @@ function calculateBandStats(bandData: BandPitchAtBeat | undefined): {
 }
 
 /**
- * Get direction icon component.
- */
-function getDirectionIcon(direction: string): React.ReactNode {
-    switch (direction) {
-        case 'up':
-            return <TrendingUp size={14} className="pitch-direction-icon pitch-direction-up" />;
-        case 'down':
-            return <TrendingDown size={14} className="pitch-direction-icon pitch-direction-down" />;
-        case 'stable':
-            return <Minus size={14} className="pitch-direction-icon pitch-direction-stable" />;
-        default:
-            return <Circle size={14} className="pitch-direction-icon pitch-direction-none" />;
-    }
-}
-
-/**
  * Format a probability value as a percentage.
  */
 function formatProbability(prob: number): string {
     return `${Math.round(prob * 100)}%`;
-}
-
-/**
- * Format a timestamp in seconds.
- */
-function formatTimestamp(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 // ============================================================
@@ -274,123 +237,6 @@ function BandBreakdownCard({ band, bandData, isDominant, onSelectBand, isSelecte
     );
 }
 
-interface PitchInspectorProps {
-    selectedPitch: SelectedPitch | null;
-    selectedBand: PitchBandName;
-}
-
-function PitchInspector({ selectedPitch, selectedBand }: PitchInspectorProps) {
-    const bandConfig = BAND_CONFIGS.find(b => b.name === selectedBand);
-
-    if (!selectedPitch) {
-        return (
-            <div className="pitch-inspector pitch-inspector-empty">
-                <div className="pitch-inspector-header">
-                    <Music size={16} />
-                    <span>Pitch Inspector</span>
-                </div>
-                <div className="pitch-insicator-content">
-                    <p className="pitch-inspector-placeholder">
-                        Click on a pitch in the timeline to view details
-                    </p>
-                    <div className="pitch-inspector-band-indicator">
-                        <span className={cn('pitch-band-dot', `pitch-band-dot-${selectedBand}`)} />
-                        <span>Viewing {bandConfig?.label} band</span>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    const { beatIndex, timestamp, pitch, direction, intervalFromPrevious } = selectedPitch;
-
-    return (
-        <div className="pitch-inspector">
-            <div className="pitch-inspector-header">
-                <Music size={16} />
-                <span>Pitch Inspector</span>
-            </div>
-            <div className="pitch-inspector-content">
-                <div className="pitch-inspector-row">
-                    <span className="pitch-inspector-label">Beat Index</span>
-                    <span className="pitch-inspector-value">{beatIndex}</span>
-                </div>
-                <div className="pitch-inspector-row">
-                    <span className="pitch-inspector-label">Timestamp</span>
-                    <span className="pitch-inspector-value">{formatTimestamp(timestamp)}</span>
-                </div>
-
-                <div className="pitch-inspector-divider" />
-
-                {pitch ? (
-                    <>
-                        <div className="pitch-inspector-row">
-                            <span className="pitch-inspector-label">Note</span>
-                            <span className="pitch-inspector-value pitch-note-name">
-                                {pitch.noteName ?? 'N/A'}
-                            </span>
-                        </div>
-                        <div className="pitch-inspector-row">
-                            <span className="pitch-inspector-label">Frequency</span>
-                            <span className="pitch-inspector-value">
-                                {pitch.frequency > 0 ? `${pitch.frequency.toFixed(1)} Hz` : 'N/A'}
-                            </span>
-                        </div>
-                        <div className="pitch-inspector-row">
-                            <span className="pitch-inspector-label">MIDI Note</span>
-                            <span className="pitch-inspector-value">
-                                {pitch.midiNote ?? 'N/A'}
-                            </span>
-                        </div>
-                        <div className="pitch-inspector-row">
-                            <span className="pitch-inspector-label">Probability</span>
-                            <span className={cn(
-                                'pitch-inspector-value',
-                                'pitch-probability-badge',
-                                pitch.probability > 0.8 ? 'pitch-prob-high' :
-                                pitch.probability > 0.5 ? 'pitch-prob-medium' : 'pitch-prob-low'
-                            )}>
-                                {formatProbability(pitch.probability)}
-                            </span>
-                        </div>
-                        <div className="pitch-inspector-row">
-                            <span className="pitch-inspector-label">Voiced</span>
-                            <span className={cn(
-                                'pitch-inspector-value',
-                                'pitch-voiced-badge',
-                                pitch.isVoiced ? 'pitch-voiced-yes' : 'pitch-voiced-no'
-                            )}>
-                                {pitch.isVoiced ? 'Yes' : 'No'}
-                            </span>
-                        </div>
-
-                        <div className="pitch-inspector-divider" />
-
-                        <div className="pitch-inspector-row">
-                            <span className="pitch-inspector-label">Direction</span>
-                            <span className="pitch-inspector-value pitch-direction-value">
-                                {getDirectionIcon(direction)}
-                                <span>{direction}</span>
-                            </span>
-                        </div>
-                        <div className="pitch-inspector-row">
-                            <span className="pitch-inspector-label">Interval</span>
-                            <span className="pitch-inspector-value">
-                                {intervalFromPrevious > 0 ? '+' : ''}{intervalFromPrevious} semitones
-                            </span>
-                        </div>
-                    </>
-                ) : (
-                    <div className="pitch-inspector-no-pitch">
-                        <Circle size={24} className="pitch-no-pitch-icon" />
-                        <p>No pitch detected at this beat</p>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
-
 // ============================================================
 // Main Component
 // ============================================================
@@ -409,7 +255,7 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
 
     // State for selected band and pitch
     const [selectedBand, setSelectedBand] = useState<PitchBandName>('mid');
-    const [selectedPitch, setSelectedPitch] = useState<SelectedPitch | null>(null);
+    const [selectedPitch, setSelectedPitch] = useState<SelectedPitchData | null>(null);
 
     // Extract band data from pitch analysis
     const bandDataMap = useMemo((): Map<PitchBandName, BandPitchAtBeat> => {
@@ -485,7 +331,7 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
         setSelectedPitch(null); // Clear selected pitch when changing bands
     }, []);
 
-    // Handle pitch selection (will be connected to timeline in Task 3.2)
+    // Handle pitch selection (Task 3.4: Updated to include interval category)
     const handleSelectPitch = useCallback((pitch: PitchAtBeat) => {
         setSelectedPitch({
             beatIndex: pitch.beatIndex,
@@ -494,6 +340,7 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
             pitch: pitch.pitch,
             direction: pitch.direction,
             intervalFromPrevious: pitch.intervalFromPrevious,
+            intervalCategory: pitch.intervalCategory as IntervalCategory | undefined,
         });
     }, []);
 

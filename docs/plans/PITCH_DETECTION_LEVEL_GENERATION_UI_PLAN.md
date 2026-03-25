@@ -407,16 +407,16 @@ Container component with:
 - [x] Highlight dominant band with ⭐ badge
 
 ### Task 3.4: PitchInspector Component (Side Panel)
-- [ ] **Fixed side panel** (not tooltip) for selected pitch details
-- [ ] Position: Right side of PitchDetectionPanel, always visible
-- [ ] Display:
+- [x] **Fixed side panel** (not tooltip) for selected pitch details
+- [x] Position: Right side of PitchDetectionPanel, always visible
+- [x] Display:
   - Timestamp and beat index
   - Frequency (Hz) and note name (e.g., "C4")
   - Probability/confidence score
   - Is voiced boolean
   - MIDI note number
   - Interval from previous beat (semitones and category)
-- [ ] Updates when user clicks different pitches on timeline
+- [x] Updates when user clicks different pitches on timeline
 
 ### Task 3.5: PitchProbabilityHistogram Component
 - [ ] Distribution of pitch probabilities
