@@ -144,14 +144,14 @@ This phase creates the **minimum viable data pipeline** to verify:
 5. The auto-continue pipeline triggers correctly
 
 ### Task 0.1: Add Level Generation State to Store
-- [ ] Add `generatedLevel: GeneratedLevel | null` to beatDetectionStore
-- [ ] Add `allDifficultyLevels: AllDifficultiesResult | null` for all 4 difficulties (Natural/Easy/Medium/Hard)
-- [ ] Add `levelGenerationProgress: LevelGenerationProgress | null`
-- [ ] Add `pitchAnalysis: MelodyContourAnalysisResult | null`
-- [ ] Add `selectedDifficulty: 'natural' | 'easy' | 'medium' | 'hard'` (from Step 1)
-- [ ] Add actions: `setGeneratedLevel()`, `clearGeneratedLevel()`, `setLevelGenerationProgress()`, `setSelectedDifficulty()`
-- [ ] Reset all level state when track changes
-- [ ] Clear level state when switching from auto to manual mode
+- [x] Add `generatedLevel: GeneratedLevel | null` to beatDetectionStore
+- [x] Add `allDifficultyLevels: AllDifficultiesResult | null` for all 4 difficulties (Natural/Easy/Medium/Hard)
+- [x] Add `levelGenerationProgress: LevelGenerationProgress | null`
+- [x] Add `pitchAnalysis: MelodyContourAnalysisResult | null`
+- [x] Add `selectedDifficulty: 'natural' | 'easy' | 'medium' | 'hard'` (from Step 1)
+- [x] Add actions: `setGeneratedLevel()`, `clearGeneratedLevel()`, `setLevelGenerationProgress()`, `setSelectedDifficulty()`
+- [x] Reset all level state when track changes
+- [x] Clear level state when switching from auto to manual mode
 
 ### Task 0.2: Create useLevelGeneration Hook
 - [ ] Create `src/hooks/useLevelGeneration.ts`

@@ -100,6 +100,9 @@ import {
     RhythmXPCalculator,
     // Rhythm Generation types (Task 1.1)
     type GeneratedRhythm,
+    // Level Generation types (Task 0.1)
+    type GeneratedLevel,
+    type AllDifficultiesResult,
 } from 'playlist-data-engine';
 
 /**
@@ -110,6 +113,81 @@ export interface TapResult extends ExtendedButtonPressResult {
     tappedAt: number;
     /** Index of the tap in the session */
     tapIndex: number;
+}
+
+/**
+ * Direction statistics for melody contour metadata.
+ * (Task 0.1 - Local definition since not exported from main package)
+ */
+export interface DirectionStats {
+    up: number;
+    down: number;
+    stable: number;
+    none: number;
+}
+
+/**
+ * Interval statistics for melody contour metadata.
+ * (Task 0.1 - Local definition since not exported from main package)
+ */
+export interface IntervalStats {
+    unison: number;
+    small: number;
+    medium: number;
+    large: number;
+    very_large: number;
+}
+
+/**
+ * Result of melody contour analysis.
+ * (Task 0.1 - Local definition since not exported from main package)
+ *
+ * This interface matches the engine's MelodyContourAnalysisResult type
+ * and will be populated from the GeneratedLevel.pitchAnalysis field.
+ */
+export interface MelodyContourAnalysisResult {
+    /** Direction statistics */
+    directionStats: DirectionStats;
+    /** Interval statistics */
+    intervalStats: IntervalStats;
+    /** Dominant band used for analysis */
+    dominantBand: string;
+    /** Total beats analyzed */
+    totalBeats: number;
+    /** Beats with voiced pitch */
+    voicedBeats: number;
+    /** Overall melody direction */
+    overallDirection: 'ascending' | 'descending' | 'stable' | 'mixed';
+    /** Pitch range (min and max notes) */
+    pitchRange: {
+        minNote: string;
+        maxNote: string;
+        semitones: number;
+    } | null;
+}
+
+/**
+ * Progress information during level generation.
+ * (Task 0.1 - Local definition since not exported from main package)
+ *
+ * This matches the engine's LevelGenerationProgress interface.
+ */
+export interface LevelGenerationProgress {
+    /** Current stage of generation */
+    stage: 'rhythm' | 'pitch' | 'buttons' | 'conversion' | 'finalizing';
+    /** Progress within current stage (0-1) */
+    progress: number;
+    /** Human-readable status message */
+    message: string;
+}
+
+/**
+ * All difficulty variants of the generated level.
+ * Extends the engine's AllDifficultiesResult to include the 'natural' variant.
+ * (Task 0.1)
+ */
+export interface AllDifficultiesWithNatural extends AllDifficultiesResult {
+    natural?: GeneratedLevel;
 }
 
 /**
@@ -615,6 +693,45 @@ interface BeatDetectionState {
         progress: number;
         message: string;
     } | null;
+
+    // ============================================================
+    // Level Generation State (Task 0.1)
+    // ============================================================
+
+    /**
+     * Generated level for the currently selected difficulty.
+     * This is session-only state (NOT persisted to localStorage).
+     * Cleared when track changes or when switching from auto to manual mode.
+     */
+    generatedLevel: GeneratedLevel | null;
+
+    /**
+     * All difficulty variants of the generated level.
+     * Contains easy, medium, hard, and natural variants.
+     * This is session-only state (NOT persisted to localStorage).
+     */
+    allDifficultyLevels: AllDifficultiesWithNatural | null;
+
+    /**
+     * Progress state for level generation pipeline.
+     * Tracks the current stage and progress percentage.
+     * Stages: rhythm → pitch → buttons → conversion → finalizing
+     */
+    levelGenerationProgress: LevelGenerationProgress | null;
+
+    /**
+     * Pitch analysis results from melody contour analysis.
+     * Contains direction stats, interval stats, and pitch-by-beat data.
+     * This is session-only state (NOT persisted to localStorage).
+     */
+    pitchAnalysis: MelodyContourAnalysisResult | null;
+
+    /**
+     * Currently selected difficulty level for display.
+     * Determines which variant from allDifficultyLevels is shown in the UI.
+     * Default: 'medium'
+     */
+    selectedDifficulty: 'natural' | 'easy' | 'medium' | 'hard';
 }
 
 interface BeatDetectionActions {
@@ -1287,6 +1404,50 @@ interface BeatDetectionActions {
      * - User manually clears the rhythm
      */
     clearGeneratedRhythm: () => void;
+
+    // ============================================================
+    // Level Generation Actions (Task 0.1)
+    // ============================================================
+
+    /**
+     * Set the generated level data for the currently selected difficulty.
+     * This is session-only state (not persisted to localStorage).
+     * @param level - The generated level data from LevelGenerator, or null to clear
+     */
+    setGeneratedLevel: (level: GeneratedLevel | null) => void;
+
+    /**
+     * Set all difficulty variants of the generated level.
+     * @param levels - The generated levels for all difficulties, or null to clear
+     */
+    setAllDifficultyLevels: (levels: AllDifficultiesWithNatural | null) => void;
+
+    /**
+     * Clear the generated level and all related state.
+     * Called when:
+     * - Track changes
+     * - Switching from 'automatic' to 'manual' mode
+     * - User manually clears the level
+     */
+    clearGeneratedLevel: () => void;
+
+    /**
+     * Set the level generation progress state.
+     * @param progress - The current progress of the level generation pipeline
+     */
+    setLevelGenerationProgress: (progress: LevelGenerationProgress | null) => void;
+
+    /**
+     * Set the pitch analysis results.
+     * @param analysis - The melody contour analysis result, or null to clear
+     */
+    setPitchAnalysis: (analysis: MelodyContourAnalysisResult | null) => void;
+
+    /**
+     * Set the selected difficulty level for display.
+     * @param difficulty - The difficulty to select ('natural', 'easy', 'medium', or 'hard')
+     */
+    setSelectedDifficulty: (difficulty: 'natural' | 'easy' | 'medium' | 'hard') => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -1473,6 +1634,13 @@ const createInitialState = (): BeatDetectionState => ({
     generationMode: 'manual', // Always start in manual mode
     generatedRhythm: null, // Session-only
     rhythmGenerationProgress: null, // Session-only
+
+    // Level Generation state (Task 0.1)
+    generatedLevel: null, // Session-only
+    allDifficultyLevels: null, // Session-only
+    levelGenerationProgress: null, // Session-only
+    pitchAnalysis: null, // Session-only
+    selectedDifficulty: 'medium', // Default to medium difficulty
 });
 
 /**
@@ -1954,6 +2122,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             // Note: generationMode stays as-is (not reset to manual)
                             generatedRhythm: null,
                             rhythmGenerationProgress: null,
+                            // Reset level generation state (Task 0.1)
+                            generatedLevel: null,
+                            allDifficultyLevels: null,
+                            levelGenerationProgress: null,
+                            pitchAnalysis: null,
+                            selectedDifficulty: 'medium',
                         });
                     },
 
@@ -4226,13 +4400,19 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                         // When switching from auto to manual:
                         // - Keep beatMap
-                        // - Clear generated rhythm
+                        // - Clear generated rhythm and level
                         // - Navigate to Step 2 (Subdivide)
                         if (previousMode === 'automatic' && mode === 'manual') {
                             set({
                                 generationMode: mode,
                                 generatedRhythm: null,
                                 rhythmGenerationProgress: null,
+                                // Clear level generation state (Task 0.1)
+                                generatedLevel: null,
+                                allDifficultyLevels: null,
+                                levelGenerationProgress: null,
+                                pitchAnalysis: null,
+                                selectedDifficulty: 'medium',
                             });
                             // Navigate to Step 2 (Subdivide) if we have a beat map
                             if (state.beatMap) {
@@ -4240,11 +4420,17 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             }
                         } else {
                             // Switching from manual to auto: just update mode
-                            // Clear any previously generated rhythm
+                            // Clear any previously generated rhythm and level
                             set({
                                 generationMode: mode,
                                 generatedRhythm: null,
                                 rhythmGenerationProgress: null,
+                                // Clear level generation state (Task 0.1)
+                                generatedLevel: null,
+                                allDifficultyLevels: null,
+                                levelGenerationProgress: null,
+                                pitchAnalysis: null,
+                                selectedDifficulty: 'medium',
                             });
                         }
                     },
@@ -4299,6 +4485,108 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 rhythmGenerationProgress: null,
                             });
                         }
+                        // Also clear level generation state since it depends on rhythm
+                        if (
+                            state.generatedLevel ||
+                            state.allDifficultyLevels ||
+                            state.levelGenerationProgress ||
+                            state.pitchAnalysis
+                        ) {
+                            logger.info('BeatDetection', 'Clearing level generation state (dependent on rhythm)');
+                            set({
+                                generatedLevel: null,
+                                allDifficultyLevels: null,
+                                levelGenerationProgress: null,
+                                pitchAnalysis: null,
+                                selectedDifficulty: 'medium',
+                            });
+                        }
+                    },
+
+                    // ============================================================
+                    // Level Generation Actions (Task 0.1)
+                    // ============================================================
+
+                    /**
+                     * Set the generated level data for the currently selected difficulty.
+                     * This is session-only state (not persisted to localStorage).
+                     */
+                    setGeneratedLevel: (level) => {
+                        logger.info('BeatDetection', 'Setting generated level', {
+                            hasLevel: !!level,
+                            totalBeats: level?.chart.beats.length,
+                            difficulty: level?.metadata.difficulty,
+                        });
+                        set({ generatedLevel: level });
+                    },
+
+                    /**
+                     * Set all difficulty variants of the generated level.
+                     */
+                    setAllDifficultyLevels: (levels) => {
+                        logger.info('BeatDetection', 'Setting all difficulty levels', {
+                            hasEasy: !!levels?.easy,
+                            hasMedium: !!levels?.medium,
+                            hasHard: !!levels?.hard,
+                            hasNatural: !!levels?.natural,
+                        });
+                        set({ allDifficultyLevels: levels });
+                    },
+
+                    /**
+                     * Clear the generated level and all related state.
+                     * Called when track changes or when switching modes.
+                     */
+                    clearGeneratedLevel: () => {
+                        const state = get();
+                        if (
+                            state.generatedLevel ||
+                            state.allDifficultyLevels ||
+                            state.levelGenerationProgress ||
+                            state.pitchAnalysis
+                        ) {
+                            logger.info('BeatDetection', 'Clearing generated level state');
+                            set({
+                                generatedLevel: null,
+                                allDifficultyLevels: null,
+                                levelGenerationProgress: null,
+                                pitchAnalysis: null,
+                            });
+                        }
+                    },
+
+                    /**
+                     * Set the level generation progress state.
+                     */
+                    setLevelGenerationProgress: (progress) => {
+                        if (progress) {
+                            logger.debug('BeatDetection', 'Level generation progress', {
+                                stage: progress.stage,
+                                progress: progress.progress,
+                                message: progress.message,
+                            });
+                        }
+                        set({ levelGenerationProgress: progress });
+                    },
+
+                    /**
+                     * Set the pitch analysis results.
+                     */
+                    setPitchAnalysis: (analysis) => {
+                        logger.info('BeatDetection', 'Setting pitch analysis', {
+                            hasAnalysis: !!analysis,
+                            dominantBand: analysis?.dominantBand,
+                            directionStats: analysis?.directionStats,
+                        });
+                        set({ pitchAnalysis: analysis });
+                    },
+
+                    /**
+                     * Set the selected difficulty level for display.
+                     */
+                    setSelectedDifficulty: (difficulty) => {
+                        logger.info('BeatDetection', 'Setting selected difficulty', { difficulty });
+                        set({ selectedDifficulty: difficulty });
                     },
                 },
             };
