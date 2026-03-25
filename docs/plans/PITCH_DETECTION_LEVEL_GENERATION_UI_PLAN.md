@@ -388,13 +388,13 @@ Container component with:
 ```
 
 ### Task 3.2: PitchTimeline Component
-- [ ] Horizontal timeline with pitches at beat timestamps
-- [ ] Y-axis = pitch (frequency or MIDI note number)
-- [ ] Color by band (low=blue, mid=green, high=orange)
-- [ ] Size/opacity based on probability
-- [ ] Unvoiced beats shown as gray gaps
-- [ ] Sync with audio playback (playhead)
-- [ ] Click to select pitch for inspector
+- [x] Horizontal timeline with pitches at beat timestamps
+- [x] Y-axis = pitch (frequency or MIDI note number)
+- [x] Color by band (low=blue, mid=green, high=orange)
+- [x] Size/opacity based on probability
+- [x] Unvoiced beats shown as gray gaps
+- [x] Sync with audio playback (playhead)
+- [x] Click to select pitch for inspector
 
 ### Task 3.3: BandPitchBreakdown Component (Inline in Panel)
 - [ ] Three cards for Low/Mid/High bands

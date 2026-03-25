@@ -30,6 +30,7 @@ import type {
     AllDifficultiesWithNatural,
 } from '../../types/levelGeneration';
 import type { GeneratedLevel } from 'playlist-data-engine';
+import { PitchTimeline } from './PitchTimeline';
 
 // ============================================================
 // Types
@@ -529,46 +530,22 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
                     </div>
                 </div>
 
-                {/* Pitch Timeline Placeholder (Task 3.2) */}
+                {/* Pitch Timeline (Task 3.2) */}
                 <div className="pitch-timeline-section">
                     <h4 className="pitch-timeline-title">
                         Pitch Timeline
                         <span className="pitch-timeline-band-label">
                             ({BAND_CONFIGS.find(b => b.name === selectedBand)?.label} band)
-                    </span>
+                        </span>
                     </h4>
-                    <div className="pitch-timeline-placeholder">
-                        <p className="pitch-timeline-placeholder-text">
-                            Pitch timeline visualization will be added in Task 3.2.
-                        </p>
-                        <p className="pitch-timeline-placeholder-detail">
-                            {selectedBandPitches.length} pitches available for display.
-                        </p>
-                        {/* Quick preview of pitches */}
-                        <div className="pitch-timeline-preview">
-                            {selectedBandPitches.slice(0, 10).map((p, i) => (
-                                <div
-                                    key={i}
-                                    className={cn(
-                                        'pitch-preview-dot',
-                                        p.pitch?.isVoiced ? 'pitch-preview-voiced' : 'pitch-preview-unvoiced'
-                                    )}
-                                    onClick={() => handleSelectPitch(p)}
-                                    title={p.pitch?.noteName ?? 'No pitch'}
-                                    role="button"
-                                    tabIndex={0}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSelectPitch(p)}
-                                >
-                                    {p.pitch?.noteName?.replace(/\d+$/, '') ?? '○'}
-                                </div>
-                            ))}
-                            {selectedBandPitches.length > 10 && (
-                                <span className="pitch-preview-more">
-                                    +{selectedBandPitches.length - 10} more
-                                </span>
-                            )}
-                        </div>
-                    </div>
+                    <PitchTimeline
+                        pitches={selectedBandPitches}
+                        band={selectedBand}
+                        onPitchClick={handleSelectPitch}
+                        selectedPitchIndex={selectedPitch?.beatIndex}
+                        anticipationWindow={3.0}
+                        pastWindow={3.0}
+                    />
                 </div>
             </div>
 
