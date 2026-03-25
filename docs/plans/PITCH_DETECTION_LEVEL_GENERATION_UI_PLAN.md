@@ -575,12 +575,7 @@ Container component with:
 - [x] Counter-clockwise = descending pitch
 - [x] Highlight current beat synced with audio
 
-### Task 6.4: GuitarHeroModeVisualization Component (Secondary View)
-- [ ] Fretboard-style visualization (optional/expandable)
-- [ ] 5 horizontal lanes (buttons 1-5)
-- [ ] Beats appear on timeline
-- [ ] Pitch range per fret shown
-- [ ] Sync with audio
+`
 
 ### Task 6.5: ButtonDistributionChart Component
 - [ ] Bar chart of button usage

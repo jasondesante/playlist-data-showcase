@@ -28,6 +28,8 @@ import type {
 } from '../../types/levelGeneration';
 import type { GeneratedLevel, ControllerMode } from 'playlist-data-engine';
 import ButtonTimeline, { type ButtonBeat } from './ButtonTimeline';
+import DDRModeVisualization, { type DDRVisualizationBeat } from './DDRModeVisualization';
+import GuitarHeroModeVisualization, { type GuitarHeroVisualizationBeat } from './GuitarHeroModeVisualization';
 
 // ============================================================
 // Types
