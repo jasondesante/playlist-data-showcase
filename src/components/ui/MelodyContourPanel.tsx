@@ -35,6 +35,7 @@ import type {
 } from '../../types/levelGeneration';
 import type { GeneratedLevel } from 'playlist-data-engine';
 import MelodyDirectionTimeline from './MelodyDirectionTimeline';
+import PitchContourGraph from './PitchContourGraph';
 
 // ============================================================
 // Types
@@ -346,31 +347,27 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
                     )}
                 </div>
 
-                {/* Pitch Contour Graph Placeholder (Task 5.3) */}
-                <div className="melody-viz-placeholder">
-                    <h5 className="melody-viz-placeholder-title">Pitch Contour Graph</h5>
-                    <p className="melody-viz-placeholder-text">
+                {/* Pitch Contour Graph (Task 5.3) */}
+                <div className="melody-viz-section">
+                    <h5 className="melody-viz-section-title">Pitch Contour Graph</h5>
+                    <p className="melody-viz-section-text">
                         Line graph showing pitch contour over time with direction coloring.
+                        Click to seek, hover for details.
                     </p>
-                    <div className="melody-viz-placeholder-coming">
-                        <span>Coming in Task 5.3</span>
-                    </div>
-                    <div className="melody-viz-preview melody-contour-preview">
-                        {pitchAnalysis.pitchRange ? (
-                            <div className="melody-contour-preview-info">
-                                <span className="melody-contour-range">
-                                    {pitchAnalysis.pitchRange.minNote} → {pitchAnalysis.pitchRange.maxNote}
-                                </span>
-                                <span className="melody-contour-semitones">
-                                    {pitchAnalysis.pitchRange.semitones} semitones
-                                </span>
-                            </div>
-                        ) : (
-                            <div className="melody-preview-empty">
-                                No pitch range data available
-                            </div>
-                        )}
-                    </div>
+                    {melodyData.pitchByBeat && melodyData.pitchByBeat.length > 0 ? (
+                        <PitchContourGraph
+                            pitchesByBeat={melodyData.pitchByBeat}
+                            onBeatClick={handleBeatClick}
+                            selectedBeatIndex={selectedBeatIndex}
+                            height={180}
+                            showNoteLabels={true}
+                            showYAxisLabels={true}
+                        />
+                    ) : (
+                        <div className="melody-viz-empty">
+                            No pitch contour data available
+                        </div>
+                    )}
                 </div>
 
                 {/* Melody Segment Timeline Placeholder (Task 5.5) */}

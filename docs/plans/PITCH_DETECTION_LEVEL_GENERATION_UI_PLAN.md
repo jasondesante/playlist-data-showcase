@@ -499,14 +499,14 @@ Container component with:
 - [x] Sync with audio playback
 
 ### Task 5.3: PitchContourGraph Component (NEW)
-- [ ] Line graph showing pitch contour over time
-- [ ] X-axis = time (seconds)
-- [ ] Y-axis = MIDI note number or frequency
-- [ ] Line connects consecutive voiced pitches
-- [ ] Gaps for unvoiced sections
-- [ ] Color gradient by direction (green=up, red=down, blue=stable)
-- [ ] Sync with audio playback
-- [ ] Show note labels at key points
+- [x] Line graph showing pitch contour over time
+- [x] X-axis = time (seconds)
+- [x] Y-axis = MIDI note number or frequency
+- [x] Line connects consecutive voiced pitches
+- [x] Gaps for unvoiced sections
+- [x] Color gradient by direction (green=up, red=down, blue=stable)
+- [x] Sync with audio playback
+- [x] Show note labels at key points
 
 ### Task 5.4: IntervalDistributionChart Component
 - [ ] Bar/pie chart for interval categories
