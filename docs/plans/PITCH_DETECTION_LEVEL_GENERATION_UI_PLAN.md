@@ -569,11 +569,11 @@ Container component with:
 - [x] Click to see beat details
 
 ### Task 6.3: DDRModeVisualization Component (Secondary View)
-- [ ] Circular motion representation (optional/expandable)
-- [ ] Button sequence as path
-- [ ] Clockwise = ascending pitch
-- [ ] Counter-clockwise = descending pitch
-- [ ] Highlight current beat synced with audio
+- [x] Circular motion representation (optional/expandable)
+- [x] Button sequence as path
+- [x] Clockwise = ascending pitch
+- [x] Counter-clockwise = descending pitch
+- [x] Highlight current beat synced with audio
 
 ### Task 6.4: GuitarHeroModeVisualization Component (Secondary View)
 - [ ] Fretboard-style visualization (optional/expandable)
