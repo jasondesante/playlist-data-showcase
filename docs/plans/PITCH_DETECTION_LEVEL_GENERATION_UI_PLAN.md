@@ -329,13 +329,13 @@ After completing Phase 0, you should be able to:
 > This is a new separate tab (Step 3 in auto mode) that contains all pitch detection and level generation visualizations.
 
 ### Task 2.1: Create PitchLevelTab Container Component
-- [ ] Create `src/components/Tabs/PitchLevelTab.tsx` and `PitchLevelTab.css`
-- [ ] Handle loading states during level generation (show LevelGenerationProgress)
-- [ ] Handle error states with retry button
-- [ ] Collapsible sections for each visualization panel
-- [ ] No settings panel - all settings are in Step 1
-- [ ] Share audio sync state with RhythmGenerationTab
-- [ ] Default expanded: Final Level Output panel
+- [x] Create `src/components/Tabs/PitchLevelTab.tsx` and `PitchLevelTab.css`
+- [x] Handle loading states during level generation (show LevelGenerationProgress)
+- [x] Handle error states with retry button
+- [x] Collapsible sections for each visualization panel
+- [x] No settings panel - all settings are in Step 1
+- [x] Share audio sync state with RhythmGenerationTab
+- [x] Default expanded: Final Level Output panel
 
 ### Task 2.2: Create LevelGenerationProgress Component
 - [ ] Create `src/components/ui/LevelGenerationProgress.tsx` and `.css`
@@ -348,10 +348,10 @@ After completing Phase 0, you should be able to:
 - [ ] Overall progress bar
 
 ### Task 2.3: Update BeatDetectionTab for 4-Step Auto Mode
-- [ ] Import PitchLevelTab
-- [ ] Conditionally render PitchLevelTab as Step 3 when auto mode is on
-- [ ] Update step navigation for 4 steps in auto mode
-- [ ] Auto-advance from Step 2 (Rhythm) to Step 3 (Pitch & Level) after rhythm completes
+- [x] Import PitchLevelTab
+- [x] Conditionally render PitchLevelTab as Step 3 when auto mode is on
+- [x] Update step navigation for 4 steps in auto mode
+- [x] Auto-advance from Step 2 (Rhythm) to Step 3 (Pitch & Level) after rhythm completes
 
 ### Task 2.4: Implement Auto-Continue Pipeline
 - [ ] When rhythm generation completes, auto-start level generation

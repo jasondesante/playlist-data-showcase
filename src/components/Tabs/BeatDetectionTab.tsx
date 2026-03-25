@@ -23,6 +23,7 @@ import { Tooltip } from '../ui/Tooltip';
 import { AutoLevelToggle } from '../ui/AutoLevelToggle';
 import { AutoLevelSettings } from '../ui/AutoLevelSettings';
 import { RhythmGenerationTab } from './BeatDetectionTab/RhythmGenerationTab';
+import { PitchLevelTab } from './PitchLevelTab';
 import type { AutoLevelSettings as AutoLevelSettingsType } from '../../types/rhythmGeneration';
 import { DEFAULT_AUTO_LEVEL_SETTINGS } from '../../types/rhythmGeneration';
 import { useRhythmGeneration } from '../../hooks/useRhythmGeneration';
@@ -786,65 +787,21 @@ export function BeatDetectionTab() {
                 // - Auto mode: Pitch & Level (Task 1.2) - level generation happens here
                 // - Manual mode: Chart Editor
                 if (generationMode === 'automatic') {
-                    // Task 1.2: In auto mode, Step 3 is Pitch & Level
-                    if (!generatedRhythm) {
-                        return wrapContent(
-                            <Card variant="elevated" padding="lg" className="beat-detection-results-card">
-                                <div className="audio-analysis-step-placeholder">
-                                    <div className="audio-analysis-step-placeholder-icon">🎵</div>
-                                    <h4 className="audio-analysis-step-placeholder-title">Rhythm Required</h4>
-                                    <p className="audio-analysis-step-placeholder-text">
-                                        Complete Step 2 (Rhythm Generation) to start pitch detection and level generation.
-                                    </p>
-                                </div>
-                            </Card>
-                        );
-                    }
-                    // Task 1.2: Show level generation progress and results
-                    // Note: Full PitchLevelTab component will be created in Phase 2
+                    // Task 2.1: Use PitchLevelTab component for Step 3 in auto mode
                     return wrapContent(
-                        <Card variant="elevated" padding="lg" className="beat-detection-results-card">
-                            <div className="audio-analysis-pitch-level-section">
-                                <h3 className="audio-analysis-step-title">
-                                    Pitch & Level Generation
-                                    <Tooltip content="Pitch detection and button mapping for the generated rhythm" />
-                                </h3>
-                                {isLevelGenerating ? (
-                                    <div className="audio-analysis-level-generating">
-                                        <div className="audio-analysis-level-generating-icon">🔄</div>
-                                        <p>Generating levels...</p>
-                                    </div>
-                                ) : allDifficulties ? (
-                                    <div className="audio-analysis-level-complete">
-                                        <div className="audio-analysis-level-complete-icon">✅</div>
-                                        <p className="audio-analysis-level-complete-text">Level generation complete!</p>
-                                        <div className="audio-analysis-level-stats">
-                                            <p><strong>Easy:</strong> {allDifficulties.easy?.chart?.beats?.length || 0} beats</p>
-                                            <p><strong>Medium:</strong> {allDifficulties.medium?.chart?.beats?.length || 0} beats</p>
-                                            <p><strong>Hard:</strong> {allDifficulties.hard?.chart?.beats?.length || 0} beats</p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="audio-analysis-level-pending">
-                                        <p>Waiting for level generation to start...</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Post-completion prompt for Step 3 (Pitch & Level) */}
-                            <StepCompletionPrompt
-                                message="Level generation complete!"
-                                visible={stepCompletion.step3 && !isLevelGenerating}
-                                actions={[
-                                    {
-                                        label: 'Go to Practice',
-                                        onClick: () => setCurrentStep(4),
-                                        variant: 'primary',
-                                        icon: ArrowRight,
-                                    },
-                                ]}
-                            />
-                        </Card>
+                        <PitchLevelTab
+                            onRetry={() => {
+                                // Retry level generation with the same settings
+                                if (selectedTrack?.audio_url && generatedRhythm) {
+                                    generateLevel(selectedTrack.audio_url, {
+                                        difficulty: autoLevelSettings.difficulty,
+                                        controllerMode: 'ddr',
+                                    });
+                                }
+                            }}
+                            onProceed={() => setCurrentStep(4)}
+                            onSwitchToManual={() => setGenerationMode('manual')}
+                        />
                     );
                 }
                 // Manual mode: Chart Editor
