@@ -343,7 +343,7 @@ describe('AutoLevelSettings - Scoring Configuration', () => {
             );
         });
 
-        it('displays default bias values (1.0x) when no bandBiasWeights is set', async () => {
+        it('displays default bias values from engine when no bandBiasWeights is set', async () => {
             render(
                 <AutoLevelSettings
                     settings={defaultSettings}
@@ -357,8 +357,8 @@ describe('AutoLevelSettings - Scoring Configuration', () => {
             const midSlider = getBiasSlider('Mid');
             const highSlider = getBiasSlider('High');
 
-            expect(lowSlider.value).toBe('1');
-            expect(midSlider.value).toBe('1');
+            expect(lowSlider.value).toBe('0.8');
+            expect(midSlider.value).toBe('0.95');
             expect(highSlider.value).toBe('1');
         });
 
@@ -592,7 +592,7 @@ describe('AutoLevelSettings - Scoring Configuration', () => {
 
                 await expandScoringConfig();
 
-                expect(screen.getByRole('button', { name: /reset bias to neutral/i })).toBeInTheDocument();
+                expect(screen.getByRole('button', { name: /reset bias to default/i })).toBeInTheDocument();
             });
 
             it('reset button is disabled when no custom bias is set', async () => {
@@ -605,7 +605,7 @@ describe('AutoLevelSettings - Scoring Configuration', () => {
 
                 await expandScoringConfig();
 
-                const resetButton = screen.getByRole('button', { name: /reset bias to neutral/i }) as HTMLButtonElement;
+                const resetButton = screen.getByRole('button', { name: /reset bias to default/i }) as HTMLButtonElement;
                 expect(resetButton.disabled).toBe(true);
             });
 
@@ -630,11 +630,11 @@ describe('AutoLevelSettings - Scoring Configuration', () => {
 
                 await expandScoringConfig();
 
-                const resetButton = screen.getByRole('button', { name: /reset bias to neutral/i }) as HTMLButtonElement;
+                const resetButton = screen.getByRole('button', { name: /reset bias to default/i }) as HTMLButtonElement;
                 expect(resetButton.disabled).toBe(false);
             });
 
-            it('resets band bias to undefined (1.0/1.0/1.0)', async () => {
+            it('resets band bias to undefined (engine defaults)', async () => {
                 const customSettings: AutoLevelSettingsType = {
                     ...defaultSettings,
                     scoringConfig: {
@@ -656,7 +656,7 @@ describe('AutoLevelSettings - Scoring Configuration', () => {
 
                 await expandScoringConfig();
 
-                const resetButton = screen.getByRole('button', { name: /reset bias to neutral/i });
+                const resetButton = screen.getByRole('button', { name: /reset bias to default/i });
                 fireEvent.click(resetButton);
 
                 expect(mockOnChange).toHaveBeenCalledWith(
@@ -891,8 +891,8 @@ describe('AutoLevelSettings - Scoring Configuration', () => {
             // All bands should be present, not just the changed one
             expect(Object.keys(bandBiasWeights)).toHaveLength(3);
             expect(bandBiasWeights).toEqual({
-                low: 1.0,
-                mid: 1.0,
+                low: 0.8,
+                mid: 0.95,
                 high: 1.5,
             });
         });

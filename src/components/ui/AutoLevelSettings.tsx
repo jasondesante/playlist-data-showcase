@@ -211,6 +211,13 @@ export function AutoLevelSettings({
         densityWeight: 0.15,
     };
 
+    // Default band bias weights from the engine
+    const DEFAULT_BAND_BIAS_WEIGHTS: BandBiasWeights = {
+        low: 0.8,
+        mid: 0.95,
+        high: 1.0,
+    };
+
     const handleScoringFactorChange = useCallback(
         <K extends keyof Pick<StreamScorerConfig, 'ioiVarianceWeight' | 'syncopationWeight' | 'phraseSignificanceWeight' | 'densityWeight'>>(
             key: K,
@@ -233,9 +240,9 @@ export function AutoLevelSettings({
             if (disabled) return;
             const currentBias = settings.scoringConfig?.bandBiasWeights;
             const newBias: BandBiasWeights = {
-                low: currentBias?.low ?? 1.0,
-                mid: currentBias?.mid ?? 1.0,
-                high: currentBias?.high ?? 1.0,
+                low: currentBias?.low ?? DEFAULT_BAND_BIAS_WEIGHTS.low,
+                mid: currentBias?.mid ?? DEFAULT_BAND_BIAS_WEIGHTS.mid,
+                high: currentBias?.high ?? DEFAULT_BAND_BIAS_WEIGHTS.high,
                 [band]: value,
             };
             onChange({
@@ -286,7 +293,7 @@ export function AutoLevelSettings({
 
     const getBandBiasValue = useCallback(
         (band: Band): number => {
-            return settings.scoringConfig?.bandBiasWeights?.[band] ?? 1.0;
+            return settings.scoringConfig?.bandBiasWeights?.[band] ?? DEFAULT_BAND_BIAS_WEIGHTS[band];
         },
         [settings.scoringConfig]
     );
@@ -820,7 +827,7 @@ export function AutoLevelSettings({
                                                             type="range"
                                                             min="0"
                                                             max="2"
-                                                            step="0.1"
+                                                            step="0.05"
                                                             value={getBandBiasValue('low')}
                                                             onChange={(e) =>
                                                                 handleBandBiasChange('low', parseFloat(e.target.value))
@@ -829,7 +836,7 @@ export function AutoLevelSettings({
                                                             disabled={disabled}
                                                         />
                                                         <span className="auto-level-settings__bias-value">
-                                                            {getBandBiasValue('low').toFixed(1)}x
+                                                            {getBandBiasValue('low').toFixed(2)}x
                                                         </span>
                                                     </div>
                                                 </div>
@@ -848,7 +855,7 @@ export function AutoLevelSettings({
                                                             type="range"
                                                             min="0"
                                                             max="2"
-                                                            step="0.1"
+                                                            step="0.05"
                                                             value={getBandBiasValue('mid')}
                                                             onChange={(e) =>
                                                                 handleBandBiasChange('mid', parseFloat(e.target.value))
@@ -857,7 +864,7 @@ export function AutoLevelSettings({
                                                             disabled={disabled}
                                                         />
                                                         <span className="auto-level-settings__bias-value">
-                                                            {getBandBiasValue('mid').toFixed(1)}x
+                                                            {getBandBiasValue('mid').toFixed(2)}x
                                                         </span>
                                                     </div>
                                                 </div>
@@ -876,7 +883,7 @@ export function AutoLevelSettings({
                                                             type="range"
                                                             min="0"
                                                             max="2"
-                                                            step="0.1"
+                                                            step="0.05"
                                                             value={getBandBiasValue('high')}
                                                             onChange={(e) =>
                                                                 handleBandBiasChange('high', parseFloat(e.target.value))
@@ -885,7 +892,7 @@ export function AutoLevelSettings({
                                                             disabled={disabled}
                                                         />
                                                         <span className="auto-level-settings__bias-value">
-                                                            {getBandBiasValue('high').toFixed(1)}x
+                                                            {getBandBiasValue('high').toFixed(2)}x
                                                         </span>
                                                     </div>
                                                 </div>
@@ -899,7 +906,7 @@ export function AutoLevelSettings({
                                                         disabled={disabled || !hasCustomBandBias}
                                                     >
                                                         <RotateCcw size={12} />
-                                                        Reset Bias to Neutral
+                                                        Reset Bias to Default
                                                     </button>
                                                 </div>
                                             </div>

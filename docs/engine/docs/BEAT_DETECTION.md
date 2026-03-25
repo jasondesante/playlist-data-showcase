@@ -3495,11 +3495,11 @@ Manual preference multipliers applied to the final score for each frequency band
 
 | Parameter | Default | Range | Effect |
 |-----------|---------|-------|--------|
-| `bandBiasWeights.low` | undefined | 0.0-2.0 | 0 = never win, 1 = neutral, 2 = strongly favored |
-| `bandBiasWeights.mid` | undefined | 0.0-2.0 | Same as above |
-| `bandBiasWeights.high` | undefined | 0.0-2.0 | Same as above |
+| `bandBiasWeights.low` | 0.8 | 0.0-2.0 | 0 = never win, 1 = neutral, 2 = strongly favored |
+| `bandBiasWeights.mid` | 0.95 | 0.0-2.0 | Same as above |
+| `bandBiasWeights.high` | 1.0 | 0.0-2.0 | Same as above |
 
-**Note**: When `undefined`, no bias is applied (all bands compete on merit alone).
+**Note**: Bass is slightly disfavored by default (0.8) to reduce low-frequency dominance in composite stream selection. Mids are very slightly disfavored (0.95).
 
 #### How Bias Affects Selection
 
@@ -3647,6 +3647,35 @@ The strategy depends on the composite's natural difficulty:
 | **Hard** | Heavy density enhancement |
 | **Medium** | Moderate density enhancement |
 | **Easy** | Composite unchanged (unedited) |
+
+### Custom Configuration
+
+`DifficultyVariantGenerator` accepts a `Partial<DifficultyVariantConfig>` in its constructor to override default tuning parameters. Only the fields you provide are changed; everything else falls back to defaults.
+
+```typescript
+const generator = new DifficultyVariantGenerator({
+    simplificationIntensityThreshold: 0.5,
+    enhancementDensityMultiplier: 2.0,
+    logConversions: true,
+});
+
+// Inspect the resolved config at runtime
+const config = generator.getConfig();
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `logConversions` | `boolean` | `false` | Log subdivision conversions for debugging |
+| `preservePhraseBoundaries` | `boolean` | `true` | Preserve phrase structure when simplifying |
+| `simplificationIntensityThreshold` | `number` | `0.3` | Min intensity to keep beats during simplification |
+| `heavySimplificationIntensityThreshold` | `number` | `0.5` | Min intensity for heavy simplification |
+| `moderateSimplificationIntensityThreshold` | `number` | `0.4` | Threshold for removing offbeat 16ths (hard→medium) |
+| `densityReductionMinIntensity` | `number` | `0.25` | Min intensity for density reduction removal |
+| `enhancementDensityMultiplier` | `number` | `1.5` | Target density multiplier for enhancement (1.0 = no change) |
+| `interpolatedBeatIntensity` | `number` | `0.5` | Intensity assigned to interpolated beats (0.0–1.0) |
+| `preferPatternInsertion` | `boolean` | `true` | Prefer pattern insertion over simple interpolation |
+| `maxPatternInsertionSize` | `number` | `4` | Max phrase size (in beats) for pattern insertion |
+| `seed` | `string?` | `undefined` | Deterministic seed for probability rolls |
 
 ### Simplification Rules
 
