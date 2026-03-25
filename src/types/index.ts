@@ -1493,3 +1493,52 @@ export {
     type RhythmPresetName,
     type RhythmPresetConfig,
 } from './rhythmGeneration.js';
+
+// ============================================================
+// Level Generation Types (Pitch Detection & Level Generation)
+// (Task 0.5)
+// ============================================================
+
+export type {
+    // Pitch Detection Types
+    PitchResult,
+    PitchDetectorConfig,
+    // Pitch-Beat Linker Types
+    PitchAtBeat,
+    BandPitchAtBeat,
+    LinkedPitchAnalysis,
+    PitchDirection,
+    IntervalCategory,
+    // Button Mapping Types
+    ControllerMode,
+    DDRButton,
+    GuitarHeroButton,
+    Button,
+    ButtonMappingConfig,
+    MappedLevelResult,
+    ButtonMappingMetadata,
+    // Level Generation Types
+    LevelGenerationOptions,
+    LevelMetadata,
+    GeneratedLevel,
+    LevelGenerationProgress,
+    AllDifficultiesResult,
+    // Charted Beat Map Types
+    ChartedBeat,
+    ChartedBeatMap,
+    ChartMetadata,
+    // Local Melody Contour Types
+    DirectionStats,
+    IntervalStats,
+    MelodySegment,
+    MelodyContour,
+    MelodyContourAnalysisResult,
+    // Difficulty Types
+    DifficultyLevel,
+    AllDifficultiesWithNatural,
+} from './levelGeneration.js';
+
+export {
+    LevelGenerator,
+    type LevelProgressCallback,
+} from './levelGeneration.js';

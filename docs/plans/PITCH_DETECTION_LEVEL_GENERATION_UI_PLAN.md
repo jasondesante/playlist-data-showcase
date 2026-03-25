@@ -183,8 +183,8 @@ This phase creates the **minimum viable data pipeline** to verify:
 - [x] This panel is temporary - will be replaced by proper visualizations in later phases
 
 ### Task 0.5: Create Level Generation Types
-- [ ] Create `src/types/levelGeneration.ts`
-- [ ] Re-export from playlist-data-engine:
+- [x] Create `src/types/levelGeneration.ts`
+- [x] Re-export from playlist-data-engine:
   - `PitchResult`, `PitchDetectorConfig`
   - `PitchAtBeat`, `BandPitchAtBeat`, `LinkedPitchAnalysis`
   - `MelodyContourAnalysisResult`, `MelodyContour`, `MelodySegment`
@@ -195,7 +195,7 @@ This phase creates the **minimum viable data pipeline** to verify:
   - `LevelGenerationOptions`, `LevelMetadata`, `GeneratedLevel`
   - `LevelGenerationProgress`, `ChartedBeat`, `ChartedBeatMap`
   - `AllDifficultiesResult`
-- [ ] Add to `src/types/index.ts`
+- [x] Add to `src/types/index.ts`
 
 ### Task 0.6: Create Data Contract Validation UI
 - [ ] Create `src/components/ui/DataContractValidator.tsx` - validation panel
