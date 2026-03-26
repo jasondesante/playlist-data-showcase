@@ -161,7 +161,7 @@ export function CollapsibleSection({
           aria-hidden={isCollapsed}
           style={{ display: isCollapsed ? 'none' : undefined }}
         >
-          {children}
+          {!isCollapsed && children}
         </div>
       </div>
     </div>

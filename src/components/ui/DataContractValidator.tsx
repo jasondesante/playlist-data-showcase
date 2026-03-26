@@ -308,18 +308,20 @@ export function validateGeneratedRhythm(rhythm: GeneratedRhythm | null): Generat
         }
     }
 
-    // Validate phrases
-    const phrases = r.phrases;
+    // Validate phrases (nested at analysis.phraseAnalysis.phrases)
+    const analysis = r.analysis as Record<string, unknown> | undefined;
+    const phraseAnalysis = analysis?.phraseAnalysis as Record<string, unknown> | undefined;
+    const phrases = phraseAnalysis?.phrases;
     if (!Array.isArray(phrases)) {
         fields.push({
-            field: 'phrases',
+            field: 'analysis.phraseAnalysis.phrases',
             valid: false,
             message: 'phrases is not an array',
         });
         errors.push('phrases array is required');
     } else {
         fields.push({
-            field: 'phrases',
+            field: 'analysis.phraseAnalysis.phrases',
             valid: true,
             message: `${phrases.length} phrases found`,
             value: phrases.length,

@@ -312,6 +312,12 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
                 message: 'Level generation complete!',
             });
 
+            // Clear progress after a brief delay so isGenerating returns to false,
+            // allowing downstream effects (e.g. auto-advance to Step 4) to detect completion.
+            setTimeout(() => {
+                actions.setLevelGenerationProgress(null);
+            }, 500);
+
             logger.info('LevelGeneration', 'Level generation complete', {
                 easyBeats: result.easy?.chart.beats.length,
                 mediumBeats: result.medium?.chart.beats.length,

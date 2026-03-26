@@ -309,6 +309,12 @@ export const useRhythmGeneration = (): UseRhythmGenerationReturn => {
                 message: 'Rhythm generation complete!',
             });
 
+            // Clear progress after a brief delay so isGenerating returns to false,
+            // allowing downstream effects (e.g. auto-continue to level generation) to detect completion.
+            setTimeout(() => {
+                actions.setRhythmGenerationProgress(null);
+            }, 500);
+
             logger.info('RhythmGeneration', 'Rhythm generation complete', {
                 transientsDetected: result.metadata.transientsDetected,
                 phrasesDetected: result.metadata.phrasesDetected,

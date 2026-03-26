@@ -404,6 +404,7 @@ export function BeatDetectionTab() {
         generationMode,
         selectedTrack?.audio_url,
         generatedRhythm,
+        isRhythmGenerating,
         isLevelGenerating,
         allDifficulties,
         autoLevelSettings,
