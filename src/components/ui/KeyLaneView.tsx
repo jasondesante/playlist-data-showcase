@@ -683,17 +683,17 @@ export function KeyLaneView({
                 `key-lane-view--${chartStyle}`,
                 isActive && 'key-lane-view--active',
                 isPaused && 'key-lane-view--paused',
-                !hasBeats && 'key-lane-view--empty',
+                !beatMap && 'key-lane-view--empty',
                 className
             )}
             role="region"
             aria-label={`${chartStyle === 'ddr' ? 'DDR' : 'Guitar Hero'} rhythm game view`}
         >
-            {/* Empty state message */}
-            {!hasBeats && (
+            {/* Empty state message — only shown when no chart is loaded at all */}
+            {!beatMap && (
                 <div className="key-lane-view-empty">
                     <span className="key-lane-view-empty-text">
-                        {beatMap ? 'Waiting for beats...' : 'No chart loaded'}
+                        No chart loaded
                     </span>
                 </div>
             )}
@@ -787,8 +787,8 @@ export function KeyLaneView({
                     </div>
                 )}
 
-                {/* Tap feedback panel */}
-                <div className="key-lane-view-feedback">
+                {/* Tap feedback panel — hidden when overlay messages are shown */}
+                {beatMap && !styleMismatch && hasChartNotes && <div className="key-lane-view-feedback">
                     {/* Combo feedback display - always visible */}
                     <ComboFeedbackDisplay
                         score={score}
@@ -816,7 +816,7 @@ export function KeyLaneView({
                             <span className="key-lane-view-feedback-hint">Hit the notes!</span>
                         </div>
                     )}
-                </div> {/* closes key-lane-view-feedback */}
+                </div>} {/* closes key-lane-view-feedback + conditional */}
             </div> {/* closes key-lane-view-lanes */}
 
             {/* Chart info overlay */}

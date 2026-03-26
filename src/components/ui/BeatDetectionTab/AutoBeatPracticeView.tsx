@@ -98,7 +98,7 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     const lastRhythmXPResult = useBeatDetectionStore((state) => state.lastRhythmXPResult);
 
     // Audio player state
-    const { playbackState, currentTime, pause, resume, seek } = useAudioPlayerStore();
+    const { playbackState, currentTime, pause, resume, seek, play, currentUrl } = useAudioPlayerStore();
     const duration = useTrackDuration();
     const isPlaying = playbackState === 'playing';
 
@@ -337,10 +337,12 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     const handlePlayPause = useCallback(() => {
         if (isPlaying) {
             pause();
-        } else {
+        } else if (currentUrl) {
             resume();
+        } else if (selectedTrack?.audio_url) {
+            play(selectedTrack.audio_url);
         }
-    }, [isPlaying, pause, resume]);
+    }, [isPlaying, pause, resume, play, currentUrl, selectedTrack]);
 
     /**
      * Handle restart (seek to beginning)
