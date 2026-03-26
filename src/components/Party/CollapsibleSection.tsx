@@ -79,26 +79,30 @@ export function CollapsibleSection({
   // This handles cases where internal state changes affect height (e.g., TransientInspector expanding)
   // We observe the INNER element because the outer has overflow:hidden and max-height constraints
   useEffect(() => {
+    // When collapsed, don't measure — reset so maxHeight falls back to undefined (no constraint)
+    if (isCollapsed) {
+      setContentHeight(undefined);
+      return;
+    }
+
     const innerEl = innerRef.current;
     if (!innerEl) return;
 
     const updateHeight = () => {
-      // Measure the inner element's offsetHeight which gives true unconstrained height
       setContentHeight(innerEl.offsetHeight);
     };
 
     const resizeObserver = new ResizeObserver(() => {
-      // Use requestAnimationFrame to avoid ResizeObserver loop errors
       requestAnimationFrame(updateHeight);
     });
 
     resizeObserver.observe(innerEl);
-    updateHeight(); // Initial measurement
+    updateHeight();
 
     return () => {
       resizeObserver.disconnect();
     };
-  }, [isCollapsed]); // Re-measure when collapsed state changes
+  }, [isCollapsed]);
 
   const toggleCollapsed = () => {
     const newState = !isCollapsed;

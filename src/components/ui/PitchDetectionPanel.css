@@ -66,6 +66,22 @@
     color: var(--text-primary, #e0e0e0);
 }
 
+.pitch-panel-description {
+    margin: -0.5rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.pitch-panel-description strong {
+    color: var(--text-primary, #e0e0e0);
+}
+
+.pitch-panel-description em {
+    font-style: italic;
+    color: var(--text-primary, #e0e0e0);
+}
+
 /* Empty state content */
 .pitch-panel-empty-content {
     padding: 2rem;

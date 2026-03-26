@@ -374,6 +374,13 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
                     <h3 className="pitch-panel-title">Pitch Detection</h3>
                 </div>
 
+                {/* Signal flow context */}
+                <p className="pitch-panel-description">
+                    Pitch detected at <strong>quantized beat positions</strong> using pYIN on band-pass filtered audio.
+                    The low/mid/high bands represent frequency ranges that are analyzed independently. This shows <em>post-rhythm-quantization</em> data — the pitches
+                    assigned to each beat in the final pattern.
+                </p>
+
                 {/* Summary Stats */}
                 <SummaryStats
                     totalBeats={overallStats.totalBeats}

@@ -114,17 +114,17 @@ export interface RhythmGenerationProgress {
 export const DEFAULT_BAND_TRANSIENT_CONFIG: Record<Band, BandTransientConfig> = {
     low: {
         threshold: 0.5,       // Higher threshold - bass transients are typically stronger
-        minInterval: 0.1,     // 100ms - bass events are more sparse
+        minInterval: 0.1,     // 100ms - bass events are more sparse, longer buffer
         adaptiveThresholding: false,  // Disabled by default - threshold used exactly as-is
     },
     mid: {
         threshold: 0.3,       // Medium threshold - balanced detection
-        minInterval: 0.08,    // 80ms - vocals, snare body
+        minInterval: 0.08,    // 80ms - moderate interval
         adaptiveThresholding: false,  // Disabled by default - threshold used exactly as-is
     },
     high: {
         threshold: 0.25,      // Lower threshold - hi-hats can be subtle
-        minInterval: 0.06,    // 60ms - hi-hats, cymbals
+        minInterval: 0.06,    // 60ms - rapid fire percussion
         adaptiveThresholding: false,  // Disabled by default - threshold used exactly as-is
     },
 };
