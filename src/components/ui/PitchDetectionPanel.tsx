@@ -376,9 +376,9 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
 
                 {/* Signal flow context */}
                 <p className="pitch-panel-description">
-                    Pitch detected at <strong>quantized beat positions</strong> using pYIN on band-pass filtered audio.
-                    The low/mid/high bands represent frequency ranges that are analyzed independently. This shows <em>post-rhythm-quantization</em> data — the pitches
-                    assigned to each beat in the final pattern.
+                    Pitch detected at the <strong>original unquantized transient timestamps</strong> using pYIN on band-pass
+                    filtered audio, then linked to quantized beat grid positions. The low/mid/high bands represent
+                    frequency ranges analyzed independently.
                 </p>
 
                 {/* Summary Stats */}
