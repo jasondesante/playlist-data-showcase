@@ -397,7 +397,7 @@ export function BeatDetectionTab() {
             // Start level generation
             generateLevel(selectedTrack.audio_url, {
                 difficulty: autoLevelSettings.difficulty,
-                controllerMode: 'ddr', // Default to DDR mode
+                controllerMode: autoLevelSettings.controllerMode,
             });
         }
     }, [
@@ -798,7 +798,7 @@ export function BeatDetectionTab() {
                                 if (selectedTrack?.audio_url && generatedRhythm) {
                                     generateLevel(selectedTrack.audio_url, {
                                         difficulty: autoLevelSettings.difficulty,
-                                        controllerMode: 'ddr',
+                                        controllerMode: autoLevelSettings.controllerMode,
                                     });
                                 }
                             }}

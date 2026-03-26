@@ -18,6 +18,8 @@ import {
     useBestGrooveHotness,
     useBestGrooveStreak,
     useKeyLaneViewMode,
+    useTapStatistics,
+    useAccuracyThresholds,
 } from '../../../store/beatDetectionStore';
 import { useBeatStream } from '../../../hooks/useBeatStream';
 import { useKeyboardInput } from '../../../hooks/useKeyboardInput';
@@ -28,6 +30,8 @@ import { TapStats } from '../TapStats';
 import { GrooveStats } from '../GrooveStats';
 import { RhythmXPSessionStats } from '../RhythmXPSessionStats';
 import { DifficultySwitcher } from '../DifficultySwitcher';
+import { DifficultySettingsPanel } from '../DifficultySettingsPanel';
+import { showToast } from '../Toast';
 import { logger } from '../../../utils/logger';
 import { chartedBeatMapToBeatMap, chartedBeatMapToSubdividedBeatMap } from '../../../utils/chartedBeatMapAdapter';
 import type { DifficultyLevel, AllDifficultiesWithNatural, DifficultyPreset } from '../../../types';
@@ -44,6 +48,7 @@ import { PracticeHeader } from './BeatPracticeView/PracticeHeader';
 import { PracticeStatsBar } from './BeatPracticeView/PracticeStatsBar';
 import { PlaybackControls } from './BeatPracticeView/PlaybackControls';
 import { PracticeProgressBar } from './BeatPracticeView/PracticeProgressBar';
+import { TapTimingDebugPanel, type TapDebugInfo } from './BeatPracticeView/TapTimingDebugPanel';
 
 /**
  * Props for the AutoBeatPracticeView component
@@ -102,8 +107,23 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     const bestGrooveHotness = useBestGrooveHotness();
     const bestGrooveStreak = useBestGrooveStreak();
 
+    // Tap statistics and accuracy thresholds for debug panel
+    const tapStats = useTapStatistics();
+    const accuracyThresholds = useAccuracyThresholds();
+
+    // State for settings panel
+    const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(false);
+
     // State for level-up modal
     const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+
+    // Debug: track taps for timing analysis (limited to 1000)
+    const MAX_DEBUG_HISTORY = 1000;
+    const [tapDebugHistory, setTapDebugHistory] = useState<TapDebugInfo[]>([]);
+
+    // Track audio time for debug info
+    const audioTimeRef = useRef<number>(currentTime);
+    audioTimeRef.current = currentTime;
 
     // State for tap visual feedback on timeline
     const [tapVisualTime, setTapVisualTime] = useState<number>(0);
@@ -239,6 +259,19 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
             // Trigger timeline tap visual
             setTapVisualTime(Date.now());
 
+            // Record debug info for timing analysis
+            const debugInfo: TapDebugInfo = {
+                registeredAt: performance.now(),
+                audioTime: audioTimeRef.current,
+                beatTime: result.matchedBeat?.timestamp ?? 0,
+                offsetMs: Math.round(result.offset * 1000),
+                accuracy: result.accuracy,
+            };
+            setTapDebugHistory(prev => {
+                const newHistory = [debugInfo, ...prev];
+                return newHistory.slice(0, MAX_DEBUG_HISTORY);
+            });
+
             // Process groove and XP
             if (result.matchedBeat) {
                 // Record groove hit
@@ -329,7 +362,9 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     const handleSeek = useCallback((time: number) => {
         seek(time);
         seekStream?.(time);
-    }, [seek, seekStream]);
+        resetGrooveAnalyzer();
+        resetRhythmXP();
+    }, [seek, seekStream, resetGrooveAnalyzer, resetRhythmXP]);
 
     /**
      * Handle exit with cleanup
@@ -342,19 +377,27 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     /**
      * Handle XP claim
      */
-    const handleClaimXP = useCallback(async () => {
-        if (!hasCharacter || !trackCharacter || !rhythmSessionTotals) return;
+    const handleClaimXP = useCallback((xp: number) => {
+        if (!trackCharacter) return;
 
-        try {
-            const result = addRhythmXP(trackCharacter.seed, rhythmSessionTotals.totalXP);
-            if (result && result.leveledUp) {
+        const result = addRhythmXP(trackCharacter.seed, xp);
+
+        if (result) {
+            if (result.leveledUp && result.levelUpDetails) {
                 setShowLevelUpModal(true);
+                logger.info('BeatDetection', 'Character leveled up from rhythm XP!', {
+                    characterName: result.character.name,
+                    newLevel: result.newLevel,
+                    xpEarned: result.xpEarned,
+                });
+            } else {
+                showToast(`+${xp.toFixed(1)} XP added to ${trackCharacter.name}`, 'success');
             }
-            clearPendingBonuses();
-        } catch (error) {
-            logger.error('BeatDetection', 'Failed to claim XP', { error });
         }
-    }, [hasCharacter, trackCharacter, rhythmSessionTotals, addRhythmXP, clearPendingBonuses]);
+
+        // Reset session after claiming so the button disappears
+        resetRhythmXP();
+    }, [trackCharacter, addRhythmXP, resetRhythmXP]);
 
     // Calculate beat counts for difficulty switcher
     const beatCounts = allDifficultyLevels
@@ -374,7 +417,7 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
                 subdivisionPlaybackAvailable={false}
                 showSubdivisionPlayground={false}
                 onToggleSubdivisionPlayground={() => {}}
-                onOpenSettings={() => {}}
+                onOpenSettings={() => setIsSettingsPanelOpen(true)}
                 onExit={handleExit}
             />
 
@@ -495,6 +538,21 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
                 levelUpDetails={[]}
                 isOpen={showLevelUpModal}
                 onClose={() => setShowLevelUpModal(false)}
+            />
+
+            {/* Difficulty Settings Panel */}
+            <DifficultySettingsPanel
+                isOpen={isSettingsPanelOpen}
+                onClose={() => setIsSettingsPanelOpen(false)}
+            />
+
+            {/* Tap Timing Debug Panel - helps detect input latency */}
+            <TapTimingDebugPanel
+                tapHistory={tapDebugHistory}
+                tapStats={tapStats}
+                accuracyThresholds={accuracyThresholds}
+                difficultyPreset={difficultyPreset}
+                rhythmSessionTotals={rhythmSessionTotals}
             />
         </div>
     );
