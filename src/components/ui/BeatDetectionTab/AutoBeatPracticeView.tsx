@@ -2,27 +2,22 @@
  * AutoBeatPracticeView Component
  *
  * Practice view for auto-generated levels using BeatStream.
- * This component provides the full practice experience for levels
- * created by the automatic level generation pipeline.
- *
- * Features:
- * - BeatStream integration for real-time beat synchronization
- * - Difficulty switching (Natural/Easy/Medium/Hard)
- * - Game controls (play, pause, restart, seek)
- * - Score and accuracy tracking (TapStats, GrooveStats, RhythmXP)
- * - Audio playback sync
- *
- * Task 8.2: BeatStream Practice Mode Integration
+ * Uses the same visual components as manual mode (BeatPracticeView):
+ * - KeyLaneView (DDR/Guitar Hero lanes)
+ * - BeatTimeline (horizontal timeline)
+ * - ViewModeToggle (Tap/DDR/Guitar switcher)
+ * - GrooveMeter, ComboFeedbackDisplay
+ * - PracticeHeader, PracticeStatsBar, PlaybackControls, PracticeProgressBar
  */
 
-import { useEffect, useCallback, useRef, useState } from 'react';
-import { Activity, Play, Pause, RotateCcw, SkipBack, SkipForward } from 'lucide-react';
+import { useEffect, useCallback, useRef, useState, useMemo } from 'react';
 import './AutoBeatPracticeView.css';
 import {
     useBeatDetectionStore,
     useGrooveState,
     useBestGrooveHotness,
     useBestGrooveStreak,
+    useKeyLaneViewMode,
 } from '../../../store/beatDetectionStore';
 import { useBeatStream } from '../../../hooks/useBeatStream';
 import { useKeyboardInput } from '../../../hooks/useKeyboardInput';
@@ -33,15 +28,22 @@ import { TapStats } from '../TapStats';
 import { GrooveStats } from '../GrooveStats';
 import { RhythmXPSessionStats } from '../RhythmXPSessionStats';
 import { DifficultySwitcher } from '../DifficultySwitcher';
-import { Button } from '../Button';
 import { logger } from '../../../utils/logger';
-import { chartedBeatMapToBeatMap } from '../../../utils/chartedBeatMapAdapter';
-import type { DifficultyLevel, AllDifficultiesWithNatural } from '../../../types/levelGeneration';
+import { chartedBeatMapToBeatMap, chartedBeatMapToSubdividedBeatMap } from '../../../utils/chartedBeatMapAdapter';
+import type { DifficultyLevel, AllDifficultiesWithNatural, DifficultyPreset } from '../../../types';
 import type { BeatMap } from 'playlist-data-engine';
-import type { ExtendedButtonPressResult } from '../../../types';
 import { usePlaylistStore } from '../../../store/playlistStore';
 import { useCharacterStore } from '../../../store/characterStore';
 import { LevelUpDetailModal } from '../../LevelUpDetailModal';
+
+// Shared components from manual mode
+import { PracticePlayArea } from './BeatPracticeView/PracticePlayArea';
+import { ViewModeToggle } from './BeatPracticeView/ViewModeToggle';
+import type { KeyLaneViewMode } from './BeatPracticeView/ViewModeToggle';
+import { PracticeHeader } from './BeatPracticeView/PracticeHeader';
+import { PracticeStatsBar } from './BeatPracticeView/PracticeStatsBar';
+import { PlaybackControls } from './BeatPracticeView/PlaybackControls';
+import { PracticeProgressBar } from './BeatPracticeView/PracticeProgressBar';
 
 /**
  * Props for the AutoBeatPracticeView component
@@ -63,6 +65,7 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     const setSelectedDifficulty = useBeatDetectionStore((state) => state.actions.setSelectedDifficulty);
     const recordTap = useBeatDetectionStore((state) => state.actions.recordTap);
     const stopPracticeMode = useBeatDetectionStore((state) => state.actions.stopPracticeMode);
+    const setKeyLaneViewMode = useBeatDetectionStore((state) => state.actions.setKeyLaneViewMode);
 
     // Groove analyzer actions
     const initGrooveAnalyzer = useBeatDetectionStore((state) => state.actions.initGrooveAnalyzer);
@@ -82,6 +85,13 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     const pendingGrooveEndBonus = useBeatDetectionStore((state) => state.pendingGrooveEndBonus);
     const clearPendingBonuses = useBeatDetectionStore((state) => state.actions.clearPendingBonuses);
 
+    // View mode state
+    const keyLaneViewMode = useKeyLaneViewMode();
+
+    // Combo and XP result
+    const currentCombo = useBeatDetectionStore((state) => state.currentCombo);
+    const lastRhythmXPResult = useBeatDetectionStore((state) => state.lastRhythmXPResult);
+
     // Audio player state
     const { playbackState, currentTime, pause, resume, seek } = useAudioPlayerStore();
     const duration = useTrackDuration();
@@ -94,6 +104,13 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
 
     // State for level-up modal
     const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+
+    // State for tap visual feedback on timeline
+    const [tapVisualTime, setTapVisualTime] = useState<number>(0);
+
+    // State for showing "TOO FAST" indicator
+    const [showTooFast, setShowTooFast] = useState(false);
+    const tooFastTimeoutRef = useRef<number | null>(null);
 
     // Get selected track and character store for XP claiming
     const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
@@ -110,9 +127,32 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     const currentBeatMap = getBeatMapForDifficulty(allDifficultyLevels, selectedDifficulty);
 
     // Convert ChartedBeatMap to BeatMap format for useBeatStream
-    const convertedBeatMap: BeatMap | null = currentBeatMap
-        ? chartedBeatMapToBeatMap(currentBeatMap.chart)
-        : null;
+    // Memoized to prevent infinite loop: initGrooveAnalyzer sets grooveState,
+    // which triggers re-render, which would create a new object ref without memo.
+    const convertedBeatMap: BeatMap | null = useMemo(
+        () => currentBeatMap ? chartedBeatMapToBeatMap(currentBeatMap.chart) : null,
+        [currentBeatMap]
+    );
+
+    // Convert to SubdividedBeatMap for KeyLaneView and ViewModeToggle
+    const subdividedBeatMap = useMemo(
+        () => currentBeatMap ? chartedBeatMapToSubdividedBeatMap(currentBeatMap.chart) : null,
+        [currentBeatMap]
+    );
+
+    // Determine chart style from the generated level's controller mode
+    const chartStyle: KeyLaneViewMode = useMemo(() => {
+        const mode = currentBeatMap?.metadata?.controllerMode;
+        if (mode === 'ddr') return 'ddr';
+        if (mode === 'guitar_hero') return 'guitar-hero';
+        return 'ddr'; // Default to DDR
+    }, [currentBeatMap]);
+
+    // Map selected difficulty to DifficultyPreset for PracticeHeader
+    const difficultyPreset: DifficultyPreset = useMemo(() => {
+        if (selectedDifficulty === 'natural') return 'easy';
+        return selectedDifficulty;
+    }, [selectedDifficulty]);
 
     // Beat stream hook for real-time beat synchronization
     const {
@@ -121,16 +161,21 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
         isPaused: streamIsPaused,
         seekStream,
         currentBpm,
+        lastBeatEvent,
     } = useBeatStream(convertedBeatMap, undefined, true, 'subdivided');
 
     // Tap feedback hook for managing visual feedback
-    const { showFeedback, lastTapResult, showTapFeedback } = useTapFeedback(500);
-
-    // Ref for tap area to handle keyboard focus
-    const tapAreaRef = useRef<HTMLDivElement>(null);
+    const { showFeedback, lastTapResult, showTapFeedback, hideTapFeedback } = useTapFeedback(500);
 
     // Ref to track last tap time for debouncing
     const lastTapTimeRef = useRef<number>(0);
+
+    // Set default view mode on mount based on controller mode
+    useEffect(() => {
+        if (subdividedBeatMap) {
+            setKeyLaneViewMode(chartStyle);
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Initialize groove analyzer and rhythm XP on mount
     useEffect(() => {
@@ -158,8 +203,20 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     const handleTap = useCallback((pressedKey?: string) => {
         const now = Date.now();
 
-        // Debounce rapid taps
+        // Check if tap is too fast (debounce check)
         if (now - lastTapTimeRef.current < MIN_TAP_INTERVAL_MS) {
+            setShowTooFast(true);
+
+            // Clear any existing timeout
+            if (tooFastTimeoutRef.current) {
+                clearTimeout(tooFastTimeoutRef.current);
+            }
+
+            // Hide indicator after a short delay
+            tooFastTimeoutRef.current = window.setTimeout(() => {
+                setShowTooFast(false);
+            }, 300);
+
             return;
         }
         lastTapTimeRef.current = now;
@@ -178,6 +235,9 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
 
             // Show visual feedback - pass the full result object
             showTapFeedback(result);
+
+            // Trigger timeline tap visual
+            setTapVisualTime(Date.now());
 
             // Process groove and XP
             if (result.matchedBeat) {
@@ -264,22 +324,12 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     }, [seek, seekStream, resetRhythmXP, resetGrooveAnalyzer, initGrooveAnalyzer, initRhythmXP, convertedBeatMap]);
 
     /**
-     * Handle seek backward
+     * Handle seek (from timeline, progress bar, or lane view)
      */
-    const handleSeekBackward = useCallback(() => {
-        const newTime = Math.max(0, currentTime - 5);
-        seek(newTime);
-        seekStream?.(newTime);
-    }, [currentTime, seek, seekStream]);
-
-    /**
-     * Handle seek forward
-     */
-    const handleSeekForward = useCallback(() => {
-        const newTime = Math.min(duration, currentTime + 5);
-        seek(newTime);
-        seekStream?.(newTime);
-    }, [currentTime, duration, seek, seekStream]);
+    const handleSeek = useCallback((time: number) => {
+        seek(time);
+        seekStream?.(time);
+    }, [seek, seekStream]);
 
     /**
      * Handle exit with cleanup
@@ -298,7 +348,6 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
         try {
             const result = addRhythmXP(trackCharacter.seed, rhythmSessionTotals.totalXP);
             if (result && result.leveledUp) {
-                // Show level up modal if character leveled up
                 setShowLevelUpModal(true);
             }
             clearPendingBonuses();
@@ -317,27 +366,94 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
         }
         : undefined;
 
-    // Convert accuracy to display string
-    const getAccuracyDisplay = (result: ExtendedButtonPressResult | null): string => {
-        if (!result) return '';
-        return result.accuracy.toUpperCase();
-    };
-
     return (
         <div className="auto-beat-practice-view">
-            {/* Header with exit button */}
-            <div className="auto-beat-practice-header">
-                <div className="auto-beat-practice-header-left">
-                    <Activity className="auto-beat-practice-header-icon" />
-                    <span className="auto-beat-practice-title">Practice Mode</span>
-                    <span className="auto-beat-practice-badge">Auto-Generated</span>
-                </div>
-                <div className="auto-beat-practice-header-right">
-                    <Button variant="ghost" size="sm" onClick={handleExit}>
-                        Exit
-                    </Button>
-                </div>
-            </div>
+            {/* Header - same as manual mode */}
+            <PracticeHeader
+                difficultyPreset={difficultyPreset}
+                subdivisionPlaybackAvailable={false}
+                showSubdivisionPlayground={false}
+                onToggleSubdivisionPlayground={() => {}}
+                onOpenSettings={() => {}}
+                onExit={handleExit}
+            />
+
+            {/* View mode toggle - tap area / DDR lanes / Guitar lanes */}
+            <ViewModeToggle
+                subdividedBeatMap={subdividedBeatMap}
+                mode={keyLaneViewMode}
+                onModeChange={setKeyLaneViewMode}
+                hasRequiredKeys={true}
+                chartStyle={chartStyle}
+            />
+
+            {/* Stats bar - BPM, position, XP, combo */}
+            <PracticeStatsBar
+                currentBpm={currentBpm ?? convertedBeatMap?.bpm ?? 0}
+                beatMapBpm={convertedBeatMap?.bpm ?? 0}
+                interpolationStats={null}
+                currentTime={currentTime}
+                duration={duration}
+                rhythmSessionTotals={rhythmSessionTotals}
+                lastRhythmXPResult={lastRhythmXPResult}
+                currentCombo={currentCombo}
+                subdivisionPlaybackAvailable={false}
+                currentSubdivision=""
+                subdivisionIsActive={false}
+            />
+
+            {/* Playback controls */}
+            <PlaybackControls
+                isPlaying={isPlaying}
+                onRestart={handleRestart}
+                onPlayPause={handlePlayPause}
+            />
+
+            {/* Progress bar with beat markers */}
+            {convertedBeatMap && (
+                <PracticeProgressBar
+                    beatMap={convertedBeatMap}
+                    currentTime={currentTime}
+                    duration={duration}
+                    onSeek={handleSeek}
+                />
+            )}
+
+            {/* Main practice play area - BeatTimeline or KeyLaneView */}
+            {convertedBeatMap && (
+                <PracticePlayArea
+                    keyLaneViewMode={keyLaneViewMode}
+                    beatMap={convertedBeatMap}
+                    subdividedBeatMap={subdividedBeatMap}
+                    realtimeSubdividedBeatMap={null}
+                    beatStreamMode="subdivided"
+                    currentTime={currentTime}
+                    isPlaying={isPlaying}
+                    streamIsActive={streamIsActive}
+                    streamIsPaused={streamIsPaused}
+                    lastBeatEvent={lastBeatEvent ?? null}
+                    handleTap={handleTap}
+                    lastTapResult={lastTapResult}
+                    showFeedback={showFeedback}
+                    hideTapFeedback={hideTapFeedback}
+                    showTooFast={showTooFast}
+                    tapVisualTime={tapVisualTime}
+                    rhythmSessionTotals={rhythmSessionTotals}
+                    currentCombo={currentCombo}
+                    lastRhythmXPResult={lastRhythmXPResult}
+                    grooveState={grooveState}
+                    pendingGrooveEndBonus={pendingGrooveEndBonus}
+                    pendingComboEndBonus={pendingComboEndBonus}
+                    clearPendingBonuses={clearPendingBonuses}
+                    interpolationData={null}
+                    showGridOverlay={false}
+                    showTempoDriftVisualization={false}
+                    isDownbeatSelectionMode={false}
+                    showMeasureBoundaries={false}
+                    handleSeek={handleSeek}
+                    handleBeatClick={() => {}}
+                />
+            )}
 
             {/* Difficulty switcher */}
             <div className="auto-beat-practice-difficulty-section">
@@ -348,64 +464,6 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
                     showCounts={true}
                     size="default"
                 />
-            </div>
-
-            {/* Playback controls */}
-            <div className="auto-beat-practice-controls">
-                <Button variant="ghost" size="sm" onClick={handleSeekBackward} title="Back 5s">
-                    <SkipBack size={20} />
-                </Button>
-                <Button variant="primary" size="md" onClick={handlePlayPause}>
-                    {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={handleSeekForward} title="Forward 5s">
-                    <SkipForward size={20} />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={handleRestart} title="Restart">
-                    <RotateCcw size={20} />
-                </Button>
-            </div>
-
-            {/* Current time display */}
-            <div className="auto-beat-practice-time">
-                <span>{formatTime(currentTime)}</span>
-                <span>/</span>
-                <span>{formatTime(duration)}</span>
-            </div>
-
-            {/* Tap area */}
-            <div
-                ref={tapAreaRef}
-                className="auto-beat-practice-tap-area"
-                onClick={() => handleTap()}
-                tabIndex={0}
-                role="button"
-                aria-label="Tap area"
-            >
-                {showFeedback && lastTapResult && (
-                    <div className={`auto-beat-practice-feedback auto-beat-practice-feedback--${lastTapResult.accuracy}`}>
-                        {getAccuracyDisplay(lastTapResult)}
-                    </div>
-                )}
-                <div className="auto-beat-practice-tap-instruction">
-                    {streamIsActive && !streamIsPaused
-                        ? 'Tap here or press any key'
-                        : streamIsPaused
-                            ? 'Beat stream paused'
-                            : 'Start playback to begin'}
-                </div>
-            </div>
-
-            {/* Stream status indicator */}
-            <div className="auto-beat-practice-stream-status">
-                <Activity
-                    className={`auto-beat-practice-stream-icon ${streamIsActive && !streamIsPaused ? 'auto-beat-practice-stream-icon--active' : ''} ${streamIsPaused ? 'auto-beat-practice-stream-icon--paused' : ''}`}
-                />
-                <span className="auto-beat-practice-stream-label">
-                    {streamIsActive
-                        ? (streamIsPaused ? 'Beat stream paused' : 'Beat stream active')
-                        : 'Beat stream inactive'}
-                </span>
             </div>
 
             {/* Tap Statistics */}
@@ -463,15 +521,6 @@ function getBeatMapForDifficulty(
         default:
             return levels.medium;
     }
-}
-
-/**
- * Format time in seconds to MM:SS format
- */
-function formatTime(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 export default AutoBeatPracticeView;
