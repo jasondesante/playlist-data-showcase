@@ -150,15 +150,15 @@ referenceFrequency=55, sampleRate=44100
 Build the core class responsible for loading the Essentia WASM and executing the chosen pitch algorithm.
 
 ### Task 1.1: Create `src/core/analysis/EssentiaPitchDetector.ts`
-- [ ] **Create the file** at `../playlist-data-engine/src/core/analysis/EssentiaPitchDetector.ts`
-- [ ] **Define the `EssentiaPitchAlgorithm` type:**
+- [x] **Create the file** at `../playlist-data-engine/src/core/analysis/EssentiaPitchDetector.ts`
+- [x] **Define the `EssentiaPitchAlgorithm` type:**
   - `predominant_melodia` - Extracts the lead melody from polyphonic music (Strongly Recommended default).
   - `multipitch_melodia` - Extracts multiple simultaneous F0 contours.
   - `multipitch_klapuri` - Harmonic summation polyphonic pitch detection.
   - `pitch_melodia` - Standard monophonic melody extraction.
   - `pitch_yin_probabilistic` - WASM-accelerated version of pYIN.
   - `pitch_crepe` - Neural network pitch detection using TensorFlow.js (requires external model — see Algorithm Categories above).
-- [ ] **Define the `EssentiaPitchDetectorConfig` interface:**
+- [x] **Define the `EssentiaPitchDetectorConfig` interface:**
   - `algorithm: EssentiaPitchAlgorithm`
   - `minFrequency: number` (default: 80)
   - `maxFrequency: number` (default: 20000)
