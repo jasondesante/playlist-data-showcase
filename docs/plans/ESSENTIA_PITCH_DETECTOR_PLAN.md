@@ -237,9 +237,9 @@ Add the settings to the frontend to allow testing and comparing algorithms dynam
 Ensure the technical design is documented for future reference and users.
 
 ### Task 4.1: Update `DATA_ENGINE_REFERENCE.md`
-- [ ] Add an `EssentiaPitchDetector` row to the Class Exports table.
-- [ ] Document the `EssentiaPitchAlgorithm` string literals with category annotations (built-in WASM vs external model).
-- [ ] Add a full `### EssentiaPitchDetector` section detailing the static factory, `detectSignal` behaviors, and `EssentiaPitchDetectorConfig` properties.
+- [x] Add an `EssentiaPitchDetector` row to the Class Exports table.
+- [x] Document the `EssentiaPitchAlgorithm` string literals with category annotations (built-in WASM vs external model).
+- [x] Add a full `### EssentiaPitchDetector` section detailing the static factory, `detectSignal` behaviors, and `EssentiaPitchDetectorConfig` properties.
 
 ### Task 4.2: Update `BEAT_DETECTION.md`
 - [ ] Add `EssentiaPitchDetector` to the Source Files table.
