@@ -130,6 +130,18 @@ export const DEFAULT_BAND_TRANSIENT_CONFIG: Record<Band, BandTransientConfig> = 
 };
 
 /**
+ * Essentia.js pitch detection algorithm.
+ * These match the engine's EssentiaPitchAlgorithm type.
+ */
+export type EssentiaPitchAlgorithm =
+    | 'predominant_melodia'
+    | 'pitch_melodia'
+    | 'pitch_yin_probabilistic'
+    | 'multipitch_melodia'
+    | 'multipitch_klapuri'
+    | 'pitch_crepe';
+
+/**
  * Settings for automatic level generation.
  * These are configured in Step 1 (Analyze) when auto mode is enabled.
  */
@@ -183,6 +195,31 @@ export interface AutoLevelSettings {
      * Default: 0.5
      */
     voicingThreshold: number;
+
+    // ============================================================
+    // Essentia Pitch Detection (Task 3.1 of ESSENTIA_PITCH_DETECTOR_PLAN.md)
+    // ============================================================
+
+    /**
+     * Use Essentia.js pitch detection instead of the built-in pYIN detector.
+     * When true, essentiaPitchAlgorithm determines which algorithm to use.
+     * Default: false
+     */
+    useEssentiaPitch: boolean;
+
+    /**
+     * Which Essentia pitch algorithm to use.
+     * Only applies when useEssentiaPitch is true.
+     * Default: 'predominant_melodia'
+     */
+    essentiaPitchAlgorithm: EssentiaPitchAlgorithm;
+
+    /**
+     * URL to the CREPE TFJS model.
+     * Only required when essentiaPitchAlgorithm is 'pitch_crepe'.
+     * Default: '/models/crepe/large/model.json'
+     */
+    crepeModelUrl: string;
 }
 
 /**
@@ -202,6 +239,10 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     controllerMode: 'ddr',      // DDR mode by default
     pitchInfluenceWeight: 0.8,  // Strong pitch influence
     voicingThreshold: 0.5,      // Default voicing threshold
+    // Essentia Pitch Detection (Task 3.1)
+    useEssentiaPitch: false,                    // Use pYIN by default
+    essentiaPitchAlgorithm: 'predominant_melodia',  // Best for polyphonic music
+    crepeModelUrl: '/models/crepe/large/model.json', // Large CREPE model
 };
 
 /**

@@ -1253,3 +1253,129 @@
 .auto-level-settings__controller-mode-button--active .auto-level-settings__controller-mode-button-desc {
     color: hsl(var(--primary) / 0.8);
 }
+
+/* ============================================
+   ESSENTIA PITCH DETECTION SECTION
+   Task 3.1 of ESSENTIA_PITCH_DETECTOR_PLAN.md
+   ============================================ */
+
+.auto-level-settings__essentia-toggle {
+    border-top: 1px solid hsl(var(--border));
+    padding-top: 1rem;
+    margin-top: 0.25rem;
+}
+
+.auto-level-settings__essentia-content {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.75rem;
+    background-color: hsl(var(--surface-2));
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    animation: slideDown 0.2s ease-out;
+}
+
+/* Select dropdown */
+.auto-level-settings__select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--surface-3));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.625rem center;
+    padding-right: 2rem;
+    transition: border-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.auto-level-settings__select:hover:not(:disabled) {
+    border-color: hsl(var(--primary) / 0.5);
+}
+
+.auto-level-settings__select:focus {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.auto-level-settings__select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auto-level-settings__select optgroup {
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+}
+
+.auto-level-settings__select option {
+    font-weight: 400;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--surface-3));
+    padding: 0.25rem 0.5rem;
+}
+
+/* Text input */
+.auto-level-settings__text-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 400;
+    font-family: var(--font-mono);
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--surface-3));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    transition: border-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.auto-level-settings__text-input:hover:not(:disabled) {
+    border-color: hsl(var(--primary) / 0.5);
+}
+
+.auto-level-settings__text-input:focus {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.auto-level-settings__text-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auto-level-settings__text-input::placeholder {
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+}
+
+/* CREPE URL row */
+.auto-level-settings__crepe-url-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.auto-level-settings__crepe-url-row .auto-level-settings__text-input {
+    flex: 1;
+}
+
+.auto-level-settings__crepe-url-row .auto-level-settings__mini-toggle {
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+}
+
+/* Mobile adjustments for essentia section */
+@media (max-width: 640px) {
+    .auto-level-settings__essentia-content {
+        gap: 0.75rem;
+    }
+}

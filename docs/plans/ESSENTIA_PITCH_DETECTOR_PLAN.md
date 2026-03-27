@@ -221,11 +221,11 @@ Add the settings to the frontend to allow testing and comparing algorithms dynam
 
 ### Task 3.1: Update `AutoLevelSettings` Component
 **File**: `src/components/Tabs/BeatDetectionTab/.../AutoLevelSettings.tsx`
-- [ ] Add a Switch/Toggle for "Use Essentia Pitch Detection" (replaces pYIN).
-- [ ] Add a Dropdown (Select) for the Algorithm choice that only appears when Essentia is active:
+- [x] Add a Switch/Toggle for "Use Essentia Pitch Detection" (replaces pYIN).
+- [x] Add a Dropdown (Select) for the Algorithm choice that only appears when Essentia is active:
   - Group the built-in WASM algorithms together: Predominant Melodia, Pitch Melodia, Pitch YIN (Probabilistic), MultiPitch Melodia, MultiPitch Klapuri
   - Show CREPE as a separate option with a note that it requires an external model
-- [ ] Add a Text Input for the `crepeModelUrl` that only appears when `pitch_crepe` is chosen. Default to `/models/crepe/large/model.json`.
+- [x] Add a Text Input for the `crepeModelUrl` that only appears when `pitch_crepe` is chosen. Default to `/models/crepe/large/model.json`.
 
 ### Task 3.2: Connect UI State to Generation Engine
 - [ ] Update `beatDetectionStore` (or corresponding state management) to store the `useEssentiaPitch`, `essentiaPitchAlgorithm`, and `crepeModelUrl` values.
