@@ -246,26 +246,21 @@ export function LevelGenerationDebugPanel({ className }: LevelGenerationDebugPan
                     {/* Pitch Analysis Summary */}
                     <div className="level-debug-stats-container">
                         <StatRow
-                            label="Dominant Band"
-                            value={pitchAnalysis.dominantBand ?? 'N/A'}
-                            badge
-                        />
-                        <StatRow
                             label="Total Beats Analyzed"
-                            value={pitchAnalysis.totalBeats ?? 0}
+                            value={pitchAnalysis.metadata?.totalBeats ?? 0}
                         />
                         <StatRow
                             label="Voiced Beats"
-                            value={pitchAnalysis.voicedBeats ?? 0}
+                            value={pitchAnalysis.metadata?.voicedBeats ?? 0}
                         />
                         <StatRow
                             label="Overall Direction"
-                            value={pitchAnalysis.overallDirection ?? 'N/A'}
+                            value={pitchAnalysis.melodyContour?.direction ?? 'N/A'}
                         />
-                        {pitchAnalysis.pitchRange && (
+                        {pitchAnalysis.melodyContour?.range && (
                             <StatRow
                                 label="Pitch Range"
-                                value={`${pitchAnalysis.pitchRange.minNote} - ${pitchAnalysis.pitchRange.maxNote}`}
+                                value={`${pitchAnalysis.melodyContour.range.minNote} - ${pitchAnalysis.melodyContour.range.maxNote}`}
                             />
                         )}
                     </div>

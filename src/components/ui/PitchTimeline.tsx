@@ -163,6 +163,10 @@ export function PitchTimeline({
     const dragStartXRef = useRef(0);
     const dragStartTimeRef = useRef(0);
 
+    // Quick scroll state
+    const [isQuickScrollDragging, setIsQuickScrollDragging] = useState(false);
+    const quickScrollRef = useRef<HTMLDivElement>(null);
+
     // Keep refs in sync
     useEffect(() => {
         lastAudioTimeRef.current = {
@@ -329,6 +333,86 @@ export function PitchTimeline({
         event.stopPropagation();
         onPitchClick?.(pitch);
     }, [onPitchClick]);
+
+    // ========================================
+    // Quick Scroll
+    // ========================================
+
+    const handleQuickScrollClick = useCallback(
+        (event: React.MouseEvent) => {
+            if (!quickScrollRef.current || !duration) return;
+
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            seek(positionRatio * duration);
+        },
+        [duration, seek]
+    );
+
+    const handleQuickScrollDragStart = useCallback(
+        (event: React.MouseEvent) => {
+            if (!quickScrollRef.current || !duration) return;
+
+            event.preventDefault();
+            setIsQuickScrollDragging(true);
+
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            seek(positionRatio * duration);
+        },
+        [duration, seek]
+    );
+
+    // Quick scroll drag handling
+    useEffect(() => {
+        if (!isQuickScrollDragging || !duration) return;
+
+        let pendingSeek: number | null = null;
+        let rafId: number | null = null;
+
+        const handleQuickScrollMove = (event: MouseEvent) => {
+            if (!quickScrollRef.current) return;
+
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            pendingSeek = positionRatio * duration;
+
+            if (!rafId) {
+                rafId = requestAnimationFrame(() => {
+                    if (pendingSeek !== null) {
+                        seek(pendingSeek);
+                        pendingSeek = null;
+                    }
+                    rafId = null;
+                });
+            }
+        };
+
+        const handleQuickScrollEnd = () => {
+            setIsQuickScrollDragging(false);
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+        };
+
+        window.addEventListener('mousemove', handleQuickScrollMove);
+        window.addEventListener('mouseup', handleQuickScrollEnd);
+
+        return () => {
+            window.removeEventListener('mousemove', handleQuickScrollMove);
+            window.removeEventListener('mouseup', handleQuickScrollEnd);
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+            }
+        };
+    }, [isQuickScrollDragging, duration, seek]);
 
     // Handle keyboard navigation for pitch selection
     const handlePitchKeyDown = useCallback((event: React.KeyboardEvent, pitch: PitchAtBeat) => {
@@ -512,6 +596,54 @@ export function PitchTimeline({
                     {visiblePitches.length} pitches visible
                 </span>
             </div>
+
+            {/* Quick Scroll */}
+            {duration > 0 && (
+                <div className="pitch-timeline-quickscroll">
+                    <div
+                        ref={quickScrollRef}
+                        className="pitch-timeline-quickscroll-track"
+                        onClick={handleQuickScrollClick}
+                        onMouseDown={handleQuickScrollDragStart}
+                    >
+                        {/* Pitch density markers */}
+                        {pitches
+                            .filter((_, idx) => idx % Math.max(1, Math.floor(pitches.length / 80)) === 0)
+                            .map((pitch, index) => {
+                                const position = pitch.timestamp / duration;
+                                const isVoiced = pitch.pitch?.isVoiced ?? false;
+                                return (
+                                    <div
+                                        key={`quickscroll-${pitch.beatIndex}-${index}`}
+                                        className={cn(
+                                            'pitch-timeline-quickscroll-marker',
+                                            !isVoiced && 'pitch-timeline-quickscroll-marker--unvoiced'
+                                        )}
+                                        style={{
+                                            left: `${position * 100}%`,
+                                            backgroundColor: isVoiced ? bandColor : '#6b7280',
+                                        }}
+                                    />
+                                );
+                            })}
+
+                        {/* Viewport indicator */}
+                        <div
+                            className="pitch-timeline-quickscroll-viewport"
+                            style={{
+                                left: `${Math.max(0, ((smoothTime - pastWindow) / duration) * 100)}%`,
+                                width: `${Math.min(100, (totalWindow / duration) * 100)}%`,
+                            }}
+                        />
+
+                        {/* Current position indicator */}
+                        <div
+                            className="pitch-timeline-quickscroll-position"
+                            style={{ left: `${(smoothTime / duration) * 100}%` }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

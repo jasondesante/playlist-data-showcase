@@ -103,7 +103,10 @@ import {
     // Level Generation types (Task 0.1)
     type GeneratedLevel,
     type AllDifficultiesResult,
+    // Pitch types (Task 0.1)
+    type PitchAtBeat,
 } from 'playlist-data-engine';
+import type { MelodyContour } from '@/types/levelGeneration';
 
 /**
  * TapResult extends ExtendedButtonPressResult with additional metadata for history tracking.
@@ -146,24 +149,20 @@ export interface IntervalStats {
  * and will be populated from the GeneratedLevel.pitchAnalysis field.
  */
 export interface MelodyContourAnalysisResult {
+    /** Pitch data linked to beats (variant pitches for gameplay) */
+    pitchByBeat: PitchAtBeat[];
+    /** Melody contour from composite pitches */
+    melodyContour: MelodyContour;
     /** Direction statistics */
     directionStats: DirectionStats;
     /** Interval statistics */
     intervalStats: IntervalStats;
-    /** Dominant band used for analysis */
-    dominantBand: string;
-    /** Total beats analyzed */
-    totalBeats: number;
-    /** Beats with voiced pitch */
-    voicedBeats: number;
-    /** Overall melody direction */
-    overallDirection: 'ascending' | 'descending' | 'stable' | 'mixed';
-    /** Pitch range (min and max notes) */
-    pitchRange: {
-        minNote: string;
-        maxNote: string;
-        semitones: number;
-    } | null;
+    /** Analysis metadata */
+    metadata: {
+        totalBeats: number;
+        voicedBeats: number;
+        directionCalculatedBeats: number;
+    };
 }
 
 /**
@@ -4605,7 +4604,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     setPitchAnalysis: (analysis) => {
                         logger.info('BeatDetection', 'Setting pitch analysis', {
                             hasAnalysis: !!analysis,
-                            dominantBand: analysis?.dominantBand,
+                            totalBeats: analysis?.pitchByBeat?.length,
                             directionStats: analysis?.directionStats,
                         });
                         set({ pitchAnalysis: analysis });

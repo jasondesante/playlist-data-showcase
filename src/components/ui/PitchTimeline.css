@@ -314,6 +314,72 @@
 }
 
 /* ============================================
+   QUICK SCROLL
+   ============================================ */
+
+.pitch-timeline-quickscroll {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem 0.5rem 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+}
+
+.pitch-timeline-quickscroll-track {
+    position: relative;
+    flex: 1;
+    height: 0.5rem;
+    background: hsl(var(--surface-3));
+    border-radius: 0.25rem;
+    cursor: pointer;
+    border: 1px solid hsl(var(--surface-4) / 0.5);
+    transition: border-color 0.15s ease;
+}
+
+.pitch-timeline-quickscroll-track:hover {
+    background: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.3);
+}
+
+/* Pitch density markers */
+.pitch-timeline-quickscroll-marker {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    width: 1px;
+    transform: translateX(-50%);
+    opacity: 0.6;
+}
+
+.pitch-timeline-quickscroll-marker--unvoiced {
+    opacity: 0.15;
+}
+
+/* Viewport indicator */
+.pitch-timeline-quickscroll-viewport {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: hsl(var(--primary) / 0.15);
+    border-left: 1px solid hsl(var(--primary) / 0.4);
+    border-right: 1px solid hsl(var(--primary) / 0.4);
+    border-radius: 0.125rem;
+    pointer-events: none;
+}
+
+/* Current position indicator */
+.pitch-timeline-quickscroll-position {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 2px;
+    background: hsl(var(--primary));
+    border-radius: 1px;
+    transform: translateX(-50%);
+    pointer-events: none;
+    box-shadow: 0 0 4px hsl(var(--primary) / 0.5);
+}
+
+/* ============================================
    RESPONSIVE STYLES
    ============================================ */
 

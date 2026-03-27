@@ -11,7 +11,6 @@
 import type {
     GeneratedLevel as GeneratedLevelType,
     PitchAtBeat,
-    BandPitchAtBeat,
 } from 'playlist-data-engine';
 
 // ============================================================================
@@ -138,62 +137,68 @@ export interface IntervalStats {
 
 /**
  * A segment of consecutive beats with the same pitch direction.
+ * Mirrors the engine's MelodySegment from MultiBandPitchAnalyzer.
  */
 export interface MelodySegment {
-    /** Start beat index */
-    startBeat: number;
-    /** End beat index (inclusive) */
-    endBeat: number;
-    /** Direction of the segment */
+    /** Start time in seconds */
+    startTime: number;
+    /** End time in seconds */
+    endTime: number;
+    /** Starting pitch (note name, e.g., "C4") */
+    startPitch: string;
+    /** Ending pitch (note name, e.g., "F#5") */
+    endPitch: string;
+    /** Direction of this segment */
     direction: 'up' | 'down' | 'stable' | 'none';
-    /** Starting note */
-    startNote: string | null;
-    /** Ending note */
-    endNote: string | null;
-    /** Total semitones spanned */
-    semitonesSpanned: number;
+    /** Interval in semitones between start and end */
+    interval: number;
 }
 
 /**
  * Melody contour data structure.
- * Contains the segments and pitch contour information.
+ * Mirrors the engine's MelodyContour from MultiBandPitchAnalyzer.
  */
 export interface MelodyContour {
-    /** Segments of consecutive same-direction beats */
+    /** Melody segments grouped by direction */
     segments: MelodySegment[];
-    /** Overall contour shape description */
-    shape: 'ascending' | 'descending' | 'arch' | 'valley' | 'mixed' | 'flat';
+    /** Overall direction of the melody */
+    direction: 'ascending' | 'descending' | 'stable' | 'mixed' | 'flat';
+    /** Pitch range of the melody */
+    range: {
+        minNote: string;
+        maxNote: string;
+        semitones: number;
+    };
+    /** Direction over the last 1-2 beats */
+    shortTermDirection: string;
+    /** Direction over the last 4-8 beats */
+    mediumTermDirection: string;
+    /** Direction over the last 16+ beats */
+    longTermDirection: string;
 }
 
 /**
  * Result of melody contour analysis.
- * Contains pitch analysis results and statistics.
+ * Mirrors the engine's MelodyContourAnalysisResult from MelodyContourAnalyzer.
  */
 export interface MelodyContourAnalysisResult {
+    /** Pitch data linked to beats (variant pitches for gameplay) */
+    pitchByBeat: PitchAtBeat[];
+    /** Melody contour from composite pitches */
+    melodyContour: MelodyContour;
     /** Direction statistics */
     directionStats: DirectionStats;
     /** Interval statistics */
     intervalStats: IntervalStats;
-    /** Dominant frequency band used for analysis */
-    dominantBand: string;
-    /** Total beats analyzed */
-    totalBeats: number;
-    /** Beats with voiced pitch detected */
-    voicedBeats: number;
-    /** Overall melody direction */
-    overallDirection: 'ascending' | 'descending' | 'stable' | 'mixed';
-    /** Pitch range information */
-    pitchRange: {
-        minNote: string;
-        maxNote: string;
-        semitones: number;
-    } | null;
-    /** Melody contour segments and shape */
-    contour?: MelodyContour;
-    /** Pitch data linked to beats (from engine) */
-    pitchByBeat?: PitchAtBeat[];
-    /** Band-specific pitch data (from engine) */
-    bandPitches?: Map<string, BandPitchAtBeat> | Record<string, BandPitchAtBeat>;
+    /** Analysis metadata */
+    metadata: {
+        /** Total beats analyzed */
+        totalBeats: number;
+        /** Beats with voiced pitch */
+        voicedBeats: number;
+        /** Beats with direction calculated */
+        directionCalculatedBeats: number;
+    };
 }
 
 // ============================================================================

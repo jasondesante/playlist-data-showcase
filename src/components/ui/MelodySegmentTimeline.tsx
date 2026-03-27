@@ -97,15 +97,12 @@ function formatTime(seconds: number): string {
  */
 function getSegmentTimestamps(
     segment: MelodySegment,
-    pitchesByBeat: PitchAtBeat[]
+    _pitchesByBeat: PitchAtBeat[]
 ): { startTime: number; endTime: number } {
-    // Find timestamps for start and end beats
-    const startBeat = pitchesByBeat.find(p => p.beatIndex === segment.startBeat);
-    const endBeat = pitchesByBeat.find(p => p.beatIndex === segment.endBeat);
-
+    // Engine's MelodySegment provides startTime/endTime directly
     return {
-        startTime: startBeat?.timestamp ?? 0,
-        endTime: endBeat?.timestamp ?? (startBeat?.timestamp ?? 0) + 0.5,
+        startTime: segment.startTime,
+        endTime: segment.endTime,
     };
 }
 
@@ -439,7 +436,7 @@ export function MelodySegmentTimeline({
                             onMouseLeave={() => setHoveredSegment(null)}
                             role={onSegmentClick ? 'button' : undefined}
                             tabIndex={onSegmentClick ? 0 : undefined}
-                            aria-label={`${config.label} segment, beats ${segment.startBeat}-${segment.endBeat}`}
+                            aria-label={`${config.label} segment, ${segment.startTime.toFixed(1)}s - ${segment.endTime.toFixed(1)}s`}
                         >
                             {/* Segment content */}
                             <div className="melody-segment-content">
@@ -452,13 +449,13 @@ export function MelodySegmentTimeline({
                                 </span>
 
                                 {/* Note span (if available) */}
-                                {segment.startNote && segment.endNote && (
+                                {segment.startPitch && segment.endPitch && (
                                     <span className="melody-segment-notes">
-                                        {segment.startNote}
-                                        {segment.startNote !== segment.endNote && (
+                                        {segment.startPitch}
+                                        {segment.startPitch !== segment.endPitch && (
                                             <>
                                                 <span className="melody-segment-arrow">→</span>
-                                                {segment.endNote}
+                                                {segment.endPitch}
                                             </>
                                         )}
                                     </span>
@@ -467,7 +464,7 @@ export function MelodySegmentTimeline({
                                 {/* Beat range (shown on wider segments) */}
                                 {width > 0.08 && (
                                     <span className="melody-segment-beats">
-                                        {segment.endBeat - segment.startBeat + 1} beats
+                                        {(segment.endTime - segment.startTime).toFixed(1)}s
                                     </span>
                                 )}
 
@@ -480,14 +477,14 @@ export function MelodySegmentTimeline({
                             </div>
 
                             {/* Semitones indicator (for larger intervals) */}
-                            {segment.semitonesSpanned !== 0 && width > 0.1 && (
+                            {segment.interval !== 0 && width > 0.1 && (
                                 <span
                                     className={cn(
                                         'melody-segment-semitones',
-                                        segment.semitonesSpanned > 0 ? 'melody-segment-semitones--up' : 'melody-segment-semitones--down'
+                                        segment.interval > 0 ? 'melody-segment-semitones--up' : 'melody-segment-semitones--down'
                                     )}
                                 >
-                                    {segment.semitonesSpanned > 0 ? '+' : ''}{segment.semitonesSpanned}st
+                                    {segment.interval > 0 ? '+' : ''}{segment.interval}st
                                 </span>
                             )}
                         </div>
@@ -523,32 +520,26 @@ export function MelodySegmentTimeline({
                     </div>
                     <div className="melody-segment-tooltip-details">
                         <div className="melody-segment-tooltip-row">
-                            <span className="melody-segment-tooltip-label">Beats:</span>
+                            <span className="melody-segment-tooltip-label">Time:</span>
                             <span className="melody-segment-tooltip-value">
-                                {hoveredSegment.segment.startBeat} - {hoveredSegment.segment.endBeat}
+                                {formatTime(hoveredSegment.segment.startTime)} - {formatTime(hoveredSegment.segment.endTime)}
                                 <span className="melody-segment-tooltip-secondary">
-                                    ({hoveredSegment.segment.endBeat - hoveredSegment.segment.startBeat + 1} total)
+                                    ({(hoveredSegment.segment.endTime - hoveredSegment.segment.startTime).toFixed(1)}s)
                                 </span>
                             </span>
                         </div>
-                        {hoveredSegment.segment.startNote && hoveredSegment.segment.endNote && (
+                        {hoveredSegment.segment.startPitch && hoveredSegment.segment.endPitch && (
                             <div className="melody-segment-tooltip-row">
                                 <span className="melody-segment-tooltip-label">Notes:</span>
                                 <span className="melody-segment-tooltip-value">
-                                    {hoveredSegment.segment.startNote} → {hoveredSegment.segment.endNote}
+                                    {hoveredSegment.segment.startPitch} → {hoveredSegment.segment.endPitch}
                                 </span>
                             </div>
                         )}
                         <div className="melody-segment-tooltip-row">
                             <span className="melody-segment-tooltip-label">Interval:</span>
                             <span className="melody-segment-tooltip-value">
-                                {getSemitoneDescription(hoveredSegment.segment.semitonesSpanned)}
-                            </span>
-                        </div>
-                        <div className="melody-segment-tooltip-row">
-                            <span className="melody-segment-tooltip-label">Time:</span>
-                            <span className="melody-segment-tooltip-value">
-                                {formatTime(hoveredSegment.startTime)} - {formatTime(hoveredSegment.endTime)}
+                                {getSemitoneDescription(hoveredSegment.segment.interval)}
                             </span>
                         </div>
                     </div>

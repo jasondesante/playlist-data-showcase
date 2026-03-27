@@ -290,23 +290,7 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
 
             // Set pitch analysis if available
             if (selectedLevel?.pitchAnalysis) {
-                actions.setPitchAnalysis({
-                    directionStats: selectedLevel.pitchAnalysis.directionStats,
-                    intervalStats: selectedLevel.pitchAnalysis.intervalStats,
-                    dominantBand: selectedLevel.pitchAnalysis.dominantBand,
-                    totalBeats: selectedLevel.pitchAnalysis.pitchByBeat?.length ?? 0,
-                    voicedBeats: selectedLevel.pitchAnalysis.pitchByBeat?.filter(
-                        (p: any) => p.pitch?.isVoiced
-                    ).length ?? 0,
-                    overallDirection: 'mixed', // Default, could be computed
-                    pitchRange: selectedLevel.metadata.pitchMetadata?.melodyRange
-                        ? {
-                            minNote: selectedLevel.metadata.pitchMetadata.melodyRange.min,
-                            maxNote: selectedLevel.metadata.pitchMetadata.melodyRange.max,
-                            semitones: 0, // Could compute from note names
-                        }
-                        : null,
-                });
+                actions.setPitchAnalysis(selectedLevel.pitchAnalysis);
             }
 
             actions.setLevelGenerationProgress({

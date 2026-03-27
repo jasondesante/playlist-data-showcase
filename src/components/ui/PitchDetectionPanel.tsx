@@ -5,16 +5,19 @@
  * the Pitch & Level Generation feature (Phase 3).
  *
  * Features:
- * - Header showing dominant band selection
+ * - Header showing pitch detection status
  * - Summary stats (voiced/unvoiced ratio, avg probability, pitch range)
- * - Band breakdown cards (Low/Mid/High bands with stats)
+ * - Composite stream pitch timeline
  * - Side panel for selected pitch details (always visible on right)
  *
- * Task 3.1: Create PitchDetectionPanel Component
+ * Pitch detection runs full-spectrum on the unfiltered audio signal,
+ * then links pitch results to the composite rhythm stream (the actual
+ * playable beat sequence). Band streams are used only for beat iteration,
+ * not for filtered audio analysis.
  */
 
 import { useState, useMemo, useCallback } from 'react';
-import { Music, Star } from 'lucide-react';
+import { Music } from 'lucide-react';
 import './PitchDetectionPanel.css';
 import { cn } from '../../utils/cn';
 import {
@@ -25,15 +28,12 @@ import {
 } from '../../hooks/useLevelGeneration';
 import type {
     PitchAtBeat,
-    BandPitchAtBeat,
-    IntervalCategory,
     AllDifficultiesWithNatural,
 } from '../../types/levelGeneration';
 import type { GeneratedLevel } from 'playlist-data-engine';
 import { PitchTimeline } from './PitchTimeline';
-import { PitchInspector, type SelectedPitchData, type PitchBandName } from './PitchInspector';
+import { PitchInspector, type SelectedPitchData } from './PitchInspector';
 import { PitchProbabilityHistogram } from './PitchProbabilityHistogram';
-import { MultiBandPitchVisualization } from './MultiBandPitchVisualization';
 
 // ============================================================
 // Types
@@ -44,32 +44,14 @@ export interface PitchDetectionPanelProps {
     className?: string;
 }
 
-/** Band configuration for display */
-interface BandConfig {
-    name: PitchBandName;
-    label: string;
-    frequencyRange: string;
-    color: string;
-}
-
-// ============================================================
-// Constants
-// ============================================================
-
-const BAND_CONFIGS: BandConfig[] = [
-    { name: 'low', label: 'Low', frequencyRange: '20-500Hz', color: 'blue' },
-    { name: 'mid', label: 'Mid', frequencyRange: '500-2kHz', color: 'green' },
-    { name: 'high', label: 'High', frequencyRange: '2k-20kHz', color: 'orange' },
-];
-
 // ============================================================
 // Helper Functions
 // ============================================================
 
 /**
- * Calculate band statistics from BandPitchAtBeat data.
+ * Calculate composite stream pitch statistics from PitchAtBeat data.
  */
-function calculateBandStats(bandData: BandPitchAtBeat | undefined): {
+function calculateCompositeStats(pitches: PitchAtBeat[] | undefined): {
     voicedCount: number;
     totalCount: number;
     avgProbability: number;
@@ -77,41 +59,37 @@ function calculateBandStats(bandData: BandPitchAtBeat | undefined): {
     maxNote: string | null;
     commonNotes: string[];
 } {
-    if (!bandData) {
+    if (!pitches || pitches.length === 0) {
         return { voicedCount: 0, totalCount: 0, avgProbability: 0, minNote: null, maxNote: null, commonNotes: [] };
     }
 
-    const voicedCount = bandData.voicedBeatCount;
-    const totalCount = bandData.totalBeatCount;
-    const avgProbability = bandData.avgProbability;
+    const voicedCount = pitches.filter(p => p.pitch?.isVoiced).length;
+    const totalCount = pitches.length;
+    const voicedPitches = pitches.filter(p => p.pitch?.isVoiced);
+    const avgProbability = voicedPitches.length > 0
+        ? voicedPitches.reduce((sum, p) => sum + p.pitch!.probability, 0) / voicedPitches.length
+        : 0;
 
-    // Find min/max notes from pitches and count occurrences
+    // Find min/max notes and count occurrences
     let minNote: string | null = null;
     let maxNote: string | null = null;
-    const notes: string[] = [];
     const noteCounts: Map<string, number> = new Map();
 
-    bandData.pitches.forEach(p => {
+    for (const p of voicedPitches) {
         if (p.pitch?.noteName) {
-            notes.push(p.pitch.noteName);
             noteCounts.set(p.pitch.noteName, (noteCounts.get(p.pitch.noteName) ?? 0) + 1);
+            if (!minNote || p.pitch.noteName < minNote) minNote = p.pitch.noteName;
+            if (!maxNote || p.pitch.noteName > maxNote) maxNote = p.pitch.noteName;
         }
-    });
-
-    if (notes.length > 0) {
-        // Simple alphabetical sort works for note names (A#4 > A4 > G#4 > G4)
-        notes.sort();
-        minNote = notes[0];
-        maxNote = notes[notes.length - 1];
     }
 
     // Get the 3 most common notes
-    const sortedNotes = Array.from(noteCounts.entries())
+    const commonNotes = Array.from(noteCounts.entries())
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
         .map(([note]) => note);
 
-    return { voicedCount, totalCount, avgProbability, minNote, maxNote, commonNotes: sortedNotes };
+    return { voicedCount, totalCount, avgProbability, minNote, maxNote, commonNotes };
 }
 
 /**
@@ -125,23 +103,21 @@ function formatProbability(prob: number): string {
 // Sub-components
 // ============================================================
 
-interface SummaryStatsProps {
-    totalBeats: number;
-    voicedBeats: number;
-    dominantBand: PitchBandName | null;
+interface CompositeSummaryStatsProps {
+    pitches: PitchAtBeat[] | undefined;
     avgProbability: number;
     pitchRange: { minNote: string; maxNote: string } | null;
 }
 
-function SummaryStats({ totalBeats, voicedBeats, dominantBand, avgProbability, pitchRange }: SummaryStatsProps) {
-    const voicedPercent = totalBeats > 0 ? Math.round((voicedBeats / totalBeats) * 100) : 0;
-    const dominantBandLabel = BAND_CONFIGS.find(b => b.name === dominantBand)?.label ?? 'N/A';
+function CompositeSummaryStats({ pitches, avgProbability, pitchRange }: CompositeSummaryStatsProps) {
+    const stats = calculateCompositeStats(pitches);
+    const voicedPercent = stats.totalCount > 0 ? Math.round((stats.voicedCount / stats.totalCount) * 100) : 0;
 
     return (
         <div className="pitch-summary-stats">
             <div className="pitch-summary-item">
-                <span className="pitch-summary-value">{totalBeats}</span>
-                <span className="pitch-summary-label">Total Beats</span>
+                <span className="pitch-summary-value">{stats.totalCount}</span>
+                <span className="pitch-summary-label">Composite Beats</span>
             </div>
             <div className="pitch-summary-item">
                 <span className="pitch-summary-value pitch-voiced-percent">{voicedPercent}%</span>
@@ -150,13 +126,6 @@ function SummaryStats({ totalBeats, voicedBeats, dominantBand, avgProbability, p
             <div className="pitch-summary-item">
                 <span className="pitch-summary-value pitch-probability">{formatProbability(avgProbability)}</span>
                 <span className="pitch-summary-label">Avg Probability</span>
-            </div>
-            <div className="pitch-summary-item pitch-summary-dominant">
-                <span className="pitch-summary-value">
-                    {dominantBandLabel}
-                    {dominantBand && <Star size={12} className="pitch-dominant-star" />}
-                </span>
-                <span className="pitch-summary-label">Dominant Band</span>
             </div>
             {pitchRange && (
                 <div className="pitch-summary-item pitch-summary-range">
@@ -168,55 +137,19 @@ function SummaryStats({ totalBeats, voicedBeats, dominantBand, avgProbability, p
     );
 }
 
-interface BandBreakdownCardProps {
-    band: BandConfig;
-    bandData: BandPitchAtBeat | undefined;
-    isDominant: boolean;
-    onSelectBand: (band: PitchBandName) => void;
-    isSelected: boolean;
+interface CompositePitchDetailProps {
+    pitches: PitchAtBeat[] | undefined;
 }
 
-function BandBreakdownCard({ band, bandData, isDominant, onSelectBand, isSelected }: BandBreakdownCardProps) {
-    const stats = calculateBandStats(bandData);
-    const voicedPercent = stats.totalCount > 0 ? Math.round((stats.voicedCount / stats.totalCount) * 100) : 0;
+function CompositePitchDetail({ pitches }: CompositePitchDetailProps) {
+    const stats = calculateCompositeStats(pitches);
+
+    if (stats.totalCount === 0) {
+        return null;
+    }
 
     return (
-        <div
-            className={cn(
-                'pitch-band-card',
-                `pitch-band-${band.color}`,
-                isDominant && 'pitch-band-dominant',
-                isSelected && 'pitch-band-selected'
-            )}
-            onClick={() => onSelectBand(band.name)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && onSelectBand(band.name)}
-            aria-label={`${band.label} band: ${stats.voicedCount} voiced beats, ${formatProbability(stats.avgProbability)} average probability`}
-        >
-            <div className="pitch-band-header">
-                <span className="pitch-band-name">{band.label}</span>
-                <span className="pitch-band-range">{band.frequencyRange}</span>
-                {isDominant && (
-                    <span className="pitch-band-badge" aria-label="Dominant band">
-                        <Star size={10} />
-                    </span>
-                )}
-            </div>
-            <div className="pitch-band-stats">
-                <div className="pitch-band-stat">
-                    <span className="pitch-band-stat-value">{stats.voicedCount}</span>
-                    <span className="pitch-band-stat-label">Voiced</span>
-                </div>
-                <div className="pitch-band-stat">
-                    <span className="pitch-band-stat-value">{voicedPercent}%</span>
-                    <span className="pitch-band-stat-label">Ratio</span>
-                </div>
-                <div className="pitch-band-stat">
-                    <span className="pitch-band-stat-value">{formatProbability(stats.avgProbability)}</span>
-                    <span className="pitch-band-stat-label">Avg Prob</span>
-                </div>
-            </div>
+        <div className="pitch-composite-detail">
             {stats.minNote && stats.maxNote && (
                 <div className="pitch-band-notes">
                     <span className="pitch-band-note-label">Range:</span>
@@ -225,7 +158,7 @@ function BandBreakdownCard({ band, bandData, isDominant, onSelectBand, isSelecte
             )}
             {stats.commonNotes.length > 0 && (
                 <div className="pitch-band-common-notes">
-                    <span className="pitch-band-note-label">Common:</span>
+                    <span className="pitch-band-note-label">Common Notes:</span>
                     <div className="pitch-band-common-notes-list">
                         {stats.commonNotes.map((note) => (
                             <span key={note} className="pitch-band-common-note">
@@ -255,34 +188,18 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
         return level?.pitchAnalysis ?? null;
     }, [allDifficulties, selectedDifficulty]);
 
-    // State for selected band and pitch
-    const [selectedBand, setSelectedBand] = useState<PitchBandName>('mid');
+    // State for selected pitch
     const [selectedPitch, setSelectedPitch] = useState<SelectedPitchData | null>(null);
 
-    // Extract band data from pitch analysis
-    const bandDataMap = useMemo((): Map<PitchBandName, BandPitchAtBeat> => {
-        if (!pitchAnalysis?.bandPitches) return new Map<PitchBandName, BandPitchAtBeat>();
-
-        // Convert the Map if it's a plain object (from serialization)
-        if (pitchAnalysis.bandPitches instanceof Map) {
-            return pitchAnalysis.bandPitches as Map<PitchBandName, BandPitchAtBeat>;
-        }
-
-        // Handle case where Map was serialized as object
-        const map = new Map<PitchBandName, BandPitchAtBeat>();
-        const bandPitches = pitchAnalysis.bandPitches as Record<string, BandPitchAtBeat>;
-        if (bandPitches) {
-            Object.entries(bandPitches).forEach(([key, value]: [string, BandPitchAtBeat]) => {
-                map.set(key as PitchBandName, value);
-            });
-        }
-        return map;
+    // Get pitches from the analysis (pitchByBeat contains variant pitches for gameplay)
+    const compositePitches = useMemo((): PitchAtBeat[] => {
+        if (!pitchAnalysis?.pitchByBeat) return [];
+        const pb = pitchAnalysis.pitchByBeat;
+        if (Array.isArray(pb)) return pb;
+        return [];
     }, [pitchAnalysis]);
 
-    // Get dominant band from analysis
-    const dominantBand = (pitchAnalysis?.dominantBand as PitchBandName) ?? null;
-
-    // Calculate overall stats
+    // Calculate overall stats from composite pitches
     const overallStats = useMemo(() => {
         if (!pitchAnalysis) {
             return {
@@ -293,56 +210,30 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
             };
         }
 
-        // Get stats from metadata
-        const totalBeats = pitchAnalysis.metadata?.totalBeats ?? pitchAnalysis.pitchByBeat?.length ?? 0;
-        const voicedBeats = pitchAnalysis.metadata?.voicedBeats ?? 0;
+        const totalBeats = compositePitches.length;
+        const voicedBeats = compositePitches.filter(p => p.pitch?.isVoiced).length;
+        const avgProbability = voicedBeats > 0
+            ? compositePitches.filter(p => p.pitch?.isVoiced).reduce((sum, p) => sum + p.pitch!.probability, 0) / voicedBeats
+            : 0;
 
-        // Calculate average probability from band data
-        let totalProb = 0;
-        let probCount = 0;
-        bandDataMap.forEach((bandData) => {
-            if (bandData.avgProbability > 0) {
-                totalProb += bandData.avgProbability;
-                probCount++;
-            }
-        });
-        const avgProbability = probCount > 0 ? totalProb / probCount : 0;
-
-        // Get pitch range
-        let pitchRange: { minNote: string; maxNote: string } | null = null;
-        if (dominantBand) {
-            const dominantData = bandDataMap.get(dominantBand);
-            const stats = calculateBandStats(dominantData);
-            if (stats.minNote && stats.maxNote) {
-                pitchRange = { minNote: stats.minNote, maxNote: stats.maxNote };
-            }
-        }
+        const stats = calculateCompositeStats(compositePitches);
+        const pitchRange = stats.minNote && stats.maxNote
+            ? { minNote: stats.minNote, maxNote: stats.maxNote }
+            : null;
 
         return { totalBeats, voicedBeats, avgProbability, pitchRange };
-    }, [pitchAnalysis, bandDataMap, dominantBand]);
+    }, [pitchAnalysis, compositePitches]);
 
-    // Get pitches for selected band
-    const selectedBandPitches = useMemo((): PitchAtBeat[] => {
-        const bandData = bandDataMap.get(selectedBand);
-        return bandData?.pitches ?? [];
-    }, [bandDataMap, selectedBand]);
-
-    // Handle band selection
-    const handleSelectBand = useCallback((band: PitchBandName) => {
-        setSelectedBand(band);
-        setSelectedPitch(null); // Clear selected pitch when changing bands
-    }, []);
-
-    // Handle pitch selection (Task 3.4: Updated to include interval category)
+    // Handle pitch selection
     const handleSelectPitch = useCallback((pitch: PitchAtBeat) => {
         setSelectedPitch({
             beatIndex: pitch.beatIndex,
             timestamp: pitch.timestamp,
-            band: pitch.band as PitchBandName,
+            band: pitch.band as any,
             pitch: pitch.pitch,
             direction: pitch.direction,
             intervalFromPrevious: pitch.intervalFromPrevious,
-            intervalCategory: pitch.intervalCategory as IntervalCategory | undefined,
+            intervalCategory: pitch.intervalCategory as any,
         });
     }, []);
 
@@ -374,77 +265,45 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
                     <h3 className="pitch-panel-title">Pitch Detection</h3>
                 </div>
 
-                {/* Signal flow context */}
+                {/* Description */}
                 <p className="pitch-panel-description">
-                    Pitch detected at the <strong>original unquantized transient timestamps</strong> using pYIN on band-pass
-                    filtered audio, then linked to quantized beat grid positions. The low/mid/high bands represent
-                    frequency ranges analyzed independently.
+                    Pitch detected on the <strong>full unfiltered audio signal</strong> using
+                    Essentia MELODIA (or pYIN), then linked directly to the <strong>composite rhythm
+                    stream</strong> — the actual beat sequence used for gameplay. Band streams are used only
+                    for beat iteration, not for filtered audio analysis.
                 </p>
 
                 {/* Summary Stats */}
-                <SummaryStats
-                    totalBeats={overallStats.totalBeats}
-                    voicedBeats={overallStats.voicedBeats}
-                    dominantBand={dominantBand}
+                <CompositeSummaryStats
+                    pitches={compositePitches}
                     avgProbability={overallStats.avgProbability}
                     pitchRange={overallStats.pitchRange}
                 />
 
-                {/* Band Breakdown Cards */}
-                <div className="pitch-band-breakdown">
-                    <h4 className="pitch-band-breakdown-title">Band Breakdown</h4>
-                    <div className="pitch-band-cards">
-                        {BAND_CONFIGS.map((band) => (
-                            <BandBreakdownCard
-                                key={band.name}
-                                band={band}
-                                bandData={bandDataMap.get(band.name)}
-                                isDominant={dominantBand === band.name}
-                                isSelected={selectedBand === band.name}
-                                onSelectBand={handleSelectBand}
-                            />
-                        ))}
-                    </div>
-                </div>
+                {/* Composite Pitch Detail */}
+                <CompositePitchDetail pitches={compositePitches} />
 
-                {/* Probability Distribution Histogram (Task 3.5) */}
+                {/* Probability Distribution Histogram */}
                 <div className="pitch-histogram-section">
                     <PitchProbabilityHistogram
-                        pitches={selectedBandPitches}
+                        pitches={compositePitches}
                         voicingThreshold={0.5}
                         binCount={10}
                         height={140}
                     />
                 </div>
 
-                {/* Pitch Timeline (Task 3.2) */}
+                {/* Pitch Timeline */}
                 <div className="pitch-timeline-section">
                     <h4 className="pitch-timeline-title">
                         Pitch Timeline
                         <span className="pitch-timeline-band-label">
-                            ({BAND_CONFIGS.find(b => b.name === selectedBand)?.label} band)
+                            (composite stream)
                         </span>
                     </h4>
                     <PitchTimeline
-                        pitches={selectedBandPitches}
-                        band={selectedBand}
-                        onPitchClick={handleSelectPitch}
-                        selectedPitchIndex={selectedPitch?.beatIndex}
-                        anticipationWindow={3.0}
-                        pastWindow={3.0}
-                    />
-                </div>
-
-                {/* Multi-Band Pitch Visualization (Task 4.1) */}
-                <div className="pitch-multiband-section">
-                    <h4 className="pitch-multiband-title">Multi-Band Pitch View</h4>
-                    <p className="pitch-multiband-description">
-                        Three stacked timelines showing pitch detection for all frequency bands simultaneously.
-                        The dominant band is highlighted with a glow effect.
-                    </p>
-                    <MultiBandPitchVisualization
-                        bandPitches={bandDataMap}
-                        dominantBand={dominantBand}
+                        pitches={compositePitches}
+                        band="mid"
                         onPitchClick={handleSelectPitch}
                         selectedPitchIndex={selectedPitch?.beatIndex}
                         anticipationWindow={3.0}
@@ -456,7 +315,7 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
             {/* Side Panel - Pitch Inspector */}
             <PitchInspector
                 selectedPitch={selectedPitch}
-                selectedBand={selectedBand}
+                selectedBand="mid"
             />
         </div>
     );

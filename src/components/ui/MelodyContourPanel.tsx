@@ -27,7 +27,6 @@ import {
     useSelectedDifficulty,
 } from '../../hooks/useLevelGeneration';
 import type {
-    MelodyContourAnalysisResult,
     AllDifficultiesWithNatural,
     PitchAtBeat,
 } from '../../types/levelGeneration';
@@ -57,17 +56,17 @@ export interface MelodyContourPanelProps {
  */
 function getMelodyContourData(level: GeneratedLevel | undefined | null): {
     pitchByBeat: PitchAtBeat[] | null;
-    contour: MelodyContourAnalysisResult['contour'] | null;
+    melodyContour: any;
 } {
     if (!level?.pitchAnalysis) {
-        return { pitchByBeat: null, contour: null };
+        return { pitchByBeat: null, melodyContour: null };
     }
 
     const pitchAnalysis = level.pitchAnalysis as any;
 
     return {
         pitchByBeat: pitchAnalysis.pitchByBeat ?? null,
-        contour: pitchAnalysis.contour ?? null,
+        melodyContour: pitchAnalysis.melodyContour ?? null,
     };
 }
 
@@ -141,8 +140,8 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
 
     // Calculate total segments from contour data
     const totalSegments = useMemo(() => {
-        return melodyData.contour?.segments?.length ?? 0;
-    }, [melodyData.contour]);
+        return melodyData.melodyContour?.segments?.length ?? 0;
+    }, [melodyData.melodyContour]);
 
     // Don't render if no pitch analysis available
     if (!pitchAnalysis) {
@@ -172,11 +171,11 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
 
             {/* Summary Stats */}
             <SummaryStats
-                totalBeats={pitchAnalysis.totalBeats ?? 0}
-                voicedBeats={pitchAnalysis.voicedBeats ?? 0}
-                overallDirection={pitchAnalysis.overallDirection ?? 'mixed'}
+                totalBeats={pitchAnalysis.metadata?.totalBeats ?? 0}
+                voicedBeats={pitchAnalysis.metadata?.voicedBeats ?? 0}
+                overallDirection={pitchAnalysis.melodyContour?.direction ?? 'mixed'}
                 totalSegments={totalSegments}
-                pitchRange={pitchAnalysis.pitchRange}
+                pitchRange={pitchAnalysis.melodyContour?.range ?? null}
             />
 
             {/* Direction Stats Summary (Task 5.6) */}
@@ -248,14 +247,14 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
                 </div>
 
                 {/* Melody Segment Timeline (Task 5.5) */}
-                {melodyData.contour && melodyData.contour.segments && melodyData.contour.segments.length > 0 && (
+                {melodyData.melodyContour && melodyData.melodyContour.segments && melodyData.melodyContour.segments.length > 0 && (
                     <div className="melody-viz-section">
                         <h5 className="melody-viz-section-title">Melody Segments</h5>
                         <p className="melody-viz-section-text">
                             Consecutive same-direction beats grouped into segments. Shows note span and direction.
                         </p>
                         <MelodySegmentTimeline
-                            segments={melodyData.contour.segments}
+                            segments={melodyData.melodyContour.segments}
                             pitchesByBeat={melodyData.pitchByBeat ?? []}
                             anticipationWindow={6.0}
                             pastWindow={3.0}
@@ -267,11 +266,11 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
             </div>
 
             {/* Contour Shape Indicator */}
-            {melodyData.contour?.shape && (
+            {melodyData.melodyContour?.direction && (
                 <div className="melody-shape-indicator">
-                    <span className="melody-shape-label">Contour Shape:</span>
-                    <span className={cn('melody-shape-value', `melody-shape-${melodyData.contour.shape}`)}>
-                        {melodyData.contour.shape}
+                    <span className="melody-shape-label">Contour Direction:</span>
+                    <span className={cn('melody-shape-value', `melody-shape-${melodyData.melodyContour.direction}`)}>
+                        {melodyData.melodyContour.direction}
                     </span>
                 </div>
             )}
