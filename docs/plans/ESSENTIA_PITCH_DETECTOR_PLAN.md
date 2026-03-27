@@ -242,8 +242,8 @@ Ensure the technical design is documented for future reference and users.
 - [x] Add a full `### EssentiaPitchDetector` section detailing the static factory, `detectSignal` behaviors, and `EssentiaPitchDetectorConfig` properties.
 
 ### Task 4.2: Update `BEAT_DETECTION.md`
-- [ ] Add `EssentiaPitchDetector` to the Source Files table.
-- [ ] Under the main algorithm explanation, add an "Essentia.js Alternatives" subsection explaining the benefits of `PredominantPitchMelodia` for polyphonic music and why it was introduced to replace the custom pYIN implementation natively.
+- [x] Add `EssentiaPitchDetector` to the Source Files table.
+- [x] Under the main algorithm explanation, add an "Essentia.js Alternatives" subsection explaining the benefits of `PredominantPitchMelodia` for polyphonic music and why it was introduced to replace the custom pYIN implementation natively.
 
 ---
 
