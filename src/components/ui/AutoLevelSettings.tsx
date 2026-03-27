@@ -26,7 +26,7 @@ import type {
     BandTransientConfigOverrides,
     BandBiasWeights,
     ControllerMode,
-    EssentiaPitchAlgorithm,
+    PitchAlgorithm,
 } from '../../types/rhythmGeneration';
 import type { StreamScorerConfig } from 'playlist-data-engine';
 import {
@@ -60,16 +60,21 @@ const OUTPUT_MODES: { value: OutputMode; label: string; description: string; ban
     { value: 'high', label: 'High Band', description: 'High-frequency transients only', band: 'high' },
 ];
 
-const ESSENTIA_ALGORITHMS: { value: EssentiaPitchAlgorithm; label: string; description: string; group?: string }[] = [
-    { value: 'predominant_melodia', label: 'Predominant Melodia', description: 'Lead melody in polyphonic music (Recommended)', group: 'WASM Built-in' },
-    { value: 'pitch_melodia', label: 'Pitch Melodia', description: 'Standard monophonic melody extraction', group: 'WASM Built-in' },
+const PITCH_ALGORITHMS: { value: PitchAlgorithm; label: string; description: string; group?: string }[] = [
+    { value: 'pyin_legacy', label: 'pYIN (Legacy)', description: 'Built-in probabilistic YIN — no WASM required', group: 'Built-in' },
+    { value: 'pitch_melodia', label: 'Pitch Melodia', description: 'Standard monophonic melody extraction (Recommended)', group: 'WASM Built-in' },
+    { value: 'predominant_melodia', label: 'Predominant Melodia', description: 'Lead melody in polyphonic music', group: 'WASM Built-in' },
     { value: 'pitch_yin_probabilistic', label: 'Pitch YIN (Probabilistic)', description: 'WASM-accelerated pYIN', group: 'WASM Built-in' },
     { value: 'multipitch_melodia', label: 'MultiPitch Melodia', description: 'Multiple simultaneous F0 contours', group: 'WASM Built-in' },
     { value: 'multipitch_klapuri', label: 'MultiPitch Klapuri', description: 'Harmonic summation multi-pitch', group: 'WASM Built-in' },
     { value: 'pitch_crepe', label: 'CREPE (Neural Net)', description: 'High accuracy neural network — requires external model', group: 'External Model' },
 ];
 
-const DEFAULT_CREPE_MODEL_URL = '/models/crepe/large/model.json';
+const CREPE_MODEL_VARIANTS = [
+    { value: 'https://arweave.net/PLACEHOLDER_CREPE_TINY', label: 'Tiny (~2MB)', description: 'Fastest download (Recommended)' },
+    { value: 'https://arweave.net/PLACEHOLDER_CREPE_SMALL', label: 'Small (~6MB)', description: 'Better accuracy' },
+    { value: 'custom', label: 'Custom URL', description: 'Provide your own CREPE model URL' },
+] as const;
 
 const BAND_COLORS: Record<Band, string> = {
     low: 'hsl(217, 91%, 60%)',
@@ -569,8 +574,8 @@ export function AutoLevelSettings({
                             disabled={disabled}
                         >
                             <Cpu size={16} />
-                            <span>Essentia Pitch Detection</span>
-                            {settings.useEssentiaPitch && (
+                            <span>Pitch Detection</span>
+                            {settings.pitchAlgorithm !== 'pyin_legacy' && (
                                 <span className="auto-level-settings__badge">Active</span>
                             )}
                             <ChevronDown
@@ -584,109 +589,81 @@ export function AutoLevelSettings({
 
                         {isEssentiaOpen && (
                             <div className="auto-level-settings__essentia-content">
-                                {/* Use Essentia Toggle */}
-                                <div className="auto-level-settings__toggle-row">
-                                    <label className="auto-level-settings__toggle-label">
-                                        Use Essentia.js
-                                    </label>
-                                    <button
-                                        type="button"
-                                        className={cn(
-                                            'auto-level-settings__toggle-switch',
-                                            settings.useEssentiaPitch && 'auto-level-settings__toggle-switch--active'
-                                        )}
-                                        onClick={() => handleChange('useEssentiaPitch', !settings.useEssentiaPitch)}
+                                {/* Algorithm Select */}
+                                <div className="auto-level-settings__form-group">
+                                    <label className="auto-level-settings__form-label">Algorithm</label>
+                                    <select
+                                        className="auto-level-settings__select"
+                                        value={settings.pitchAlgorithm}
+                                        onChange={(e) => handleChange('pitchAlgorithm', e.target.value as PitchAlgorithm)}
                                         disabled={disabled}
-                                        role="switch"
-                                        aria-checked={settings.useEssentiaPitch}
+                                        aria-label="Pitch detection algorithm"
                                     >
-                                        <span className="auto-level-settings__toggle-thumb" />
-                                    </button>
+                                        {(() => {
+                                            const groups: Record<string, typeof PITCH_ALGORITHMS> = {};
+                                            for (const algo of PITCH_ALGORITHMS) {
+                                                const group = algo.group || 'Other';
+                                                if (!groups[group]) groups[group] = [];
+                                                groups[group].push(algo);
+                                            }
+                                            return Object.entries(groups).map(([group, algos]) => (
+                                                <optgroup key={group} label={group}>
+                                                    {algos.map((algo) => (
+                                                        <option key={algo.value} value={algo.value}>
+                                                            {algo.label}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            ));
+                                        })()}
+                                    </select>
+                                    <p className="auto-level-settings__slider-help">
+                                        {PITCH_ALGORITHMS.find(a => a.value === settings.pitchAlgorithm)?.description}
+                                    </p>
                                 </div>
 
-                                {settings.useEssentiaPitch && (
-                                    <>
-                                        <div className="auto-level-settings__info-box">
-                                            <Info size={14} />
-                                            <p>
-                                                <strong>Essentia.js Pitch Detection:</strong> Uses compiled
-                                                C++ algorithms via WebAssembly for higher accuracy on polyphonic
-                                                music. Replaces the built-in pYIN detector.
-                                            </p>
-                                        </div>
-
-                                        {/* Algorithm Select */}
-                                        <div className="auto-level-settings__form-group">
-                                            <label className="auto-level-settings__form-label">Algorithm</label>
+                                {/* CREPE Model Variant (only when pitch_crepe is selected) */}
+                                {settings.pitchAlgorithm === 'pitch_crepe' && (
+                                    <div className="auto-level-settings__form-group">
+                                        <label className="auto-level-settings__form-label">
+                                            CREPE Model
+                                        </label>
+                                        {settings.crepeModelUrl !== 'custom' ? (
                                             <select
                                                 className="auto-level-settings__select"
-                                                value={settings.essentiaPitchAlgorithm}
-                                                onChange={(e) => handleChange('essentiaPitchAlgorithm', e.target.value as EssentiaPitchAlgorithm)}
+                                                value={settings.crepeModelUrl}
+                                                onChange={(e) => handleChange('crepeModelUrl', e.target.value)}
                                                 disabled={disabled}
-                                                aria-label="Essentia pitch algorithm"
+                                                aria-label="CREPE model variant"
                                             >
-                                                {(() => {
-                                                    const groups: Record<string, typeof ESSENTIA_ALGORITHMS> = {};
-                                                    for (const algo of ESSENTIA_ALGORITHMS) {
-                                                        const group = algo.group || 'Other';
-                                                        if (!groups[group]) groups[group] = [];
-                                                        groups[group].push(algo);
-                                                    }
-                                                    return Object.entries(groups).map(([group, algos]) => (
-                                                        <optgroup key={group} label={group}>
-                                                            {algos.map((algo) => (
-                                                                <option key={algo.value} value={algo.value}>
-                                                                    {algo.label}
-                                                                </option>
-                                                            ))}
-                                                        </optgroup>
-                                                    ));
-                                                })()}
+                                                {CREPE_MODEL_VARIANTS.map((variant) => (
+                                                    <option key={variant.value} value={variant.value}>
+                                                        {variant.label}
+                                                    </option>
+                                                ))}
                                             </select>
-                                            <p className="auto-level-settings__slider-help">
-                                                {ESSENTIA_ALGORITHMS.find(a => a.value === settings.essentiaPitchAlgorithm)?.description}
+                                        ) : (
+                                            <input
+                                                type="text"
+                                                className="auto-level-settings__text-input"
+                                                value={settings.crepeModelUrl}
+                                                onChange={() => {}} // Keep custom text as-is
+                                                disabled={disabled}
+                                                placeholder="Enter CREPE model URL"
+                                                aria-label="Custom CREPE model URL"
+                                            />
+                                        )}
+                                        <p className="auto-level-settings__slider-help">
+                                            {CREPE_MODEL_VARIANTS.find(v => v.value === settings.crepeModelUrl)?.description || 'Custom CREPE model URL'}
+                                        </p>
+                                        <div className="auto-level-settings__info-box auto-level-settings__info-box--warning">
+                                            <Info size={14} />
+                                            <p>
+                                                <strong>External model required:</strong> CREPE needs a
+                                                TensorFlow.js model file downloaded at analysis time.
                                             </p>
                                         </div>
-
-                                        {/* CREPE Model URL (only when pitch_crepe is selected) */}
-                                        {settings.essentiaPitchAlgorithm === 'pitch_crepe' && (
-                                            <div className="auto-level-settings__form-group">
-                                                <label className="auto-level-settings__form-label">
-                                                    CREPE Model URL
-                                                </label>
-                                                <div className="auto-level-settings__crepe-url-row">
-                                                    <input
-                                                        type="text"
-                                                        className="auto-level-settings__text-input"
-                                                        value={settings.crepeModelUrl}
-                                                        onChange={(e) => handleChange('crepeModelUrl', e.target.value)}
-                                                        disabled={disabled}
-                                                        placeholder={DEFAULT_CREPE_MODEL_URL}
-                                                        aria-label="CREPE model URL"
-                                                    />
-                                                    {settings.crepeModelUrl !== DEFAULT_CREPE_MODEL_URL && (
-                                                        <button
-                                                            type="button"
-                                                            className="auto-level-settings__mini-toggle"
-                                                            onClick={() => handleChange('crepeModelUrl', DEFAULT_CREPE_MODEL_URL)}
-                                                            disabled={disabled}
-                                                            title="Reset to default URL"
-                                                        >
-                                                            <RotateCcw size={12} />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                                <div className="auto-level-settings__info-box auto-level-settings__info-box--warning">
-                                                    <Info size={14} />
-                                                    <p>
-                                                        <strong>External model required:</strong> CREPE needs a
-                                                        TensorFlow.js model file. The large variant (~49MB) provides
-                                                        the best accuracy/speed tradeoff.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </>
+                                    </div>
                                 )}
                             </div>
                         )}

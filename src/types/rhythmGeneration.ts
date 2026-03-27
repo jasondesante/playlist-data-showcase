@@ -142,6 +142,13 @@ export type EssentiaPitchAlgorithm =
     | 'pitch_crepe';
 
 /**
+ * Unified pitch detection algorithm selection.
+ * Includes built-in pYIN ('pyin_legacy') alongside all Essentia.js WASM algorithms.
+ * Matches the engine's PitchAlgorithm type.
+ */
+export type PitchAlgorithm = 'pyin_legacy' | EssentiaPitchAlgorithm;
+
+/**
  * Settings for automatic level generation.
  * These are configured in Step 1 (Analyze) when auto mode is enabled.
  */
@@ -197,27 +204,21 @@ export interface AutoLevelSettings {
     voicingThreshold: number;
 
     // ============================================================
-    // Essentia Pitch Detection (Task 3.1 of ESSENTIA_PITCH_DETECTOR_PLAN.md)
+    // Pitch Detection
     // ============================================================
 
     /**
-     * Use Essentia.js pitch detection instead of the built-in pYIN detector.
-     * When true, essentiaPitchAlgorithm determines which algorithm to use.
-     * Default: false
+     * Which pitch detection algorithm to use.
+     * 'pyin_legacy' uses the built-in pYIN detector; all others use Essentia.js.
+     * Pitch detection is skipped entirely when pitchInfluenceWeight is 0.
+     * Default: 'pitch_melodia'
      */
-    useEssentiaPitch: boolean;
-
-    /**
-     * Which Essentia pitch algorithm to use.
-     * Only applies when useEssentiaPitch is true.
-     * Default: 'predominant_melodia'
-     */
-    essentiaPitchAlgorithm: EssentiaPitchAlgorithm;
+    pitchAlgorithm: PitchAlgorithm;
 
     /**
      * URL to the CREPE TFJS model.
-     * Only required when essentiaPitchAlgorithm is 'pitch_crepe'.
-     * Default: '/models/crepe/large/model.json'
+     * Only required when pitchAlgorithm is 'pitch_crepe'.
+     * Default: 'https://arweave.net/PLACEHOLDER_CREPE_TINY'
      */
     crepeModelUrl: string;
 }
@@ -239,10 +240,9 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     controllerMode: 'ddr',      // DDR mode by default
     pitchInfluenceWeight: 0.8,  // Strong pitch influence
     voicingThreshold: 0.5,      // Default voicing threshold
-    // Essentia Pitch Detection (Task 3.1)
-    useEssentiaPitch: false,                    // Use pYIN by default
-    essentiaPitchAlgorithm: 'predominant_melodia',  // Best for polyphonic music
-    crepeModelUrl: '/models/crepe/large/model.json', // Large CREPE model
+    // Pitch Detection
+    pitchAlgorithm: 'pitch_melodia',            // Essentia pitch_melodia by default
+    crepeModelUrl: 'https://arweave.net/PLACEHOLDER_CREPE_TINY', // CREPE tiny model placeholder
 };
 
 /**

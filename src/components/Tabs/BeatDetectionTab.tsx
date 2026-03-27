@@ -398,8 +398,7 @@ export function BeatDetectionTab() {
             generateLevel(selectedTrack.audio_url, {
                 difficulty: autoLevelSettings.difficulty,
                 controllerMode: autoLevelSettings.controllerMode,
-                useEssentiaPitch: autoLevelSettings.useEssentiaPitch,
-                essentiaPitchAlgorithm: autoLevelSettings.essentiaPitchAlgorithm,
+                pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
                 crepeModelUrl: autoLevelSettings.crepeModelUrl,
             });
         }
@@ -802,8 +801,7 @@ export function BeatDetectionTab() {
                                     generateLevel(selectedTrack.audio_url, {
                                         difficulty: autoLevelSettings.difficulty,
                                         controllerMode: autoLevelSettings.controllerMode,
-                                        useEssentiaPitch: autoLevelSettings.useEssentiaPitch,
-                                        essentiaPitchAlgorithm: autoLevelSettings.essentiaPitchAlgorithm,
+                                        pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
                                         crepeModelUrl: autoLevelSettings.crepeModelUrl,
                                     });
                                 }
