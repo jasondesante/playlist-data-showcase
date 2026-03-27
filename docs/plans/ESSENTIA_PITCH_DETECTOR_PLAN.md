@@ -196,9 +196,9 @@ Integrate the new Essentia Pitch Detector into the existing generation pipeline.
 
 ### Task 2.1: Update `PitchBeatLinkerConfig`
 **File**: `../playlist-data-engine/src/core/generation/PitchBeatLinker.ts`
-- [ ] Add `useEssentiaPitch?: boolean` to enable the alternative detector.
-- [ ] Add `essentiaPitchAlgorithm?: EssentiaPitchAlgorithm`.
-- [ ] Add `crepeModelUrl?: string`.
+- [x] Add `useEssentiaPitch?: boolean` to enable the alternative detector.
+- [x] Add `essentiaPitchAlgorithm?: EssentiaPitchAlgorithm`.
+- [x] Add `crepeModelUrl?: string`.
 
 ### Task 2.2: Modify `PitchBeatLinker` Construction and Execution
 - [ ] **Update constructor** to store the new config options without creating the instantiated `EssentiaPitchDetector` right away. Leave it lazy-loaded.
