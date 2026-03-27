@@ -212,7 +212,7 @@ Integrate the new Essentia Pitch Detector into the existing generation pipeline.
 **File**: `../playlist-data-engine/src/core/generation/LevelGenerator.ts`
 - [x] Update the `pitchLinker.link(...)` call site: Change to `await pitchLinker.link(...)` since `link()` is now async.
 - [x] Ensure `mapPitchToBeats()` awaits the `link` call properly.
-- [ ] Propagate the essentia config options from `LevelGenerationOptions` through to `PitchBeatLinkerConfig`.
+- [x] Propagate the essentia config options from `LevelGenerationOptions` through to `PitchBeatLinkerConfig`.
 
 ---
 
