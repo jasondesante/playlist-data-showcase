@@ -168,12 +168,12 @@ Build the core class responsible for loading the Essentia WASM and executing the
   - `crepeModelUrl?: string` (Optional, required only for `pitch_crepe`. Defaults to `/models/crepe/large/model.json`)
 
 ### Task 1.2: Implement the Class Architecture
-- [ ] **Implement static async factory: `static async create(config): Promise<EssentiaPitchDetector>`**
+- [x] **Implement static async factory: `static async create(config): Promise<EssentiaPitchDetector>`**
   - Use the pattern from `MusicClassifier.ts:875` to load the WASM instance via `import('essentia.js/dist/essentia-wasm.es.js')`.
   - Await `EssentiaWASM.ready`.
   - Instantiate `new EssentiaWASM.EssentiaJS(false)` for access to DSP algorithms.
   - Store `EssentiaWASM.arrayToVector` and `vectorToArray` for Float32Array ↔ VectorFloat conversions.
-- [ ] **Implement `detectSignal(signal: Float32Array, sampleRate: number): PitchResult[]`**
+- [x] **Implement `detectSignal(signal: Float32Array, sampleRate: number): PitchResult[]`**
   - Return type must match the existing `PitchResult[]` interface exactly for drop-in compatibility with `PitchBeatLinker`.
   - Convert `signal` via `arrayToVector(signal)`.
   - Write a switch statement to dispatch to the correct algorithm (e.g., `PredominantPitchMelodia(vector, frameSize, hopSize, ...)`, `MultiPitchMelodia(...)`, etc.).
@@ -182,7 +182,7 @@ Build the core class responsible for loading the Essentia WASM and executing the
     - Use the lowest frequency (most fundamental) as the primary `frequency`
     - Store all other detected pitches in `alternativeHypotheses: { frequency, probability }[]`
     - Default `probability` to `1.0` since these algorithms don't return confidence arrays
-- [ ] **Implement CREPE-specific inference**
+- [x] **Implement CREPE-specific inference**
   - CREPE is **not** part of essentia.js — it's a standalone TFJS model loaded via `tf.loadGraphModel()`, using the same `@tensorflow/tfjs` dependency already installed for genre classification.
   - Load the converted TFJS model (`model.json` + `.bin` shards) during initialization via the `crepeModelUrl` config parameter.
   - Compute mel-spectrograms as input (can reuse essentia's `MelBands` algorithm for this).
