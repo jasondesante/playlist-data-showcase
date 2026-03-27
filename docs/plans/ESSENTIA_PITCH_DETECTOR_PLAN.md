@@ -201,17 +201,17 @@ Integrate the new Essentia Pitch Detector into the existing generation pipeline.
 - [x] Add `crepeModelUrl?: string`.
 
 ### Task 2.2: Modify `PitchBeatLinker` Construction and Execution
-- [ ] **Update constructor** to store the new config options without creating the instantiated `EssentiaPitchDetector` right away. Leave it lazy-loaded.
-- [ ] **Make `link()` async** — currently synchronous, but Essentia WASM loading and CREPE model loading are asynchronous. The method signature changes from `link(...): LinkedPitchAnalysis` to `async link(...): Promise<LinkedPitchAnalysis>`.
-- [ ] **Update `link()` method to conditionally instantiate the Essentia class:**
+- [x] **Update constructor** to store the new config options without creating the instantiated `EssentiaPitchDetector` right away. Leave it lazy-loaded.
+- [x] **Make `link()` async** — currently synchronous, but Essentia WASM loading and CREPE model loading are asynchronous. The method signature changes from `link(...): LinkedPitchAnalysis` to `async link(...): Promise<LinkedPitchAnalysis>`.
+- [x] **Update `link()` method to conditionally instantiate the Essentia class:**
   - If `this.config.useEssentiaPitch` is true, lazily await `EssentiaPitchDetector.create(config)` if it hasn't been instantiated yet (cache the instance for reuse).
   - Change `fullSpectrumResults` assignment from the rigid `PitchDetector.ts` call to the new `EssentiaPitchDetector.detectSignal()` call.
   - Keep the legacy `PitchDetector` setup as a fallback when `useEssentiaPitch` is false.
 
 ### Task 2.3: Update Pipeline Caller
 **File**: `../playlist-data-engine/src/core/generation/LevelGenerator.ts`
-- [ ] Update the `pitchLinker.link(...)` call site: Change to `await pitchLinker.link(...)` since `link()` is now async.
-- [ ] Ensure `mapPitchToBeats()` awaits the `link` call properly.
+- [x] Update the `pitchLinker.link(...)` call site: Change to `await pitchLinker.link(...)` since `link()` is now async.
+- [x] Ensure `mapPitchToBeats()` awaits the `link` call properly.
 - [ ] Propagate the essentia config options from `LevelGenerationOptions` through to `PitchBeatLinkerConfig`.
 
 ---
