@@ -247,6 +247,10 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
                 seed: options?.seed,
                 // Pass the cached rhythm from the store to avoid re-generation
                 cachedRhythm: cachedRhythm ?? undefined,
+                // Essentia pitch detection settings
+                useEssentiaPitch: options?.useEssentiaPitch,
+                essentiaPitchAlgorithm: options?.essentiaPitchAlgorithm,
+                crepeModelUrl: options?.crepeModelUrl,
             };
 
             const generator = new LevelGenerator(generatorOptions);

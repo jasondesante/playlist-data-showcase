@@ -228,8 +228,8 @@ Add the settings to the frontend to allow testing and comparing algorithms dynam
 - [x] Add a Text Input for the `crepeModelUrl` that only appears when `pitch_crepe` is chosen. Default to `/models/crepe/large/model.json`.
 
 ### Task 3.2: Connect UI State to Generation Engine
-- [ ] Update `beatDetectionStore` (or corresponding state management) to store the `useEssentiaPitch`, `essentiaPitchAlgorithm`, and `crepeModelUrl` values.
-- [ ] Pass these values into the `LevelGeneratorOptions` config object when clicking the "Analyze" button so they map directly into the `PitchBeatLinkerConfig`.
+- [x] Update `beatDetectionStore` (or corresponding state management) to store the `useEssentiaPitch`, `essentiaPitchAlgorithm`, and `crepeModelUrl` values.
+- [x] Pass these values into the `LevelGeneratorOptions` config object when clicking the "Analyze" button so they map directly into the `PitchBeatLinkerConfig`.
 
 ---
 
