@@ -10,7 +10,8 @@
       "mcp__RepoPrompt__read_file",
       "mcp__RepoPrompt__apply_edits",
       "mcp__RepoPrompt__file_actions",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(.venv/bin/python:*)"
     ],
     "deny": [],
     "ask": []

@@ -33,10 +33,20 @@ CREPE is a neural network model that is **not** built into the essentia.js WASM 
 |-----------|----------|-------------------|-------------|----------------|
 | `pitch_crepe` | Neural network pitch detection (high accuracy) | Yes (per-frame) | Single F0 | **Yes — requires TFJS model** |
 
+**CREPE model variants (all converted to TFJS):**
+
+| Variant | Size | Path | Notes |
+|---------|------|------|-------|
+| `tiny` | ~2MB | `public/models/crepe/tiny/model.json` | Fastest, lowest accuracy |
+| `small` | ~6MB | `public/models/crepe/small/model.json` | Good speed/accuracy tradeoff |
+| `medium` | ~20MB | `public/models/crepe/medium/model.json` | High accuracy |
+| **`large`** | **~49MB** | **`public/models/crepe/large/model.json`** | **Recommended default** |
+| `full` | ~85MB | `public/models/crepe/full/model.json` | Highest accuracy, slowest |
+
 **CREPE model loading strategy:**
-1. **Iteration phase**: The converted TFJS model (`model.json` + `.bin` shards) lives locally in `playlist-data-showcase/public/models/crepe/`. The frontend passes the URL as a parameter to the engine at analysis time.
+1. **Iteration phase**: The converted TFJS model (`model.json` + `.bin` shards) lives locally in `playlist-data-showcase/public/models/crepe/`. The frontend passes the URL as a parameter to the engine at analysis time. The **`large` variant is the recommended default** (best accuracy/speed tradeoff).
 2. **Verification phase**: Once confirmed working, the model URL can be bundled as a default in the engine itself so it doesn't need to be passed explicitly.
-3. The `.pb` model must first be converted to browser-compatible TFJS format using the `convert-pb-to-tfjs-browser.py` script in the showcase repo. Browser `tfjs` cannot read `.pb` files natively.
+3. The `.pb` models have been converted to browser-compatible TFJS format using the `convert-pb-to-tfjs-browser.py` script in the showcase repo. Browser `tfjs` cannot read `.pb` files natively.
 4. CREPE uses the same `@tensorflow/tfjs` dependency already installed for genre classification — no new package needed.
 
 ---
@@ -155,7 +165,7 @@ Build the core class responsible for loading the Essentia WASM and executing the
   - `frameSize: number` (default: 2048)
   - `hopSize: number` (default: 128 - Essentia prefers finer hop sizes than pYIN's 512)
   - `targetSampleRate: number` (default: 44100)
-  - `crepeModelUrl?: string` (Optional, required only for `pitch_crepe` — see CREPE model loading strategy above)
+  - `crepeModelUrl?: string` (Optional, required only for `pitch_crepe`. Defaults to `/models/crepe/large/model.json`)
 
 ### Task 1.2: Implement the Class Architecture
 - [ ] **Implement static async factory: `static async create(config): Promise<EssentiaPitchDetector>`**
@@ -215,7 +225,7 @@ Add the settings to the frontend to allow testing and comparing algorithms dynam
 - [ ] Add a Dropdown (Select) for the Algorithm choice that only appears when Essentia is active:
   - Group the built-in WASM algorithms together: Predominant Melodia, Pitch Melodia, Pitch YIN (Probabilistic), MultiPitch Melodia, MultiPitch Klapuri
   - Show CREPE as a separate option with a note that it requires an external model
-- [ ] Add a Text Input for the `crepeModelUrl` that only appears when `pitch_crepe` is chosen. Default to the local path (`/models/crepe/model.json`).
+- [ ] Add a Text Input for the `crepeModelUrl` that only appears when `pitch_crepe` is chosen. Default to `/models/crepe/large/model.json`.
 
 ### Task 3.2: Connect UI State to Generation Engine
 - [ ] Update `beatDetectionStore` (or corresponding state management) to store the `useEssentiaPitch`, `essentiaPitchAlgorithm`, and `crepeModelUrl` values.
