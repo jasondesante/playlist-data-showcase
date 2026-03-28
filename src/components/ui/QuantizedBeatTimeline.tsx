@@ -530,11 +530,6 @@ export function QuantizedBeatTimeline({
 
     const visibleBeats = getVisibleBeats();
 
-    // Debug: Log visible beats count
-    useEffect(() => {
-        console.log('[QuantizedBeatTimeline] visibleBeats.length:', visibleBeats.length);
-    }, [visibleBeats.length]);
-
     // ========================================
     // Beat Grid Lines
     // ========================================

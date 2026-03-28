@@ -438,11 +438,11 @@ function RhythmGenerationResult({
                     </CollapsibleSection>
                 </div>
 
-                {/* Task 0.4: Level Generation Debug Panel - temporary for data pipeline verification */}
+                {/* Level Generation Debug Panel - for data pipeline verification */}
                 <div ref={(el) => { sectionRefs.current.debug = el; }}>
                     <CollapsibleSection
                         title="Level Generation Debug"
-                        subtitle="Pitch detection & button mapping results (temporary)"
+                        subtitle="Pitch detection & button mapping results"
                         icon={<Bug size={18} />}
                         collapsed={openSection !== 'debug'}
                         onCollapsedChange={() => handleSectionToggle('debug')}

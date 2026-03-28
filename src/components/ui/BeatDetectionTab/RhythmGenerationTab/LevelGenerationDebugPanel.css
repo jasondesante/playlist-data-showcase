@@ -1,7 +1,6 @@
 /**
  * LevelGenerationDebugPanel Styles
  *
- * Temporary debug panel styling for Task 0.4.
  * Uses consistent styling with RhythmGenerationTab components.
  */
 
@@ -264,21 +263,6 @@
 
 .interval-very-large {
     border-left: 3px solid #ef4444;
-}
-
-/* Debug Note */
-.level-debug-note {
-    margin-top: 16px;
-    padding: 12px;
-    background: rgba(251, 191, 36, 0.1);
-    border: 1px solid rgba(251, 191, 36, 0.3);
-    border-radius: 6px;
-}
-
-.level-debug-note p {
-    margin: 0;
-    font-size: 12px;
-    color: #fbbf24;
 }
 
 /* Responsive */

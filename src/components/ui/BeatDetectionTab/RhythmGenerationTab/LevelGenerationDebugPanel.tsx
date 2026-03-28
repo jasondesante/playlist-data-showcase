@@ -1,18 +1,15 @@
 /**
  * LevelGenerationDebugPanel Component
  *
- * Temporary debug panel for Task 0.4 - displays level generation results.
- * This panel shows when level generation completes successfully.
- * It will be replaced by proper visualizations in later phases.
+ * Displays level generation results when analysis completes successfully.
  *
- * Displays:
- * - "Level Generation Complete!" message
- * - generatedLevel.metadata (difficulty, controller mode, total beats)
- * - pitchAnalysis.directionStats (up/down/stable/none counts)
- * - pitchAnalysis.intervalStats (unison/small/medium/large/very_large counts)
- * - allDifficultyLevels beat counts for each difficulty
+ * Shows:
+ * - Level metadata (difficulty, controller mode, total beats)
+ * - Pitch analysis summary (direction stats, interval stats)
+ * - Beat counts across all difficulty levels
  */
 
+import { useMemo } from 'react';
 import { CheckCircle, Gamepad2, BarChart3, Music } from 'lucide-react';
 import './LevelGenerationDebugPanel.css';
 import { useGeneratedLevel, useAllDifficultyLevels, usePitchAnalysis } from '../../../../store/beatDetectionStore';
@@ -154,6 +151,34 @@ export function LevelGenerationDebugPanel({ className }: LevelGenerationDebugPan
     // Get metadata from the generated level
     const metadata = generatedLevel?.metadata;
 
+    // Classify beats into 3 categories based on quantization accuracy
+    // - On-grid transients: detected transients that snapped < 10ms to grid
+    // - Off-grid transients: detected transients that snapped >= 10ms to grid
+    // - Interpolated: synthetically added beats (no transient origin)
+    const beatBreakdown = useMemo(() => {
+        const chart = generatedLevel?.chart;
+        const compositeStreamLength = generatedLevel?.rhythm?.composite?.beats?.length ?? 0;
+        if (!chart?.beats?.length) return null;
+
+        const totalChartBeats = chart.beats.length;
+        const transientCount = Math.min(compositeStreamLength, totalChartBeats);
+        const interpolatedCount = totalChartBeats - transientCount;
+
+        // Among transients, count on-grid vs off-grid by quantization error
+        let onGrid = 0;
+        let offGrid = 0;
+        for (let i = 0; i < transientCount; i++) {
+            const beat = chart.beats[i];
+            if (beat.quantizationError !== undefined && beat.quantizationError < 10) {
+                onGrid++;
+            } else {
+                offGrid++;
+            }
+        }
+
+        return { total: totalChartBeats, onGrid, offGrid, interpolated: interpolatedCount };
+    }, [generatedLevel]);
+
     // Get beat counts for each difficulty
     const beatCounts = {
         natural: allDifficulties?.natural?.chart?.beats?.length ?? 0,
@@ -193,14 +218,24 @@ export function LevelGenerationDebugPanel({ className }: LevelGenerationDebugPan
                                     label="Total Beats"
                                     value={metadata.chartMetadata.totalBeats ?? 0}
                                 />
-                                <StatRow
-                                    label="Detected Beats"
-                                    value={metadata.chartMetadata.detectedBeats ?? 0}
-                                />
-                                <StatRow
-                                    label="Generated Beats"
-                                    value={metadata.chartMetadata.generatedBeats ?? 0}
-                                />
+                                {beatBreakdown && (
+                                    <>
+                                        <StatRow
+                                            label="On-Grid Transients (< 10ms)"
+                                            value={beatBreakdown.onGrid}
+                                        />
+                                        <StatRow
+                                            label="Off-Grid Transients (>= 10ms)"
+                                            value={beatBreakdown.offGrid}
+                                        />
+                                        {beatBreakdown.interpolated > 0 && (
+                                            <StatRow
+                                                label="Interpolated (no transient)"
+                                                value={beatBreakdown.interpolated}
+                                            />
+                                        )}
+                                    </>
+                                )}
                             </>
                         )}
                     </div>
@@ -277,13 +312,6 @@ export function LevelGenerationDebugPanel({ className }: LevelGenerationDebugPan
                 </div>
             )}
 
-            {/* Debug Note */}
-            <div className="level-debug-note">
-                <p>
-                    <strong>Note:</strong> This is a temporary debug panel (Task 0.4).
-                    It will be replaced by proper visualizations in later phases.
-                </p>
-            </div>
         </div>
     );
 }
