@@ -328,6 +328,11 @@ export function PitchTimeline({
         }
     }, [isDragging, handleMouseMove, handleMouseUp]);
 
+    // Handle pitch mousedown to prevent track's drag/seek behavior
+    const handlePitchMouseDown = useCallback((event: React.MouseEvent) => {
+        event.stopPropagation();
+    }, []);
+
     // Handle pitch click for inspector
     const handlePitchClick = useCallback((event: React.MouseEvent, pitch: PitchAtBeat) => {
         event.stopPropagation();
@@ -463,21 +468,31 @@ export function PitchTimeline({
 
     return (
         <div className={cn('pitch-timeline', className)}>
-            {/* Y-Axis Labels */}
-            <div className="pitch-timeline-y-axis">
-                {yAxisLabels.map((label, i) => (
-                    <span
-                        key={i}
-                        className="pitch-timeline-y-label"
-                        style={{ bottom: `${label.y * 100}%` }}
-                    >
-                        {label.label}
-                    </span>
-                ))}
-            </div>
+            {/* Y-Axis + Track row */}
+            <div className="pitch-timeline-body">
+                {/* Y-Axis Labels */}
+                <div className="pitch-timeline-y-axis">
+                    {yAxisLabels.map((label, i) => {
+                        const isFirst = i === 0;
+                        const isLast = i === yAxisLabels.length - 1;
+                        return (
+                            <span
+                                key={i}
+                                className={cn(
+                                    'pitch-timeline-y-label',
+                                    isFirst && 'pitch-timeline-y-label--edge-bottom',
+                                    isLast && 'pitch-timeline-y-label--edge-top'
+                                )}
+                                style={{ bottom: `${label.y * 100}%` }}
+                            >
+                                {label.label}
+                            </span>
+                        );
+                    })}
+                </div>
 
-            {/* Timeline Track */}
-            <div
+                {/* Timeline Track */}
+                <div
                 ref={trackRef}
                 className={cn(
                     'pitch-timeline-track',
@@ -540,6 +555,7 @@ export function PitchTimeline({
                                 // Size based on probability
                                 transform: `translate(-50%, 50%) scale(${isVoiced ? 0.6 + probability * 0.6 : 0.4})`,
                             }}
+                            onMouseDown={handlePitchMouseDown}
                             onClick={(e) => handlePitchClick(e, pitch)}
                             onKeyDown={(e) => handlePitchKeyDown(e, pitch)}
                             role={onPitchClick ? 'button' : undefined}
@@ -568,6 +584,7 @@ export function PitchTimeline({
                     <div className="pitch-timeline-now-line-inner" />
                     <span className="pitch-timeline-now-label">NOW</span>
                 </div>
+            </div>
             </div>
 
             {/* Controls */}

@@ -95,6 +95,7 @@
     align-items: center;
     min-width: 80px;
     padding: 0.5rem;
+    flex: 1 1 0;
 }
 
 .melody-summary-value {
@@ -121,16 +122,11 @@
 }
 
 .melody-overall-direction {
-    font-size: 1rem;
     text-transform: capitalize;
 }
 
 .melody-summary-range .melody-summary-value {
-    font-size: 0.875rem;
-}
-
-.melody-summary-range .melody-summary-label {
-    font-size: 0.625rem;
+    white-space: nowrap;
 }
 
 /* ============================================

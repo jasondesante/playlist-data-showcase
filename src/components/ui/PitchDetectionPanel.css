@@ -116,6 +116,7 @@
     align-items: center;
     min-width: 80px;
     padding: 0.5rem;
+    flex: 1 1 0;
 }
 
 .pitch-summary-value {
@@ -151,7 +152,7 @@
 }
 
 .pitch-summary-range .pitch-summary-value {
-    font-size: 1rem;
+    white-space: nowrap;
 }
 
 /* ============================================

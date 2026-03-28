@@ -44,6 +44,7 @@ import {
     useLevelGenerationProgress,
     useBeatDetectionActions,
 } from '../../store/beatDetectionStore';
+import type { PitchAlgorithm } from '../../types/rhythmGeneration';
 // Note: useAudioPlayerStore and usePlaylistStore will be imported in future phases
 // when visualization panels with audio sync are implemented
 import { cn } from '../../utils/cn';
@@ -64,6 +65,8 @@ export interface PitchLevelTabProps {
     pitchInfluenceWeight?: number;
     /** Voicing threshold setting from Step 1 (0-1) */
     voicingThreshold?: number;
+    /** Pitch detection algorithm used for generation */
+    pitchAlgorithm?: PitchAlgorithm;
     /** Additional CSS class names */
     className?: string;
 }
@@ -118,9 +121,11 @@ interface PitchLevelResultProps {
     pitchInfluenceWeight?: number;
     /** Voicing threshold setting from Step 1 (0-1) */
     voicingThreshold?: number;
+    /** Pitch detection algorithm used for generation */
+    pitchAlgorithm?: PitchAlgorithm;
 }
 
-function PitchLevelResult({ onProceed, pitchInfluenceWeight, voicingThreshold }: PitchLevelResultProps) {
+function PitchLevelResult({ onProceed, pitchInfluenceWeight, voicingThreshold, pitchAlgorithm }: PitchLevelResultProps) {
     // Accordion state - default to 'final' expanded
     const [openSection, setOpenSection] = useState<SectionId>('final');
 
@@ -160,7 +165,7 @@ function PitchLevelResult({ onProceed, pitchInfluenceWeight, voicingThreshold }:
                     collapsed={openSection !== 'pitch'}
                     onCollapsedChange={() => handleSectionToggle('pitch')}
                 >
-                    <PitchDetectionPanel voicingThreshold={voicingThreshold} />
+                    <PitchDetectionPanel voicingThreshold={voicingThreshold} pitchAlgorithm={pitchAlgorithm} />
                 </CollapsibleSection>
 
                 {/* Melody Contour - Phase 5 (Task 5.1) */}
@@ -239,6 +244,7 @@ export function PitchLevelTab({
     onSwitchToManual,
     pitchInfluenceWeight,
     voicingThreshold,
+    pitchAlgorithm,
     className,
 }: PitchLevelTabProps) {
     const generatedRhythm = useGeneratedRhythm();
@@ -307,6 +313,7 @@ export function PitchLevelTab({
                     onProceed={onProceed}
                     pitchInfluenceWeight={pitchInfluenceWeight}
                     voicingThreshold={voicingThreshold}
+                    pitchAlgorithm={pitchAlgorithm}
                 />
             );
         }

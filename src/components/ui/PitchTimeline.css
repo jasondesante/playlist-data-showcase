@@ -28,6 +28,15 @@
     min-height: 180px;
 }
 
+/* Row wrapper for Y-axis + track side-by-side */
+.pitch-timeline-body {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    min-height: 140px;
+    overflow: hidden;
+}
+
 .pitch-timeline--empty {
     justify-content: center;
     align-items: center;
@@ -52,7 +61,7 @@
     border-right: 1px solid var(--border-color, #2a2a4a);
     display: flex;
     flex-direction: column;
-    padding: 0.5rem 0.25rem;
+    padding: 0.75rem 0.25rem;
 }
 
 .pitch-timeline-y-label {
@@ -65,6 +74,14 @@
     white-space: nowrap;
 }
 
+.pitch-timeline-y-label--edge-bottom {
+    transform: translateY(0);
+}
+
+.pitch-timeline-y-label--edge-top {
+    transform: translateY(100%);
+}
+
 /* ============================================
    TIMELINE TRACK
    ============================================ */
@@ -74,7 +91,6 @@
     position: relative;
     cursor: grab;
     overflow: hidden;
-    min-height: 140px;
 }
 
 .pitch-timeline-track.dragging {

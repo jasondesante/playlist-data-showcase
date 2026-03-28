@@ -30,7 +30,19 @@ import type {
     PitchAtBeat,
     AllDifficultiesWithNatural,
 } from '../../types/levelGeneration';
+import type { PitchAlgorithm } from '../../types/rhythmGeneration';
 import type { GeneratedLevel } from 'playlist-data-engine';
+
+/** Human-readable label for each pitch algorithm value. */
+const PITCH_ALGORITHM_LABELS: Record<PitchAlgorithm, string> = {
+    pyin_legacy: 'pYIN (Legacy)',
+    pitch_melodia: 'Pitch Melodia',
+    predominant_melodia: 'Predominant Melodia',
+    pitch_yin_probabilistic: 'Pitch YIN (Probabilistic)',
+    multipitch_melodia: 'MultiPitch Melodia',
+    multipitch_klapuri: 'MultiPitch Klapuri',
+    pitch_crepe: 'CREPE (Neural Net)',
+};
 import { PitchTimeline } from './PitchTimeline';
 import { PitchInspector, type SelectedPitchData } from './PitchInspector';
 import { PitchProbabilityHistogram } from './PitchProbabilityHistogram';
@@ -44,6 +56,8 @@ export interface PitchDetectionPanelProps {
     className?: string;
     /** Voicing threshold used during generation (0-1) */
     voicingThreshold?: number;
+    /** Pitch detection algorithm used for generation */
+    pitchAlgorithm?: PitchAlgorithm;
 }
 
 // ============================================================
@@ -178,7 +192,7 @@ function CompositePitchDetail({ pitches }: CompositePitchDetailProps) {
 // Main Component
 // ============================================================
 
-export function PitchDetectionPanel({ className, voicingThreshold = 0.2 }: PitchDetectionPanelProps) {
+export function PitchDetectionPanel({ className, voicingThreshold = 0.2, pitchAlgorithm = 'pitch_melodia' }: PitchDetectionPanelProps) {
     // Get data from store
     const allDifficulties = useAllDifficultyLevels();
     const selectedDifficulty = useSelectedDifficulty();
@@ -270,7 +284,7 @@ export function PitchDetectionPanel({ className, voicingThreshold = 0.2 }: Pitch
                 {/* Description */}
                 <p className="pitch-panel-description">
                     Pitch detected on the <strong>full unfiltered audio signal</strong> using
-                    Essentia MELODIA (or pYIN), then linked directly to the <strong>composite rhythm
+                    <strong> {PITCH_ALGORITHM_LABELS[pitchAlgorithm]}</strong>, then linked directly to the <strong>composite rhythm
                     stream</strong> — the actual beat sequence used for gameplay. Band streams are used only
                     for beat iteration, not for filtered audio analysis.
                 </p>
