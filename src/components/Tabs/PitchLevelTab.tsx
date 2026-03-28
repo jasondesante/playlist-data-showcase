@@ -160,7 +160,7 @@ function PitchLevelResult({ onProceed, pitchInfluenceWeight, voicingThreshold }:
                     collapsed={openSection !== 'pitch'}
                     onCollapsedChange={() => handleSectionToggle('pitch')}
                 >
-                    <PitchDetectionPanel />
+                    <PitchDetectionPanel voicingThreshold={voicingThreshold} />
                 </CollapsibleSection>
 
                 {/* Melody Contour - Phase 5 (Task 5.1) */}

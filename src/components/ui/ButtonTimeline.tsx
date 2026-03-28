@@ -456,52 +456,70 @@ export function ButtonTimeline({
                 </div>
             </div>
 
-            {/* Hover tooltip */}
-            {hoveredBeat && (
-                <div className="button-timeline-tooltip">
-                    <div className="button-timeline-tooltip-header">
-                        <span
-                            className="button-timeline-tooltip-button"
-                            style={{ color: getButtonConfig(hoveredBeat.key, controllerMode).color }}
-                        >
-                            {getButtonConfig(hoveredBeat.key, controllerMode).label}
-                        </span>
-                        {showBeatIndices && (
-                            <span className="button-timeline-tooltip-beat">
-                                Beat {hoveredBeat.beatIndex}
+            {/* Beat info bar - always visible, updates on hover */}
+            <div className="button-timeline-tooltip">
+                {hoveredBeat ? (
+                    <>
+                        <div className="button-timeline-tooltip-header">
+                            <span
+                                className="button-timeline-tooltip-button"
+                                style={{ color: getButtonConfig(hoveredBeat.key, controllerMode).color }}
+                            >
+                                {getButtonConfig(hoveredBeat.key, controllerMode).label}
                             </span>
-                        )}
-                    </div>
-                    <div className="button-timeline-tooltip-details">
-                        <span className="button-timeline-tooltip-time">
-                            {hoveredBeat.timestamp.toFixed(2)}s
-                        </span>
-                        <span className="button-timeline-tooltip-separator">•</span>
-                        <span className="button-timeline-tooltip-source">
-                            {hoveredBeat.isDetected ? 'Detected' : 'Generated'}
-                        </span>
-                        {hoveredBeat.isPitchInfluenced !== undefined && (
-                            <>
-                                <span className="button-timeline-tooltip-separator">•</span>
-                                <span className={cn(
-                                    'button-timeline-tooltip-influence',
-                                    hoveredBeat.isPitchInfluenced ? 'pitch' : 'pattern'
-                                )}>
-                                    {hoveredBeat.isPitchInfluenced ? 'Pitch' : 'Pattern'}
+                            {showBeatIndices && (
+                                <span className="button-timeline-tooltip-beat">
+                                    Beat {hoveredBeat.beatIndex}
                                 </span>
-                            </>
-                        )}
-                        {hoveredBeat.isDownbeat && (
-                            <>
-                                <span className="button-timeline-tooltip-separator">•</span>
-                                <span className="button-timeline-tooltip-downbeat">
-                                    Downbeat
-                                </span>
-                            </>
-                        )}
-                    </div>
-                </div>
-            )}
+                            )}
+                        </div>
+                        <div className="button-timeline-tooltip-details">
+                            <span className="button-timeline-tooltip-time">
+                                {hoveredBeat.timestamp.toFixed(2)}s
+                            </span>
+                            <span className="button-timeline-tooltip-separator">•</span>
+                            <span className="button-timeline-tooltip-source">
+                                {hoveredBeat.isDetected ? 'Detected' : 'Generated'}
+                            </span>
+                            {hoveredBeat.isPitchInfluenced !== undefined && (
+                                <>
+                                    <span className="button-timeline-tooltip-separator">•</span>
+                                    <span className={cn(
+                                        'button-timeline-tooltip-influence',
+                                        hoveredBeat.isPitchInfluenced ? 'pitch' : 'pattern'
+                                    )}>
+                                        {hoveredBeat.isPitchInfluenced ? 'Pitch' : 'Pattern'}
+                                    </span>
+                                </>
+                            )}
+                            {hoveredBeat.isDownbeat && (
+                                <>
+                                    <span className="button-timeline-tooltip-separator">•</span>
+                                    <span className="button-timeline-tooltip-downbeat">
+                                        Downbeat
+                                    </span>
+                                </>
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="button-timeline-tooltip-header">
+                            <span className="button-timeline-tooltip-button button-timeline-tooltip-skeleton">--</span>
+                            {showBeatIndices && (
+                                <span className="button-timeline-tooltip-beat button-timeline-tooltip-skeleton">Beat --</span>
+                            )}
+                        </div>
+                        <div className="button-timeline-tooltip-details">
+                            <span className="button-timeline-tooltip-time button-timeline-tooltip-skeleton">0.00s</span>
+                            <span className="button-timeline-tooltip-separator">•</span>
+                            <span className="button-timeline-tooltip-source button-timeline-tooltip-skeleton">--</span>
+                            <span className="button-timeline-tooltip-separator">•</span>
+                            <span className="button-timeline-tooltip-influence button-timeline-tooltip-skeleton">--</span>
+                        </div>
+                    </>
+                )}
+            </div>
 
             {/* Controls */}
             <div className="button-timeline-controls">

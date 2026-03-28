@@ -155,6 +155,12 @@ export function ChartedBeatMapPreview({
     // Animation state for smooth scrolling
     const [smoothTime, setSmoothTime] = useState(currentTime);
     const animationFrameRef = useRef<number | null>(null);
+    const smoothTimeRef = useRef(smoothTime);
+
+    // Keep smoothTimeRef in sync with smoothTime state
+    useEffect(() => {
+        smoothTimeRef.current = smoothTime;
+    }, [smoothTime]);
     const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
         time: currentTime,
         timestamp: performance.now(),
@@ -167,12 +173,33 @@ export function ChartedBeatMapPreview({
     const dragStartXRef = useRef(0);
     const dragStartTimeRef = useRef(0);
 
+    // Quick scroll state
+    const quickScrollRef = useRef<HTMLDivElement>(null);
+    const [isQuickScrollDragging, setIsQuickScrollDragging] = useState(false);
+
     // Hover state
     const [hoveredBeat, setHoveredBeat] = useState<ChartedBeat | null>(null);
 
-    // Zoom state
-    const [zoomLevel, setZoomLevel] = useState(1); // 1 = full track, higher = zoomed in
-    const [viewOffset, setViewOffset] = useState(0); // 0-1 position in track
+    // Zoom state - controls the visible time window around the playhead
+    // Lower zoom = see more of the song; higher zoom = more detail
+    const MAX_ZOOM = 10;
+    const trackDuration = duration || chart?.duration || 0;
+    // Base windows at zoom level 1 (seconds visible before/after playhead)
+    const baseAnticipationWindow = 2.0;
+    const basePastWindow = 4.0;
+
+    // Calculate default zoom so the full song fits in the window
+    const defaultZoom = useMemo(() => {
+        if (trackDuration <= 0) return 0.25;
+        const totalBaseWindow = baseAnticipationWindow + basePastWindow; // 6s at zoom 1
+        return Math.max(0.1, totalBaseWindow / trackDuration);
+    }, [trackDuration]);
+
+    const [zoomLevel, setZoomLevel] = useState(defaultZoom);
+    // Calculate windows based on zoom (higher zoom = smaller windows = more detail)
+    const anticipationWindow = baseAnticipationWindow / zoomLevel;
+    const pastWindow = basePastWindow / zoomLevel;
+    const totalWindow = pastWindow + anticipationWindow;
 
     // Keep refs in sync
     useEffect(() => {
@@ -238,18 +265,18 @@ export function ChartedBeatMapPreview({
         }
     }, [currentTime, isPlaying]);
 
-    // Calculate visible time range based on zoom
-    const visibleDuration = useMemo(() => {
-        const trackDuration = duration || chart?.duration || 0;
-        return trackDuration / zoomLevel;
-    }, [duration, chart?.duration, zoomLevel]);
+    // Visible time range centered on playhead
+    const visibleStartTime = smoothTime - pastWindow;
+    const visibleEndTime = smoothTime + anticipationWindow;
 
-    const visibleStartTime = useMemo(() => {
-        const trackDuration = duration || chart?.duration || 0;
-        return viewOffset * (trackDuration - visibleDuration);
-    }, [viewOffset, duration, chart?.duration, visibleDuration]);
-
-    const visibleEndTime = visibleStartTime + visibleDuration;
+    /**
+     * Calculate position (0-1) for a timestamp within the visible window.
+     * The playhead is always at 0.5 (center).
+     */
+    const calculatePosition = useCallback((timestamp: number): number => {
+        const timeUntilEvent = timestamp - smoothTime;
+        return 0.5 + (timeUntilEvent / anticipationWindow) * 0.5;
+    }, [smoothTime, anticipationWindow]);
 
     // Get visible beats
     const visibleBeats = useMemo((): VisibleBeat[] => {
@@ -258,7 +285,7 @@ export function ChartedBeatMapPreview({
         return chart.beats
             .filter((beat) => beat.timestamp >= visibleStartTime && beat.timestamp <= visibleEndTime)
             .map((beat) => {
-                const position = (beat.timestamp - visibleStartTime) / visibleDuration;
+                const position = calculatePosition(beat.timestamp);
                 const isPast = beat.timestamp < smoothTime - 0.05;
                 const isCurrent = !isPast && beat.timestamp < smoothTime + 0.1;
 
@@ -270,14 +297,7 @@ export function ChartedBeatMapPreview({
                 };
             })
             .filter((vb) => vb.position >= 0 && vb.position <= 1);
-    }, [chart?.beats, visibleStartTime, visibleEndTime, visibleDuration, smoothTime]);
-
-    // Calculate playhead position
-    const playheadPosition = useMemo(() => {
-        if (smoothTime < visibleStartTime) return 0;
-        if (smoothTime > visibleEndTime) return 1;
-        return (smoothTime - visibleStartTime) / visibleDuration;
-    }, [smoothTime, visibleStartTime, visibleEndTime, visibleDuration]);
+    }, [chart?.beats, visibleStartTime, visibleEndTime, smoothTime, calculatePosition]);
 
     // Drag-to-scrub functionality
     const DRAG_THRESHOLD = 5;
@@ -288,8 +308,8 @@ export function ChartedBeatMapPreview({
         event.preventDefault();
         setIsDragging(true);
         dragStartXRef.current = event.clientX;
-        dragStartTimeRef.current = smoothTime;
-    }, [disabled, smoothTime]);
+        dragStartTimeRef.current = smoothTimeRef.current;
+    }, [disabled]);
 
     const handleMouseMove = useCallback((event: MouseEvent) => {
         if (!isDragging || !trackRef.current) return;
@@ -299,12 +319,12 @@ export function ChartedBeatMapPreview({
         const deltaX = event.clientX - dragStartXRef.current;
 
         if (Math.abs(deltaX) > DRAG_THRESHOLD) {
-            const timePerPixel = visibleDuration / trackWidth;
+            const timePerPixel = totalWindow / trackWidth;
             const deltaTime = -deltaX * timePerPixel;
             const newTime = Math.max(0, Math.min(duration || 9999, dragStartTimeRef.current + deltaTime));
             seek(newTime);
         }
-    }, [isDragging, visibleDuration, duration, seek]);
+    }, [isDragging, totalWindow, duration, seek]);
 
     const handleMouseUp = useCallback((event: MouseEvent) => {
         if (!isDragging || !trackRef.current) return;
@@ -318,14 +338,14 @@ export function ChartedBeatMapPreview({
             const trackWidth = rect.width;
 
             const positionRatio = clickX / trackWidth;
-            const newTime = visibleStartTime + positionRatio * visibleDuration;
+            const newTime = (smoothTimeRef.current - pastWindow) + positionRatio * totalWindow;
             const clampedTime = Math.max(0, Math.min(duration || 9999, newTime));
 
             seek(clampedTime);
         }
 
         setIsDragging(false);
-    }, [isDragging, visibleStartTime, visibleDuration, duration, seek]);
+    }, [isDragging, pastWindow, totalWindow, duration, seek]);
 
     useEffect(() => {
         if (isDragging) {
@@ -337,6 +357,71 @@ export function ChartedBeatMapPreview({
             };
         }
     }, [isDragging, handleMouseMove, handleMouseUp]);
+
+    // Quick scroll handlers
+    const handleQuickScrollClick = useCallback(
+        (event: React.MouseEvent) => {
+            if (!quickScrollRef.current || trackDuration === 0) return;
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const positionRatio = Math.max(0, Math.min(1, clickX / rect.width));
+            seek(positionRatio * trackDuration);
+        },
+        [trackDuration, seek]
+    );
+
+    const handleQuickScrollDragStart = useCallback(
+        (event: React.MouseEvent) => {
+            if (!quickScrollRef.current || trackDuration === 0) return;
+            event.preventDefault();
+            setIsQuickScrollDragging(true);
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const positionRatio = Math.max(0, Math.min(1, clickX / rect.width));
+            seek(positionRatio * trackDuration);
+        },
+        [trackDuration, seek]
+    );
+
+    useEffect(() => {
+        if (!isQuickScrollDragging || trackDuration === 0) return;
+
+        let pendingSeek: number | null = null;
+        let rafId: number | null = null;
+
+        const handleQuickScrollMove = (event: MouseEvent) => {
+            if (!quickScrollRef.current) return;
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const positionRatio = Math.max(0, Math.min(1, clickX / rect.width));
+            pendingSeek = positionRatio * trackDuration;
+            if (!rafId) {
+                rafId = requestAnimationFrame(() => {
+                    if (pendingSeek !== null) {
+                        seek(pendingSeek);
+                        pendingSeek = null;
+                    }
+                    rafId = null;
+                });
+            }
+        };
+
+        const handleQuickScrollEnd = () => {
+            setIsQuickScrollDragging(false);
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+        };
+
+        window.addEventListener('mousemove', handleQuickScrollMove);
+        window.addEventListener('mouseup', handleQuickScrollEnd);
+        return () => {
+            window.removeEventListener('mousemove', handleQuickScrollMove);
+            window.removeEventListener('mouseup', handleQuickScrollEnd);
+            if (rafId) cancelAnimationFrame(rafId);
+        };
+    }, [isQuickScrollDragging, trackDuration, seek]);
 
     // Handle beat click
     const handleBeatClick = useCallback((event: React.MouseEvent, beat: ChartedBeat) => {
@@ -367,23 +452,16 @@ export function ChartedBeatMapPreview({
 
     // Zoom controls
     const handleZoomIn = useCallback(() => {
-        setZoomLevel((prev) => Math.min(prev * 1.5, 10));
+        setZoomLevel((prev) => Math.min(prev * 1.5, MAX_ZOOM));
     }, []);
 
     const handleZoomOut = useCallback(() => {
-        setZoomLevel((prev) => {
-            const newZoom = Math.max(prev / 1.5, 1);
-            if (newZoom === 1) {
-                setViewOffset(0);
-            }
-            return newZoom;
-        });
+        setZoomLevel((prev) => Math.max(prev / 1.5, 0.1));
     }, []);
 
     const handleResetZoom = useCallback(() => {
-        setZoomLevel(1);
-        setViewOffset(0);
-    }, []);
+        setZoomLevel(defaultZoom);
+    }, [defaultZoom]);
 
     // Calculate statistics for display
     const stats = useMemo(() => {
@@ -435,18 +513,19 @@ export function ChartedBeatMapPreview({
                 {/* Grid lines for measures */}
                 <div className="charted-beat-map-grid">
                     {/* Generate measure markers */}
-                    {Array.from({ length: Math.ceil((visibleEndTime - visibleStartTime) / (chart.quarterNoteInterval * 4)) }, (_, i) => {
-                        const measureTime = visibleStartTime + (i * chart.quarterNoteInterval * 4);
-                        if (measureTime > visibleEndTime) return null;
-                        const position = (measureTime - visibleStartTime) / visibleDuration;
-                        return (
-                            <div
-                                key={`measure-${i}`}
-                                className="charted-beat-map-measure-line"
-                                style={{ left: `${position * 100}%` }}
-                            />
-                        );
-                    })}
+                    {chart.beats
+                        .filter((beat) => beat.isDownbeat)
+                        .map((beat) => {
+                            const position = calculatePosition(beat.timestamp);
+                            if (position < 0 || position > 1) return null;
+                            return (
+                                <div
+                                    key={`measure-${beat.timestamp}`}
+                                    className="charted-beat-map-measure-line"
+                                    style={{ left: `${position * 100}%` }}
+                                />
+                            );
+                        })}
                 </div>
 
                 {/* Beat markers */}
@@ -490,10 +569,10 @@ export function ChartedBeatMapPreview({
                     );
                 })}
 
-                {/* Playhead */}
+                {/* Playhead - always centered */}
                 <div
                     className="charted-beat-map-playhead"
-                    style={{ left: `${playheadPosition * 100}%` }}
+                    style={{ left: '50%' }}
                 >
                     <div className="charted-beat-map-playhead-line" />
                     <div className="charted-beat-map-playhead-head" />
@@ -502,12 +581,19 @@ export function ChartedBeatMapPreview({
                 {/* Time markers */}
                 <div className="charted-beat-map-time-markers">
                     {Array.from({ length: 5 }, (_, i) => {
-                        const time = visibleStartTime + (i * visibleDuration / 4);
+                        const fraction = i / 4; // 0, 0.25, 0.5, 0.75, 1
+                        const time = visibleStartTime + (fraction * totalWindow);
+                        const isFirst = i === 0;
+                        const isLast = i === 4;
                         return (
                             <span
                                 key={`time-${i}`}
-                                className="charted-beat-map-time-marker"
-                                style={{ left: `${(i * 25)}%` }}
+                                className={cn(
+                                    'charted-beat-map-time-marker',
+                                    isFirst && 'charted-beat-map-time-marker--edge-left',
+                                    isLast && 'charted-beat-map-time-marker--edge-right'
+                                )}
+                                style={{ left: `${fraction * 100}%` }}
                             >
                                 {formatTimeShort(time)}
                             </span>
@@ -516,54 +602,116 @@ export function ChartedBeatMapPreview({
                 </div>
             </div>
 
-            {/* Hover tooltip */}
-            {hoveredBeat && (
-                <div className="charted-beat-map-tooltip">
-                    <div className="charted-beat-map-tooltip-header">
-                        <span
-                            className="charted-beat-map-tooltip-button"
-                            style={{ color: getButtonConfig(hoveredBeat.requiredKey, controllerMode).color }}
-                        >
-                            {getButtonConfig(hoveredBeat.requiredKey, controllerMode).label}
-                        </span>
-                        {showBeatIndices && (
-                            <span className="charted-beat-map-tooltip-beat">
-                                Beat {hoveredBeat.beatInMeasure}
-                            </span>
-                        )}
+            {/* Quick scroll bar */}
+            {trackDuration > 0 && (
+                <div className="charted-beat-map-quickscroll">
+                    <div
+                        ref={quickScrollRef}
+                        className="charted-beat-map-quickscroll-track"
+                        onClick={handleQuickScrollClick}
+                        onMouseDown={handleQuickScrollDragStart}
+                    >
+                        {/* Beat density markers (sampled for performance) */}
+                        {chart.beats
+                            .filter((_, idx) => idx % Math.max(1, Math.floor(chart.beats.length / 80)) === 0)
+                            .map((beat, index) => {
+                                const position = beat.timestamp / trackDuration;
+                                const config = getButtonConfig(beat.requiredKey, controllerMode);
+                                return (
+                                    <div
+                                        key={`quickscroll-${beat.timestamp}-${index}`}
+                                        className="charted-beat-map-quickscroll-marker"
+                                        style={{
+                                            left: `${position * 100}%`,
+                                            backgroundColor: config.color,
+                                        }}
+                                    />
+                                );
+                            })}
+
+                        {/* Viewport indicator */}
+                        <div
+                            className="charted-beat-map-quickscroll-viewport"
+                            style={{
+                                left: `${Math.max(0, ((smoothTime - pastWindow) / trackDuration) * 100)}%`,
+                                width: `${Math.min(100, (totalWindow / trackDuration) * 100)}%`,
+                            }}
+                        />
+
+                        {/* Current position indicator */}
+                        <div
+                            className="charted-beat-map-quickscroll-position"
+                            style={{ left: `${(smoothTime / trackDuration) * 100}%` }}
+                        />
                     </div>
-                    <div className="charted-beat-map-tooltip-details">
-                        <span className="charted-beat-map-tooltip-time">
-                            {formatTime(hoveredBeat.timestamp)}s
-                        </span>
-                        <span className="charted-beat-map-tooltip-separator">•</span>
-                        <span className="charted-beat-map-tooltip-source">
-                            {hoveredBeat.isDetected ? 'Detected' : 'Generated'}
-                        </span>
-                        {hoveredBeat.isDownbeat && (
-                            <>
-                                <span className="charted-beat-map-tooltip-separator">•</span>
-                                <span className="charted-beat-map-tooltip-downbeat">
-                                    Downbeat
-                                </span>
-                            </>
-                        )}
-                        {hoveredBeat.sourceBand && (
-                            <>
-                                <span className="charted-beat-map-tooltip-separator">•</span>
-                                <span className="charted-beat-map-tooltip-band">
-                                    {hoveredBeat.sourceBand} band
-                                </span>
-                            </>
-                        )}
-                    </div>
-                    {hoveredBeat.quantizationError !== undefined && (
-                        <div className="charted-beat-map-tooltip-extra">
-                            Quantization error: {hoveredBeat.quantizationError.toFixed(1)}ms
-                        </div>
-                    )}
                 </div>
             )}
+
+            {/* Beat info bar - always visible, updates on hover */}
+            <div className="charted-beat-map-tooltip">
+                {hoveredBeat ? (
+                    <>
+                        <div className="charted-beat-map-tooltip-header">
+                            <span
+                                className="charted-beat-map-tooltip-button"
+                                style={{ color: getButtonConfig(hoveredBeat.requiredKey, controllerMode).color }}
+                            >
+                                {getButtonConfig(hoveredBeat.requiredKey, controllerMode).label}
+                            </span>
+                            {showBeatIndices && (
+                                <span className="charted-beat-map-tooltip-beat">
+                                    Beat {hoveredBeat.beatInMeasure}
+                                </span>
+                            )}
+                        </div>
+                        <div className="charted-beat-map-tooltip-details">
+                            <span className="charted-beat-map-tooltip-time">
+                                {formatTime(hoveredBeat.timestamp)}s
+                            </span>
+                            <span className="charted-beat-map-tooltip-separator">•</span>
+                            <span className="charted-beat-map-tooltip-source">
+                                {hoveredBeat.isDetected ? 'Detected' : 'Generated'}
+                            </span>
+                            {hoveredBeat.isDownbeat && (
+                                <>
+                                    <span className="charted-beat-map-tooltip-separator">•</span>
+                                    <span className="charted-beat-map-tooltip-downbeat">
+                                        Downbeat
+                                    </span>
+                                </>
+                            )}
+                            {hoveredBeat.sourceBand && (
+                                <>
+                                    <span className="charted-beat-map-tooltip-separator">•</span>
+                                    <span className="charted-beat-map-tooltip-band">
+                                        {hoveredBeat.sourceBand} band
+                                    </span>
+                                </>
+                            )}
+                        </div>
+                        {hoveredBeat.quantizationError !== undefined && (
+                            <div className="charted-beat-map-tooltip-extra">
+                                Quantization error: {hoveredBeat.quantizationError.toFixed(1)}ms
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        <div className="charted-beat-map-tooltip-header">
+                            <span className="charted-beat-map-tooltip-button charted-beat-map-tooltip-skeleton">--</span>
+                            {showBeatIndices && (
+                                <span className="charted-beat-map-tooltip-beat charted-beat-map-tooltip-skeleton">Beat --</span>
+                            )}
+                        </div>
+                        <div className="charted-beat-map-tooltip-details">
+                            <span className="charted-beat-map-tooltip-time charted-beat-map-tooltip-skeleton">0:00.00s</span>
+                            <span className="charted-beat-map-tooltip-separator">•</span>
+                            <span className="charted-beat-map-tooltip-source charted-beat-map-tooltip-skeleton">--</span>
+                        </div>
+                        <div className="charted-beat-map-tooltip-extra charted-beat-map-tooltip-skeleton">--</div>
+                    </>
+                )}
+            </div>
 
             {/* Controls */}
             <div className="charted-beat-map-controls">
@@ -613,7 +761,7 @@ export function ChartedBeatMapPreview({
                     <button
                         className="charted-beat-map-zoom-btn"
                         onClick={handleZoomOut}
-                        disabled={zoomLevel <= 1}
+                        disabled={zoomLevel <= 0.1}
                         title="Zoom out"
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
@@ -622,11 +770,17 @@ export function ChartedBeatMapPreview({
                             <line x1="8" y1="11" x2="14" y2="11" />
                         </svg>
                     </button>
-                    <span className="charted-beat-map-zoom-level">{(zoomLevel * 100).toFixed(0)}%</span>
+                    <span
+                        className="charted-beat-map-zoom-level charted-beat-map-zoom-reset-btn"
+                        onClick={handleResetZoom}
+                        title="Reset zoom"
+                    >
+                        {(zoomLevel * 100).toFixed(0)}%
+                    </span>
                     <button
                         className="charted-beat-map-zoom-btn"
                         onClick={handleZoomIn}
-                        disabled={zoomLevel >= 10}
+                        disabled={zoomLevel >= MAX_ZOOM}
                         title="Zoom in"
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
@@ -636,15 +790,6 @@ export function ChartedBeatMapPreview({
                             <line x1="8" y1="11" x2="14" y2="11" />
                         </svg>
                     </button>
-                    {zoomLevel > 1 && (
-                        <button
-                            className="charted-beat-map-zoom-btn charted-beat-map-zoom-reset"
-                            onClick={handleResetZoom}
-                            title="Reset zoom"
-                        >
-                            Reset
-                        </button>
-                    )}
                 </div>
             </div>
 

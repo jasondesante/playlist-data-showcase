@@ -98,7 +98,7 @@ function formatPercent(value: number): string {
 
 export function PitchProbabilityHistogram({
     pitches,
-    voicingThreshold = 0.5,
+    voicingThreshold = 0.2,
     binCount = 10,
     height = 160,
     showLegend = true,

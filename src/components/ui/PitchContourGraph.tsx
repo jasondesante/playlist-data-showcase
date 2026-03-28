@@ -586,37 +586,51 @@ export function PitchContourGraph({
                 />
             </svg>
 
-            {/* Tooltip */}
-            {hoveredPoint && (
-                <div className="pitch-contour-tooltip">
-                    <div className="pitch-contour-tooltip-header">
-                        <span
-                            className="pitch-contour-tooltip-note"
-                            style={{ color: DIRECTION_COLORS[hoveredPoint.direction] }}
-                        >
-                            {midiToNoteName(hoveredPoint.midiNote)}
-                        </span>
-                        <span className="pitch-contour-tooltip-beat">
-                            Beat {hoveredPoint.beat.beatIndex}
-                        </span>
-                    </div>
-                    <div className="pitch-contour-tooltip-details">
-                        <span className="pitch-contour-tooltip-time">
-                            {hoveredPoint.beat.timestamp.toFixed(2)}s
-                        </span>
-                        <span className="pitch-contour-tooltip-separator">•</span>
-                        <span
-                            className="pitch-contour-tooltip-direction"
-                            style={{ color: DIRECTION_COLORS[hoveredPoint.direction] }}
-                        >
-                            {hoveredPoint.direction === 'up' && 'Ascending'}
-                            {hoveredPoint.direction === 'down' && 'Descending'}
-                            {hoveredPoint.direction === 'stable' && 'Stable'}
-                            {hoveredPoint.direction === 'none' && 'No pitch'}
-                        </span>
-                    </div>
-                </div>
-            )}
+            {/* Beat info bar - always visible, updates on hover */}
+            <div className="pitch-contour-tooltip">
+                {hoveredPoint ? (
+                    <>
+                        <div className="pitch-contour-tooltip-header">
+                            <span
+                                className="pitch-contour-tooltip-note"
+                                style={{ color: DIRECTION_COLORS[hoveredPoint.direction] }}
+                            >
+                                {midiToNoteName(hoveredPoint.midiNote)}
+                            </span>
+                            <span className="pitch-contour-tooltip-beat">
+                                Beat {hoveredPoint.beat.beatIndex}
+                            </span>
+                        </div>
+                        <div className="pitch-contour-tooltip-details">
+                            <span className="pitch-contour-tooltip-time">
+                                {hoveredPoint.beat.timestamp.toFixed(2)}s
+                            </span>
+                            <span className="pitch-contour-tooltip-separator">•</span>
+                            <span
+                                className="pitch-contour-tooltip-direction"
+                                style={{ color: DIRECTION_COLORS[hoveredPoint.direction] }}
+                            >
+                                {hoveredPoint.direction === 'up' && 'Ascending'}
+                                {hoveredPoint.direction === 'down' && 'Descending'}
+                                {hoveredPoint.direction === 'stable' && 'Stable'}
+                                {hoveredPoint.direction === 'none' && 'No pitch'}
+                            </span>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="pitch-contour-tooltip-header">
+                            <span className="pitch-contour-tooltip-note pitch-contour-tooltip-skeleton">--</span>
+                            <span className="pitch-contour-tooltip-beat pitch-contour-tooltip-skeleton">Beat --</span>
+                        </div>
+                        <div className="pitch-contour-tooltip-details">
+                            <span className="pitch-contour-tooltip-time pitch-contour-tooltip-skeleton">0.00s</span>
+                            <span className="pitch-contour-tooltip-separator">•</span>
+                            <span className="pitch-contour-tooltip-direction pitch-contour-tooltip-skeleton">--</span>
+                        </div>
+                    </>
+                )}
+            </div>
 
             {/* Controls */}
             <div className="pitch-contour-controls">

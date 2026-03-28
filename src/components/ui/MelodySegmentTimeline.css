@@ -384,6 +384,10 @@
     font-family: inherit;
 }
 
+.melody-segment-tooltip-skeleton {
+    opacity: 0.3;
+}
+
 /* ============================================
    CONTROLS
    ============================================ */

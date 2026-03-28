@@ -452,50 +452,68 @@ export function MelodyDirectionTimeline({
                 </div>
             </div>
 
-            {/* Hover tooltip */}
-            {hoveredBeat && (
-                <div className="melody-direction-tooltip">
-                    <div className="melody-direction-tooltip-header">
-                        <span
-                            className="melody-direction-tooltip-direction"
-                            style={{ color: DIRECTION_CONFIG[hoveredBeat.direction as Direction]?.color }}
-                        >
-                            {DIRECTION_CONFIG[hoveredBeat.direction as Direction]?.label}
-                        </span>
-                        {showBeatIndices && (
-                            <span className="melody-direction-tooltip-beat">
-                                Beat {hoveredBeat.beatIndex}
+            {/* Beat info bar - always visible, updates on hover */}
+            <div className="melody-direction-tooltip">
+                {hoveredBeat ? (
+                    <>
+                        <div className="melody-direction-tooltip-header">
+                            <span
+                                className="melody-direction-tooltip-direction"
+                                style={{ color: DIRECTION_CONFIG[hoveredBeat.direction as Direction]?.color }}
+                            >
+                                {DIRECTION_CONFIG[hoveredBeat.direction as Direction]?.label}
                             </span>
-                        )}
-                    </div>
-                    <div className="melody-direction-tooltip-details">
-                        <span className="melody-direction-tooltip-time">
-                            {hoveredBeat.timestamp.toFixed(2)}s
-                        </span>
-                        {hoveredBeat.direction !== 'none' && (
-                            <>
-                                <span className="melody-direction-tooltip-separator">•</span>
-                                <span className="melody-direction-tooltip-interval">
-                                    {formatInterval(hoveredBeat.intervalFromPrevious || 0)}
-                                    {hoveredBeat.intervalFromPrevious !== 0 && (
-                                        <span className="melody-direction-tooltip-semitones">
-                                            {' '}({hoveredBeat.intervalFromPrevious > 0 ? '+' : ''}{hoveredBeat.intervalFromPrevious} st)
-                                        </span>
-                                    )}
+                            {showBeatIndices && (
+                                <span className="melody-direction-tooltip-beat">
+                                    Beat {hoveredBeat.beatIndex}
                                 </span>
-                            </>
-                        )}
-                        {hoveredBeat.pitch?.noteName && (
-                            <>
-                                <span className="melody-direction-tooltip-separator">•</span>
-                                <span className="melody-direction-tooltip-note">
-                                    {hoveredBeat.pitch.noteName}
-                                </span>
-                            </>
-                        )}
-                    </div>
-                </div>
-            )}
+                            )}
+                        </div>
+                        <div className="melody-direction-tooltip-details">
+                            <span className="melody-direction-tooltip-time">
+                                {hoveredBeat.timestamp.toFixed(2)}s
+                            </span>
+                            {hoveredBeat.direction !== 'none' && (
+                                <>
+                                    <span className="melody-direction-tooltip-separator">•</span>
+                                    <span className="melody-direction-tooltip-interval">
+                                        {formatInterval(hoveredBeat.intervalFromPrevious || 0)}
+                                        {hoveredBeat.intervalFromPrevious !== 0 && (
+                                            <span className="melody-direction-tooltip-semitones">
+                                                {' '}({hoveredBeat.intervalFromPrevious > 0 ? '+' : ''}{hoveredBeat.intervalFromPrevious} st)
+                                            </span>
+                                        )}
+                                    </span>
+                                </>
+                            )}
+                            {hoveredBeat.pitch?.noteName && (
+                                <>
+                                    <span className="melody-direction-tooltip-separator">•</span>
+                                    <span className="melody-direction-tooltip-note">
+                                        {hoveredBeat.pitch.noteName}
+                                    </span>
+                                </>
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="melody-direction-tooltip-header">
+                            <span className="melody-direction-tooltip-direction melody-direction-tooltip-skeleton">--</span>
+                            {showBeatIndices && (
+                                <span className="melody-direction-tooltip-beat melody-direction-tooltip-skeleton">Beat --</span>
+                            )}
+                        </div>
+                        <div className="melody-direction-tooltip-details">
+                            <span className="melody-direction-tooltip-time melody-direction-tooltip-skeleton">0.00s</span>
+                            <span className="melody-direction-tooltip-separator">•</span>
+                            <span className="melody-direction-tooltip-interval melody-direction-tooltip-skeleton">--</span>
+                            <span className="melody-direction-tooltip-separator">•</span>
+                            <span className="melody-direction-tooltip-note melody-direction-tooltip-skeleton">--</span>
+                        </div>
+                    </>
+                )}
+            </div>
 
             {/* Controls */}
             <div className="melody-direction-controls">

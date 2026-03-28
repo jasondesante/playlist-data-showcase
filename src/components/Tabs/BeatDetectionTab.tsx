@@ -854,8 +854,8 @@ export function BeatDetectionTab() {
 
             case 4:
                 // Step 4: Ready/Practice - Beat map summary, practice mode, export
-                // Task 1.2: Now works for both manual and auto mode (4 steps each)
-                // Task 8.1: In auto mode with generated levels, show AutoReadyPanel
+                // Now works for both manual and auto mode (4 steps each)
+                // In auto mode with generated levels, show AutoReadyPanel
                 if (!beatMap) {
                     return wrapContent(
                         <Card variant="elevated" padding="lg" className="beat-detection-results-card">
@@ -870,7 +870,7 @@ export function BeatDetectionTab() {
                     );
                 }
 
-                // Task 8.1: In auto mode with generated levels, show AutoReadyPanel with difficulty switcher
+                // In auto mode with generated levels, show AutoReadyPanel with difficulty switcher
                 if (generationMode === 'automatic' && allDifficulties) {
                     return wrapContent(
                         <AutoReadyPanel

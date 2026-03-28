@@ -277,6 +277,14 @@
     border-radius: 2px;
 }
 
+.charted-beat-map-time-marker--edge-left {
+    transform: translateX(0);
+}
+
+.charted-beat-map-time-marker--edge-right {
+    transform: translateX(-100%);
+}
+
 /* ============================================
    TOOLTIP
    ============================================ */
@@ -343,6 +351,10 @@
     font-size: 0.625rem;
     color: var(--text-muted, #6a6a7a);
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.charted-beat-map-tooltip-skeleton {
+    opacity: 0.3;
 }
 
 /* ============================================
@@ -488,6 +500,18 @@
     text-align: center;
 }
 
+.charted-beat-map-zoom-reset-btn {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px 6px;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.charted-beat-map-zoom-reset-btn:hover {
+    color: hsl(var(--primary));
+    background: rgba(255, 255, 255, 0.05);
+}
+
 /* ============================================
    LEGEND
    ============================================ */
@@ -583,6 +607,66 @@
     height: 4px;
     background: #eab308;
     border-radius: 50%;
+}
+
+/* ============================================
+   QUICK SCROLL BAR
+   Mini scrollbar for fast timeline navigation
+   ============================================ */
+
+.charted-beat-map-quickscroll {
+    display: flex;
+    align-items: center;
+    margin-top: 0.25rem;
+    padding: 0 0.75rem 0.25rem;
+}
+
+.charted-beat-map-quickscroll-track {
+    position: relative;
+    flex: 1;
+    height: 0.5rem;
+    background: hsl(var(--surface-3));
+    border-radius: 0.25rem;
+    cursor: pointer;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.charted-beat-map-quickscroll-track:hover {
+    background: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.3);
+}
+
+.charted-beat-map-quickscroll-marker {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    width: 1px;
+    transform: translateX(-50%);
+    opacity: 0.4;
+}
+
+.charted-beat-map-quickscroll-viewport {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: hsl(var(--primary) / 0.2);
+    border-left: 1px solid hsl(var(--primary) / 0.5);
+    border-right: 1px solid hsl(var(--primary) / 0.5);
+    border-radius: 0.125rem;
+    pointer-events: none;
+    min-width: 4px;
+}
+
+.charted-beat-map-quickscroll-position {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 2px;
+    background: hsl(var(--primary));
+    transform: translateX(-50%);
+    z-index: 2;
+    pointer-events: none;
 }
 
 /* ============================================

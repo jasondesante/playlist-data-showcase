@@ -42,6 +42,8 @@ import { PitchProbabilityHistogram } from './PitchProbabilityHistogram';
 export interface PitchDetectionPanelProps {
     /** Additional CSS class names */
     className?: string;
+    /** Voicing threshold used during generation (0-1) */
+    voicingThreshold?: number;
 }
 
 // ============================================================
@@ -176,7 +178,7 @@ function CompositePitchDetail({ pitches }: CompositePitchDetailProps) {
 // Main Component
 // ============================================================
 
-export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
+export function PitchDetectionPanel({ className, voicingThreshold = 0.2 }: PitchDetectionPanelProps) {
     // Get data from store
     const allDifficulties = useAllDifficultyLevels();
     const selectedDifficulty = useSelectedDifficulty();
@@ -287,7 +289,7 @@ export function PitchDetectionPanel({ className }: PitchDetectionPanelProps) {
                 <div className="pitch-histogram-section">
                     <PitchProbabilityHistogram
                         pitches={compositePitches}
-                        voicingThreshold={0.5}
+                        voicingThreshold={voicingThreshold}
                         binCount={10}
                         height={140}
                     />

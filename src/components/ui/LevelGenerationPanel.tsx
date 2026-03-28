@@ -125,7 +125,7 @@ export function LevelGenerationPanel({ className }: LevelGenerationPanelProps) {
                 beatCounts={beatCounts}
             />
 
-            {/* Compact Metadata Summary (Task 7.3) */}
+            {/* Compact Metadata Summary */}
             <LevelMetadataSummary
                 difficulty={selectedDifficulty}
                 controllerMode={controllerMode}
@@ -133,7 +133,7 @@ export function LevelGenerationPanel({ className }: LevelGenerationPanelProps) {
                 bpm={bpm}
             />
 
-            {/* Chart Preview (Task 7.2) */}
+            {/* Chart Preview */}
             <ChartedBeatMapPreview
                 chart={chart ?? null}
                 controllerMode={controllerMode}
@@ -141,7 +141,7 @@ export function LevelGenerationPanel({ className }: LevelGenerationPanelProps) {
                 showBeatIndices={true}
             />
 
-            {/* Difficulty Comparison (Task 7.5 - Optional Expandable) */}
+            {/* Difficulty Comparison (Optional Expandable) */}
             <DifficultyComparisonForLevel defaultExpanded={false} />
 
             {/* Action Button */}

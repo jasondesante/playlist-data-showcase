@@ -501,50 +501,75 @@ export function MelodySegmentTimeline({
                 </div>
             </div>
 
-            {/* Hover tooltip */}
-            {hoveredSegment && (
-                <div className="melody-segment-tooltip">
-                    <div className="melody-segment-tooltip-header">
-                        <span
-                            className="melody-segment-tooltip-direction"
-                            style={{ color: DIRECTION_CONFIG[hoveredSegment.segment.direction as Direction]?.color }}
-                        >
-                            {DIRECTION_CONFIG[hoveredSegment.segment.direction as Direction]?.symbol}{' '}
-                            {DIRECTION_CONFIG[hoveredSegment.segment.direction as Direction]?.label}
-                        </span>
-                        {showSegmentIndices && (
-                            <span className="melody-segment-tooltip-index">
-                                Segment #{hoveredSegment.segmentIndex + 1}
+            {/* Segment info bar - always visible, updates on hover */}
+            <div className="melody-segment-tooltip">
+                {hoveredSegment ? (
+                    <>
+                        <div className="melody-segment-tooltip-header">
+                            <span
+                                className="melody-segment-tooltip-direction"
+                                style={{ color: DIRECTION_CONFIG[hoveredSegment.segment.direction as Direction]?.color }}
+                            >
+                                {DIRECTION_CONFIG[hoveredSegment.segment.direction as Direction]?.symbol}{' '}
+                                {DIRECTION_CONFIG[hoveredSegment.segment.direction as Direction]?.label}
                             </span>
-                        )}
-                    </div>
-                    <div className="melody-segment-tooltip-details">
-                        <div className="melody-segment-tooltip-row">
-                            <span className="melody-segment-tooltip-label">Time:</span>
-                            <span className="melody-segment-tooltip-value">
-                                {formatTime(hoveredSegment.segment.startTime)} - {formatTime(hoveredSegment.segment.endTime)}
-                                <span className="melody-segment-tooltip-secondary">
-                                    ({(hoveredSegment.segment.endTime - hoveredSegment.segment.startTime).toFixed(1)}s)
+                            {showSegmentIndices && (
+                                <span className="melody-segment-tooltip-index">
+                                    Segment #{hoveredSegment.segmentIndex + 1}
                                 </span>
-                            </span>
+                            )}
                         </div>
-                        {hoveredSegment.segment.startPitch && hoveredSegment.segment.endPitch && (
+                        <div className="melody-segment-tooltip-details">
                             <div className="melody-segment-tooltip-row">
-                                <span className="melody-segment-tooltip-label">Notes:</span>
+                                <span className="melody-segment-tooltip-label">Time:</span>
                                 <span className="melody-segment-tooltip-value">
-                                    {hoveredSegment.segment.startPitch} → {hoveredSegment.segment.endPitch}
+                                    {formatTime(hoveredSegment.segment.startTime)} - {formatTime(hoveredSegment.segment.endTime)}
+                                    <span className="melody-segment-tooltip-secondary">
+                                        ({(hoveredSegment.segment.endTime - hoveredSegment.segment.startTime).toFixed(1)}s)
+                                    </span>
                                 </span>
                             </div>
-                        )}
-                        <div className="melody-segment-tooltip-row">
-                            <span className="melody-segment-tooltip-label">Interval:</span>
-                            <span className="melody-segment-tooltip-value">
-                                {getSemitoneDescription(hoveredSegment.segment.interval)}
-                            </span>
+                            {hoveredSegment.segment.startPitch && hoveredSegment.segment.endPitch && (
+                                <div className="melody-segment-tooltip-row">
+                                    <span className="melody-segment-tooltip-label">Notes:</span>
+                                    <span className="melody-segment-tooltip-value">
+                                        {hoveredSegment.segment.startPitch} → {hoveredSegment.segment.endPitch}
+                                    </span>
+                                </div>
+                            )}
+                            <div className="melody-segment-tooltip-row">
+                                <span className="melody-segment-tooltip-label">Interval:</span>
+                                <span className="melody-segment-tooltip-value">
+                                    {getSemitoneDescription(hoveredSegment.segment.interval)}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            )}
+                    </>
+                ) : (
+                    <>
+                        <div className="melody-segment-tooltip-header">
+                            <span className="melody-segment-tooltip-direction melody-segment-tooltip-skeleton">-- --</span>
+                            {showSegmentIndices && (
+                                <span className="melody-segment-tooltip-index melody-segment-tooltip-skeleton">Segment #--</span>
+                            )}
+                        </div>
+                        <div className="melody-segment-tooltip-details">
+                            <div className="melody-segment-tooltip-row">
+                                <span className="melody-segment-tooltip-label">Time:</span>
+                                <span className="melody-segment-tooltip-value melody-segment-tooltip-skeleton">0:00 - 0:00 (0.0s)</span>
+                            </div>
+                            <div className="melody-segment-tooltip-row">
+                                <span className="melody-segment-tooltip-label">Notes:</span>
+                                <span className="melody-segment-tooltip-value melody-segment-tooltip-skeleton">-- → --</span>
+                            </div>
+                            <div className="melody-segment-tooltip-row">
+                                <span className="melody-segment-tooltip-label">Interval:</span>
+                                <span className="melody-segment-tooltip-value melody-segment-tooltip-skeleton">--</span>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
 
             {/* Controls */}
             <div className="melody-segment-controls">
