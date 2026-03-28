@@ -47,8 +47,6 @@ interface DifficultyStats {
     beatCount: number;
     density: number; // beats per second
     uniqueButtons: string[];
-    detectedCount: number;
-    generatedCount: number;
     downbeatCount: number;
 }
 
@@ -76,8 +74,6 @@ function calculateDifficultyStats(
     const beats = level.chart.beats;
     const beatCount = beats.length;
     const density = duration > 0 ? beatCount / duration : 0;
-    const detectedCount = beats.filter(b => b.isDetected).length;
-    const generatedCount = beatCount - detectedCount;
     const downbeatCount = beats.filter(b => b.isDownbeat).length;
 
     // Get unique buttons used
@@ -92,8 +88,6 @@ function calculateDifficultyStats(
         beatCount,
         density,
         uniqueButtons,
-        detectedCount,
-        generatedCount,
         downbeatCount,
     };
 }
@@ -150,15 +144,6 @@ function DifficultyBar({ stats, maxBeatCount }: DifficultyBarProps) {
             </div>
             <div className="difficulty-comparison-density">
                 {formatDensity(stats.density)} b/s
-            </div>
-            <div className="difficulty-comparison-breakdown">
-                <span className="difficulty-comparison-detected">
-                    {stats.detectedCount} detected
-                </span>
-                <span className="difficulty-comparison-separator">/</span>
-                <span className="difficulty-comparison-generated">
-                    {stats.generatedCount} generated
-                </span>
             </div>
             <div className="difficulty-comparison-buttons">
                 {stats.uniqueButtons.length > 0 ? (
@@ -270,9 +255,6 @@ export function DifficultyComparisonForLevel({
                         </div>
                         <div className="difficulty-comparison-header-cell difficulty-comparison-header-density">
                             Density
-                        </div>
-                        <div className="difficulty-comparison-header-cell difficulty-comparison-header-breakdown">
-                            Breakdown
                         </div>
                         <div className="difficulty-comparison-header-cell difficulty-comparison-header-buttons">
                             Keys

@@ -87,8 +87,6 @@ function LevelSummaryCard({ level, difficulty }: LevelSummaryCardProps) {
 
         return {
             totalBeats: chart.beats.length,
-            detectedBeats: chart.beats.filter(b => b.isDetected).length,
-            generatedBeats: chart.beats.filter(b => !b.isDetected).length,
             controllerMode: metadata.controllerMode || 'ddr',
             bpm: chart.bpm || 120,
         };
@@ -120,14 +118,6 @@ function LevelSummaryCard({ level, difficulty }: LevelSummaryCardProps) {
                 <div className="auto-ready-stat">
                     <span className="auto-ready-stat-value">{stats.totalBeats}</span>
                     <span className="auto-ready-stat-label">Total Beats</span>
-                </div>
-                <div className="auto-ready-stat">
-                    <span className="auto-ready-stat-value">{stats.detectedBeats}</span>
-                    <span className="auto-ready-stat-label">Detected</span>
-                </div>
-                <div className="auto-ready-stat">
-                    <span className="auto-ready-stat-value">{stats.generatedBeats}</span>
-                    <span className="auto-ready-stat-label">Generated</span>
                 </div>
                 <div className="auto-ready-stat">
                     <span className="auto-ready-stat-value">{stats.bpm.toFixed(1)}</span>
