@@ -535,7 +535,7 @@ export function BeatDetectionTab() {
 
         // Common wrapper with animation class
         const wrapContent = (content: React.ReactNode) => (
-            <div className={`step-content ${animationClass}`}>
+            <div key={currentStep} className={`step-content ${animationClass}`}>
                 {content}
             </div>
         );

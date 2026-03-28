@@ -578,11 +578,12 @@ export function ChartedBeatMapPreview({
                     <div className="charted-beat-map-playhead-head" />
                 </div>
 
-                {/* Time markers */}
+                {/* Time markers - use same scale as beat positioning (anticipationWindow) */}
                 <div className="charted-beat-map-time-markers">
                     {Array.from({ length: 5 }, (_, i) => {
                         const fraction = i / 4; // 0, 0.25, 0.5, 0.75, 1
-                        const time = visibleStartTime + (fraction * totalWindow);
+                        const beatRange = anticipationWindow * 2;
+                        const time = smoothTime - anticipationWindow + (fraction * beatRange);
                         const isFirst = i === 0;
                         const isLast = i === 4;
                         return (
