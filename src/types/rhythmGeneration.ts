@@ -239,7 +239,7 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     // Level Settings (Task 1.5)
     controllerMode: 'ddr',      // DDR mode by default
     pitchInfluenceWeight: 0.8,  // Strong pitch influence
-    voicingThreshold: 0.5,      // Default voicing threshold
+    voicingThreshold: 0.2,      // Default voicing threshold
     // Pitch Detection
     pitchAlgorithm: 'pitch_melodia',            // Essentia pitch_melodia by default
     crepeModelUrl: 'https://arweave.net/PLACEHOLDER_CREPE_TINY', // CREPE tiny model placeholder

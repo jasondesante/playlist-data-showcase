@@ -398,8 +398,12 @@ export function BeatDetectionTab() {
             generateLevel(selectedTrack.audio_url, {
                 difficulty: autoLevelSettings.difficulty,
                 controllerMode: autoLevelSettings.controllerMode,
+                buttons: {
+                    pitchInfluenceWeight: autoLevelSettings.pitchInfluenceWeight,
+                },
                 pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
                 crepeModelUrl: autoLevelSettings.crepeModelUrl,
+                voicingThreshold: autoLevelSettings.voicingThreshold,
             });
         }
     }, [
@@ -801,8 +805,12 @@ export function BeatDetectionTab() {
                                     generateLevel(selectedTrack.audio_url, {
                                         difficulty: autoLevelSettings.difficulty,
                                         controllerMode: autoLevelSettings.controllerMode,
+                                        buttons: {
+                                            pitchInfluenceWeight: autoLevelSettings.pitchInfluenceWeight,
+                                        },
                                         pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
                                         crepeModelUrl: autoLevelSettings.crepeModelUrl,
+                                        voicingThreshold: autoLevelSettings.voicingThreshold,
                                     });
                                 }
                             }}

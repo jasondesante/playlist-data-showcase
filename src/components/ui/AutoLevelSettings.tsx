@@ -230,14 +230,6 @@ export function AutoLevelSettings({
         [handleChange]
     );
 
-    const handlePitchInfluenceWeightChange = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement>) => {
-            const value = parseFloat(e.target.value);
-            handleChange('pitchInfluenceWeight', value);
-        },
-        [handleChange]
-    );
-
     const handleVoicingThresholdChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             const value = parseFloat(e.target.value);
@@ -469,11 +461,38 @@ export function AutoLevelSettings({
                                     </p>
                                 </div>
 
+                                {/* Pitch Detection Toggle */}
+                                <div className="auto-level-settings__form-group">
+                                    <div className="auto-level-settings__toggle-row">
+                                        <label className="auto-level-settings__toggle-label">
+                                            <Music2 size={14} style={{ marginRight: '0.375rem', verticalAlign: 'middle' }} />
+                                            Pitch Detection
+                                        </label>
+                                        <button
+                                            type="button"
+                                            className={cn(
+                                                'auto-level-settings__toggle-switch',
+                                                settings.pitchInfluenceWeight > 0 && 'auto-level-settings__toggle-switch--active'
+                                            )}
+                                            onClick={() => handleChange('pitchInfluenceWeight', settings.pitchInfluenceWeight > 0 ? 0 : 0.8)}
+                                            disabled={disabled}
+                                            role="switch"
+                                            aria-checked={settings.pitchInfluenceWeight > 0}
+                                        >
+                                            <span className="auto-level-settings__toggle-thumb" />
+                                        </button>
+                                    </div>
+                                    <p className="auto-level-settings__slider-help">
+                                        {settings.pitchInfluenceWeight > 0
+                                            ? 'Pitch analysis runs during level generation to influence button mapping.'
+                                            : 'Pitch detection will be skipped. Button mapping uses rhythmic patterns only.'}
+                                    </p>
+                                </div>
+
                                 {/* Pitch Influence Weight Slider */}
                                 <div className="auto-level-settings__form-group">
                                     <div className="auto-level-settings__slider-header">
                                         <label className="auto-level-settings__slider-label">
-                                            <Music2 size={14} style={{ marginRight: '0.375rem', verticalAlign: 'middle' }} />
                                             Pitch Influence
                                         </label>
                                         <span className="auto-level-settings__slider-value">
@@ -486,17 +505,20 @@ export function AutoLevelSettings({
                                         max="1"
                                         step="0.05"
                                         value={settings.pitchInfluenceWeight}
-                                        onChange={handlePitchInfluenceWeightChange}
+                                        onChange={(e) => {
+                                            const val = parseFloat(e.target.value);
+                                            handleChange('pitchInfluenceWeight', val);
+                                        }}
                                         className="auto-level-settings__slider"
                                         disabled={disabled}
                                         aria-label="Pitch influence weight"
                                     />
                                     <div className="auto-level-settings__slider-labels">
-                                        <span>Pattern (0%)</span>
+                                        <span>Off (0%)</span>
                                         <span>Pitch (100%)</span>
                                     </div>
                                     <p className="auto-level-settings__slider-help">
-                                        How strongly pitch analysis affects button mapping. Lower values rely more on rhythmic patterns.
+                                        How strongly pitch analysis affects button mapping. Drag to 0% to disable pitch detection entirely.
                                     </p>
                                 </div>
 

@@ -250,6 +250,7 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
                 // Pitch detection settings
                 pitchAlgorithm: options?.pitchAlgorithm,
                 crepeModelUrl: options?.crepeModelUrl,
+                voicingThreshold: options?.voicingThreshold,
             };
 
             const generator = new LevelGenerator(generatorOptions);
