@@ -192,10 +192,10 @@ export function ChartedBeatMapPreview({
     const defaultZoom = useMemo(() => {
         if (trackDuration <= 0) return 0.25;
         const totalBaseWindow = baseAnticipationWindow + basePastWindow; // 6s at zoom 1
-        return Math.max(0.1, totalBaseWindow / trackDuration);
+        return Math.max(0.03, totalBaseWindow / trackDuration);
     }, [trackDuration]);
 
-    const [zoomLevel, setZoomLevel] = useState(defaultZoom);
+    const [zoomLevel, setZoomLevel] = useState(0.1);
     // Calculate windows based on zoom (higher zoom = smaller windows = more detail)
     const anticipationWindow = baseAnticipationWindow / zoomLevel;
     const pastWindow = basePastWindow / zoomLevel;
@@ -455,13 +455,14 @@ export function ChartedBeatMapPreview({
         setZoomLevel((prev) => Math.min(prev * 1.5, MAX_ZOOM));
     }, []);
 
+    const MIN_ZOOM = 0.03;
     const handleZoomOut = useCallback(() => {
-        setZoomLevel((prev) => Math.max(prev / 1.5, 0.1));
+        setZoomLevel((prev) => Math.max(prev / 1.5, MIN_ZOOM));
     }, []);
 
     const handleResetZoom = useCallback(() => {
-        setZoomLevel(defaultZoom);
-    }, [defaultZoom]);
+        setZoomLevel(0.1);
+    }, []);
 
     // Calculate statistics for display
     const stats = useMemo(() => {
@@ -762,7 +763,7 @@ export function ChartedBeatMapPreview({
                     <button
                         className="charted-beat-map-zoom-btn"
                         onClick={handleZoomOut}
-                        disabled={zoomLevel <= 0.1}
+                        disabled={zoomLevel <= 0.03}
                         title="Zoom out"
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">

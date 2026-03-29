@@ -10,11 +10,13 @@
  * - Color gradient by direction (green=up, red=down, blue=stable)
  * - Sync with audio playback (playhead)
  * - Show note labels at key points
+ * - Performance: static SVG content is memoized separately from the playhead overlay
+ *   so the heavy graph (hundreds of circles/paths/labels) never re-renders during playback
  *
  * Task 5.3: Create PitchContourGraph Component
  */
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import './PitchContourGraph.css';
 import { cn } from '../../utils/cn';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -41,6 +43,10 @@ export interface PitchContourGraphProps {
     height?: number;
     /** Show Y-axis labels (note names) */
     showYAxisLabels?: boolean;
+    /** External smooth time from parent (when provided, skips internal RAF loop) */
+    smoothTime?: number;
+    /** External playing state from parent */
+    isPlaying?: boolean;
     /** Additional CSS class names */
     className?: string;
 }
@@ -76,6 +82,12 @@ const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 
 /** MIDI note range to display (can be adjusted based on data) */
 const DEFAULT_MIN_MIDI = 36;  // C2
 const DEFAULT_MAX_MIDI = 84;  // C6
+
+/** Fixed SVG viewBox dimensions */
+const GRAPH_WIDTH = 1000;
+const PADDING_RIGHT = 15;
+const PADDING_TOP = 20;
+const PADDING_BOTTOM = 25;
 
 // ============================================================
 // Helper Functions
@@ -153,121 +165,112 @@ function isKeyPoint(points: ContourPoint[], index: number): boolean {
 }
 
 // ============================================================
-// Main Component
+// Memoized Sub-components for Performance
 // ============================================================
 
-export function PitchContourGraph({
+/** Memoized path segment - never re-renders during playback */
+const ContourPathSegment = memo(function ContourPathSegment({
+    segment,
+}: {
+    segment: { points: ContourPoint[]; isVoiced: boolean; color: string };
+}) {
+    if (segment.points.length < 2) return null;
+    const pathData = segment.points.reduce((path, point, index) => {
+        if (index === 0) return `M ${point.x} ${point.y}`;
+        return `${path} L ${point.x} ${point.y}`;
+    }, '');
+    return (
+        <path
+            className={cn('pitch-contour-line', !segment.isVoiced && 'pitch-contour-line--unvoiced')}
+            d={pathData}
+            stroke={segment.color}
+            fill="none"
+        />
+    );
+});
+
+/** Memoized data point - uses CSS :hover instead of React state for hover visual */
+const ContourPointMarker = memo(function ContourPointMarker({
+    point,
+    isSelected,
+    onClick,
+    onHover,
+}: {
+    point: ContourPoint;
+    isSelected: boolean;
+    onClick: (e: React.MouseEvent, point: ContourPoint) => void;
+    onHover: (point: ContourPoint | null) => void;
+}) {
+    return (
+        <circle
+            className={cn('pitch-contour-point', isSelected && 'pitch-contour-point--selected')}
+            cx={point.x}
+            cy={point.y}
+            r={isSelected ? 6 : 3}
+            fill={DIRECTION_COLORS[point.direction]}
+            onClick={(e) => onClick(e, point)}
+            onMouseEnter={() => onHover(point)}
+            onMouseLeave={() => onHover(null)}
+        />
+    );
+});
+
+/** Memoized key point label - never re-renders during playback */
+const ContourKeyLabel = memo(function ContourKeyLabel({
+    point,
+}: {
+    point: ContourPoint;
+}) {
+    return (
+        <text
+            className="pitch-contour-note-label"
+            x={point.x}
+            y={point.y - 10}
+            textAnchor="middle"
+            fill={DIRECTION_COLORS[point.direction]}
+        >
+            {midiToNoteName(point.midiNote)}
+        </text>
+    );
+});
+
+// ============================================================
+// Memoized Static SVG — Never re-renders during playback
+// ============================================================
+//
+// All heavy SVG content (contour lines, data points, labels, grid)
+// lives here. It only re-renders when pitch data, duration, or
+// display settings change — NOT on every RAF frame.
+// ============================================================
+
+interface ContourGraphStaticProps {
+    pitchesByBeat: PitchAtBeat[];
+    duration: number;
+    height: number;
+    showYAxisLabels: boolean;
+    showNoteLabels: boolean;
+    selectedBeatIndex?: number;
+    disabled: boolean;
+    onSvgClick: (e: React.MouseEvent<SVGSVGElement>) => void;
+    onPointClick: (e: React.MouseEvent, point: ContourPoint) => void;
+    onPointHover: (point: ContourPoint | null) => void;
+    containerRef: React.RefObject<SVGSVGElement>;
+}
+
+const ContourGraphStatic = memo(function ContourGraphStatic({
     pitchesByBeat,
-    onBeatClick,
+    duration,
+    height,
+    showYAxisLabels,
+    showNoteLabels,
     selectedBeatIndex,
-    disabled = false,
-    showNoteLabels = true,
-    height = 200,
-    showYAxisLabels = true,
-    className,
-}: PitchContourGraphProps) {
-    // Audio player state
-    const currentTime = useAudioPlayerStore((state) => state.currentTime);
-    const playbackState = useAudioPlayerStore((state) => state.playbackState);
-    const storeSeek = useAudioPlayerStore((state) => state.seek);
-    const resume = useAudioPlayerStore((state) => state.resume);
-    const pause = useAudioPlayerStore((state) => state.pause);
-    const play = useAudioPlayerStore((state) => state.play);
-    const currentUrl = useAudioPlayerStore((state) => state.currentUrl);
-    const { selectedTrack } = usePlaylistStore();
-    const duration = useTrackDuration();
-
-    const isPlaying = playbackState === 'playing';
-
-    // Smart seek wrapper
-    const seek = useCallback((time: number) => {
-        storeSeek(time, currentUrl || selectedTrack?.audio_url);
-    }, [storeSeek, currentUrl, selectedTrack?.audio_url]);
-
-    // Animation state for smooth scrolling
-    const [smoothTime, setSmoothTime] = useState(currentTime);
-    const animationFrameRef = useRef<number | null>(null);
-    const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
-        time: currentTime,
-        timestamp: performance.now(),
-    });
-    const isPlayingRef = useRef(isPlaying);
-
-    // Container ref for click handling
-    const containerRef = useRef<SVGSVGElement>(null);
-
-    // Hover state
-    const [hoveredPoint, setHoveredPoint] = useState<ContourPoint | null>(null);
-
-    // Graph dimensions
-    const PADDING_LEFT = showYAxisLabels ? 45 : 15;
-    const PADDING_RIGHT = 15;
-    const PADDING_TOP = 20;
-    const PADDING_BOTTOM = 25;
-    const graphWidth = 1000; // Will be scaled responsively
-
-    // Keep refs in sync
-    useEffect(() => {
-        lastAudioTimeRef.current = {
-            time: currentTime,
-            timestamp: performance.now(),
-        };
-    }, [currentTime]);
-
-    // Track playback state
-    const prevIsPlayingRef = useRef(isPlaying);
-    useEffect(() => {
-        isPlayingRef.current = isPlaying;
-
-        const playbackJustStarted = isPlaying && !prevIsPlayingRef.current;
-        if (playbackJustStarted) {
-            lastAudioTimeRef.current = {
-                time: currentTime,
-                timestamp: performance.now(),
-            };
-            setSmoothTime(currentTime);
-        }
-
-        prevIsPlayingRef.current = isPlaying;
-    }, [isPlaying, currentTime]);
-
-    // Animation loop for smooth playhead
-    useEffect(() => {
-        if (!isPlaying) {
-            setSmoothTime(currentTime);
-            return;
-        }
-
-        const animate = () => {
-            const now = performance.now();
-            const { time: lastAudioTime, timestamp: lastUpdateTimestamp } = lastAudioTimeRef.current;
-
-            const elapsedMs = now - lastUpdateTimestamp;
-            const elapsedSeconds = elapsedMs / 1000;
-            const interpolatedTime = Math.min(lastAudioTime + elapsedSeconds, duration || 9999);
-
-            setSmoothTime(interpolatedTime);
-
-            if (isPlayingRef.current && interpolatedTime < (duration || 9999)) {
-                animationFrameRef.current = requestAnimationFrame(animate);
-            }
-        };
-
-        animationFrameRef.current = requestAnimationFrame(animate);
-
-        return () => {
-            if (animationFrameRef.current) {
-                cancelAnimationFrame(animationFrameRef.current);
-            }
-        };
-    }, [isPlaying, duration]);
-
-    // Handle seek events
-    useEffect(() => {
-        if (!isPlaying) {
-            setSmoothTime(currentTime);
-        }
-    }, [currentTime, isPlaying]);
+    disabled,
+    onSvgClick,
+    onPointClick,
+    onPointHover,
+    containerRef,
+}: ContourGraphStaticProps) {
+    const paddingLeft = showYAxisLabels ? 45 : 15;
 
     // Calculate MIDI range from data
     const midiRange = useMemo(() => {
@@ -293,13 +296,13 @@ export function PitchContourGraph({
     const contourPoints = useMemo((): ContourPoint[] => {
         if (pitchesByBeat.length === 0 || !duration) return [];
 
-        const usableWidth = graphWidth - PADDING_LEFT - PADDING_RIGHT;
+        const usableWidth = GRAPH_WIDTH - paddingLeft - PADDING_RIGHT;
 
         return pitchesByBeat.map((beat) => {
             const midiNote = getMidiNote(beat);
             const isVoiced = midiNote !== null;
 
-            const x = PADDING_LEFT + (beat.timestamp / duration) * usableWidth;
+            const x = paddingLeft + (beat.timestamp / duration) * usableWidth;
             const y = isVoiced
                 ? calculateYPosition(midiNote!, midiRange.min, midiRange.max, height, PADDING_TOP, PADDING_BOTTOM)
                 : height / 2;
@@ -313,7 +316,7 @@ export function PitchContourGraph({
                 isVoiced,
             };
         });
-    }, [pitchesByBeat, duration, midiRange, height, PADDING_LEFT, PADDING_RIGHT]);
+    }, [pitchesByBeat, duration, midiRange, height, paddingLeft]);
 
     // Generate SVG path segments (grouped by voiced/unvoiced sections)
     const pathSegments = useMemo(() => {
@@ -372,12 +375,237 @@ export function PitchContourGraph({
         return labels;
     }, [midiRange, height]);
 
-    // Playhead X position
+    // Key points for labels
+    const keyPoints = useMemo(() => {
+        if (!showNoteLabels) return [];
+        return contourPoints.filter((_, index) => isKeyPoint(contourPoints, index) && contourPoints[index].isVoiced);
+    }, [contourPoints, showNoteLabels]);
+
+    return (
+        <svg
+            ref={containerRef}
+            className={cn(
+                'pitch-contour-svg',
+                disabled && 'pitch-contour-svg--disabled'
+            )}
+            viewBox={`0 0 ${GRAPH_WIDTH} ${height}`}
+            preserveAspectRatio="xMidYMid meet"
+            onClick={onSvgClick}
+            role="img"
+            aria-label="Pitch contour graph showing melody over time"
+        >
+            {/* Background */}
+            <rect
+                className="pitch-contour-background"
+                x={paddingLeft}
+                y={PADDING_TOP}
+                width={GRAPH_WIDTH - paddingLeft - PADDING_RIGHT}
+                height={height - PADDING_TOP - PADDING_BOTTOM}
+            />
+
+            {/* Horizontal grid lines */}
+            {yAxisLabels.map((label, index) => (
+                <line
+                    key={`grid-h-${index}`}
+                    className="pitch-contour-grid-line"
+                    x1={paddingLeft}
+                    y1={label.y}
+                    x2={GRAPH_WIDTH - PADDING_RIGHT}
+                    y2={label.y}
+                />
+            ))}
+
+            {/* Y-axis labels */}
+            {showYAxisLabels && yAxisLabels.map((label, index) => (
+                <text
+                    key={`y-label-${index}`}
+                    className="pitch-contour-y-label"
+                    x={paddingLeft - 8}
+                    y={label.y}
+                    textAnchor="end"
+                    dominantBaseline="middle"
+                >
+                    {label.note}
+                </text>
+            ))}
+
+            {/* X-axis time markers */}
+            {duration > 0 && Array.from({ length: 5 }).map((_, index) => {
+                const timeRatio = index / 4;
+                const x = paddingLeft + timeRatio * (GRAPH_WIDTH - paddingLeft - PADDING_RIGHT);
+                const time = timeRatio * duration;
+
+                return (
+                    <g key={`time-marker-${index}`}>
+                        <line
+                            className="pitch-contour-time-marker"
+                            x1={x}
+                            y1={height - PADDING_BOTTOM}
+                            x2={x}
+                            y2={height - PADDING_BOTTOM + 4}
+                        />
+                        <text
+                            className="pitch-contour-x-label"
+                            x={x}
+                            y={height - PADDING_BOTTOM + 16}
+                            textAnchor="middle"
+                        >
+                            {formatTime(time)}
+                        </text>
+                    </g>
+                );
+            })}
+
+            {/* Pitch contour path segments */}
+            {pathSegments.map((segment, segIndex) => (
+                <ContourPathSegment
+                    key={`segment-${segIndex}`}
+                    segment={segment}
+                />
+            ))}
+
+            {/* Data points */}
+            {contourPoints.filter(p => p.isVoiced).map((point) => (
+                <ContourPointMarker
+                    key={`point-${point.beat.beatIndex}`}
+                    point={point}
+                    isSelected={point.beat.beatIndex === selectedBeatIndex}
+                    onClick={onPointClick}
+                    onHover={onPointHover}
+                />
+            ))}
+
+            {/* Note labels at key points */}
+            {keyPoints.map((point, index) => (
+                <ContourKeyLabel
+                    key={`label-${index}`}
+                    point={point}
+                />
+            ))}
+
+            {/* Label for selected beat (always shown when a beat is selected) */}
+            {selectedBeatIndex != null && (() => {
+                const selected = contourPoints.find(p => p.beat.beatIndex === selectedBeatIndex);
+                if (!selected || !selected.isVoiced) return null;
+                return (
+                    <ContourKeyLabel
+                        key={`selected-label-${selectedBeatIndex}`}
+                        point={selected}
+                    />
+                );
+            })()}
+        </svg>
+    );
+});
+
+// ============================================================
+// Main Component
+// ============================================================
+
+export function PitchContourGraph({
+    pitchesByBeat,
+    onBeatClick,
+    selectedBeatIndex,
+    disabled = false,
+    showNoteLabels = true,
+    height = 200,
+    showYAxisLabels = true,
+    className,
+    smoothTime: externalSmoothTime,
+    isPlaying: externalIsPlaying,
+}: PitchContourGraphProps) {
+    // Controlled mode: parent provides smoothTime/isPlaying, skip internal RAF
+    const isControlled = externalSmoothTime !== undefined;
+    const [internalSmoothTime, setSmoothTime] = useState(() => useAudioPlayerStore.getState().currentTime);
+    const smoothTime = isControlled ? externalSmoothTime! : internalSmoothTime;
+
+    const playbackState = useAudioPlayerStore((state) => state.playbackState);
+    const storeSeek = useAudioPlayerStore((state) => state.seek);
+    const resume = useAudioPlayerStore((state) => state.resume);
+    const pause = useAudioPlayerStore((state) => state.pause);
+    const play = useAudioPlayerStore((state) => state.play);
+    const currentUrl = useAudioPlayerStore((state) => state.currentUrl);
+    const { selectedTrack } = usePlaylistStore();
+    const duration = useTrackDuration();
+
+    const isPlaying = isControlled ? (externalIsPlaying ?? false) : (playbackState === 'playing');
+
+    // Smart seek wrapper
+    const seek = useCallback((time: number) => {
+        storeSeek(time, currentUrl || selectedTrack?.audio_url);
+    }, [storeSeek, currentUrl, selectedTrack?.audio_url]);
+
+    // Animation state (only used in uncontrolled mode)
+    const animationFrameRef = useRef<number | null>(null);
+    const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
+        time: useAudioPlayerStore.getState().currentTime,
+        timestamp: performance.now(),
+    });
+    const isPlayingRef = useRef(isPlaying);
+
+    // Container ref for click handling (attached to static SVG via ref prop)
+    const containerRef = useRef<SVGSVGElement>(null);
+
+    // Hover state
+    const [hoveredPoint, setHoveredPoint] = useState<ContourPoint | null>(null);
+
+    // Padding for playhead positioning (must match ContourGraphStatic internals)
+    const paddingLeft = showYAxisLabels ? 45 : 15;
+
+    // === Uncontrolled mode only: internal RAF loop and store subscriptions ===
+    const prevIsPlayingRef = useRef(isPlaying);
+    useEffect(() => {
+        if (isControlled) return;
+        isPlayingRef.current = isPlaying;
+        const playbackJustStarted = isPlaying && !prevIsPlayingRef.current;
+        if (playbackJustStarted) {
+            const storeTime = useAudioPlayerStore.getState().currentTime;
+            lastAudioTimeRef.current = { time: storeTime, timestamp: performance.now() };
+            setSmoothTime(storeTime);
+        }
+        prevIsPlayingRef.current = isPlaying;
+    }, [isPlaying, isControlled]);
+
+    useEffect(() => {
+        if (isControlled) return;
+        if (!isPlaying) return;
+        const animate = () => {
+            const storeTime = useAudioPlayerStore.getState().currentTime;
+            if (Math.abs(storeTime - lastAudioTimeRef.current.time) > 0.001) {
+                lastAudioTimeRef.current = { time: storeTime, timestamp: performance.now() };
+            }
+            const now = performance.now();
+            const { time, timestamp } = lastAudioTimeRef.current;
+            const interpolatedTime = Math.min(time + (now - timestamp) / 1000, duration || 9999);
+            setSmoothTime(interpolatedTime);
+            if (isPlayingRef.current && interpolatedTime < (duration || 9999)) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+            }
+        };
+        animationFrameRef.current = requestAnimationFrame(animate);
+        return () => {
+            if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+        };
+    }, [isPlaying, duration, isControlled]);
+
+    useEffect(() => {
+        if (isControlled) return;
+        let lastSeenTime = useAudioPlayerStore.getState().currentTime;
+        return useAudioPlayerStore.subscribe((state) => {
+            if (!isPlayingRef.current && Math.abs(state.currentTime - lastSeenTime) > 0.01) {
+                lastSeenTime = state.currentTime;
+                setSmoothTime(state.currentTime);
+                lastAudioTimeRef.current = { time: state.currentTime, timestamp: performance.now() };
+            }
+        });
+    }, [isControlled]);
+
+    // Playhead position — the ONLY thing that changes every frame during playback
     const playheadX = useMemo(() => {
-        if (!duration) return PADDING_LEFT;
-        const usableWidth = graphWidth - PADDING_LEFT - PADDING_RIGHT;
-        return PADDING_LEFT + (smoothTime / duration) * usableWidth;
-    }, [smoothTime, duration]);
+        if (!duration) return paddingLeft;
+        const usableWidth = GRAPH_WIDTH - paddingLeft - PADDING_RIGHT;
+        return paddingLeft + (smoothTime / duration) * usableWidth;
+    }, [smoothTime, duration, paddingLeft]);
 
     // Handle click to seek
     const handleSvgClick = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
@@ -387,15 +615,15 @@ export function PitchContourGraph({
         const clickX = event.clientX - rect.left;
 
         // Scale click position to SVG coordinates
-        const scaleX = graphWidth / rect.width;
+        const scaleX = GRAPH_WIDTH / rect.width;
         const svgX = clickX * scaleX;
 
-        const usableWidth = graphWidth - PADDING_LEFT - PADDING_RIGHT;
-        const timeRatio = (svgX - PADDING_LEFT) / usableWidth;
+        const usableWidth = GRAPH_WIDTH - paddingLeft - PADDING_RIGHT;
+        const timeRatio = (svgX - paddingLeft) / usableWidth;
         const newTime = Math.max(0, Math.min(duration, timeRatio * duration));
 
         seek(newTime);
-    }, [disabled, duration, seek, graphWidth]);
+    }, [disabled, duration, seek, paddingLeft]);
 
     // Handle point click
     const handlePointClick = useCallback((event: React.MouseEvent, point: ContourPoint) => {
@@ -421,11 +649,24 @@ export function PitchContourGraph({
         }
     }, [isPlaying, pause, resume, play, selectedTrack, currentUrl]);
 
-    // Key points for labels
-    const keyPoints = useMemo(() => {
-        if (!showNoteLabels) return [];
-        return contourPoints.filter((_, index) => isKeyPoint(contourPoints, index) && contourPoints[index].isVoiced);
-    }, [contourPoints, showNoteLabels]);
+    // MIDI range for display in controls (lightweight, depends only on pitchesByBeat)
+    const midiRange = useMemo(() => {
+        const voicedNotes = pitchesByBeat
+            .map((b) => getMidiNote(b))
+            .filter((n): n is number => n !== null);
+
+        if (voicedNotes.length === 0) {
+            return { min: DEFAULT_MIN_MIDI, max: DEFAULT_MAX_MIDI };
+        }
+
+        const minNote = Math.min(...voicedNotes);
+        const maxNote = Math.max(...voicedNotes);
+
+        return {
+            min: Math.max(0, minNote - 2),
+            max: Math.min(127, maxNote + 2),
+        };
+    }, [pitchesByBeat]);
 
     // Empty state
     if (pitchesByBeat.length === 0) {
@@ -438,153 +679,37 @@ export function PitchContourGraph({
 
     return (
         <div className={cn('pitch-contour-graph', className)}>
-            {/* SVG Graph */}
-            <svg
-                ref={containerRef}
-                className={cn(
-                    'pitch-contour-svg',
-                    disabled && 'pitch-contour-svg--disabled'
-                )}
-                viewBox={`0 0 ${graphWidth} ${height}`}
-                preserveAspectRatio="xMidYMid meet"
-                onClick={handleSvgClick}
-                role="img"
-                aria-label="Pitch contour graph showing melody over time"
-            >
-                {/* Background */}
-                <rect
-                    className="pitch-contour-background"
-                    x={PADDING_LEFT}
-                    y={PADDING_TOP}
-                    width={graphWidth - PADDING_LEFT - PADDING_RIGHT}
-                    height={height - PADDING_TOP - PADDING_BOTTOM}
+            {/* Graph canvas: static SVG + playhead overlay */}
+            <div className="pitch-contour-graph-canvas">
+                {/* Static SVG — memoized, only re-renders when pitch data changes */}
+                <ContourGraphStatic
+                    pitchesByBeat={pitchesByBeat}
+                    duration={duration || 0}
+                    height={height}
+                    showYAxisLabels={showYAxisLabels}
+                    showNoteLabels={showNoteLabels}
+                    selectedBeatIndex={selectedBeatIndex}
+                    disabled={disabled}
+                    onSvgClick={handleSvgClick}
+                    onPointClick={handlePointClick}
+                    onPointHover={handlePointHover}
+                    containerRef={containerRef}
                 />
-
-                {/* Horizontal grid lines */}
-                {yAxisLabels.map((label, index) => (
+                {/* Playhead overlay — separate SVG layer, only this updates during playback */}
+                <svg
+                    className="pitch-contour-playhead-overlay"
+                    viewBox={`0 0 ${GRAPH_WIDTH} ${height}`}
+                    preserveAspectRatio="xMidYMid meet"
+                >
                     <line
-                        key={`grid-h-${index}`}
-                        className="pitch-contour-grid-line"
-                        x1={PADDING_LEFT}
-                        y1={label.y}
-                        x2={graphWidth - PADDING_RIGHT}
-                        y2={label.y}
+                        className="pitch-contour-playhead"
+                        x1={playheadX}
+                        y1={PADDING_TOP}
+                        x2={playheadX}
+                        y2={height - PADDING_BOTTOM}
                     />
-                ))}
-
-                {/* Y-axis labels */}
-                {showYAxisLabels && yAxisLabels.map((label, index) => (
-                    <text
-                        key={`y-label-${index}`}
-                        className="pitch-contour-y-label"
-                        x={PADDING_LEFT - 8}
-                        y={label.y}
-                        textAnchor="end"
-                        dominantBaseline="middle"
-                    >
-                        {label.note}
-                    </text>
-                ))}
-
-                {/* X-axis time markers */}
-                {duration > 0 && Array.from({ length: 5 }).map((_, index) => {
-                    const timeRatio = index / 4;
-                    const x = PADDING_LEFT + timeRatio * (graphWidth - PADDING_LEFT - PADDING_RIGHT);
-                    const time = timeRatio * duration;
-
-                    return (
-                        <g key={`time-marker-${index}`}>
-                            <line
-                                className="pitch-contour-time-marker"
-                                x1={x}
-                                y1={height - PADDING_BOTTOM}
-                                x2={x}
-                                y2={height - PADDING_BOTTOM + 4}
-                            />
-                            <text
-                                className="pitch-contour-x-label"
-                                x={x}
-                                y={height - PADDING_BOTTOM + 16}
-                                textAnchor="middle"
-                            >
-                                {formatTime(time)}
-                            </text>
-                        </g>
-                    );
-                })}
-
-                {/* Pitch contour path segments */}
-                {pathSegments.map((segment, segIndex) => {
-                    if (segment.points.length < 2) return null;
-
-                    const pathData = segment.points.reduce((path, point, index) => {
-                        if (index === 0) {
-                            return `M ${point.x} ${point.y}`;
-                        }
-                        return `${path} L ${point.x} ${point.y}`;
-                    }, '');
-
-                    return (
-                        <path
-                            key={`segment-${segIndex}`}
-                            className={cn(
-                                'pitch-contour-line',
-                                !segment.isVoiced && 'pitch-contour-line--unvoiced'
-                            )}
-                            d={pathData}
-                            stroke={segment.color}
-                            fill="none"
-                        />
-                    );
-                })}
-
-                {/* Data points */}
-                {contourPoints.filter(p => p.isVoiced).map((point) => {
-                    const isSelected = point.beat.beatIndex === selectedBeatIndex;
-                    const isHovered = hoveredPoint?.beat.beatIndex === point.beat.beatIndex;
-
-                    return (
-                        <circle
-                            key={`point-${point.beat.beatIndex}`}
-                            className={cn(
-                                'pitch-contour-point',
-                                isSelected && 'pitch-contour-point--selected',
-                                isHovered && 'pitch-contour-point--hovered'
-                            )}
-                            cx={point.x}
-                            cy={point.y}
-                            r={isSelected ? 6 : isHovered ? 5 : 3}
-                            fill={DIRECTION_COLORS[point.direction]}
-                            onClick={(e) => handlePointClick(e, point)}
-                            onMouseEnter={() => handlePointHover(point)}
-                            onMouseLeave={() => handlePointHover(null)}
-                        />
-                    );
-                })}
-
-                {/* Note labels at key points */}
-                {keyPoints.map((point, index) => (
-                    <text
-                        key={`label-${index}`}
-                        className="pitch-contour-note-label"
-                        x={point.x}
-                        y={point.y - 10}
-                        textAnchor="middle"
-                        fill={DIRECTION_COLORS[point.direction]}
-                    >
-                        {midiToNoteName(point.midiNote)}
-                    </text>
-                ))}
-
-                {/* Playhead */}
-                <line
-                    className="pitch-contour-playhead"
-                    x1={playheadX}
-                    y1={PADDING_TOP}
-                    x2={playheadX}
-                    y2={height - PADDING_BOTTOM}
-                />
-            </svg>
+                </svg>
+            </div>
 
             {/* Beat info bar - always visible, updates on hover */}
             <div className="pitch-contour-tooltip">

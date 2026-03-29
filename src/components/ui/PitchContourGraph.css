@@ -40,11 +40,24 @@
    SVG GRAPH
    ============================================ */
 
+.pitch-contour-graph-canvas {
+    position: relative;
+}
+
 .pitch-contour-svg {
     width: 100%;
     height: auto;
     cursor: crosshair;
     display: block;
+}
+
+.pitch-contour-playhead-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
 }
 
 .pitch-contour-svg--disabled {
@@ -91,10 +104,9 @@
    ============================================ */
 
 .pitch-contour-line {
-    stroke-width: 2;
+    stroke-width: 2.5;
     stroke-linecap: round;
     stroke-linejoin: round;
-    filter: drop-shadow(0 0 2px currentColor);
 }
 
 .pitch-contour-line--unvoiced {
@@ -111,15 +123,20 @@
 .pitch-contour-point {
     cursor: pointer;
     transition: r 0.15s ease;
-    filter: drop-shadow(0 0 3px currentColor);
 }
 
 .pitch-contour-point--hovered {
-    filter: drop-shadow(0 0 6px currentColor);
+    stroke: white;
+    stroke-width: 1;
+}
+
+.pitch-contour-point:hover {
+    r: 5;
+    stroke: white;
+    stroke-width: 1;
 }
 
 .pitch-contour-point--selected {
-    filter: drop-shadow(0 0 8px currentColor);
     stroke: white;
     stroke-width: 2;
 }
@@ -145,7 +162,6 @@
     stroke: hsl(var(--primary));
     stroke-width: 2;
     stroke-linecap: round;
-    filter: drop-shadow(0 0 6px hsl(var(--primary) / 0.6));
     pointer-events: none;
 }
 

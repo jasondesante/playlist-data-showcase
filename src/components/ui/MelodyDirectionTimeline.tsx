@@ -15,7 +15,7 @@
  * Task 5.2: Create MelodyDirectionTimeline Component
  */
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import './MelodyDirectionTimeline.css';
 import { cn } from '../../utils/cn';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -44,6 +44,10 @@ export interface MelodyDirectionTimelineProps {
     showBeatIndices?: boolean;
     /** Additional CSS class names */
     className?: string;
+    /** External smooth time (controlled mode - skips internal RAF loop) */
+    smoothTime?: number;
+    /** External playing state (controlled mode) */
+    isPlaying?: boolean;
 }
 
 /** Internal representation of a visible direction arrow */
@@ -126,6 +130,67 @@ function getIntervalCategory(semitones: number): IntervalCategory {
 }
 
 // ============================================================
+// Memoized Arrow Component for Performance
+// ============================================================
+
+const DirectionArrow = memo(function DirectionArrow({
+    beat,
+    position,
+    isPast,
+    isCurrent,
+    isSelected,
+    direction,
+    sizeMultiplier,
+    onClick,
+    onKeyDown,
+    onHoverStart,
+    onHoverEnd,
+    selectable,
+}: {
+    beat: PitchAtBeat;
+    position: number;
+    isPast: boolean;
+    isCurrent: boolean;
+    isSelected: boolean;
+    direction: Direction;
+    sizeMultiplier: number;
+    onClick: (e: React.MouseEvent, beat: PitchAtBeat) => void;
+    onKeyDown: (e: React.KeyboardEvent, beat: PitchAtBeat) => void;
+    onHoverStart: (beat: PitchAtBeat) => void;
+    onHoverEnd: () => void;
+    selectable: boolean;
+}) {
+    const config = DIRECTION_CONFIG[direction] || DIRECTION_CONFIG.none;
+
+    return (
+        <div
+            className={cn(
+                'melody-direction-arrow',
+                `melody-direction-arrow--${direction}`,
+                isPast && 'melody-direction-arrow--past',
+                isCurrent && 'melody-direction-arrow--current',
+                isSelected && 'melody-direction-arrow--selected',
+                selectable && 'melody-direction-arrow--selectable'
+            )}
+            style={{
+                left: `${position * 100}%`,
+                color: config.color,
+                fontSize: `${16 * sizeMultiplier}px`,
+            }}
+            onClick={(e) => onClick(e, beat)}
+            onKeyDown={(e) => onKeyDown(e, beat)}
+            onMouseEnter={() => onHoverStart(beat)}
+            onMouseLeave={onHoverEnd}
+            role={selectable ? 'button' : undefined}
+            tabIndex={selectable ? 0 : undefined}
+            aria-label={`${config.label} at ${beat.timestamp.toFixed(2)}s`}
+        >
+            <span className="melody-direction-symbol">{config.symbol}</span>
+        </div>
+    );
+});
+
+// ============================================================
 // Main Component
 // ============================================================
 
@@ -138,9 +203,15 @@ export function MelodyDirectionTimeline({
     pastWindow = 2.0,
     showBeatIndices = true,
     className,
+    smoothTime: externalSmoothTime,
+    isPlaying: externalIsPlaying,
 }: MelodyDirectionTimelineProps) {
-    // Audio player state
-    const currentTime = useAudioPlayerStore((state) => state.currentTime);
+    // Controlled mode: parent drives smoothTime via shared RAF loop
+    const isControlled = externalSmoothTime !== undefined;
+    const [internalSmoothTime, setSmoothTime] = useState(() => useAudioPlayerStore.getState().currentTime);
+    const smoothTime = isControlled ? externalSmoothTime! : internalSmoothTime;
+
+    // Audio player state (no currentTime subscription - read from store in RAF loop to avoid wasted re-renders)
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
     const storeSeek = useAudioPlayerStore((state) => state.seek);
     const resume = useAudioPlayerStore((state) => state.resume);
@@ -150,7 +221,7 @@ export function MelodyDirectionTimeline({
     const { selectedTrack } = usePlaylistStore();
     const duration = useTrackDuration();
 
-    const isPlaying = playbackState === 'playing';
+    const isPlaying = isControlled ? (externalIsPlaying ?? false) : (playbackState === 'playing');
 
     // Smart seek wrapper: loads audio first if not loaded
     const seek = useCallback((time: number) => {
@@ -158,10 +229,10 @@ export function MelodyDirectionTimeline({
     }, [storeSeek, currentUrl, selectedTrack?.audio_url]);
 
     // Animation state for smooth scrolling
-    const [smoothTime, setSmoothTime] = useState(currentTime);
+    const smoothTimeRef = useRef(smoothTime);
     const animationFrameRef = useRef<number | null>(null);
     const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
-        time: currentTime,
+        time: useAudioPlayerStore.getState().currentTime,
         timestamp: performance.now(),
     });
     const isPlayingRef = useRef(isPlaying);
@@ -171,47 +242,57 @@ export function MelodyDirectionTimeline({
     const trackRef = useRef<HTMLDivElement>(null);
     const dragStartXRef = useRef(0);
     const dragStartTimeRef = useRef(0);
+    const dragStartedOnArrowRef = useRef(false);
 
     // Hover state
     const [hoveredBeat, setHoveredBeat] = useState<PitchAtBeat | null>(null);
 
     // Keep refs in sync
     useEffect(() => {
-        lastAudioTimeRef.current = {
-            time: currentTime,
-            timestamp: performance.now(),
-        };
-    }, [currentTime]);
+        smoothTimeRef.current = smoothTime;
+    }, [smoothTime]);
 
     // Track playback state transitions
     const prevIsPlayingRef = useRef(isPlaying);
 
     useEffect(() => {
+        if (isControlled) return;
         isPlayingRef.current = isPlaying;
 
         const playbackJustStarted = isPlaying && !prevIsPlayingRef.current;
         if (playbackJustStarted) {
+            const storeTime = useAudioPlayerStore.getState().currentTime;
             lastAudioTimeRef.current = {
-                time: currentTime,
+                time: storeTime,
                 timestamp: performance.now(),
             };
-            setSmoothTime(currentTime);
+            setSmoothTime(storeTime);
         }
 
         prevIsPlayingRef.current = isPlaying;
-    }, [isPlaying, currentTime]);
+    }, [isPlaying]);
 
     // Animation loop for smooth scrolling
+    // Reads from store directly (no React subscription) to avoid wasted re-renders
     useEffect(() => {
+        if (isControlled) return;
         if (!isPlaying) {
-            setSmoothTime(currentTime);
             return;
         }
 
         const animate = () => {
+            const storeTime = useAudioPlayerStore.getState().currentTime;
+
+            // Update interpolation base when store time advances
+            if (Math.abs(storeTime - lastAudioTimeRef.current.time) > 0.001) {
+                lastAudioTimeRef.current = {
+                    time: storeTime,
+                    timestamp: performance.now(),
+                };
+            }
+
             const now = performance.now();
             const { time: lastAudioTime, timestamp: lastUpdateTimestamp } = lastAudioTimeRef.current;
-
             const elapsedMs = now - lastUpdateTimestamp;
             const elapsedSeconds = elapsedMs / 1000;
             const interpolatedTime = Math.min(lastAudioTime + elapsedSeconds, duration || 9999);
@@ -232,12 +313,21 @@ export function MelodyDirectionTimeline({
         };
     }, [isPlaying, duration]);
 
-    // Handle seek events
+    // Detect seek events while paused via imperative subscription (no React re-render from store)
     useEffect(() => {
-        if (!isPlaying) {
-            setSmoothTime(currentTime);
-        }
-    }, [currentTime, isPlaying]);
+        if (isControlled) return;
+        let lastSeenTime = useAudioPlayerStore.getState().currentTime;
+        return useAudioPlayerStore.subscribe((state) => {
+            if (!isPlayingRef.current && Math.abs(state.currentTime - lastSeenTime) > 0.01) {
+                lastSeenTime = state.currentTime;
+                setSmoothTime(state.currentTime);
+                lastAudioTimeRef.current = {
+                    time: state.currentTime,
+                    timestamp: performance.now(),
+                };
+            }
+        });
+    }, []);
 
     // Total visible time window
     const totalWindow = pastWindow + anticipationWindow;
@@ -245,14 +335,7 @@ export function MelodyDirectionTimeline({
     // Position of NOW line (as fraction from 0 to 1)
     const nowPosition = pastWindow / totalWindow;
 
-    // Calculate horizontal position for a timestamp
-    const calculatePosition = useCallback((timestamp: number): number => {
-        const pastStartTime = smoothTime - pastWindow;
-        const timeFromPastStart = timestamp - pastStartTime;
-        return timeFromPastStart / totalWindow;
-    }, [smoothTime, pastWindow, totalWindow]);
-
-    // Get visible arrows within the time window
+    // Get visible arrows within the time window (position inlined for stability)
     const visibleArrows = useMemo((): VisibleArrow[] => {
         const windowStart = smoothTime - pastWindow;
         const windowEnd = smoothTime + anticipationWindow;
@@ -260,7 +343,8 @@ export function MelodyDirectionTimeline({
         return pitchesByBeat
             .filter((p) => p.timestamp >= windowStart && p.timestamp <= windowEnd)
             .map((beat) => {
-                const position = calculatePosition(beat.timestamp);
+                const pastStartTime = smoothTime - pastWindow;
+                const position = (beat.timestamp - pastStartTime) / totalWindow;
                 const isPast = beat.timestamp < smoothTime - 0.05;
                 const isCurrent = !isPast && beat.timestamp < smoothTime + 0.1;
 
@@ -272,7 +356,7 @@ export function MelodyDirectionTimeline({
                 };
             })
             .filter((va) => va.position >= 0 && va.position <= 1);
-    }, [pitchesByBeat, smoothTime, pastWindow, anticipationWindow, calculatePosition]);
+    }, [pitchesByBeat, smoothTime, pastWindow, anticipationWindow, totalWindow]);
 
     // Drag-to-scrub functionality
     const DRAG_THRESHOLD = 5;
@@ -283,8 +367,9 @@ export function MelodyDirectionTimeline({
         event.preventDefault();
         setIsDragging(true);
         dragStartXRef.current = event.clientX;
-        dragStartTimeRef.current = smoothTime;
-    }, [disabled, smoothTime]);
+        dragStartTimeRef.current = smoothTimeRef.current;
+        dragStartedOnArrowRef.current = !!(event.target as HTMLElement).closest('.melody-direction-arrow');
+    }, [disabled]);
 
     const handleMouseMove = useCallback((event: MouseEvent) => {
         if (!isDragging || !trackRef.current) return;
@@ -307,20 +392,20 @@ export function MelodyDirectionTimeline({
         const rect = trackRef.current.getBoundingClientRect();
         const deltaX = event.clientX - dragStartXRef.current;
 
-        // If minimal movement, treat as click-to-seek
-        if (Math.abs(deltaX) <= DRAG_THRESHOLD) {
+        // If minimal movement, treat as click-to-seek (unless click started on an arrow)
+        if (Math.abs(deltaX) <= DRAG_THRESHOLD && !dragStartedOnArrowRef.current) {
             const clickX = event.clientX - rect.left;
             const trackWidth = rect.width;
 
             const positionRatio = clickX / trackWidth;
             const timeFromPastStart = positionRatio * totalWindow;
-            const newTime = Math.max(0, Math.min(duration || 9999, (smoothTime - pastWindow) + timeFromPastStart));
+            const newTime = Math.max(0, Math.min(duration || 9999, (smoothTimeRef.current - pastWindow) + timeFromPastStart));
 
             seek(newTime);
         }
 
         setIsDragging(false);
-    }, [isDragging, totalWindow, duration, seek, smoothTime, pastWindow]);
+    }, [isDragging, totalWindow, duration, seek, pastWindow]);
 
     useEffect(() => {
         if (isDragging) {
@@ -332,6 +417,9 @@ export function MelodyDirectionTimeline({
             };
         }
     }, [isDragging, handleMouseMove, handleMouseUp]);
+
+    // Stable callbacks for memoized children
+    const clearHoveredBeat = useCallback(() => setHoveredBeat(null), []);
 
     // Handle beat click
     const handleBeatClick = useCallback((event: React.MouseEvent, beat: PitchAtBeat) => {
@@ -405,40 +493,25 @@ export function MelodyDirectionTimeline({
                 {visibleArrows.map((va, index) => {
                     const { beat, position, isPast, isCurrent } = va;
                     const direction = beat.direction as Direction;
-                    const config = DIRECTION_CONFIG[direction] || DIRECTION_CONFIG.none;
-
-                    // Get interval category and size
                     const intervalCategory = beat.intervalCategory || getIntervalCategory(beat.intervalFromPrevious || 0);
                     const sizeMultiplier = getSizeMultiplier(intervalCategory);
 
-                    const isSelected = beat.beatIndex === selectedBeatIndex;
-
                     return (
-                        <div
+                        <DirectionArrow
                             key={`arrow-${beat.beatIndex}-${index}`}
-                            className={cn(
-                                'melody-direction-arrow',
-                                `melody-direction-arrow--${direction}`,
-                                isPast && 'melody-direction-arrow--past',
-                                isCurrent && 'melody-direction-arrow--current',
-                                isSelected && 'melody-direction-arrow--selected',
-                                onBeatClick && 'melody-direction-arrow--selectable'
-                            )}
-                            style={{
-                                left: `${position * 100}%`,
-                                color: config.color,
-                                fontSize: `${16 * sizeMultiplier}px`,
-                            }}
-                            onClick={(e) => handleBeatClick(e, beat)}
-                            onKeyDown={(e) => handleBeatKeyDown(e, beat)}
-                            onMouseEnter={() => setHoveredBeat(beat)}
-                            onMouseLeave={() => setHoveredBeat(null)}
-                            role={onBeatClick ? 'button' : undefined}
-                            tabIndex={onBeatClick ? 0 : undefined}
-                            aria-label={`${config.label} at ${beat.timestamp.toFixed(2)}s`}
-                        >
-                            <span className="melody-direction-symbol">{config.symbol}</span>
-                        </div>
+                            beat={beat}
+                            position={position}
+                            isPast={isPast}
+                            isCurrent={isCurrent}
+                            isSelected={beat.beatIndex === selectedBeatIndex}
+                            direction={direction}
+                            sizeMultiplier={sizeMultiplier}
+                            onClick={handleBeatClick}
+                            onKeyDown={handleBeatKeyDown}
+                            onHoverStart={setHoveredBeat}
+                            onHoverEnd={clearHoveredBeat}
+                            selectable={!!onBeatClick}
+                        />
                     );
                 })}
 

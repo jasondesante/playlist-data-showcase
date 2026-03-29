@@ -16,7 +16,7 @@
  * Task 5.5: Create MelodySegmentTimeline Component
  */
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import './MelodySegmentTimeline.css';
 import { cn } from '../../utils/cn';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -49,6 +49,10 @@ export interface MelodySegmentTimelineProps {
     segmentHeight?: number;
     /** Additional CSS class names */
     className?: string;
+    /** External smooth time (controlled mode - skips internal RAF loop) */
+    smoothTime?: number;
+    /** External playing state (controlled mode) */
+    isPlaying?: boolean;
 }
 
 /** Internal representation of a visible segment */
@@ -117,6 +121,101 @@ function getSemitoneDescription(semitones: number): string {
 }
 
 // ============================================================
+// Memoized Segment Region Component for Performance
+// ============================================================
+
+const SegmentRegion = memo(function SegmentRegion({
+    vs,
+    selectedSegmentIndex,
+    showSegmentIndices,
+    segmentHeight,
+    onSegmentClick,
+    onHoverStart,
+    onHoverEnd,
+}: {
+    vs: VisibleSegment;
+    selectedSegmentIndex?: number;
+    showSegmentIndices: boolean;
+    segmentHeight: number;
+    onSegmentClick?: (segment: MelodySegment) => void;
+    onHoverStart: (vs: VisibleSegment) => void;
+    onHoverEnd: () => void;
+}) {
+    const { segment, segmentIndex, position, width, isPast, isCurrent } = vs;
+    const direction = segment.direction as Direction;
+    const config = DIRECTION_CONFIG[direction] || DIRECTION_CONFIG.none;
+    const isSelected = segmentIndex === selectedSegmentIndex;
+
+    return (
+        <div
+            className={cn(
+                'melody-segment-region',
+                `melody-segment-region--${direction}`,
+                isPast && 'melody-segment-region--past',
+                isCurrent && 'melody-segment-region--current',
+                isSelected && 'melody-segment-region--selected',
+                onSegmentClick && 'melody-segment-region--selectable'
+            )}
+            style={{
+                left: `${position * 100}%`,
+                width: `${width * 100}%`,
+                height: segmentHeight,
+                '--segment-color': config.color,
+            } as React.CSSProperties}
+            onClick={(e) => {
+                e.stopPropagation();
+                onSegmentClick?.(segment);
+            }}
+            onMouseEnter={() => onHoverStart(vs)}
+            onMouseLeave={onHoverEnd}
+            role={onSegmentClick ? 'button' : undefined}
+            tabIndex={onSegmentClick ? 0 : undefined}
+            aria-label={`${config.label} segment, ${segment.startTime.toFixed(1)}s - ${segment.endTime.toFixed(1)}s`}
+        >
+            <div className="melody-segment-content">
+                <span
+                    className="melody-segment-symbol"
+                    style={{ color: config.color }}
+                >
+                    {config.symbol}
+                </span>
+                {segment.startPitch && segment.endPitch && (
+                    <span className="melody-segment-notes">
+                        {segment.startPitch}
+                        {segment.startPitch !== segment.endPitch && (
+                            <>
+                                <span className="melody-segment-arrow">→</span>
+                                {segment.endPitch}
+                            </>
+                        )}
+                    </span>
+                )}
+                {width > 0.08 && (
+                    <span className="melody-segment-beats">
+                        {(segment.endTime - segment.startTime).toFixed(1)}s
+                    </span>
+                )}
+                {showSegmentIndices && width > 0.05 && (
+                    <span className="melody-segment-index">
+                        #{segmentIndex + 1}
+                    </span>
+                )}
+            </div>
+            {segment.interval !== 0 && width > 0.1 && (
+                <span
+                    className={cn(
+                        'melody-segment-semitones',
+                        segment.interval > 0 ? 'melody-segment-semitones--up' : 'melody-segment-semitones--down'
+                    )}
+                >
+                    {segment.interval > 0 ? '+' : ''}{segment.interval}st
+                </span>
+            )}
+        </div>
+    );
+});
+
+// ============================================================
 // Main Component
 // ============================================================
 
@@ -131,9 +230,15 @@ export function MelodySegmentTimeline({
     showSegmentIndices = false,
     segmentHeight = 36,
     className,
+    smoothTime: externalSmoothTime,
+    isPlaying: externalIsPlaying,
 }: MelodySegmentTimelineProps) {
-    // Audio player state
-    const currentTime = useAudioPlayerStore((state) => state.currentTime);
+    // Controlled mode: parent drives smoothTime via shared RAF loop
+    const isControlled = externalSmoothTime !== undefined;
+    const [internalSmoothTime, setSmoothTime] = useState(() => useAudioPlayerStore.getState().currentTime);
+    const smoothTime = isControlled ? externalSmoothTime! : internalSmoothTime;
+
+    // Audio player state (no currentTime subscription - read from store in RAF loop to avoid wasted re-renders)
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
     const storeSeek = useAudioPlayerStore((state) => state.seek);
     const resume = useAudioPlayerStore((state) => state.resume);
@@ -143,7 +248,7 @@ export function MelodySegmentTimeline({
     const { selectedTrack } = usePlaylistStore();
     const duration = useTrackDuration();
 
-    const isPlaying = playbackState === 'playing';
+    const isPlaying = isControlled ? (externalIsPlaying ?? false) : (playbackState === 'playing');
 
     // Smart seek wrapper
     const seek = useCallback((time: number) => {
@@ -151,10 +256,10 @@ export function MelodySegmentTimeline({
     }, [storeSeek, currentUrl, selectedTrack?.audio_url]);
 
     // Animation state for smooth scrolling
-    const [smoothTime, setSmoothTime] = useState(currentTime);
+    const smoothTimeRef = useRef(smoothTime);
     const animationFrameRef = useRef<number | null>(null);
     const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
-        time: currentTime,
+        time: useAudioPlayerStore.getState().currentTime,
         timestamp: performance.now(),
     });
     const isPlayingRef = useRef(isPlaying);
@@ -172,40 +277,49 @@ export function MelodySegmentTimeline({
 
     // Keep refs in sync
     useEffect(() => {
-        lastAudioTimeRef.current = {
-            time: currentTime,
-            timestamp: performance.now(),
-        };
-    }, [currentTime]);
+        smoothTimeRef.current = smoothTime;
+    }, [smoothTime]);
 
     // Track playback state transitions
     const prevIsPlayingRef = useRef(isPlaying);
     useEffect(() => {
+        if (isControlled) return;
         isPlayingRef.current = isPlaying;
 
         const playbackJustStarted = isPlaying && !prevIsPlayingRef.current;
         if (playbackJustStarted) {
+            const storeTime = useAudioPlayerStore.getState().currentTime;
             lastAudioTimeRef.current = {
-                time: currentTime,
+                time: storeTime,
                 timestamp: performance.now(),
             };
-            setSmoothTime(currentTime);
+            setSmoothTime(storeTime);
         }
 
         prevIsPlayingRef.current = isPlaying;
-    }, [isPlaying, currentTime]);
+    }, [isPlaying]);
 
     // Animation loop for smooth scrolling
+    // Reads from store directly (no React subscription) to avoid wasted re-renders
     useEffect(() => {
+        if (isControlled) return;
         if (!isPlaying) {
-            setSmoothTime(currentTime);
             return;
         }
 
         const animate = () => {
+            const storeTime = useAudioPlayerStore.getState().currentTime;
+
+            // Update interpolation base when store time advances
+            if (Math.abs(storeTime - lastAudioTimeRef.current.time) > 0.001) {
+                lastAudioTimeRef.current = {
+                    time: storeTime,
+                    timestamp: performance.now(),
+                };
+            }
+
             const now = performance.now();
             const { time: lastAudioTime, timestamp: lastUpdateTimestamp } = lastAudioTimeRef.current;
-
             const elapsedMs = now - lastUpdateTimestamp;
             const elapsedSeconds = elapsedMs / 1000;
             const interpolatedTime = Math.min(lastAudioTime + elapsedSeconds, duration || 9999);
@@ -226,25 +340,27 @@ export function MelodySegmentTimeline({
         };
     }, [isPlaying, duration]);
 
-    // Handle seek events
+    // Detect seek events while paused via imperative subscription (no React re-render from store)
     useEffect(() => {
-        if (!isPlaying) {
-            setSmoothTime(currentTime);
-        }
-    }, [currentTime, isPlaying]);
+        if (isControlled) return;
+        let lastSeenTime = useAudioPlayerStore.getState().currentTime;
+        return useAudioPlayerStore.subscribe((state) => {
+            if (!isPlayingRef.current && Math.abs(state.currentTime - lastSeenTime) > 0.01) {
+                lastSeenTime = state.currentTime;
+                setSmoothTime(state.currentTime);
+                lastAudioTimeRef.current = {
+                    time: state.currentTime,
+                    timestamp: performance.now(),
+                };
+            }
+        });
+    }, []);
 
     // Total visible time window
     const totalWindow = pastWindow + anticipationWindow;
 
     // Position of NOW line (as fraction from 0 to 1)
     const nowPosition = pastWindow / totalWindow;
-
-    // Calculate horizontal position for a timestamp
-    const calculatePosition = useCallback((timestamp: number): number => {
-        const pastStartTime = smoothTime - pastWindow;
-        const timeFromPastStart = timestamp - pastStartTime;
-        return timeFromPastStart / totalWindow;
-    }, [smoothTime, pastWindow, totalWindow]);
 
     // Enrich segments with timestamp data
     const enrichedSegments = useMemo(() => {
@@ -254,7 +370,7 @@ export function MelodySegmentTimeline({
         });
     }, [segments, pitchesByBeat]);
 
-    // Get visible segments within the time window
+    // Get visible segments within the time window (position inlined for stability)
     const visibleSegments = useMemo((): VisibleSegment[] => {
         const windowStart = smoothTime - pastWindow;
         const windowEnd = smoothTime + anticipationWindow;
@@ -262,8 +378,9 @@ export function MelodySegmentTimeline({
         return enrichedSegments
             .filter(({ startTime, endTime }) => endTime >= windowStart && startTime <= windowEnd)
             .map(({ segment, segmentIndex, startTime, endTime }) => {
-                const position = calculatePosition(startTime);
-                const endPosition = calculatePosition(endTime);
+                const pastStartTime = smoothTime - pastWindow;
+                const position = (startTime - pastStartTime) / totalWindow;
+                const endPosition = (endTime - pastStartTime) / totalWindow;
                 const width = Math.max(0.01, endPosition - position);
 
                 const isPast = endTime < smoothTime - 0.1;
@@ -281,7 +398,7 @@ export function MelodySegmentTimeline({
                 };
             })
             .filter((vs) => vs.position + vs.width >= 0 && vs.position <= 1);
-    }, [enrichedSegments, smoothTime, pastWindow, anticipationWindow, calculatePosition]);
+    }, [enrichedSegments, smoothTime, pastWindow, anticipationWindow, totalWindow]);
 
     // Drag-to-scrub functionality
     const DRAG_THRESHOLD = 5;
@@ -292,8 +409,8 @@ export function MelodySegmentTimeline({
         event.preventDefault();
         setIsDragging(true);
         dragStartXRef.current = event.clientX;
-        dragStartTimeRef.current = smoothTime;
-    }, [disabled, smoothTime]);
+        dragStartTimeRef.current = smoothTimeRef.current;
+    }, [disabled]);
 
     const handleMouseMove = useCallback((event: MouseEvent) => {
         if (!isDragging || !trackRef.current) return;
@@ -323,13 +440,13 @@ export function MelodySegmentTimeline({
 
             const positionRatio = clickX / trackWidth;
             const timeFromPastStart = positionRatio * totalWindow;
-            const newTime = Math.max(0, Math.min(duration || 9999, (smoothTime - pastWindow) + timeFromPastStart));
+            const newTime = Math.max(0, Math.min(duration || 9999, (smoothTimeRef.current - pastWindow) + timeFromPastStart));
 
             seek(newTime);
         }
 
         setIsDragging(false);
-    }, [isDragging, totalWindow, duration, seek, smoothTime, pastWindow]);
+    }, [isDragging, totalWindow, duration, seek, pastWindow]);
 
     useEffect(() => {
         if (isDragging) {
@@ -342,13 +459,8 @@ export function MelodySegmentTimeline({
         }
     }, [isDragging, handleMouseMove, handleMouseUp]);
 
-    // Handle segment click
-    const handleSegmentClick = useCallback((event: React.MouseEvent, vs: VisibleSegment) => {
-        event.stopPropagation();
-        // Seek to the start of the segment
-        seek(vs.startTime);
-        onSegmentClick?.(vs.segment);
-    }, [seek, onSegmentClick]);
+    // Stable callbacks for memoized children
+    const clearHoveredSegment = useCallback(() => setHoveredSegment(null), []);
 
     // Play/pause toggle
     const handlePlayPause = useCallback(() => {
@@ -405,91 +517,18 @@ export function MelodySegmentTimeline({
                 <div className="melody-segment-center-line" />
 
                 {/* Segment regions */}
-                {visibleSegments.map((vs) => {
-                    const { segment, segmentIndex, position, width, isPast, isCurrent } = vs;
-                    const direction = segment.direction as Direction;
-                    const config = DIRECTION_CONFIG[direction] || DIRECTION_CONFIG.none;
-
-                    const isSelected = segmentIndex === selectedSegmentIndex;
-                    const isHovered = hoveredSegment?.segmentIndex === segmentIndex;
-
-                    return (
-                        <div
-                            key={`segment-${segmentIndex}`}
-                            className={cn(
-                                'melody-segment-region',
-                                `melody-segment-region--${direction}`,
-                                isPast && 'melody-segment-region--past',
-                                isCurrent && 'melody-segment-region--current',
-                                isSelected && 'melody-segment-region--selected',
-                                isHovered && 'melody-segment-region--hovered',
-                                onSegmentClick && 'melody-segment-region--selectable'
-                            )}
-                            style={{
-                                left: `${position * 100}%`,
-                                width: `${width * 100}%`,
-                                height: segmentHeight,
-                                '--segment-color': config.color,
-                            } as React.CSSProperties}
-                            onClick={(e) => handleSegmentClick(e, vs)}
-                            onMouseEnter={() => setHoveredSegment(vs)}
-                            onMouseLeave={() => setHoveredSegment(null)}
-                            role={onSegmentClick ? 'button' : undefined}
-                            tabIndex={onSegmentClick ? 0 : undefined}
-                            aria-label={`${config.label} segment, ${segment.startTime.toFixed(1)}s - ${segment.endTime.toFixed(1)}s`}
-                        >
-                            {/* Segment content */}
-                            <div className="melody-segment-content">
-                                {/* Direction symbol */}
-                                <span
-                                    className="melody-segment-symbol"
-                                    style={{ color: config.color }}
-                                >
-                                    {config.symbol}
-                                </span>
-
-                                {/* Note span (if available) */}
-                                {segment.startPitch && segment.endPitch && (
-                                    <span className="melody-segment-notes">
-                                        {segment.startPitch}
-                                        {segment.startPitch !== segment.endPitch && (
-                                            <>
-                                                <span className="melody-segment-arrow">→</span>
-                                                {segment.endPitch}
-                                            </>
-                                        )}
-                                    </span>
-                                )}
-
-                                {/* Beat range (shown on wider segments) */}
-                                {width > 0.08 && (
-                                    <span className="melody-segment-beats">
-                                        {(segment.endTime - segment.startTime).toFixed(1)}s
-                                    </span>
-                                )}
-
-                                {/* Segment index (optional) */}
-                                {showSegmentIndices && width > 0.05 && (
-                                    <span className="melody-segment-index">
-                                        #{segmentIndex + 1}
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Semitones indicator (for larger intervals) */}
-                            {segment.interval !== 0 && width > 0.1 && (
-                                <span
-                                    className={cn(
-                                        'melody-segment-semitones',
-                                        segment.interval > 0 ? 'melody-segment-semitones--up' : 'melody-segment-semitones--down'
-                                    )}
-                                >
-                                    {segment.interval > 0 ? '+' : ''}{segment.interval}st
-                                </span>
-                            )}
-                        </div>
-                    );
-                })}
+                {visibleSegments.map((vs) => (
+                    <SegmentRegion
+                        key={`segment-${vs.segmentIndex}`}
+                        vs={vs}
+                        selectedSegmentIndex={selectedSegmentIndex}
+                        showSegmentIndices={showSegmentIndices}
+                        segmentHeight={segmentHeight}
+                        onSegmentClick={onSegmentClick}
+                        onHoverStart={setHoveredSegment}
+                        onHoverEnd={clearHoveredSegment}
+                    />
+                ))}
 
                 {/* NOW line */}
                 <div

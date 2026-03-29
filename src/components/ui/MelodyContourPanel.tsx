@@ -15,10 +15,12 @@
  * Task 5.1: Create MelodyContourPanel Component
  */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { Activity } from 'lucide-react';
 import './MelodyContourPanel.css';
 import { cn } from '../../utils/cn';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
+import { useTrackDuration } from '../../hooks/useTrackDuration';
 import {
     usePitchAnalysis,
     useAllDifficultyLevels,
@@ -68,6 +70,66 @@ function getMelodyContourData(level: GeneratedLevel | undefined | null): {
         pitchByBeat: pitchAnalysis.pitchByBeat ?? null,
         melodyContour: pitchAnalysis.melodyContour ?? null,
     };
+}
+
+// ============================================================
+// Shared smooth playback time - single RAF loop for all child timelines
+// ============================================================
+
+function useSmoothPlaybackTime() {
+    const [smoothTime, setSmoothTime] = useState(() => useAudioPlayerStore.getState().currentTime);
+    const playbackState = useAudioPlayerStore((state) => state.playbackState);
+    const isPlaying = playbackState === 'playing';
+    const duration = useTrackDuration();
+    const lastAudioTimeRef = useRef({ time: smoothTime, timestamp: performance.now() });
+    const isPlayingRef = useRef(isPlaying);
+    const animationFrameRef = useRef<number | null>(null);
+
+    // Sync on play state transitions
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+        if (isPlaying) {
+            const storeTime = useAudioPlayerStore.getState().currentTime;
+            lastAudioTimeRef.current = { time: storeTime, timestamp: performance.now() };
+            setSmoothTime(storeTime);
+        }
+    }, [isPlaying]);
+
+    // Single shared RAF loop (replaces 3 separate loops in children)
+    useEffect(() => {
+        if (!isPlaying) return;
+        const animate = () => {
+            const storeTime = useAudioPlayerStore.getState().currentTime;
+            if (Math.abs(storeTime - lastAudioTimeRef.current.time) > 0.001) {
+                lastAudioTimeRef.current = { time: storeTime, timestamp: performance.now() };
+            }
+            const now = performance.now();
+            const { time, timestamp } = lastAudioTimeRef.current;
+            const interpolated = Math.min(time + (now - timestamp) / 1000, duration || 9999);
+            setSmoothTime(interpolated);
+            if (isPlayingRef.current && interpolated < (duration || 9999)) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+            }
+        };
+        animationFrameRef.current = requestAnimationFrame(animate);
+        return () => {
+            if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+        };
+    }, [isPlaying, duration]);
+
+    // Detect seeks while paused
+    useEffect(() => {
+        let lastSeen = useAudioPlayerStore.getState().currentTime;
+        return useAudioPlayerStore.subscribe((state) => {
+            if (!isPlayingRef.current && Math.abs(state.currentTime - lastSeen) > 0.01) {
+                lastSeen = state.currentTime;
+                setSmoothTime(state.currentTime);
+                lastAudioTimeRef.current = { time: state.currentTime, timestamp: performance.now() };
+            }
+        });
+    }, []);
+
+    return { smoothTime, isPlaying };
 }
 
 // ============================================================
@@ -122,6 +184,9 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
     const allDifficulties = useAllDifficultyLevels();
     const selectedDifficulty = useSelectedDifficulty();
     const pitchAnalysis = usePitchAnalysis();
+
+    // Shared smooth time - single RAF loop for all child timelines
+    const { smoothTime, isPlaying } = useSmoothPlaybackTime();
 
     // Selected beat for timeline interaction
     const [selectedBeatIndex, setSelectedBeatIndex] = useState<number | undefined>(undefined);
@@ -211,6 +276,8 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
                     {melodyData.pitchByBeat && melodyData.pitchByBeat.length > 0 ? (
                         <MelodyDirectionTimeline
                             pitchesByBeat={melodyData.pitchByBeat}
+                            smoothTime={smoothTime}
+                            isPlaying={isPlaying}
                             onBeatClick={handleBeatClick}
                             selectedBeatIndex={selectedBeatIndex}
                             anticipationWindow={5.0}
@@ -233,10 +300,12 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
                     {melodyData.pitchByBeat && melodyData.pitchByBeat.length > 0 ? (
                         <PitchContourGraph
                             pitchesByBeat={melodyData.pitchByBeat}
+                            smoothTime={smoothTime}
+                            isPlaying={isPlaying}
                             onBeatClick={handleBeatClick}
                             selectedBeatIndex={selectedBeatIndex}
                             height={180}
-                            showNoteLabels={true}
+                            showNoteLabels={false}
                             showYAxisLabels={true}
                         />
                     ) : (
@@ -256,6 +325,8 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
                         <MelodySegmentTimeline
                             segments={melodyData.melodyContour.segments}
                             pitchesByBeat={melodyData.pitchByBeat ?? []}
+                            smoothTime={smoothTime}
+                            isPlaying={isPlaying}
                             anticipationWindow={6.0}
                             pastWindow={3.0}
                             showSegmentIndices={false}

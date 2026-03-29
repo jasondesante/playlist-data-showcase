@@ -407,18 +407,21 @@
     justify-content: center;
     width: 28px;
     height: 28px;
-    background: var(--bg-secondary, #12121f);
-    border: 1px solid var(--border-color, #2a2a4a);
+    padding: 0;
+    background: hsl(var(--primary));
+    border: none;
     border-radius: 4px;
-    color: var(--text-primary, #e0e0e0);
+    color: white;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background 0.15s ease, transform 0.1s ease;
 }
 
 .melody-segment-play-btn:hover:not(:disabled) {
-    background: hsl(var(--primary));
-    border-color: hsl(var(--primary));
-    color: white;
+    background: hsl(var(--primary) / 0.8);
+}
+
+.melody-segment-play-btn:active:not(:disabled) {
+    transform: scale(0.95);
 }
 
 .melody-segment-play-btn:disabled {
