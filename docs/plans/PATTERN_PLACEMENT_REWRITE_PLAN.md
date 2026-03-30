@@ -249,10 +249,10 @@ For each run, for each placement:
 - Write `pattern.id` into `patternIds[placement.startIndex + j]`
 - Pitch-derived beats keep their keys (already in `pitchKeys`)
 
-- [ ] Implement `placePatterns()`
-- [ ] Preserve pitch-derived keys unchanged
-- [ ] Unit test: full 4-key pattern written across 4 consecutive beats
-- [ ] Unit test: pitch keys between runs preserved
+- [x] Implement `placePatterns()`
+- [x] Preserve pitch-derived keys unchanged
+- [x] Unit test: full 4-key pattern written across 4 consecutive beats
+- [x] Unit test: pitch keys between runs preserved
 
 ### Task 1.7: Rewrite `mapButtons()` to use the new pipeline
 
