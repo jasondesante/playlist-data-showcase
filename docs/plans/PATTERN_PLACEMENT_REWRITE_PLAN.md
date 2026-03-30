@@ -319,9 +319,9 @@ Enhance metadata to reflect the new placement strategy:
 
 ### Task 2.4: Test difficulty constraints
 
-- [ ] Test: easy difficulty only uses patterns with difficulty ≤ 3
-- [ ] Test: medium difficulty uses patterns with difficulty ≤ 6
-- [ ] Test: hard difficulty uses all patterns
+- [x] Test: easy difficulty only uses patterns with difficulty ≤ 3
+- [x] Test: medium difficulty uses patterns with difficulty ≤ 6
+- [x] Test: hard difficulty uses all patterns
 
 ### Task 2.5: Test backward compatibility
 
