@@ -313,9 +313,9 @@ Enhance metadata to reflect the new placement strategy:
 
 ### Task 2.3: Test variety and pattern memory
 
-- [ ] Test: consecutive runs don't use the same pattern
-- [ ] Test: large run uses different patterns in sequence (not same pattern repeated)
-- [ ] Test: patternMemory setting respected
+- [x] Test: consecutive runs don't use the same pattern
+- [x] Test: large run uses different patterns in sequence (not same pattern repeated)
+- [x] Test: patternMemory setting respected
 
 ### Task 2.4: Test difficulty constraints
 
