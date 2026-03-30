@@ -158,11 +158,11 @@ Edge cases:
 - Entire song is pattern: single run covering all beats
 - No pattern beats needed: empty array
 
-- [ ] Implement `identifyPatternRuns()`
-- [ ] Unit test: no runs when all beats have pitch
-- [ ] Unit test: single run for entire pattern-only song
-- [ ] Unit test: multiple runs separated by pitch beats
-- [ ] Unit test: edge runs (start/end of song)
+- [x] Implement `identifyPatternRuns()`
+- [x] Unit test: no runs when all beats have pitch
+- [x] Unit test: single run for entire pattern-only song
+- [x] Unit test: multiple runs separated by pitch beats
+- [x] Unit test: edge runs (start/end of song)
 
 ### Task 1.4: Create `isPatternRunCompatible()` function
 
