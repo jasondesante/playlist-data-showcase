@@ -326,7 +326,7 @@ Enhance metadata to reflect the new placement strategy:
 ### Task 2.5: Test backward compatibility
 
 - [x] Test: `MappedLevelResult` shape unchanged
-- [ ] Test: `keyAssignments` Map still populated correctly
+- [x] Test: `keyAssignments` Map still populated correctly
 - [ ] Test: `mappingSources` Map still populated correctly (pitch vs pattern per beat)
 - [ ] Test: `mappingPatternIds` Map now shows the same patternId for consecutive beats in the same pattern placement
 - [ ] Test: existing `ButtonMappingConfig` options all still work
