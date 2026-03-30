@@ -220,13 +220,13 @@ Variety considerations:
 - Avoid placing the same pattern twice in a row within a run
 - Prefer different categories when multiple options exist
 
-- [ ] Implement `selectPatternForRun()` with greedy largest-first strategy
-- [ ] Handle residual beats with `interpolateButton()`
-- [ ] Add patternMemory-based variety tracking
-- [ ] Unit test: exact-fit pattern selected for matching run length
-- [ ] Unit test: largest-fit pattern selected for longer run (e.g., 8-beat run → 4-beat pattern + 4-beat pattern)
-- [ ] Unit test: single-key residual beats handled gracefully
-- [ ] Unit test: patternMemory avoids repeating same pattern consecutively
+- [x] Implement `selectPatternForRun()` with greedy largest-first strategy
+- [x] Handle residual beats with `interpolateButton()`
+- [x] Add patternMemory-based variety tracking
+- [x] Unit test: exact-fit pattern selected for matching run length
+- [x] Unit test: largest-fit pattern selected for longer run (e.g., 8-beat run → 4-beat pattern + 4-beat pattern)
+- [x] Unit test: single-key residual beats handled gracefully
+- [x] Unit test: patternMemory avoids repeating same pattern consecutively
 
 ### Task 1.6: Create `placePatterns()` function
 
