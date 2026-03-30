@@ -330,8 +330,8 @@ Enhance metadata to reflect the new placement strategy:
 - [x] Test: `mappingSources` Map still populated correctly (pitch vs pattern per beat)
 - [x] Test: `mappingPatternIds` Map now shows the same patternId for consecutive beats in the same pattern placement
 - [x] Test: existing `ButtonMappingConfig` options all still work
-- [ ] Test: `pitchInfluenceWeight: 1.0` still produces mostly pitch-derived output
-- [ ] Test: `pitchInfluenceWeight: 0.0` still produces pattern-only output
+- [x] Test: `pitchInfluenceWeight: 1.0` still produces mostly pitch-derived output
+- [x] Test: `pitchInfluenceWeight: 0.0` still produces pattern-only output
 
 ---
 
