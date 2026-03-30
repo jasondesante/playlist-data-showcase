@@ -130,9 +130,9 @@ This function:
 - For each beat, attempts pitch mapping (same transition table logic)
 - Returns `null` for beats with no pitch or `direction === 'none'`
 
-- [ ] Extract pitch lookup + per-beat classification from `mapButtons()` into `classifyBeats()`
-- [ ] Keep all existing pitch mapping logic (DDR_TRANSITIONS, GUITAR_HERO_TRANSITIONS, etc.) unchanged
-- [ ] Unit test: beats with pitch → non-null, beats without → null
+- [x] Extract pitch lookup + per-beat classification from `mapButtons()` into `classifyBeats()`
+- [x] Keep all existing pitch mapping logic (DDR_TRANSITIONS, GUITAR_HERO_TRANSITIONS, etc.) unchanged
+- [x] Unit test: beats with pitch → non-null, beats without → null
 
 ### Task 1.3: Create `identifyPatternRuns()` function
 
