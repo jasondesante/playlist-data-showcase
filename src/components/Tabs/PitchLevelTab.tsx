@@ -27,6 +27,7 @@ import {
     ArrowRight,
     RefreshCw,
     GitBranch,
+    BookOpen,
 } from 'lucide-react';
 import './PitchLevelTab.css';
 import { Card } from '../ui/Card';
@@ -38,6 +39,7 @@ import { LevelGenerationPanel } from '../ui/LevelGenerationPanel';
 import { PitchDetectionPanel } from '../ui/PitchDetectionPanel';
 import { MelodyContourPanel } from '../ui/MelodyContourPanel';
 import { ButtonMappingPanel } from '../ui/ButtonMappingPanel';
+import { PatternLibraryBrowser } from '../ui/PatternLibraryBrowser';
 import { MappingSourceTimeline } from '../ui/MappingSourceTimeline';
 import {
     useGeneratedRhythm,
@@ -46,7 +48,7 @@ import {
     useLevelGenerationProgress,
     useBeatDetectionActions,
 } from '../../store/beatDetectionStore';
-import type { PitchAlgorithm } from '../../types/rhythmGeneration';
+import type { PitchAlgorithm, ControllerMode } from '../../types/rhythmGeneration';
 // Note: useAudioPlayerStore and usePlaylistStore will be imported in future phases
 // when visualization panels with audio sync are implemented
 import { cn } from '../../utils/cn';
@@ -63,6 +65,8 @@ export interface PitchLevelTabProps {
     onProceed?: () => void;
     /** Callback when user wants to switch to manual mode */
     onSwitchToManual?: () => void;
+    /** Controller mode setting from Step 1 */
+    controllerMode?: ControllerMode;
     /** Pitch influence weight setting from Step 1 (0-1) */
     pitchInfluenceWeight?: number;
     /** Voicing threshold setting from Step 1 (0-1) */
@@ -74,7 +78,7 @@ export interface PitchLevelTabProps {
 }
 
 // Section identifiers for accordion behavior
-type SectionId = 'final' | 'pitch' | 'melody' | 'sources' | 'buttons' | null;
+type SectionId = 'final' | 'pitch' | 'melody' | 'sources' | 'buttons' | 'library' | null;
 
 // ============================================================
 // Sub-components
@@ -119,6 +123,8 @@ function PitchLevelError({ error, onRetry, onSwitchToManual }: PitchLevelErrorPr
  */
 interface PitchLevelResultProps {
     onProceed?: () => void;
+    /** Controller mode setting from Step 1 */
+    controllerMode?: ControllerMode;
     /** Pitch influence weight setting from Step 1 (0-1) */
     pitchInfluenceWeight?: number;
     /** Voicing threshold setting from Step 1 (0-1) */
@@ -127,7 +133,7 @@ interface PitchLevelResultProps {
     pitchAlgorithm?: PitchAlgorithm;
 }
 
-function PitchLevelResult({ onProceed, pitchInfluenceWeight, voicingThreshold, pitchAlgorithm }: PitchLevelResultProps) {
+function PitchLevelResult({ onProceed, controllerMode, pitchInfluenceWeight, voicingThreshold, pitchAlgorithm }: PitchLevelResultProps) {
     // Accordion state - default to 'final' expanded
     const [openSection, setOpenSection] = useState<SectionId>('final');
 
@@ -205,6 +211,17 @@ function PitchLevelResult({ onProceed, pitchInfluenceWeight, voicingThreshold, p
                         voicingThreshold={voicingThreshold}
                     />
                 </CollapsibleSection>
+
+                {/* Pattern Library - Reference browser */}
+                <CollapsibleSection
+                    title="Pattern Library"
+                    subtitle="Full pattern reference"
+                    icon={<BookOpen size={18} />}
+                    collapsed={openSection !== 'library'}
+                    onCollapsedChange={() => handleSectionToggle('library')}
+                >
+                    <PatternLibraryBrowser controllerMode={controllerMode ?? 'ddr'} />
+                </CollapsibleSection>
             </div>
 
             {/* Proceed button */}
@@ -255,6 +272,7 @@ export function PitchLevelTab({
     onRetry,
     onProceed,
     onSwitchToManual,
+    controllerMode,
     pitchInfluenceWeight,
     voicingThreshold,
     pitchAlgorithm,
@@ -324,6 +342,7 @@ export function PitchLevelTab({
             return (
                 <PitchLevelResult
                     onProceed={onProceed}
+                    controllerMode={controllerMode}
                     pitchInfluenceWeight={pitchInfluenceWeight}
                     voicingThreshold={voicingThreshold}
                     pitchAlgorithm={pitchAlgorithm}

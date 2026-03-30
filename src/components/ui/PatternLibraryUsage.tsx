@@ -9,7 +9,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Library, ChevronRight } from 'lucide-react';
+import { Library } from 'lucide-react';
 import './PatternLibraryUsage.css';
 import { cn } from '../../utils/cn';
 import type { ControllerMode, DDRButton, GuitarHeroButton } from 'playlist-data-engine';
@@ -34,6 +34,8 @@ export interface PatternLibraryUsageProps {
     showHeader?: boolean;
     /** Maximum number of used patterns to show before "show more" */
     maxVisible?: number;
+    /** Per-beat pattern ID counts derived from chart beats (overrides patternsUsed counting) */
+    patternApplicationCounts?: Map<string, number>;
 }
 
 interface PatternInfo {
@@ -100,9 +102,10 @@ function getPatternDetails(
  */
 function getUsedPatterns(
     patternIds: string[],
-    controllerMode: ControllerMode
+    controllerMode: ControllerMode,
+    applicationCounts?: Map<string, number>
 ): PatternInfo[] {
-    const counts = countPatternUsage(patternIds);
+    const counts = applicationCounts ?? countPatternUsage(patternIds);
     const patterns: PatternInfo[] = [];
 
     for (const [id, count] of counts) {
@@ -131,9 +134,10 @@ function getUsedPatterns(
  */
 function getAllPatterns(
     usedPatternIds: string[],
-    controllerMode: ControllerMode
+    controllerMode: ControllerMode,
+    applicationCounts?: Map<string, number>
 ): PatternInfo[] {
-    const usageCounts = countPatternUsage(usedPatternIds);
+    const usageCounts = applicationCounts ?? countPatternUsage(usedPatternIds);
     const library = controllerMode === 'ddr' ? DDR_PATTERN_LIBRARY : GUITAR_HERO_PATTERN_LIBRARY;
 
     return library.patterns.map(pattern => ({
@@ -145,17 +149,6 @@ function getAllPatterns(
         tags: pattern.tags,
         usageCount: usageCounts.get(pattern.id) ?? 0,
     }));
-}
-
-/**
- * Get all unique categories from a pattern list
- */
-function getCategories(patterns: PatternInfo[]): string[] {
-    const cats = new Set<string>();
-    for (const p of patterns) {
-        cats.add(p.category);
-    }
-    return Array.from(cats).sort();
 }
 
 // ============================================================
@@ -284,32 +277,6 @@ function SummaryBar({ totalUsedPatterns, totalApplications, libraryTotal }: Summ
     );
 }
 
-interface CategorySectionProps {
-    category: string;
-    patterns: PatternInfo[];
-    controllerMode: ControllerMode;
-}
-
-function CategorySection({ category, patterns, controllerMode }: CategorySectionProps) {
-    return (
-        <div className="pattern-category-section">
-            <div className="pattern-category-header">
-                <span className="pattern-category-name">{category}</span>
-                <span className="pattern-category-count">{patterns.length} patterns</span>
-            </div>
-            <div className="pattern-grid">
-                {patterns.map((pattern) => (
-                    <PatternCard
-                        key={pattern.id}
-                        pattern={pattern}
-                        controllerMode={controllerMode}
-                    />
-                ))}
-            </div>
-        </div>
-    );
-}
-
 // ============================================================
 // Main Component
 // ============================================================
@@ -320,27 +287,24 @@ export function PatternLibraryUsage({
     controllerMode,
     showHeader = true,
     maxVisible = 6,
+    patternApplicationCounts,
 }: PatternLibraryUsageProps) {
     // Used patterns sorted by usage count
     const usedPatterns = useMemo(
-        () => getUsedPatterns(patternsUsed, controllerMode),
-        [patternsUsed, controllerMode]
+        () => getUsedPatterns(patternsUsed, controllerMode, patternApplicationCounts),
+        [patternsUsed, controllerMode, patternApplicationCounts]
     );
 
-    // All patterns from the full library
+    // All patterns from the full library (for total count)
     const allPatterns = useMemo(
-        () => getAllPatterns(patternsUsed, controllerMode),
-        [patternsUsed, controllerMode]
-    );
-
-    // All categories for the filter
-    const allCategories = useMemo(
-        () => getCategories(allPatterns),
-        [allPatterns]
+        () => getAllPatterns(patternsUsed, controllerMode, patternApplicationCounts),
+        [patternsUsed, controllerMode, patternApplicationCounts]
     );
 
     // Total applications
-    const totalApplications = patternsUsed.length;
+    const totalApplications = patternApplicationCounts
+        ? Array.from(patternApplicationCounts.values()).reduce((sum, n) => sum + n, 0)
+        : patternsUsed.length;
 
     // Determine visible used patterns
     const visibleUsedPatterns = usedPatterns.slice(0, maxVisible);
@@ -348,46 +312,6 @@ export function PatternLibraryUsage({
 
     // Show-more state for used patterns
     const [showAllUsed, setShowAllUsed] = useState(false);
-
-    // Full library expansion state
-    const [showFullLibrary, setShowFullLibrary] = useState(false);
-
-    // Category filter state
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-    // Filtered library patterns
-    const filteredLibraryPatterns = useMemo(() => {
-        const filtered = selectedCategory
-            ? allPatterns.filter(p => p.category === selectedCategory)
-            : allPatterns;
-        return filtered.sort((a, b) => {
-            // Used patterns first, then unused
-            if (a.usageCount > 0 && b.usageCount === 0) return -1;
-            if (a.usageCount === 0 && b.usageCount > 0) return 1;
-            // Within same usage status, sort by difficulty
-            if (a.usageCount > 0 && b.usageCount > 0) return b.usageCount - a.usageCount;
-            return a.difficulty - b.difficulty;
-        });
-    }, [allPatterns, selectedCategory]);
-
-    // Category counts for the filter
-    const categoryCounts = useMemo(() => {
-        const counts = new Map<string, number>();
-        for (const p of allPatterns) {
-            counts.set(p.category, (counts.get(p.category) ?? 0) + 1);
-        }
-        return counts;
-    }, [allPatterns]);
-
-    // Reset category filter when closing full library
-    const handleToggleFullLibrary = () => {
-        if (showFullLibrary) {
-            setShowFullLibrary(false);
-            setSelectedCategory(null);
-        } else {
-            setShowFullLibrary(true);
-        }
-    };
 
     // Empty state - no patterns at all
     if (patternsUsed.length === 0 && allPatterns.length === 0) {
@@ -470,72 +394,6 @@ export function PatternLibraryUsage({
                                     />
                                 ))}
                             </div>
-                        </div>
-                    )}
-
-                    {/* Full Library Toggle */}
-                    <button
-                        className={cn(
-                            'pattern-library-toggle',
-                            showFullLibrary && 'pattern-library-toggle--open'
-                        )}
-                        onClick={handleToggleFullLibrary}
-                    >
-                        <ChevronRight
-                            size={14}
-                            className={cn('pattern-library-chevron', showFullLibrary && 'pattern-library-chevron--open')}
-                        />
-                        <span className="pattern-library-toggle-text">
-                            {showFullLibrary
-                                ? 'Hide Full Library'
-                                : `Browse All ${allPatterns.length} Patterns`
-                            }
-                        </span>
-                    </button>
-
-                    {/* Full Library (Expandable) */}
-                    {showFullLibrary && (
-                        <div className="pattern-full-library">
-                            {/* Category Filter */}
-                            <div className="pattern-category-filter">
-                                <button
-                                    className={cn(
-                                        'pattern-filter-chip',
-                                        selectedCategory === null && 'pattern-filter-chip--active'
-                                    )}
-                                    onClick={() => setSelectedCategory(null)}
-                                >
-                                    All ({allPatterns.length})
-                                </button>
-                                {allCategories.map((cat) => (
-                                    <button
-                                        key={cat}
-                                        className={cn(
-                                            'pattern-filter-chip',
-                                            selectedCategory === cat && 'pattern-filter-chip--active'
-                                        )}
-                                        onClick={() => setSelectedCategory(cat)}
-                                    >
-                                        {cat} ({categoryCounts.get(cat) ?? 0})
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Patterns grouped by category */}
-                            {(selectedCategory
-                                ? [{ category: selectedCategory, patterns: filteredLibraryPatterns }]
-                                : getCategories(filteredLibraryPatterns).map(cat => ({
-                                    category: cat,
-                                    patterns: filteredLibraryPatterns.filter(p => p.category === cat),
-                                }))
-                            ).map(({ category: cat, patterns: catPatterns }) => (
-                                <CategorySection
-                                    key={cat}
-                                    category={cat}
-                                    patterns={catPatterns}
-                                    controllerMode={controllerMode}
-                                />
-                            ))}
                         </div>
                     )}
                 </>

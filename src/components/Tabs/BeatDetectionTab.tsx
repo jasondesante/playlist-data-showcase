@@ -816,6 +816,7 @@ export function BeatDetectionTab() {
                             }}
                             onProceed={() => setCurrentStep(4)}
                             onSwitchToManual={() => setGenerationMode('manual')}
+                            controllerMode={autoLevelSettings.controllerMode}
                             pitchInfluenceWeight={autoLevelSettings.pitchInfluenceWeight}
                             voicingThreshold={autoLevelSettings.voicingThreshold}
                             pitchAlgorithm={autoLevelSettings.pitchAlgorithm}
