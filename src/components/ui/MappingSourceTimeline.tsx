@@ -704,22 +704,36 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
                                 <span className="mapping-source-tooltip-band-name">{hoveredBeat.beat.sourceBand}</span>
                             </div>
                         )}
-                        {hoveredBeat.mappingSource === 'pattern' && hoveredBeat.patternName ? (
-                            <div className="mapping-source-tooltip-pattern">
-                                <span className="mapping-source-tooltip-pattern-label">Pattern:</span>
-                                <span className="mapping-source-tooltip-pattern-name">{hoveredBeat.patternName}</span>
-                                {hoveredBeat.patternKeys.length > 0 && (
-                                    <span className="mapping-source-tooltip-pattern-keys">
-                                        [{hoveredBeat.patternKeys.join(' ')}]
-                                    </span>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="mapping-source-tooltip-pattern" aria-hidden="true" style={{ visibility: 'hidden' }}>
-                                <span className="mapping-source-tooltip-pattern-label">Pattern:</span>
-                                <span className="mapping-source-tooltip-pattern-name">&nbsp;</span>
-                            </div>
-                        )}
+                        {(() => {
+                            const isPatternWithInfo = hoveredBeat.mappingSource === 'pattern' && hoveredBeat.patternName;
+                            if (!isPatternWithInfo) {
+                                return (
+                                    <div className="mapping-source-tooltip-pattern" aria-hidden="true" style={{ visibility: 'hidden' }}>
+                                        <span className="mapping-source-tooltip-pattern-label">Pattern:</span>
+                                        <span className="mapping-source-tooltip-pattern-name">&nbsp;</span>
+                                    </div>
+                                );
+                            }
+                            const group = beatIndexToGroup.get(hoveredBeat.index);
+                            const posInPattern = group ? (hoveredBeat.index - group.startIdx + 1) : null;
+                            const patternLen = group?.length ?? null;
+                            return (
+                                <div className="mapping-source-tooltip-pattern">
+                                    <span className="mapping-source-tooltip-pattern-label">Pattern:</span>
+                                    <span className="mapping-source-tooltip-pattern-name">{hoveredBeat.patternName}</span>
+                                    {posInPattern !== null && patternLen !== null && patternLen > 1 && (
+                                        <span className="mapping-source-tooltip-pattern-position">
+                                            beat {posInPattern} of {patternLen}
+                                        </span>
+                                    )}
+                                    {hoveredBeat.patternKeys.length > 0 && (
+                                        <span className="mapping-source-tooltip-pattern-keys">
+                                            [{hoveredBeat.patternKeys.join(' ')}]
+                                        </span>
+                                    )}
+                                </div>
+                            );
+                        })()}
                     </div>
                 ) : (
                     <div className="mapping-source-tooltip-content mapping-source-tooltip-skeleton">

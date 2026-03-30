@@ -469,6 +469,12 @@
     font-weight: 500;
 }
 
+.mapping-source-tooltip-pattern-position {
+    color: var(--text-muted, #6a6a7a);
+    font-style: italic;
+    font-size: 0.6875rem;
+}
+
 .mapping-source-tooltip-pattern-keys {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     color: var(--text-muted, #6a6a7a);

@@ -368,7 +368,7 @@ When consecutive beats share the same `patternId`, visually group them:
 - The tooltip should show pattern position: "Clockwise Full Roll (beat 2/4)"
 
 - [x] Add visual grouping for consecutive same-patternId beats — connecting amber line between consecutive same-patternId beat markers, with glow effect on grouped markers; computed via `PatternGroup` detection from `beatsWithSource` and rendered as `mapping-source-pattern-connector` divs in the track
-- [ ] Show pattern position in tooltip (e.g., "beat 2 of 4")
+- [x] Show pattern position in tooltip (e.g., "beat 2 of 4")
 
 ### Task 4.2: Update PatternLibraryUsage counts
 
