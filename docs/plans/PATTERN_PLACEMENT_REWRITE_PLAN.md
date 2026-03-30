@@ -306,10 +306,10 @@ Enhance metadata to reflect the new placement strategy:
 
 ### Task 2.2: Test boundary transitions
 
-- [ ] Test: pattern run followed by pitch beat → last key of pattern transitions smoothly to first pitch key
-- [ ] Test: pitch beat followed by pattern run → first key of pattern transitions smoothly from pitch key
-- [ ] Test: run at song start (no previous key) → pattern starts from neutral position
-- [ ] Test: run at song end (no next key) → pattern doesn't need to consider next
+- [x] Test: pattern run followed by pitch beat → last key of pattern transitions smoothly to first pitch key
+- [x] Test: pitch beat followed by pattern run → first key of pattern transitions smoothly from pitch key
+- [x] Test: run at song start (no previous key) → pattern starts from neutral position
+- [x] Test: run at song end (no next key) → pattern doesn't need to consider next
 
 ### Task 2.3: Test variety and pattern memory
 
