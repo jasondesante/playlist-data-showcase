@@ -188,13 +188,6 @@ export function ChartedBeatMapPreview({
     const baseAnticipationWindow = 2.0;
     const basePastWindow = 4.0;
 
-    // Calculate default zoom so the full song fits in the window
-    const defaultZoom = useMemo(() => {
-        if (trackDuration <= 0) return 0.25;
-        const totalBaseWindow = baseAnticipationWindow + basePastWindow; // 6s at zoom 1
-        return Math.max(0.03, totalBaseWindow / trackDuration);
-    }, [trackDuration]);
-
     const [zoomLevel, setZoomLevel] = useState(0.1);
     // Calculate windows based on zoom (higher zoom = smaller windows = more detail)
     const anticipationWindow = baseAnticipationWindow / zoomLevel;

@@ -1,27 +1,14 @@
 /**
  * GuitarHeroModeVisualization Styles
  *
- * Fretboard-style visualization for Guitar Hero button mapping (Task 6.4).
- * Features:
- * - 5 horizontal lanes (frets 1-5)
- * - Beats appearing as notes moving from right to left
- * - Pitch range indicators per fret
- * - Current beat highlight synced with audio
- * - Collapsible/expandable view
- *
- * Color scheme for Guitar Hero frets:
- * - Fret 1 (lowest): Red (#ef4444)
- * - Fret 2: Orange (#f97316)
- * - Fret 3: Yellow (#eab308)
- * - Fret 4: Green (#22c55e)
- * - Fret 5 (highest): Blue (#3b82f6)
+ * 5 fret lanes that light up in sync with the chart during playback.
  */
 
 /* ============================================
-   MAIN CONTAINER
+   LAYOUT
    ============================================ */
 
-.gh-visualization {
+.gh-viz {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -29,329 +16,160 @@
     border-radius: 8px;
     border: 1px solid var(--border-color, #2a2a4a);
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 0.75rem;
 }
 
-.gh-visualization--empty {
+.gh-viz--empty {
     align-items: center;
-    text-align: center;
-    min-height: 150px;
+    justify-content: center;
+    min-height: 80px;
 }
 
-/* ============================================
-   PANEL
-   ============================================ */
-
-.gh-visualization-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
-}
-
-.gh-visualization-panel-icon {
-    color: hsl(var(--primary));
-    flex-shrink: 0;
-}
-
-.gh-visualization-panel-title {
-    margin: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-primary, #e0e0e0);
-}
-
-.gh-visualization-mode-badge {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.625rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-radius: 4px;
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-/* ============================================
-   HEADER
-   ============================================ */
-
-.gh-visualization-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color, #2a2a4a);
-}
-
-.gh-visualization-toggle {
-    margin-left: auto;
-    padding: 0.25rem 0.5rem;
-    background: transparent;
-    border: 1px solid var(--border-color, #2a2a4a);
-    border-radius: 4px;
-    color: var(--text-secondary, #a0a0b0);
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.gh-visualization-toggle:hover {
-    background: var(--bg-tertiary, #0f0f1a);
-    border-color: hsl(var(--primary));
-}
-
-.gh-visualization-collapsed-hint {
-    padding: 0.5rem;
+.gh-viz--empty p {
     font-size: 0.75rem;
     color: var(--text-muted, #6a6a7a);
-    text-align: center;
 }
 
 /* ============================================
    FRETBOARD
    ============================================ */
 
-.gh-visualization-fretboard {
-    position: relative;
-    background: linear-gradient(180deg,
-        rgba(15, 15, 26, 0.9) 0%,
-        rgba(10, 10, 20, 0.95) 100%
-    );
-    border-radius: 6px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-}
-
-.gh-visualization-fretboard--disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* ============================================
-   FRET LANES
-   ============================================ */
-
-.gh-visualization-lane {
-    position: absolute;
-    left: 0;
-    right: 0;
-    border-bottom: 1px solid;
-    opacity: 0.3;
-    transition: opacity 0.2s ease, background 0.2s ease;
-}
-
-.gh-visualization-lane--active {
-    opacity: 0.6;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.05) 45%,
-        rgba(255, 255, 255, 0.1) 50%,
-        rgba(255, 255, 255, 0.05) 55%,
-        transparent 100%
-    );
-}
-
-.gh-visualization-fret-indicator {
-    position: absolute;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    color: #000;
-    opacity: 0.8;
-}
-
-.gh-visualization-pitch-range {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.5625rem;
-    color: var(--text-muted, #6a6a7a);
-    opacity: 0.6;
-    white-space: nowrap;
-}
-
-/* ============================================
-   NOW LINE (STRIKE LINE)
-   ============================================ */
-
-.gh-visualization-now-line {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    transform: translateX(-50%);
-    z-index: 10;
-    pointer-events: none;
-}
-
-.gh-visualization-now-line-inner {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(180deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.8) 20%,
-        #fff 50%,
-        rgba(255, 255, 255, 0.8) 80%,
-        transparent 100%
-    );
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-}
-
-/* ============================================
-   BEAT MARKERS
-   ============================================ */
-
-.gh-visualization-beat-marker {
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.1s ease, opacity 0.15s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    z-index: 5;
-}
-
-.gh-visualization-beat-marker-inner {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #000;
-    text-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
-}
-
-.gh-visualization-beat-marker:hover {
-    transform: translate(-50%, -50%) scale(1.15);
-    filter: brightness(1.2);
-}
-
-.gh-visualization-beat-marker--current {
-    transform: translate(-50%, -50%) scale(1.2);
-    box-shadow: 0 0 20px currentColor, 0 2px 8px rgba(0, 0, 0, 0.3);
-    animation: gh-beat-pulse 0.3s ease-in-out;
-}
-
-.gh-visualization-beat-marker--next {
-    opacity: 0.8;
-}
-
-.gh-visualization-beat-marker--past {
-    opacity: 0.3;
-    transform: translate(-50%, -50%) scale(0.8);
-}
-
-.gh-visualization-beat-marker--selected {
-    border: 3px solid #fff !important;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-}
-
-.gh-visualization-beat-marker--hovered {
-    transform: translate(-50%, -50%) scale(1.2);
-    filter: brightness(1.3);
-}
-
-@keyframes gh-beat-pulse {
-    0%, 100% {
-        transform: translate(-50%, -50%) scale(1.2);
-    }
-    50% {
-        transform: translate(-50%, -50%) scale(1.3);
-    }
-}
-
-/* ============================================
-   SEQUENCE PREVIEW
-   ============================================ */
-
-.gh-visualization-sequence {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: var(--bg-tertiary, #0f0f1a);
-    border-radius: 4px;
-    flex-wrap: wrap;
-}
-
-.gh-visualization-sequence-label {
-    font-size: 0.6875rem;
-    color: var(--text-muted, #6a6a7a);
-    margin-right: 0.25rem;
-}
-
-.gh-visualization-sequence-beats {
-    display: flex;
-    gap: 0.375rem;
-    flex-wrap: wrap;
-}
-
-.gh-visualization-sequence-beat {
+.gh-fretboard {
     display: flex;
     flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+/* ============================================
+   FRET LANE
+   ============================================ */
+
+.gh-lane {
+    position: relative;
+    height: 32px;
+    border-radius: 6px;
+    border: 2px solid;
+    display: flex;
     align-items: center;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    padding: 0.25rem 0.375rem;
-    background: var(--bg-secondary, #12121f);
-    border: 1px solid;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.15s ease;
+    justify-content: center;
+    cursor: default;
+    overflow: hidden;
+    transition: background 0.08s ease-out, border-color 0.08s ease-out, box-shadow 0.08s ease-out;
 }
 
-.gh-visualization-sequence-beat:hover {
-    background: var(--bg-tertiary, #0f0f1a);
-    transform: scale(1.05);
+.gh-lane__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    opacity: 0.35;
+    transition: opacity 0.08s ease-out, color 0.08s ease-out;
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+    user-select: none;
 }
 
-.gh-visualization-sequence-note {
-    font-size: 0.5rem;
-    color: var(--text-muted, #6a6a7a);
-    margin-top: 0.125rem;
+/* ============================================
+   FRET COLORS
+   ============================================ */
+
+.gh-lane--1 {
+    --fret-color: #ef4444;
+    border-color: color-mix(in srgb, #ef4444 30%, transparent);
+    background: rgba(255, 255, 255, 0.02);
+    color: #ef4444;
 }
 
-.gh-visualization-sequence-beat--current {
-    background: hsl(var(--primary));
-    color: white;
-    border-color: hsl(var(--primary));
-    transform: scale(1.1);
+.gh-lane--2 {
+    --fret-color: #f97316;
+    border-color: color-mix(in srgb, #f97316 30%, transparent);
+    background: rgba(255, 255, 255, 0.02);
+    color: #f97316;
 }
 
-.gh-visualization-sequence-beat--current .gh-visualization-sequence-note {
-    color: rgba(255, 255, 255, 0.7);
+.gh-lane--3 {
+    --fret-color: #eab308;
+    border-color: color-mix(in srgb, #eab308 30%, transparent);
+    background: rgba(255, 255, 255, 0.02);
+    color: #eab308;
 }
 
-.gh-visualization-sequence-beat--next {
-    border-width: 2px;
+.gh-lane--4 {
+    --fret-color: #22c55e;
+    border-color: color-mix(in srgb, #22c55e 30%, transparent);
+    background: rgba(255, 255, 255, 0.02);
+    color: #22c55e;
+}
+
+.gh-lane--5 {
+    --fret-color: #3b82f6;
+    border-color: color-mix(in srgb, #3b82f6 30%, transparent);
+    background: rgba(255, 255, 255, 0.02);
+    color: #3b82f6;
+}
+
+/* ============================================
+   ACTIVE STATE (beat is hitting)
+   ============================================ */
+
+.gh-lane--active {
+    background: var(--fret-color);
+    border-color: var(--fret-color);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--fret-color) 50%, transparent),
+                0 0 32px color-mix(in srgb, var(--fret-color) 25%, transparent),
+                inset 0 0 12px rgba(255, 255, 255, 0.15);
+}
+
+.gh-lane--active .gh-lane__label {
+    color: #000;
+    opacity: 1;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+}
+
+/* ============================================
+   FADE STATE (recently hit, cooling down)
+   ============================================ */
+
+.gh-lane--fade {
+    background: color-mix(in srgb, var(--fret-color) 12%, transparent);
+    border-color: color-mix(in srgb, var(--fret-color) 40%, transparent);
+}
+
+.gh-lane--fade .gh-lane__label {
+    opacity: 0.6;
+}
+
+/* ============================================
+   FLASH OVERLAY
+   ============================================ */
+
+.gh-lane__flash {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(255,255,255,0.5) 0%, transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.05s ease-out;
+}
+
+.gh-lane--active .gh-lane__flash {
+    opacity: 1;
 }
 
 /* ============================================
    CONTROLS
    ============================================ */
 
-.gh-visualization-controls {
+.gh-viz-controls {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    background: var(--bg-tertiary, #0f0f1a);
+    width: 100%;
+    padding-top: 0.5rem;
     border-top: 1px solid var(--border-color, #2a2a4a);
 }
 
-.gh-visualization-play-btn {
+.gh-viz-play {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -363,156 +181,38 @@
     border-radius: 4px;
     color: white;
     cursor: pointer;
-    transition: background 0.15s ease, transform 0.1s ease;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
 }
 
-.gh-visualization-play-btn:hover:not(:disabled) {
+.gh-viz-play:hover:not(:disabled) {
     background: hsl(var(--primary) / 0.8);
 }
 
-.gh-visualization-play-btn:active:not(:disabled) {
-    transform: scale(0.95);
-}
-
-.gh-visualization-play-btn:disabled {
+.gh-viz-play:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.gh-visualization-time {
+.gh-viz-time {
     font-size: 0.75rem;
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     color: var(--text-secondary, #a0a0b0);
-}
-
-.gh-visualization-info {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    margin-left: auto;
-    font-size: 0.6875rem;
-    color: var(--text-muted, #6a6a7a);
-}
-
-/* ============================================
-   TOOLTIP
-   ============================================ */
-
-.gh-visualization-tooltip {
-    position: relative;
-    padding: 0.5rem 0.75rem;
-    background: var(--bg-tertiary, #0f0f1a);
-    border-top: 1px solid var(--border-color, #2a2a4a);
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-}
-
-.gh-visualization-tooltip-fret {
-    font-weight: 600;
-}
-
-.gh-visualization-tooltip-time {
-    color: var(--text-muted, #6a6a7a);
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-}
-
-.gh-visualization-tooltip-note {
-    padding: 0.125rem 0.375rem;
-    background: var(--bg-secondary, #12121f);
-    border-radius: 3px;
-    font-size: 0.625rem;
-    font-weight: 500;
-}
-
-.gh-visualization-tooltip-direction {
-    margin-left: 0.25rem;
-    padding: 0.125rem 0.25rem;
-    border-radius: 3px;
-    font-size: 0.625rem;
-    font-weight: 500;
-}
-
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-
-@media (max-width: 640px) {
-    .gh-visualization-fretboard {
-        height: 180px !important;
-    }
-
-    .gh-visualization-sequence {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .gh-visualization-pitch-range {
-        display: none;
-    }
-
-    .gh-visualization-beat-marker {
-        width: 20px;
-        height: 20px;
-    }
-
-    .gh-visualization-beat-marker-inner {
-        font-size: 0.625rem;
-    }
 }
 
 /* ============================================
    ACCESSIBILITY
    ============================================ */
 
-.gh-visualization-fretboard:focus {
-    outline: 2px solid hsl(var(--primary)) inset;
-    outline-offset: 2px;
-}
-
-.gh-visualization-toggle:focus {
+.gh-viz-play:focus-visible {
     outline: 2px solid hsl(var(--primary));
     outline-offset: 2px;
 }
 
-.gh-visualization-play-btn:focus {
-    outline: 2px solid hsl(var(--primary));
-    outline-offset: 2px;
-}
-
-.gh-visualization-beat-marker:focus {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
-}
-
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-    .gh-visualization-beat-marker,
-    .gh-visualization-sequence-beat {
+    .gh-lane,
+    .gh-lane__label,
+    .gh-lane__flash {
         transition: none;
-    }
-
-    @keyframes gh-beat-pulse {
-        0%, 100% {
-            transform: translate(-50%, -50%) scale(1.2);
-        }
-    }
-}
-
-/* High contrast */
-@media (prefers-contrast: more) {
-    .gh-visualization-lane {
-        opacity: 0.5;
-        border-width: 2px;
-    }
-
-    .gh-visualization-beat-marker {
-        border: 2px solid currentColor;
-    }
-
-    .gh-visualization-now-line-inner {
-        background: #fff;
     }
 }

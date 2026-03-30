@@ -245,7 +245,6 @@ export function PitchDetectionPanel({ className, voicingThreshold = 0.2, pitchAl
         setSelectedPitch({
             beatIndex: pitch.beatIndex,
             timestamp: pitch.timestamp,
-            band: pitch.band as any,
             pitch: pitch.pitch,
             direction: pitch.direction,
             intervalFromPrevious: pitch.intervalFromPrevious,
@@ -319,7 +318,6 @@ export function PitchDetectionPanel({ className, voicingThreshold = 0.2, pitchAl
                     </h4>
                     <PitchTimeline
                         pitches={compositePitches}
-                        band="mid"
                         onPitchClick={handleSelectPitch}
                         selectedPitchIndex={selectedPitch?.beatIndex}
                         anticipationWindow={3.0}
@@ -331,7 +329,6 @@ export function PitchDetectionPanel({ className, voicingThreshold = 0.2, pitchAl
             {/* Side Panel - Pitch Inspector */}
             <PitchInspector
                 selectedPitch={selectedPitch}
-                selectedBand="mid"
             />
         </div>
     );

@@ -1,297 +1,175 @@
 /**
  * DDRModeVisualization Styles
  *
- * Circular motion visualization for DDR button mapping (Task 6.3).
- * Features:
- * - Circular layout with 4 DDR buttons
- * - Button sequence as path showing motion direction
- * - Clockwise/counter-clockwise motion indicators
- * - Current beat highlight synced with audio
- * - Collapsible/expandable view
- *
- * Color scheme for DDR buttons:
- * - Up: Yellow (#eab308)
- * - Down: Blue (#3b82f6)
- * - Left: Purple (#a855f7)
- * - Right: Green (#22c55e)
+ * Simple DDR pad visualization: 4 arrow buttons in a cross layout
+ * that light up in sync with the chart during audio playback.
  */
 
 /* ============================================
-   MAIN CONTAINER
+   LAYOUT
    ============================================ */
 
-.ddr-visualization {
+.ddr-viz {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 0.75rem;
     background: var(--card-bg, #1a1a2e);
     border-radius: 8px;
     border: 1px solid var(--border-color, #2a2a4a);
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 0.75rem;
 }
 
-.ddr-visualization--empty {
+.ddr-viz--empty {
     align-items: center;
-    text-align: center;
-    min-height: 150px;
+    justify-content: center;
+    min-height: 80px;
 }
 
-/* ============================================
-   PANEL
-   ============================================ */
-
-.ddr-visualization-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
-}
-
-.ddr-visualization-panel-icon {
-    color: hsl(var(--primary));
-    flex-shrink: 0;
-}
-
-.ddr-visualization-panel-title {
-    margin: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-primary, #e0e0e0);
-}
-
-.ddr-visualization-mode-badge {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.625rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-radius: 4px;
-    background: rgba(234, 179, 8, 0.15);
-    color: #eab308;
-    border: 1px solid rgba(234, 179, 8, 0.3);
-}
-
-/* ============================================
-   HEADER
-   ============================================ */
-
-.ddr-visualization-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color, #2a2a4a);
-}
-
-.ddr-visualization-toggle {
-    margin-left: auto;
-    padding: 0.25rem 0.5rem;
-    background: transparent;
-    border: 1px solid var(--border-color, #2a2a4a);
-    border-radius: 4px;
-    color: var(--text-secondary, #a0a0b0);
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.ddr-visualization-toggle:hover {
-    background: var(--bg-tertiary, #0f0f1a);
-    border-color: hsl(var(--primary));
-}
-
-.ddr-visualization-collapsed-hint {
-    padding: 0.5rem;
+.ddr-viz--empty p {
     font-size: 0.75rem;
     color: var(--text-muted, #6a6a7a);
-    text-align: center;
 }
 
 /* ============================================
-   SVG
+   PAD GRID (cross / + layout)
    ============================================ */
 
-.ddr-visualization-svg {
-    width: 100%;
-    max-width: 300px;
-    height: auto;
-    cursor: pointer;
-    transition: opacity 0.2s ease;
+.ddr-pad {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 6px;
+    width: 140px;
+    height: 160px;
 }
 
-.ddr-visualization-svg--disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+/* Up arrow spans full top row */
+.ddr-pad-cell--up {
+    grid-column: 1 / 3;
+    grid-row: 1;
 }
 
-/* Center circle */
-.ddr-visualization-center {
-    fill: transparent;
-    stroke: var(--border-color, #2a2a4a);
-    stroke-width: 1px;
-    transition: all 0.15s ease;
-    cursor: pointer;
+.ddr-pad-cell--left {
+    grid-column: 1;
+    grid-row: 2;
 }
 
-.ddr-visualization-center:hover {
-    fill: var(--bg-tertiary, #0f0f1a);
+.ddr-pad-cell--right {
+    grid-column: 2;
+    grid-row: 2;
 }
 
-.ddr-visualization-center-text {
-    fill: var(--text-primary, #e0e0e0);
-    font-size: 14px;
-    font-weight: bold;
-    pointer-events: none;
-    user-select: none;
+/* Down arrow spans full bottom row */
+.ddr-pad-cell--down {
+    grid-column: 1 / 3;
+    grid-row: 3;
 }
 
 /* ============================================
-   BUTTON POSITIONS
+   INDIVIDUAL BUTTON
    ============================================ */
 
-.ddr-visualization-button {
-    transition: all 0.2s ease;
-}
-
-.ddr-visualization-button-bg {
-    transition: all 0.2s ease;
-}
-
-.ddr-visualization-button-icon {
+.ddr-btn {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 8px;
+    border: 2px solid;
+    background: rgba(255, 255, 255, 0.02);
+    cursor: default;
+    transition: background 0.08s ease-out, border-color 0.08s ease-out, box-shadow 0.08s ease-out;
+    overflow: hidden;
 }
 
-.ddr-visualization-button--active .ddr-visualization-button-bg {
-    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
-}
-
- /* ============================================
-   ARC PATHS
-   ============================================ */
-
-.ddr-visualization-arc {
-    stroke-width: 2px;
-    stroke-dasharray: 4 2;
-    opacity: 0.4;
-    transition: opacity 0.2s ease,}
-
-.ddr-visualization-arc--clockwise {
-    stroke: #22c55e;
-}
-
-.ddr-visualization-arc--counter {
-    stroke: #3b82f6;
-}
-
-.ddr-visualization-arc--past {
-    opacity: 0.2;
-}
-
- /* ============================================
-   BEAT MARKERS
-   ============================================ */
-
-.ddr-visualization-beat-marker {
-    transition: all 0.15s ease;
-    cursor: pointer;
-}
-
-.ddr-visualization-beat-marker:hover {
-    filter: brightness(1.2);
-}
-
-.ddr-visualization-beat-marker--current {
-    animation: ddr-beat-pulse 0.3s ease-in-out;
-}
-
-.ddr-visualization-beat-marker--next {
-    opacity: 0.7;
-}
-
-.ddr-visualization-beat-marker--selected {
-    stroke: #fff !important;
-    stroke-width: 3px !important;
-}
-
-.ddr-visualization-beat-marker--hovered {
-    filter: brightness(1.3);
-    transform: scale(1.2);
-}
-
-@keyframes ddr-beat-pulse {
-    0%, 50% {
-        transform: scale(1);
-    }
-    100% {
-        transform: scale(1);
-    }
+.ddr-btn__icon {
+    color: var(--btn-color);
+    opacity: 0.35;
+    transition: opacity 0.08s ease-out;
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
 }
 
 /* ============================================
-   SEQUENCE PREVIEW
+   ACTIVE STATE (beat is hitting)
    ============================================ */
 
-.ddr-visualization-sequence {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: var(--bg-tertiary, #0f0f1a);
-    border-radius: 4px;
-    flex-wrap: wrap;
+.ddr-btn--active {
+    background: var(--btn-color);
+    border-color: var(--btn-color);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--btn-color) 50%, transparent),
+                0 0 40px color-mix(in srgb, var(--btn-color) 25%, transparent),
+                inset 0 0 12px rgba(255, 255, 255, 0.15);
 }
 
-.ddr-visualization-sequence-label {
-    font-size: 0.6875rem;
-    color: var(--text-muted, #6a6a7a);
-    margin-right: 0.25rem;
+.ddr-btn--active .ddr-btn__icon {
+    color: #000;
+    opacity: 1;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
 }
 
-.ddr-visualization-sequence-beats {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.ddr-visualization-sequence-beat {
-    font-size: 0.75rem;
-    font-weight: 500;
-    padding: 0.25rem 0.5rem;
-    background: var(--bg-secondary, #12121f);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.ddr-visualization-sequence-beat:hover {
-    background: var(--bg-tertiary, #0f0f1a);
-}
-
-.ddr-visualization-sequence-beat--current {
-    background: hsl(var(--primary));
-    color: white;
-    transform: scale(1.1);
-}
-
-.ddr-visualization-sequence-beat--next {
-    border: 2px solid hsl(var(--primary));
-}
-
- /* ============================================
-   CONTROLS
+/* ============================================
+   FADE STATE (recently hit, cooling down)
    ============================================ */
 
-.ddr-visualization-controls {
+.ddr-btn--fade {
+    background: color-mix(in srgb, var(--btn-color) 12%, transparent);
+    border-color: color-mix(in srgb, var(--btn-color) 40%, transparent);
+}
+
+.ddr-btn--fade .ddr-btn__icon {
+    opacity: 0.6;
+}
+
+/* ============================================
+   BUTTON COLORS (set via CSS custom property)
+   ============================================ */
+
+.ddr-btn--up    { --btn-color: #eab308; border-color: color-mix(in srgb, #eab308 35%, transparent); }
+.ddr-btn--down  { --btn-color: #3b82f6; border-color: color-mix(in srgb, #3b82f6 35%, transparent); }
+.ddr-btn--left  { --btn-color: #a855f7; border-color: color-mix(in srgb, #a855f7 35%, transparent); }
+.ddr-btn--right { --btn-color: #22c55e; border-color: color-mix(in srgb, #22c55e 35%, transparent); }
+
+.ddr-btn--up.ddr-btn--active    { border-color: #eab308; }
+.ddr-btn--down.ddr-btn--active  { border-color: #3b82f6; }
+.ddr-btn--left.ddr-btn--active  { border-color: #a855f7; }
+.ddr-btn--right.ddr-btn--active { border-color: #22c55e; }
+
+/* ============================================
+   FLASH OVERLAY (radial burst on hit)
+   ============================================ */
+
+.ddr-btn__flash {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.05s ease-out;
+}
+
+.ddr-btn--active .ddr-btn__flash {
+    opacity: 1;
+}
+
+/* ============================================
+   CONTROLS BAR
+   ============================================ */
+
+.ddr-viz-controls {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    background: var(--bg-tertiary, #0f0f1a);
+    width: 100%;
+    padding-top: 0.5rem;
     border-top: 1px solid var(--border-color, #2a2a4a);
 }
 
-.ddr-visualization-play-btn {
+.ddr-viz-play {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -303,118 +181,38 @@
     border-radius: 4px;
     color: white;
     cursor: pointer;
-    transition: background 0.15s ease, transform 0.1s ease;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
 }
 
-.ddr-visualization-play-btn:hover:not(:disabled) {
+.ddr-viz-play:hover:not(:disabled) {
     background: hsl(var(--primary) / 0.8);
 }
 
-.ddr-visualization-play-btn:active:not(:disabled) {
-    transform: scale(0.95);
-}
-
-.ddr-visualization-play-btn:disabled {
+.ddr-viz-play:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.ddr-visualization-time {
+.ddr-viz-time {
     font-size: 0.75rem;
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     color: var(--text-secondary, #a0a0b0);
 }
 
- /* ============================================
-   TOOLTIP
-   ============================================ */
-
-.ddr-visualization-tooltip {
-    position: relative;
-    padding: 0.5rem 0.75rem;
-    background: var(--bg-tertiary, #0f0f1a);
-    border-top: 1px solid var(--border-color, #2a2a4a);
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-}
-
-.ddr-visualization-tooltip-button {
-    font-weight: 600;
-    text-transform: capitalize;
-}
-
-.ddr-visualization-tooltip-time {
-    color: var(--text-muted, #6a6a7a);
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-}
-
-.ddr-visualization-tooltip-direction {
-    margin-left: 0.25rem;
-    padding: 0.125rem 0.25rem;
-    border-radius: 3px;
-    font-size: 0.625rem;
-    font-weight: 500;
-}
-
- /* ============================================
-   RESPONSIVE
-   ============================================ */
-
-@media (max-width: 640px) {
-    .ddr-visualization-svg {
-        max-width: 250px;
-    }
-
-    .ddr-visualization-sequence {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
- /* ============================================
+/* ============================================
    ACCESSIBILITY
    ============================================ */
 
-.ddr-visualization-svg:focus {
-    outline: 2px solid hsl(var(--primary)) inset;
-    outline-offset: 2px;
-}
-
-.ddr-visualization-toggle:focus {
+.ddr-viz-play:focus-visible {
     outline: 2px solid hsl(var(--primary));
     outline-offset: 2px;
 }
 
-.ddr-visualization-play-btn:focus {
-    outline: 2px solid hsl(var(--primary));
-    outline-offset: 2px;
-}
-
- /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-    .ddr-visualization-beat-marker,
-    .ddr-visualization-arc,
-    .ddr-visualization-sequence-beat {
+    .ddr-btn,
+    .ddr-btn__icon,
+    .ddr-btn__flash {
         transition: none;
-    }
-
-    @keyframes ddr-beat-pulse {
-        0%, 100% {
-            transform: scale(1);
-        }
-    }
-}
-
- /* High contrast */
-@media (prefers-contrast: more) {
-    .ddr-visualization-button-bg {
-        stroke-width: 3px;
-    }
-
-    .ddr-visualization-arc {
-        stroke-width: 2px;
     }
 }

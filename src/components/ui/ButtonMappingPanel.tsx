@@ -13,7 +13,7 @@
  * Task 6.1: Create ButtonMappingPanel Component
  */
 
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo } from 'react';
 import { Gamepad2 } from 'lucide-react';
 import './ButtonMappingPanel.css';
 import { cn } from '../../utils/cn';
@@ -89,14 +89,14 @@ function getButtonMappingData(level: GeneratedLevel | undefined | null): {
 
     if (level.chart?.beats) {
         level.chart.beats.forEach((beat: any, index: number) => {
-            if (beat.key) {
-                buttonDistribution.set(beat.key, (buttonDistribution.get(beat.key) ?? 0) + 1);
+            if (beat.requiredKey) {
+                buttonDistribution.set(beat.requiredKey, (buttonDistribution.get(beat.requiredKey) ?? 0) + 1);
 
                 // Create InternalBeat for visualizations
                 buttonBeats.push({
                     timestamp: beat.timestamp,
                     beatIndex: beat.beatIndex ?? index,
-                    key: beat.key,
+                    key: beat.requiredKey,
                     isPitchInfluenced: beat.isPitchInfluenced ?? undefined,
                 });
             }
@@ -181,26 +181,12 @@ export function ButtonMappingPanel({ className, pitchInfluenceWeight, voicingThr
     const allDifficulties = useAllDifficultyLevels();
     const selectedDifficulty = useSelectedDifficulty();
 
-    // Selected beat state for timeline interaction
-    const [selectedBeatIndex, setSelectedBeatIndex] = useState<number | undefined>(undefined);
-
     // Get button mapping data from the selected difficulty level
     const mappingData = useMemo(() => {
         const levels = allDifficulties as AllDifficultiesWithNatural | null;
         const level = levels?.[selectedDifficulty as keyof AllDifficultiesWithNatural] as GeneratedLevel | undefined;
         return getButtonMappingData(level);
     }, [allDifficulties, selectedDifficulty]);
-
-    // Handle beat click
-    const handleDDRBeatClick = useCallback((beat: DDRVisualizationBeat) => {
-        setSelectedBeatIndex(beat.beatIndex);
-        // Could also seek to beat timestamp here if desired
-    }, []);
-
-    const handleGuitarHeroBeatClick = useCallback((beat: GuitarHeroVisualizationBeat) => {
-        setSelectedBeatIndex(beat.beatIndex);
-        // Could also seek to beat timestamp here if desired
-    }, []);
 
     // Don't render if no button mapping data available
     if (!mappingData) {
@@ -274,13 +260,6 @@ export function ButtonMappingPanel({ className, pitchInfluenceWeight, voicingThr
 
             {/* Secondary Visualization - Task 6.3 & 6.4 */}
             <div className="button-secondary-section">
-                <h4 className="button-secondary-title">Secondary Visualization</h4>
-                <p className="button-secondary-description">
-                    {mappingData.controllerMode === 'ddr'
-                        ? 'Circular motion representation showing button sequence progression'
-                        : 'Fretboard-style visualization showing 5 lanes with notes'
-                    }
-                </p>
                 {mappingData.controllerMode === 'ddr' ? (
                     <DDRModeVisualization
                         beats={mappingData.buttonBeats.map((beat): DDRVisualizationBeat => ({
@@ -289,9 +268,6 @@ export function ButtonMappingPanel({ className, pitchInfluenceWeight, voicingThr
                             key: beat.key as 'up' | 'down' | 'left' | 'right',
                             isPitchInfluenced: beat.isPitchInfluenced,
                         }))}
-                        onBeatClick={handleDDRBeatClick}
-                        selectedBeatIndex={selectedBeatIndex}
-                        defaultCollapsed={true}
                     />
                 ) : (
                     <GuitarHeroModeVisualization
@@ -301,9 +277,6 @@ export function ButtonMappingPanel({ className, pitchInfluenceWeight, voicingThr
                             key: beat.key as '1' | '2' | '3' | '4' | '5',
                             isPitchInfluenced: beat.isPitchInfluenced,
                         }))}
-                        onBeatClick={handleGuitarHeroBeatClick}
-                        selectedBeatIndex={selectedBeatIndex}
-                        defaultCollapsed={true}
                     />
                 )}
             </div>

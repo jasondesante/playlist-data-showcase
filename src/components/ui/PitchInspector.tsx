@@ -24,17 +24,12 @@ import type { PitchResult, IntervalCategory } from '../../types/levelGeneration'
 // Types
 // ============================================================
 
-/** Band name type */
-export type PitchBandName = 'low' | 'mid' | 'high';
-
 /** Selected pitch data for the inspector */
 export interface SelectedPitchData {
     /** Beat index in the stream */
     beatIndex: number;
     /** Timestamp in seconds */
     timestamp: number;
-    /** Which band this pitch belongs to */
-    band: PitchBandName;
     /** The pitch result (null if no pitch detected) */
     pitch: PitchResult | null;
     /** Direction of pitch change from previous beat */
@@ -48,8 +43,6 @@ export interface SelectedPitchData {
 export interface PitchInspectorProps {
     /** The currently selected pitch (null if none selected) */
     selectedPitch: SelectedPitchData | null;
-    /** The currently selected band for context */
-    selectedBand: PitchBandName;
     /** Additional CSS class names */
     className?: string;
 }
@@ -57,13 +50,6 @@ export interface PitchInspectorProps {
 // ============================================================
 // Constants
 // ============================================================
-
-/** Band configuration for display */
-const BAND_CONFIGS: Record<PitchBandName, { label: string; color: string }> = {
-    low: { label: 'Low', color: 'blue' },
-    mid: { label: 'Mid', color: 'green' },
-    high: { label: 'High', color: 'orange' },
-};
 
 /** Interval category display names and descriptions */
 const INTERVAL_CATEGORY_INFO: Record<IntervalCategory, { label: string; description: string }> = {
@@ -116,11 +102,8 @@ function formatTimestampPrecise(seconds: number): string {
 
 export function PitchInspector({
     selectedPitch,
-    selectedBand,
     className,
 }: PitchInspectorProps) {
-    const bandConfig = BAND_CONFIGS[selectedBand];
-
     // Empty state - no pitch selected
     if (!selectedPitch) {
         return (
@@ -133,10 +116,6 @@ export function PitchInspector({
                     <p className="pitch-inspector__placeholder">
                         Click on a pitch in the timeline to view details
                     </p>
-                    <div className="pitch-inspector__band-indicator">
-                        <span className={cn('pitch-inspector__band-dot', `pitch-inspector__band-dot--${selectedBand}`)} />
-                        <span>Viewing {bandConfig.label} band</span>
-                    </div>
                 </div>
             </div>
         );

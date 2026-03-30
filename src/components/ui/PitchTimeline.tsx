@@ -28,8 +28,8 @@ import type { PitchAtBeat, PitchResult } from '../../types/levelGeneration';
 export interface PitchTimelineProps {
     /** Array of pitch data linked to beats */
     pitches: PitchAtBeat[];
-    /** The band being displayed (affects color) */
-    band: 'low' | 'mid' | 'high';
+    /** The band being displayed (affects color). Deprecated: pitch detection is now full-spectrum. */
+    band?: 'low' | 'mid' | 'high';
     /** Callback when a pitch is clicked for inspection */
     onPitchClick?: (pitch: PitchAtBeat) => void;
     /** The index of the currently selected pitch (for visual highlight) */
@@ -455,7 +455,7 @@ export function PitchTimeline({
     }, [showMidiNumbers]);
 
     // Band color
-    const bandColor = BAND_COLORS[band] || BAND_COLORS.mid;
+    const bandColor = band ? BAND_COLORS[band] : BAND_COLORS.mid;
 
     // Empty state
     if (pitches.length === 0) {

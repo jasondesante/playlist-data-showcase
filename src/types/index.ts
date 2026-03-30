@@ -1505,8 +1505,6 @@ export type {
     PitchDetectorConfig,
     // Pitch-Beat Linker Types
     PitchAtBeat,
-    BandPitchAtBeat,
-    LinkedPitchAnalysis,
     PitchDirection,
     IntervalCategory,
     // Button Mapping Types

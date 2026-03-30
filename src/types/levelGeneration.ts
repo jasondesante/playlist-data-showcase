@@ -31,10 +31,6 @@ export type {
 export type {
     /** Pitch information linked to a beat timestamp */
     PitchAtBeat,
-    /** Pitch information for a specific frequency band at a beat */
-    BandPitchAtBeat,
-    /** Complete linked pitch analysis result */
-    LinkedPitchAnalysis,
     /** Direction of pitch movement between beats */
     PitchDirection,
     /** Category of interval size between consecutive pitches */
