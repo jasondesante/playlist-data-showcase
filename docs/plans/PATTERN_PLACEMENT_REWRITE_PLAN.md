@@ -298,11 +298,11 @@ Enhance metadata to reflect the new placement strategy:
 
 ### Task 2.1: Test full pattern placement
 
-- [ ] Test: 4-beat pattern run → single 4-beat pattern placed (all keys from pattern used)
-- [ ] Test: 8-beat pattern run → two 4-beat patterns placed
-- [ ] Test: 3-beat pattern run → 3-beat pattern or 2+1 placement
-- [ ] Test: 1-beat gap between pitch beats → interpolated single key
-- [ ] Test: pattern-only song (pitchInfluenceWeight=0, no pitch analysis) → entire song filled with patterns
+- [x] Test: 4-beat pattern run → single 4-beat pattern placed (all keys from pattern used)
+- [x] Test: 8-beat pattern run → two 4-beat patterns placed
+- [x] Test: 3-beat pattern run → 3-beat pattern or 2+1 placement
+- [x] Test: 1-beat gap between pitch beats → interpolated single key
+- [x] Test: pattern-only song (pitchInfluenceWeight=0, no pitch analysis) → entire song filled with patterns
 
 ### Task 2.2: Test boundary transitions
 
