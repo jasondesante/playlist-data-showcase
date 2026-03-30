@@ -297,6 +297,27 @@
     border-style: dashed;
 }
 
+/* Part of a multi-beat pattern group */
+.mapping-source-marker--grouped .mapping-source-marker-ring {
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+}
+
+/* ============================================
+   PATTERN GROUP CONNECTORS
+   ============================================ */
+
+.mapping-source-pattern-connector {
+    position: absolute;
+    top: 50%;
+    height: 3px;
+    transform: translateY(-50%);
+    background: rgba(245, 158, 11, 0.25);
+    border-radius: 1.5px;
+    z-index: 5;
+    pointer-events: none;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.15);
+}
+
 /* ============================================
    PLAYHEAD
    ============================================ */

@@ -49,9 +49,18 @@ export interface MappingSourceTimelineProps {
 
 interface BeatWithSource {
     beat: ChartedBeat;
+    index: number;
     mappingSource: 'pitch' | 'pattern' | 'unknown';
     patternName: string | null;
     patternKeys: string[];
+}
+
+/** A group of consecutive beats sharing the same patternId */
+interface PatternGroup {
+    patternId: string;
+    startIdx: number;
+    endIdx: number;
+    length: number;
 }
 
 // ============================================================
@@ -183,11 +192,12 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
     // Resolve beats with mapping source info
     const beatsWithSource = useMemo((): BeatWithSource[] => {
         if (!chart?.beats) return [];
-        return chart.beats.map((beat) => {
+        return chart.beats.map((beat, index) => {
             const source: BeatWithSource['mappingSource'] = beat.mappingSource ?? 'unknown';
             const { name, keys } = resolvePatternName(beat.patternId, controllerMode);
             return {
                 beat,
+                index,
                 mappingSource: source,
                 patternName: source === 'pattern' ? name : null,
                 patternKeys: source === 'pattern' ? keys : [],
@@ -209,6 +219,46 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
         const unknownCount = total - pitchCount - patternCount;
         return { total, pitchCount, patternCount, unknownCount };
     }, [beatsWithSource]);
+
+    // Pattern groups: consecutive beats sharing the same patternId
+    const patternGroups = useMemo((): PatternGroup[] => {
+        const groups: PatternGroup[] = [];
+        let i = 0;
+        while (i < beatsWithSource.length) {
+            const bws = beatsWithSource[i];
+            if (bws.mappingSource !== 'pattern' || !bws.beat.patternId) {
+                i++;
+                continue;
+            }
+            const pid = bws.beat.patternId;
+            const start = i;
+            while (i < beatsWithSource.length && beatsWithSource[i].mappingSource === 'pattern' && beatsWithSource[i].beat.patternId === pid) {
+                i++;
+            }
+            if (i - start >= 2) {
+                groups.push({ patternId: pid, startIdx: start, endIdx: i - 1, length: i - start });
+            }
+        }
+        return groups;
+    }, [beatsWithSource]);
+
+    // Set of beat indices belonging to a multi-beat pattern group
+    const patternGroupIndexSet = useMemo(() => {
+        const set = new Set<number>();
+        for (const g of patternGroups) {
+            for (let i = g.startIdx; i <= g.endIdx; i++) set.add(i);
+        }
+        return set;
+    }, [patternGroups]);
+
+    // Map from beat index to its pattern group
+    const beatIndexToGroup = useMemo(() => {
+        const map = new Map<number, PatternGroup>();
+        for (const g of patternGroups) {
+            for (let i = g.startIdx; i <= g.endIdx; i++) map.set(i, g);
+        }
+        return map;
+    }, [patternGroups]);
 
     // Beat counts per difficulty
     const beatCounts = useMemo((): Record<DifficultyLevel, number> => {
@@ -265,11 +315,12 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
         const windowEnd = smoothTime + anticipationWindow;
         return filteredBeats
             .filter((b) => b.beat.timestamp >= windowStart && b.beat.timestamp <= windowEnd)
-            .map(({ beat, mappingSource, patternName, patternKeys }) => {
+            .map(({ beat, index, mappingSource, patternName, patternKeys }) => {
                 const position = calculatePosition(beat.timestamp);
                 if (position < 0 || position > 1) return null;
                 return {
                     beat,
+                    index,
                     mappingSource,
                     patternName,
                     patternKeys,
@@ -282,6 +333,37 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
 
         function isPast(beat: ChartedBeat) { return beat.timestamp < smoothTime - 0.05; }
     }, [filteredBeats, smoothTime, pastWindow, anticipationWindow, calculatePosition]);
+
+    // Visible pattern groups for connecting line rendering
+    const visiblePatternGroups = useMemo(() => {
+        const groupDataMap = new Map<string, { positions: number[]; totalLength: number; pid: string }>();
+
+        for (const vb of visibleBeats) {
+            const group = beatIndexToGroup.get(vb.index);
+            if (!group) continue;
+            const key = `${group.patternId}:${group.startIdx}`;
+            const existing = groupDataMap.get(key);
+            if (existing) {
+                existing.positions.push(vb.position);
+            } else {
+                groupDataMap.set(key, { positions: [vb.position], totalLength: group.length, pid: group.patternId });
+            }
+        }
+
+        return Array.from(groupDataMap.entries())
+            .filter(([, data]) => data.positions.length >= 2)
+            .map(([key, data]) => {
+                const sorted = data.positions.sort((a, b) => a - b);
+                return {
+                    key,
+                    patternId: data.pid,
+                    leftPosition: sorted[0],
+                    rightPosition: sorted[sorted.length - 1],
+                    visibleBeatCount: sorted.length,
+                    totalBeatCount: data.totalLength,
+                };
+            });
+    }, [visibleBeats, beatIndexToGroup]);
 
     // Drag-to-scrub
     const DRAG_THRESHOLD = 5;
@@ -492,6 +574,23 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
             >
                 <div className="mapping-source-track-bg" />
 
+                {/* Pattern group connecting lines */}
+                {visiblePatternGroups.map((vg) => (
+                    <div
+                        key={`pg-${vg.key}`}
+                        className="mapping-source-pattern-connector"
+                        style={{
+                            left: `${vg.leftPosition * 100}%`,
+                            width: `${(vg.rightPosition - vg.leftPosition) * 100}%`,
+                        }}
+                        title={
+                            vg.visibleBeatCount < vg.totalBeatCount
+                                ? `${vg.patternId} (${vg.visibleBeatCount} of ${vg.totalBeatCount} beats visible)`
+                                : `${vg.patternId} (${vg.totalBeatCount} beats)`
+                        }
+                    />
+                ))}
+
                 {/* Beat markers */}
                 {visibleBeats.map((vb, index) => {
                     const config = getButtonConfig(vb.beat.requiredKey, controllerMode);
@@ -506,6 +605,7 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
                                 vb.isCurrent && 'mapping-source-marker--current',
                                 vb.beat.isDownbeat && 'mapping-source-marker--downbeat',
                                 !vb.beat.isDetected && 'mapping-source-marker--generated',
+                                patternGroupIndexSet.has(vb.index) && 'mapping-source-marker--grouped',
                             )}
                             style={{
                                 left: `${vb.position * 100}%`,
