@@ -374,8 +374,8 @@ When consecutive beats share the same `patternId`, visually group them:
 
 The `patternsUsed` metadata will now contain fewer entries (full patterns actually placed), but each pattern covers more beats. The usage counts should reflect the number of **placements** (how many times a pattern was placed), not individual beats.
 
-- [ ] Count pattern placements (groups of consecutive same-patternId beats), not individual beats
-- [ ] Show both: "Clockwise Full Roll — placed 12 times (48 beats)"
+- [x] Count pattern placements (groups of consecutive same-patternId beats), not individual beats — already implemented in `getButtonMappingData()` via `patternApplicationCounts` (counts group starts only when `beat.patternId !== prevPatternId`)
+- [x] Show both: "Clockwise Full Roll — placed 12 times (48 beats)" — added `patternBeatCounts` Map to `getButtonMappingData()` counting all beats per pattern, passed as new prop to `PatternLibraryUsage`, `PatternCard` badge now shows `12× (48 beats)` when beat count differs from placement count
 
 ---
 

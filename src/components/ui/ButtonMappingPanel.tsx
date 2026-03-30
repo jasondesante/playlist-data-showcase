@@ -71,6 +71,7 @@ function getButtonMappingData(level: GeneratedLevel | undefined | null): {
     buttonDistribution: Map<string, number>;
     buttonBeats: InternalBeat[];
     patternApplicationCounts: Map<string, number>;
+    patternBeatCounts: Map<string, number>;
 } | null {
     if (!level?.metadata?.buttonMetadata) {
         return null;
@@ -88,6 +89,7 @@ function getButtonMappingData(level: GeneratedLevel | undefined | null): {
     const buttonDistribution = new Map<string, number>();
     const buttonBeats: InternalBeat[] = [];
     const patternApplicationCounts = new Map<string, number>();
+    const patternBeatCounts = new Map<string, number>();
 
     if (level.chart?.beats) {
         const beats = level.chart.beats as any[];
@@ -98,6 +100,12 @@ function getButtonMappingData(level: GeneratedLevel | undefined | null): {
                 // Count pattern applications: only count when this beat starts a new
                 // pattern (i.e. previous beat has a different or no patternId)
                 if (beat.patternId) {
+                    // Count beats per pattern (every beat with a patternId)
+                    patternBeatCounts.set(
+                        beat.patternId,
+                        (patternBeatCounts.get(beat.patternId) ?? 0) + 1
+                    );
+
                     const prevBeat = index > 0 ? beats[index - 1] : null;
                     const prevPatternId = prevBeat?.patternId ?? null;
                     if (beat.patternId !== prevPatternId) {
@@ -129,6 +137,7 @@ function getButtonMappingData(level: GeneratedLevel | undefined | null): {
         buttonDistribution,
         buttonBeats,
         patternApplicationCounts,
+        patternBeatCounts,
     };
 }
 
@@ -272,6 +281,7 @@ export function ButtonMappingPanel({ className, pitchInfluenceWeight, voicingThr
                     controllerMode={mappingData.controllerMode}
                     maxVisible={6}
                     patternApplicationCounts={mappingData.patternApplicationCounts}
+                    patternBeatCounts={mappingData.patternBeatCounts}
                 />
             )}
 

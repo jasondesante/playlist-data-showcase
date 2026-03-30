@@ -36,6 +36,8 @@ export interface PatternLibraryUsageProps {
     maxVisible?: number;
     /** Per-beat pattern ID counts derived from chart beats (overrides patternsUsed counting) */
     patternApplicationCounts?: Map<string, number>;
+    /** Total beat count per pattern (all beats with that patternId, not just group starts) */
+    patternBeatCounts?: Map<string, number>;
 }
 
 interface PatternInfo {
@@ -46,6 +48,7 @@ interface PatternInfo {
     difficulty: number;
     tags: string[];
     usageCount: number;
+    beatCount: number;
 }
 
 // ============================================================
@@ -81,6 +84,7 @@ function getPatternDetails(
             difficulty: pattern.difficulty,
             tags: pattern.tags,
             usageCount: 0,
+            beatCount: 0,
         };
     } else {
         const pattern = getPatternById(GUITAR_HERO_PATTERN_LIBRARY, patternId);
@@ -93,6 +97,7 @@ function getPatternDetails(
             difficulty: pattern.difficulty,
             tags: pattern.tags,
             usageCount: 0,
+            beatCount: 0,
         };
     }
 }
@@ -103,7 +108,8 @@ function getPatternDetails(
 function getUsedPatterns(
     patternIds: string[],
     controllerMode: ControllerMode,
-    applicationCounts?: Map<string, number>
+    applicationCounts?: Map<string, number>,
+    beatCounts?: Map<string, number>
 ): PatternInfo[] {
     const counts = applicationCounts ?? countPatternUsage(patternIds);
     const patterns: PatternInfo[] = [];
@@ -112,6 +118,7 @@ function getUsedPatterns(
         const details = getPatternDetails(id, controllerMode);
         if (details) {
             details.usageCount = count;
+            details.beatCount = beatCounts?.get(id) ?? count;
             patterns.push(details);
         } else {
             patterns.push({
@@ -122,6 +129,7 @@ function getUsedPatterns(
                 difficulty: 0,
                 tags: [],
                 usageCount: count,
+                beatCount: beatCounts?.get(id) ?? count,
             });
         }
     }
@@ -135,7 +143,8 @@ function getUsedPatterns(
 function getAllPatterns(
     usedPatternIds: string[],
     controllerMode: ControllerMode,
-    applicationCounts?: Map<string, number>
+    applicationCounts?: Map<string, number>,
+    beatCounts?: Map<string, number>
 ): PatternInfo[] {
     const usageCounts = applicationCounts ?? countPatternUsage(usedPatternIds);
     const library = controllerMode === 'ddr' ? DDR_PATTERN_LIBRARY : GUITAR_HERO_PATTERN_LIBRARY;
@@ -148,6 +157,7 @@ function getAllPatterns(
         difficulty: pattern.difficulty,
         tags: pattern.tags,
         usageCount: usageCounts.get(pattern.id) ?? 0,
+        beatCount: beatCounts?.get(pattern.id) ?? 0,
     }));
 }
 
@@ -228,7 +238,9 @@ function PatternCard({ pattern, controllerMode }: PatternCardProps) {
             <div className="pattern-card-header">
                 <span className="pattern-name">{pattern.name}</span>
                 {pattern.usageCount > 0 && (
-                    <span className="pattern-usage-badge">{pattern.usageCount}×</span>
+                    <span className="pattern-usage-badge">
+                        {pattern.usageCount}{pattern.beatCount !== pattern.usageCount && `× (${pattern.beatCount} beats)`}
+                    </span>
                 )}
             </div>
             <PatternKeySequence keys={pattern.keys} controllerMode={controllerMode} />
@@ -288,17 +300,18 @@ export function PatternLibraryUsage({
     showHeader = true,
     maxVisible = 6,
     patternApplicationCounts,
+    patternBeatCounts,
 }: PatternLibraryUsageProps) {
     // Used patterns sorted by usage count
     const usedPatterns = useMemo(
-        () => getUsedPatterns(patternsUsed, controllerMode, patternApplicationCounts),
-        [patternsUsed, controllerMode, patternApplicationCounts]
+        () => getUsedPatterns(patternsUsed, controllerMode, patternApplicationCounts, patternBeatCounts),
+        [patternsUsed, controllerMode, patternApplicationCounts, patternBeatCounts]
     );
 
     // All patterns from the full library (for total count)
     const allPatterns = useMemo(
-        () => getAllPatterns(patternsUsed, controllerMode, patternApplicationCounts),
-        [patternsUsed, controllerMode, patternApplicationCounts]
+        () => getAllPatterns(patternsUsed, controllerMode, patternApplicationCounts, patternBeatCounts),
+        [patternsUsed, controllerMode, patternApplicationCounts, patternBeatCounts]
     );
 
     // Total applications
