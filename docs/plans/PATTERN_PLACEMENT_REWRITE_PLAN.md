@@ -351,9 +351,9 @@ Enhance metadata to reflect the new placement strategy:
 
 ### Task 3.2: Update existing tests
 
-- [ ] Update `ButtonMapper.patternSelection.test.ts` — ensure tests still pass with new implementation
-- [ ] Update `ButtonMapper.blendPitchAndPattern.test.ts` — ensure blend logic still works
-- [ ] Update `ButtonMapper.bandAware.test.ts` — ensure band metadata still correct
+- [x] Update `ButtonMapper.patternSelection.test.ts` — ensure tests still pass with new implementation (all 39 tests pass; no changes needed — tests cover public API and pattern library structure, which were unaffected by the rewrite)
+- [x] Update `ButtonMapper.blendPitchAndPattern.test.ts` — ensure blend logic still works (all 31 tests pass; no changes needed — tests cover public API via pitchInfluenceWeight, which was preserved by the rewrite)
+- [x] Update `ButtonMapper.bandAware.test.ts` — ensure band metadata still correct (all 20 tests pass; no changes needed — bandStats metadata is computed from pitch analysis input, independent of the placement algorithm)
 
 ---
 
