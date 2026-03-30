@@ -254,7 +254,6 @@ export function ButtonMappingPanel({ className, pitchInfluenceWeight, voicingThr
                     patternsUsed={mappingData.patternsUsed}
                     controllerMode={mappingData.controllerMode}
                     maxVisible={6}
-                    defaultCollapsed={false}
                 />
             )}
 
