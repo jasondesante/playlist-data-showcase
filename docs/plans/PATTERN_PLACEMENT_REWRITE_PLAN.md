@@ -339,12 +339,15 @@ Enhance metadata to reflect the new placement strategy:
 
 ### Task 3.1: Remove old functions
 
-- [ ] Remove `selectPatternButton()` (replaced by `selectPatternForRun()`)
-- [ ] Remove `fillPatternHoles()` (replaced by run-based placement)
-- [ ] Remove `selectPatternFromLibrary()` standalone function (logic absorbed into `selectPatternForRun()`)
-- [ ] Remove `isPatternCompatible()` (replaced by `isPatternRunCompatible()`)
-- [ ] Keep `interpolateButton()` (still used for residual beats)
-- [ ] Keep `findNextPitchKey()` (still used by `identifyPatternRuns()`)
+- [x] Remove `selectPatternButton()` (replaced by `selectPatternForRun()`)
+- [x] Remove `fillPatternHoles()` (replaced by run-based placement)
+- [x] Remove `selectPatternFromLibrary()` standalone function (logic inlined into `getVariationButton()`, which is still used by `applyConsecutiveLimit()`)
+- [x] Remove `isPatternCompatible()` (replaced by `isPatternRunCompatible()`)
+- [x] Remove `blendPitchAndPattern()` class method (dead code, replaced by `classifyPitchVsPattern()`)
+- [x] Remove `PatternHoleResult` interface (only used by removed `fillPatternHoles`)
+- [x] Keep `interpolateButton()` (still used for residual beats)
+- [x] Keep `findNextPitchKey()` (still used by `identifyPatternRuns()`)
+- [x] Keep `getVariationButton()` (still used by `applyConsecutiveLimit()`)
 
 ### Task 3.2: Update existing tests
 
