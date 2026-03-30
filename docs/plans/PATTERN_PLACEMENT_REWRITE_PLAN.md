@@ -185,11 +185,11 @@ Compatibility rules:
   - Guitar Hero: last key should be between previous and next, or moving toward next
 - Pattern difficulty must be ≤ `maxDifficulty`
 
-- [ ] Implement `isPatternRunCompatible()`
-- [ ] Reuse existing `DDR_ADJACENT` and interpolation logic from current code
-- [ ] Unit test: compatible pattern accepted
-- [ ] Unit test: pattern that starts with same key as previous rejected
-- [ ] Unit test: pattern that ends with incompatible key for next rejected
+- [x] Implement `isPatternRunCompatible()`
+- [x] Reuse existing `DDR_ADJACENT` and interpolation logic from current code
+- [x] Unit test: compatible pattern accepted
+- [x] Unit test: pattern that starts with same key as previous rejected
+- [x] Unit test: pattern that ends with incompatible key for next rejected
 
 ### Task 1.5: Create `selectPatternForRun()` function
 
