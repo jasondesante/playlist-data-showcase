@@ -275,11 +275,11 @@ Replace the current 3-pass approach:
 
 The `blendPitchAndPattern()` function stays mostly the same — it correctly decides which beats should be pitch vs pattern. What changes is that instead of using the pattern key directly, we just mark beats as "needs pattern" (null) and let the run-based system fill them.
 
-- [ ] Rewrite `mapButtons()` with the new 6-step pipeline
-- [ ] Keep `blendPitchAndPattern()` logic for pitch/pattern classification (it's correct for that purpose)
-- [ ] Feed classification results into `identifyPatternRuns()` + `selectPatternForRun()` + `placePatterns()`
-- [ ] Keep `applyConsecutiveLimit()` as post-processing
-- [ ] Build final `ButtonAssignment[]` with proper source/patternId per beat
+- [x] Rewrite `mapButtons()` with the new 6-step pipeline
+- [x] Keep `blendPitchAndPattern()` logic for pitch/pattern classification (it's correct for that purpose)
+- [x] Feed classification results into `identifyPatternRuns()` + `selectPatternForRun()` + `placePatterns()`
+- [x] Keep `applyConsecutiveLimit()` as post-processing
+- [x] Build final `ButtonAssignment[]` with proper source/patternId per beat
 
 ### Task 1.8: Update `buildMetadata()` for pattern run stats
 
