@@ -289,8 +289,8 @@ Enhance metadata to reflect the new placement strategy:
 - `patternsUsed`: now actually meaningful — patterns that were fully placed
 - Add optional `patternPlacements` to metadata: array of `{ patternId, startIndex, length }` for UI visualization
 
-- [ ] Keep existing metadata fields unchanged (backward compatible)
-- [ ] The `patternsUsed` set will now contain fewer, more meaningful entries
+- [x] Keep existing metadata fields unchanged (backward compatible)
+- [x] The `patternsUsed` set will now contain fewer, more meaningful entries
 
 ---
 
