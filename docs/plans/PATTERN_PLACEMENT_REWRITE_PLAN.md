@@ -106,8 +106,8 @@ interface PatternPlacement {
 }
 ```
 
-- [ ] Add `PatternRun<T>` interface to ButtonMapper.ts
-- [ ] Add `PatternPlacement<T>` interface to ButtonMapper.ts
+- [x] Add `PatternRun<T>` interface to ButtonMapper.ts
+- [x] Add `PatternPlacement<T>` interface to ButtonMapper.ts
 
 ### Task 1.2: Create `classifyBeats()` function
 
