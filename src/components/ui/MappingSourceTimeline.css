@@ -322,6 +322,64 @@
 }
 
 /* ============================================
+   QUICK SCROLL
+   ============================================ */
+
+.mapping-source-quickscroll {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+}
+
+.mapping-source-quickscroll-track {
+    position: relative;
+    flex: 1;
+    height: 0.5rem;
+    background: hsl(var(--surface-3));
+    border-radius: 0.25rem;
+    cursor: pointer;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.mapping-source-quickscroll-track:hover {
+    background: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.3);
+}
+
+.mapping-source-quickscroll-marker {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    width: 1px;
+    transform: translateX(-50%);
+    opacity: 0.4;
+}
+
+.mapping-source-quickscroll-viewport {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: hsl(var(--primary) / 0.2);
+    border-left: 1px solid hsl(var(--primary) / 0.5);
+    border-right: 1px solid hsl(var(--primary) / 0.5);
+    border-radius: 0.125rem;
+    pointer-events: none;
+    min-width: 4px;
+}
+
+.mapping-source-quickscroll-position {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 2px;
+    background: hsl(var(--primary));
+    transform: translateX(-50%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* ============================================
    TOOLTIP
    ============================================ */
 

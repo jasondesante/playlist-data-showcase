@@ -152,6 +152,10 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
     const dragStartXRef = useRef(0);
     const dragStartTimeRef = useRef(0);
 
+    // Quick scroll state
+    const quickScrollRef = useRef<HTMLDivElement>(null);
+    const [isQuickScrollDragging, setIsQuickScrollDragging] = useState(false);
+
     // Hover
     const [hoveredBeat, setHoveredBeat] = useState<BeatWithSource | null>(null);
 
@@ -174,6 +178,7 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
     const currentLevel = levels?.[selectedDifficulty as keyof AllDifficultiesWithNatural] as GeneratedLevel | undefined;
     const chart: ChartedBeatMap | null = currentLevel?.chart ?? null;
     const controllerMode: ControllerMode = currentLevel?.metadata?.controllerMode ?? 'ddr';
+    const trackDuration = duration || chart?.duration || 0;
 
     // Resolve beats with mapping source info
     const beatsWithSource = useMemo((): BeatWithSource[] => {
@@ -312,6 +317,52 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
         window.addEventListener('mouseup', handleMouseUp);
         return () => { window.removeEventListener('mousemove', handleMouseMove); window.removeEventListener('mouseup', handleMouseUp); };
     }, [isDragging, handleMouseMove, handleMouseUp]);
+
+    // Quick scroll handlers
+    const handleQuickScrollClick = useCallback((e: React.MouseEvent) => {
+        if (!quickScrollRef.current || trackDuration === 0) return;
+        const rect = quickScrollRef.current.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        seek(ratio * trackDuration);
+    }, [trackDuration, seek]);
+
+    const handleQuickScrollDragStart = useCallback((e: React.MouseEvent) => {
+        if (!quickScrollRef.current || trackDuration === 0) return;
+        e.preventDefault();
+        setIsQuickScrollDragging(true);
+        const rect = quickScrollRef.current.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        seek(ratio * trackDuration);
+    }, [trackDuration, seek]);
+
+    useEffect(() => {
+        if (!isQuickScrollDragging || trackDuration === 0) return;
+        let pendingSeek: number | null = null;
+        let rafId: number | null = null;
+        const handleMove = (e: MouseEvent) => {
+            if (!quickScrollRef.current) return;
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            pendingSeek = ratio * trackDuration;
+            if (!rafId) {
+                rafId = requestAnimationFrame(() => {
+                    if (pendingSeek !== null) { seek(pendingSeek); pendingSeek = null; }
+                    rafId = null;
+                });
+            }
+        };
+        const handleEnd = () => {
+            setIsQuickScrollDragging(false);
+            if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        };
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+        return () => {
+            window.removeEventListener('mousemove', handleMove);
+            window.removeEventListener('mouseup', handleEnd);
+            if (rafId) cancelAnimationFrame(rafId);
+        };
+    }, [isQuickScrollDragging, trackDuration, seek]);
 
     // Play/pause
     const handlePlayPause = useCallback(() => {
@@ -487,6 +538,47 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
                     <div className="mapping-source-playhead-line" />
                 </div>
             </div>
+
+            {/* Quick scroll bar */}
+            {trackDuration > 0 && (
+                <div className="mapping-source-quickscroll">
+                    <div
+                        ref={quickScrollRef}
+                        className="mapping-source-quickscroll-track"
+                        onClick={handleQuickScrollClick}
+                        onMouseDown={handleQuickScrollDragStart}
+                    >
+                        {filteredBeats
+                            .filter((_, idx) => idx % Math.max(1, Math.floor(filteredBeats.length / 100)) === 0)
+                            .map((b, index) => {
+                                const position = b.beat.timestamp / trackDuration;
+                                return (
+                                    <div
+                                        key={`qs-${b.beat.timestamp}-${index}`}
+                                        className="mapping-source-quickscroll-marker"
+                                        style={{
+                                            left: `${position * 100}%`,
+                                            backgroundColor: SOURCE_COLORS[b.mappingSource],
+                                        }}
+                                    />
+                                );
+                            })}
+
+                        <div
+                            className="mapping-source-quickscroll-viewport"
+                            style={{
+                                left: `${Math.max(0, ((smoothTime - pastWindow) / trackDuration) * 100)}%`,
+                                width: `${Math.min(100, (totalWindow / trackDuration) * 100)}%`,
+                            }}
+                        />
+
+                        <div
+                            className="mapping-source-quickscroll-position"
+                            style={{ left: `${(smoothTime / trackDuration) * 100}%` }}
+                        />
+                    </div>
+                </div>
+            )}
 
             {/* Tooltip bar */}
             <div className="mapping-source-tooltip">
