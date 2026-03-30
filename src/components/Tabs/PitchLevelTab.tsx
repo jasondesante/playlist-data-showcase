@@ -26,6 +26,7 @@ import {
     Activity,
     ArrowRight,
     RefreshCw,
+    GitBranch,
 } from 'lucide-react';
 import './PitchLevelTab.css';
 import { Card } from '../ui/Card';
@@ -37,6 +38,7 @@ import { LevelGenerationPanel } from '../ui/LevelGenerationPanel';
 import { PitchDetectionPanel } from '../ui/PitchDetectionPanel';
 import { MelodyContourPanel } from '../ui/MelodyContourPanel';
 import { ButtonMappingPanel } from '../ui/ButtonMappingPanel';
+import { MappingSourceTimeline } from '../ui/MappingSourceTimeline';
 import {
     useGeneratedRhythm,
     useGeneratedLevel,
@@ -72,7 +74,7 @@ export interface PitchLevelTabProps {
 }
 
 // Section identifiers for accordion behavior
-type SectionId = 'final' | 'pitch' | 'melody' | 'buttons' | null;
+type SectionId = 'final' | 'pitch' | 'melody' | 'sources' | 'buttons' | null;
 
 // ============================================================
 // Sub-components
@@ -177,6 +179,17 @@ function PitchLevelResult({ onProceed, pitchInfluenceWeight, voicingThreshold, p
                     onCollapsedChange={() => handleSectionToggle('melody')}
                 >
                     <MelodyContourPanel />
+                </CollapsibleSection>
+
+                {/* Mapping Source Timeline - Pitch vs Pattern breakdown */}
+                <CollapsibleSection
+                    title="Mapping Sources"
+                    subtitle="Pitch vs pattern influence per beat"
+                    icon={<GitBranch size={18} />}
+                    collapsed={openSection !== 'sources'}
+                    onCollapsedChange={() => handleSectionToggle('sources')}
+                >
+                    <MappingSourceTimeline />
                 </CollapsibleSection>
 
                 {/* Button Mapping - Phase 6 (Task 6.1) */}

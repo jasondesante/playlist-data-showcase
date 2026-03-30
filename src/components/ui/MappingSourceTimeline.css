@@ -1,0 +1,539 @@
+/**
+ * MappingSourceTimeline Styles
+ *
+ * Visualization showing where each button comes from (pitch detection vs pattern library).
+ * Beat markers use an outer ring color for mapping source, inner icon for button.
+ */
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+
+.mapping-source-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: var(--card-bg, #1a1a2e);
+    border-radius: 6px;
+    border: 1px solid var(--border-color, #2a2a4a);
+    overflow: hidden;
+}
+
+.mapping-source-timeline--empty {
+    padding: 2rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.mapping-source-empty-message {
+    margin: 0;
+    color: var(--text-muted, #6a6a7a);
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.mapping-source-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-bottom: 1px solid var(--border-color, #2a2a4a);
+}
+
+.mapping-source-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mapping-source-header-icon {
+    color: hsl(var(--primary));
+}
+
+.mapping-source-header-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+}
+
+/* ============================================
+   SUMMARY BAR
+   ============================================ */
+
+.mapping-source-summary {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-secondary, #12121f);
+    flex-wrap: wrap;
+}
+
+.mapping-source-summary-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.mapping-source-summary-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.mapping-source-summary-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.mapping-source-summary-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.mapping-source-summary-pct {
+    font-size: 0.6875rem;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.mapping-source-summary-pitch .mapping-source-summary-value { color: #22c55e; }
+.mapping-source-summary-pattern .mapping-source-summary-value { color: #f59e0b; }
+.mapping-source-summary-unknown .mapping-source-summary-value { color: #6b7280; }
+
+.mapping-source-summary-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--border-color, #2a2a4a);
+}
+
+.mapping-source-summary-total .mapping-source-summary-value {
+    color: var(--text-primary, #e0e0e0);
+}
+
+/* ============================================
+   FILTER BUTTONS
+   ============================================ */
+
+.mapping-source-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: var(--bg-secondary, #12121f);
+}
+
+.mapping-source-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--text-secondary, #a0a0b0);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.mapping-source-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary, #e0e0e0);
+}
+
+.mapping-source-filter-btn--active {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-color, #2a2a4a);
+    color: var(--text-primary, #e0e0e0);
+}
+
+.mapping-source-filter-btn--pitch.mapping-source-filter-btn--active {
+    border-color: rgba(34, 197, 94, 0.4);
+    color: #22c55e;
+}
+
+.mapping-source-filter-btn--pattern.mapping-source-filter-btn--active {
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #f59e0b;
+}
+
+/* ============================================
+   PROPORTIONAL BAR
+   ============================================ */
+
+.mapping-source-bar {
+    display: flex;
+    height: 4px;
+    margin: 0 0.75rem;
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--bg-tertiary, #0f0f1a);
+}
+
+.mapping-source-bar-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.mapping-source-bar-pitch { background: #22c55e; }
+.mapping-source-bar-pattern { background: #f59e0b; }
+.mapping-source-bar-unknown { background: #6b7280; }
+
+/* ============================================
+   TIMELINE TRACK
+   ============================================ */
+
+.mapping-source-track {
+    position: relative;
+    cursor: grab;
+    overflow: hidden;
+    min-height: 80px;
+    padding: 0.5rem 0;
+}
+
+.mapping-source-track--dragging {
+    cursor: grabbing;
+}
+
+.mapping-source-track:focus {
+    outline: 2px solid hsl(var(--primary)) inset;
+    outline-offset: -2px;
+}
+
+.mapping-source-track-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to right,
+        rgba(107, 114, 128, 0.05) 0%,
+        rgba(107, 114, 128, 0.02) 50%,
+        rgba(59, 130, 246, 0.05) 100%
+    );
+    pointer-events: none;
+}
+
+/* ============================================
+   BEAT MARKERS
+   ============================================ */
+
+.mapping-source-marker {
+    position: absolute;
+    top: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    transition: transform 0.1s ease;
+}
+
+.mapping-source-marker-ring {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2.5px solid var(--source-color, #6b7280);
+    background: rgba(0, 0, 0, 0.35);
+    transition: box-shadow 0.15s ease;
+}
+
+.mapping-source-marker:hover .mapping-source-marker-ring {
+    box-shadow: 0 0 10px var(--source-color, #6b7280);
+    transform: scale(1.15);
+}
+
+.mapping-source-marker-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mapping-source-marker-fret {
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Past markers */
+.mapping-source-marker--past {
+    opacity: 0.4;
+}
+
+/* Current beat */
+.mapping-source-marker--current {
+    animation: source-pulse 0.3s ease-in-out;
+}
+
+.mapping-source-marker--current .mapping-source-marker-ring {
+    box-shadow: 0 0 14px var(--source-color, #6b7280);
+    transform: scale(1.2);
+}
+
+@keyframes source-pulse {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.3); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Downbeat */
+.mapping-source-marker--downbeat .mapping-source-marker-ring {
+    border-width: 3px;
+    box-shadow: 0 0 6px var(--source-color, #6b7280);
+}
+
+/* Generated (not detected) */
+.mapping-source-marker--generated .mapping-source-marker-ring {
+    border-style: dashed;
+}
+
+/* ============================================
+   PLAYHEAD
+   ============================================ */
+
+.mapping-source-playhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-50%);
+    z-index: 50;
+    pointer-events: none;
+}
+
+.mapping-source-playhead-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.5);
+}
+
+/* ============================================
+   TOOLTIP
+   ============================================ */
+
+.mapping-source-tooltip {
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-top: 1px solid var(--border-color, #2a2a4a);
+}
+
+.mapping-source-tooltip-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.mapping-source-tooltip-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.mapping-source-tooltip-btn {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.mapping-source-tooltip-time {
+    font-size: 0.6875rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.mapping-source-tooltip-source {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.mapping-source-tooltip-downbeat {
+    font-size: 0.6875rem;
+    color: #eab308;
+    font-weight: 500;
+}
+
+.mapping-source-tooltip-det {
+    font-size: 0.6875rem;
+    color: #3b82f6;
+}
+
+.mapping-source-tooltip-gen {
+    font-size: 0.6875rem;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.mapping-source-tooltip-pattern {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.6875rem;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.mapping-source-tooltip-pattern-name {
+    color: #f59e0b;
+    font-weight: 500;
+}
+
+.mapping-source-tooltip-pattern-keys {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-muted, #6a6a7a);
+    font-size: 0.625rem;
+}
+
+.mapping-source-tooltip-band {
+    font-size: 0.6875rem;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.mapping-source-tooltip-band-name {
+    text-transform: capitalize;
+}
+
+.mapping-source-tooltip-skeleton {
+    opacity: 0.3;
+}
+
+.mapping-source-tooltip-spacer {
+    height: 1rem;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+/* ============================================
+   CONTROLS
+   ============================================ */
+
+.mapping-source-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-tertiary, #0f0f1a);
+    border-top: 1px solid var(--border-color, #2a2a4a);
+}
+
+.mapping-source-play-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: hsl(var(--primary));
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    flex-shrink: 0;
+}
+
+.mapping-source-play-btn:hover:not(:disabled) { background: hsl(var(--primary) / 0.8); }
+.mapping-source-play-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.mapping-source-time {
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-secondary, #a0a0b0);
+}
+
+.mapping-source-visible {
+    font-size: 0.6875rem;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.mapping-source-zoom {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: auto;
+    font-size: 0.6875rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.mapping-source-zoom button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-secondary, #a0a0b0);
+    background: var(--bg-secondary, #12121f);
+    border: 1px solid var(--border-color, #2a2a4a);
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.mapping-source-zoom button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.05); }
+.mapping-source-zoom button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.mapping-source-zoom span {
+    cursor: pointer;
+    min-width: 32px;
+    text-align: center;
+}
+
+.mapping-source-zoom span:hover { color: var(--text-primary, #e0e0e0); }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+    .mapping-source-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .mapping-source-summary {
+        gap: 0.5rem;
+    }
+
+    .mapping-source-controls {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .mapping-source-visible { display: none; }
+
+    .mapping-source-tooltip-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.125rem;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .mapping-source-marker {
+        transition: none;
+    }
+
+    @keyframes source-pulse {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    }
+}
