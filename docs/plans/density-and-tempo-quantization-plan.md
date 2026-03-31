@@ -177,13 +177,17 @@ This means there is only ONE quantization pass. The BPM rules are consulted duri
 
 ### Task 2.1: Refactor RhythmQuantizer into decide-then-quantize
 
-- [ ] Split `quantizeBand()` into two methods:
+- [x] Split `quantizeBand()` into two methods:
   - `decideGrids(transients, unifiedBeatMap, band)` → returns `GridDecision[]`
   - `quantizeToGrids(transients, unifiedBeatMap, band, gridDecisions)` → returns `GeneratedBeat[]`
-- [ ] `decideGrids()` iterates beats, finds transients in each beat's range, and calls `detectGrid()` or uses forced grid — but does NOT quantize
-- [ ] `quantizeToGrids()` takes the grid decisions AND the **original raw transient timestamps**, then snaps each transient to the chosen grid position
-- [ ] `quantizeBand()` becomes the orchestrator: `decideGrids()` → `quantizeToGrids()` → `deduplicateBeats()`
-- [ ] The public `quantize()` API stays the same — this is an internal refactor
+- [x] `decideGrids()` iterates beats, finds transients in each beat's range, and calls `detectGrid()` or uses forced grid — but does NOT quantize
+- [x] `quantizeToGrids()` takes the grid decisions AND the **original raw transient timestamps**, then snaps each transient to the chosen grid position
+- [x] `quantizeBand()` becomes the orchestrator: `decideGrids()` → `quantizeToGrids()` → `deduplicateBeats()`
+- [x] The public `quantize()` API stays the same — this is an internal refactor
+- [x] Both `decideGrids()` and `quantizeToGrids()` are `public` so that `TempoAwareQuantizer` (Task 2.4) can call them directly
+- [x] Removed dead code: unused `quantizeBands()` private method and `FilteredTransients` interface
+- [x] Updated class JSDoc to document the decide-then-quantize architecture
+- **Verified:** All 31 RhythmQuantizer tests pass, all 55 RhythmGenerator tests pass, all 13 integration tests pass. Both engine and workspace TypeScript compile cleanly (no new errors).
 - **File:** `playlist-data-engine/src/core/analysis/beat/RhythmQuantizer.ts`
 
 ### Task 2.2: Design the TempoAwareQuantizer rule interface
