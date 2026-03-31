@@ -233,19 +233,22 @@ interface TempoAwareQuantizerConfig {
 
 ### Task 2.3: Implement the first rule — High BPM 16th note restriction
 
-- [ ] Create `HighBpmGridRestrictionRule`:
+- [x] Create `HighBpmGridRestrictionRule`:
   - If BPM > configurable threshold (default: ~160), restrict max grid to `straight_8th`
   - If BPM > higher threshold (default: ~200), restrict max grid to `straight_8th` and disable triplets too
   - Applies to `mid` and `high` bands (low is already forced to `straight_8th`)
   - Overrides `straight_16th` grid decisions → `straight_8th`
   - Overrides `triplet_8th` grid decisions → `straight_8th` at very high BPM
-- [ ] **Grid confidence handling:** When overriding a grid decision:
+- [x] **Grid confidence handling:** When overriding a grid decision:
   - Set `confidence: 1.0` (forced/authoritative — matches pattern used by `getBandGridType()` at `RhythmQuantizer.ts:714-719`)
   - Clear `straightAvgOffset` and `tripletAvgOffset` (they no longer reflect the chosen grid)
   - This is critical because `RhythmGenerator.collectGridDecisions()` (line 1302) uses confidence to pick between bands — a BPM-forced override should win over a lower-confidence auto-detected decision
-- [ ] This rule ONLY changes grid decisions — it does NOT quantize anything
-- [ ] The quantization happens later using the modified grid decisions, snapping from the **original** transient timestamps to the (now 8th-note) grid
-- [ ] No deduplication needed at this level — dedup happens naturally during quantization when two transients snap to the same grid point
+- [x] This rule ONLY changes grid decisions — it does NOT quantize anything
+- [x] The quantization happens later using the modified grid decisions, snapping from the **original** transient timestamps to the (now 8th-note) grid
+- [x] No deduplication needed at this level — dedup happens naturally during quantization when two transients snap to the same grid point
+- [x] Exported `HighBpmGridRestrictionRule` and `HighBpmGridRestrictionConfig` from both `beat/index.ts` and `src/index.ts`
+- **Verified:** Engine TypeScript compiles cleanly (no new errors). All 147 test files (5717 tests) pass. Workspace TypeScript compilation clean (no errors). Pre-existing flaky performance test still fails (unrelated).
+- **File:** `playlist-data-engine/src/core/analysis/beat/TempoAwareQuantizer.ts`
 
 ### Task 2.4: Implement TempoAwareQuantizer class
 
