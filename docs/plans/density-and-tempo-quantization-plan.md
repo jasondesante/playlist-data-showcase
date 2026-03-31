@@ -11,10 +11,17 @@ Two related engine changes that improve rhythm generation quality:
 ### Design Decisions
 
 - **No backward compatibility** — Old serialized data won't be loaded by new versions. Clean rename of all fields.
-- **BPM source** — `UnifiedBeatMap.quarterNoteBpm` (confirmed to exist at `BeatMap.ts:1628` and `BeatMap.ts:1958`)
-- **BPM to DensityAnalyzer** — Add `bpm: number` parameter to `analyze()` signature (option A: explicit dependency)
-- **BPM to DifficultyVariantGenerator** — Pass BPM through (simpler than pre-computing and threading density values)
+- **BPM source** — `UnifiedBeatMap.quarterNoteBpm` (confirmed at `BeatMap.ts:1628` and `BeatMap.ts:1958`)
+- **BPM to DensityAnalyzer** — Add `bpm: number` parameter to `analyze()` signature (explicit dependency)
+- **BPM to DifficultyVariantGenerator** — The `generate()` method already receives `unifiedBeatMap: UnifiedBeatMap`, so BPM is available. Pass it through to `calculateDensity()` via method parameter. No constructor/config changes needed.
+- **BPM to StreamScorer** — Add `bpm?: number` to `StreamScorerConfig`. The scorer is constructed once per generation via `RhythmGenerator`, and config is already threaded there. This keeps the `score()` signature stable.
+- **BPM to CompositeStreamGenerator** — Derive BPM inside `generate()` from `streams.streams.low.quarterNoteInterval` (already available). No signature changes needed.
+- **Grid confidence on BPM override** — When TempoAwareQuantizer overrides a grid decision, set `confidence: 1.0` and clear `straightAvgOffset`/`tripletAvgOffset`. This matches how `getBandGridType()` already creates forced decisions (line 714-719), and prevents `collectGridDecisions()` from preferring an un-overridden lower-confidence decision over a BPM-forced one.
 - **Every code path** that uses notes/beat as a density measurement must be converted to notes/second, including private methods, comments, and test assertions
+
+### Out of Scope
+
+- `BeatMap.ts` `SubdivisionType` (lines 1820-1831) — uses "density" to mean subdivision grid resolution (e.g., `eighth` = 2x density, `sixteenth` = 4x density). These are relative multipliers for subdivision granularity, completely unrelated to the notes/second tempo-adjusted density metric. No changes needed.
 
 ---
 
@@ -44,6 +51,7 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 - [ ] Update `analyzeBand()` — convert `transientsPerBeat` calculation to `notesPerSecond` using BPM
 - [ ] Update `calculateCombinedMetrics()` — same conversion
 - [ ] Update `calculateSectionMetrics()` — same conversion
+- [ ] Update JSDoc example at top of file (lines 15-20) — `transientsPerBeat` → `notesPerSecond`
 - [ ] Update all JSDoc comments that reference "transients per beat" → "notes per second"
 - **File:** `playlist-data-engine/src/core/analysis/beat/DensityAnalyzer.ts`
 
@@ -53,23 +61,26 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 - [ ] Update `determineNaturalDifficulty()` to accept BPM and convert to notes/second
   - Current: `notesPerBeat = beats.length / totalQuarterNotes`
   - New: `notesPerSecond = (beats.length / totalQuarterNotes) * (bpm / 60)`
-  - This method currently doesn't accept BPM — need to add it as parameter
-  - The `generate()` method has access to `streams.streams.low.quarterNoteInterval` — can derive BPM from there: `60 / quarterNoteInterval`
-- [ ] Update JSDoc comments: "notes/beat" → "notes/second"
+  - This method currently doesn't accept BPM — add it as a parameter
+  - Derive BPM inside `generate()` from `streams.streams.low.quarterNoteInterval` (i.e., `60 / quarterNoteInterval`) and pass to `determineNaturalDifficulty()`
+  - No changes to the `generate()` signature — BPM is derived internally
+- [ ] Update JSDoc comments: "notes/beat" → "notes/second" (lines 134-136, 345-346)
 - **File:** `playlist-data-engine/src/core/analysis/beat/CompositeStreamGenerator.ts`
 
 ### Task 1.3: Update StreamScorer density factor
 
-- [ ] Update `calculateDensityFactor()` bell curve from "2 notes/beat" to appropriate notes/second value
-  - Current: `optimalDensity = 2.0`, `bellCurveWidth = 1.5`
-  - The method averages `transientCount` across section beats — this gives notes/beat (count per beat)
-  - Need to convert to notes/sec: multiply by `bpm / 60`
-  - `optimalDensity` should become a notes/sec value (e.g., ~4.0 at 120 BPM = 2 notes/beat)
-  - `bellCurveWidth` needs recalibration for notes/sec scale
-- [ ] The scorer needs BPM — either pass it to the `score()` method or to the constructor
-  - Since `score()` already receives `DensityAnalysisResult` (which will have notes/sec after 1.1), the scorer could derive BPM from the density values... but that's fragile
-  - Better: add `bpm` to `StreamScorerConfig` or `score()` signature
-- [ ] Update all JSDoc comments referencing "2 notes per beat"
+- [ ] Add `bpm?: number` to `StreamScorerConfig` interface
+- [ ] Update `calculateDensityFactor()` to convert per-beat transient count to notes/sec
+  - Current: averages `transientCount` across section beats → notes/beat
+  - New: multiply by `(bpm / 60)` to get notes/sec
+  - BPM comes from `this.config.bpm`
+- [ ] Update bell curve constants:
+  - Current: `optimalDensity = 2.0` (notes/beat), `bellCurveWidth = 1.5`
+  - New: `optimalDensity` should be a notes/sec value — at 120 BPM, 2 notes/beat = 4.0 notes/sec
+  - `bellCurveWidth` needs recalibration for notes/sec scale (multiply by ~2 as starting point)
+- [ ] Update `score()` to validate BPM is available when calculating density factor
+- [ ] Update all JSDoc comments referencing "2 notes per beat" (lines 232, 519, 542-548)
+- [ ] RhythmGenerator will pass BPM via `StreamScorerConfig` when constructing the scorer
 - **File:** `playlist-data-engine/src/core/analysis/beat/StreamScorer.ts`
 
 ### Task 1.4: Update DifficultyVariantGenerator density ranges and calculation
@@ -79,24 +90,27 @@ Convert the core density measurement from notes/beat to notes/second. This is th
   - Medium: `{ min: 2.5, max: 4.5 }` (was 1.0-1.75 notes/beat)
   - Hard: `{ min: 4.5, max: Infinity }` (was >1.75 notes/beat)
   - Natural: `{ min: 0, max: Infinity }` (unchanged conceptually)
-- [ ] Update `SubdivisionLimitConfig.targetDensityRange` comment: "transients per beat" → "notes per second"
+- [ ] Update `SubdivisionLimitConfig.targetDensityRange` comment: "transients per beat" → "notes per second" (line 195)
 - [ ] Update private `calculateDensity()` method to return notes/second
-  - Current: `beats.length / totalBeats` (notes/beat)
+  - Current: `beats.length / totalBeats` (notes/beat) — line 979
   - New: `(beats.length / totalBeats) * (bpm / 60)`
-  - Needs BPM — add `bpm` parameter or accept via constructor/config
-- [ ] Update `reduceDensityToTarget()` — receives density from `calculateDensity()` which is now notes/sec; `targetRange` is now notes/sec, so comparison works as-is
-- [ ] Update JSDoc comments on SUBDIVISION_LIMITS entries: "transients/beat" → "notes/sec"
-- [ ] Update `generateVariant()` and related methods that call `calculateDensity()` — thread BPM through
+  - Add `bpm: number` parameter to `calculateDensity()`
+- [ ] Update `reduceDensityToTarget()` — passes BPM through to `calculateDensity()`; `targetRange` comparison works as-is since both sides are now notes/sec
+- [ ] Thread BPM through callers:
+  - `generateVariant()` (line 629) — already has `unifiedBeatMap`, derive BPM as `unifiedBeatMap.quarterNoteBpm`, pass to `reduceDensityToTarget()` and `calculateDensity()`
+  - No signature changes to `generate()` or `generateVariant()` needed — BPM is already available via `unifiedBeatMap`
+- [ ] Update JSDoc comments on SUBDIVISION_LIMITS entries: "transients/beat" → "notes/sec" (lines 106, 121, 138)
+- [ ] Update `calculateDensity()` JSDoc: "Transients per beat" → "Notes per second" (line 963)
 - **Note:** The `densityMultiplier` used in enhancement (lines 284, 340, 1396, 1400) is a ratio multiplier, not an absolute density value — these do NOT need conversion
 - **File:** `playlist-data-engine/src/core/analysis/beat/DifficultyVariantGenerator.ts`
 
 ### Task 1.5: Update RhythmGenerator pipeline
 
 - [ ] Pass BPM to `DensityAnalyzer.analyze()` — BPM available from `unifiedBeatMap.quarterNoteBpm`
-- [ ] Pass BPM to `CompositeStreamGenerator.generate()` — derive from `streams.streams.low.quarterNoteInterval` or pass through
-- [ ] Pass BPM to `StreamScorer.score()` — pass from `unifiedBeatMap.quarterNoteBpm`
-- [ ] Pass BPM to `DifficultyVariantGenerator.generateVariant()` — pass from `unifiedBeatMap.quarterNoteBpm`
-- [ ] Update `RhythmMetadata.averageDensity` to be notes/second (currently: `densityAnalysis.combinedMetrics.transientsPerBeat`)
+- [ ] Pass BPM to `StreamScorer` via config — `new StreamScorer({ bpm: unifiedBeatMap.quarterNoteBpm })`
+- [ ] `CompositeStreamGenerator` derives BPM internally from `quarterNoteInterval` (Task 1.2) — no changes here
+- [ ] `DifficultyVariantGenerator` derives BPM internally from `unifiedBeatMap.quarterNoteBpm` (Task 1.4) — no changes here
+- [ ] Update `RhythmMetadata.averageDensity` to be notes/second (line 1127: currently `densityAnalysis.combinedMetrics.transientsPerBeat`)
 - [ ] Update JSON serialization types — rename all `transientsPerBeat` → `notesPerSecond` in:
   - `BandDensityMetricsJSON` (line 546)
   - `DensityAnalysisResult.combinedMetrics` JSON (line 566)
@@ -123,7 +137,7 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 - [ ] Update `DensityAnalyzer.test.ts` — all threshold assertions, expected output values, field name references
 - [ ] Update `RhythmGenerator.test.ts` — metadata assertions, JSON serialization field names
 - [ ] Update `LevelSerializer.compatibility.test.ts` — field name assertions (lines 258, 264, 268, 275)
-- [ ] Update `streamScorer.test.ts` — density factor expectations
+- [ ] Update `streamScorer.test.ts` — density factor expectations, BPM config
 - [ ] Update `compositeStreamGenerator.test.ts` — natural difficulty assertions
 - [ ] Update `difficultyVariantGenerator.test.ts` — density range expectations
 - **Files:** All test files in `playlist-data-engine/tests/` and `src/core/`
@@ -133,7 +147,7 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 - [ ] Update `phraseDensityAnalysis.integration.test.ts` — all `transientsPerBeat` references:
   - Lines 262, 310, 316, 360, 366, 444, 449, 454, 556, 588, 615, 694, 940, 946, 947, 948
   - Update console.log labels from "Transients per beat" / "Transients/beat" / "t/b" to notes/sec equivalents
-  - Update expected values from notes/beat to notes/sec (need BPM context)
+  - Update expected values from notes/beat to notes/sec (need BPM context from test setup)
 - **File:** `playlist-data-engine/tests/integration/phraseDensityAnalysis.integration.test.ts`
 
 ---
@@ -206,6 +220,10 @@ interface TempoAwareQuantizerConfig {
   - Applies to `mid` and `high` bands (low is already forced to `straight_8th`)
   - Overrides `straight_16th` grid decisions → `straight_8th`
   - Overrides `triplet_8th` grid decisions → `straight_8th` at very high BPM
+- [ ] **Grid confidence handling:** When overriding a grid decision:
+  - Set `confidence: 1.0` (forced/authoritative — matches pattern used by `getBandGridType()` at `RhythmQuantizer.ts:714-719`)
+  - Clear `straightAvgOffset` and `tripletAvgOffset` (they no longer reflect the chosen grid)
+  - This is critical because `RhythmGenerator.collectGridDecisions()` (line 1302) uses confidence to pick between bands — a BPM-forced override should win over a lower-confidence auto-detected decision
 - [ ] This rule ONLY changes grid decisions — it does NOT quantize anything
 - [ ] The quantization happens later using the modified grid decisions, snapping from the **original** transient timestamps to the (now 8th-note) grid
 - [ ] No deduplication needed at this level — dedup happens naturally during quantization when two transients snap to the same grid point
@@ -250,12 +268,14 @@ tempoQuantizationConfig?: TempoAwareQuantizerConfig;
 - [ ] The `DifficultyVariantGenerator`'s subdivision limits should still work on top of tempo-aware limits
 - [ ] After tempo-aware quantization, the grid types are already constrained — difficulty variants further simplify from there
 - [ ] Verify that Easy difficulty (which limits to 8th notes) still works correctly when tempo-aware quantization has already removed 16th notes
+- [ ] Verify that `collectGridDecisions()` correctly prefers BPM-forced decisions (confidence 1.0) over auto-detected ones
 - [ ] No changes expected — the variant generator simply receives the already-constrained streams
 
 ### Task 2.7: Write tests for TempoAwareQuantizer
 
 - [ ] Test that at BPM > 160, grid decisions are changed to `straight_8th` instead of `straight_16th`
 - [ ] Test that at normal BPM (< 160), 16th note grid decisions are preserved
+- [ ] Test that overridden decisions have `confidence: 1.0` and cleared offset fields
 - [ ] Test that quantization uses original transient timestamps (not re-quantized data) — verify quantization error is based on original position
 - [ ] Test the rule interface extensibility (add a no-op rule, verify it chains)
 - [ ] Test deduplication when BPM rule causes transients to snap to same grid point
@@ -284,11 +304,9 @@ Update the frontend to reflect the notes/second metric. The BPM-aware quantizati
 
 ### Task 3.2: Update type imports and usage in frontend
 
-- [ ] Update any frontend code that accesses `transientsPerBeat` on density analysis results to use `notesPerSecond`
-- [ ] Check `rhythmGeneration.ts` type re-exports — the `DensityAnalysisResult` type is re-exported from the engine
-- [ ] Check store code (`beatDetectionStore.ts`) for any density field references
-- [ ] Check `useRhythmGeneration.ts` for any density references
-- **Files:** `src/types/rhythmGeneration.ts`, `src/store/beatDetectionStore.ts`, `src/hooks/useRhythmGeneration.ts`
+- [ ] `rhythmGeneration.ts` — Re-exports `DensityAnalysisResult` from engine. When engine renames fields, this type automatically updates. No code changes needed in this file — but verify consumers use the new `notesPerSecond` field name.
+- [ ] `beatDetectionStore.ts` — Verified: no references to `transientsPerBeat` or density metric fields. Only references `averageDensityMultiplier` which is a subdivision multiplier (out of scope). **No changes needed.**
+- [ ] `useRhythmGeneration.ts` — Verified: no references to density fields at all. **No changes needed.**
 
 ### Task 3.3: Update DensityMeter legend labels
 
@@ -303,27 +321,48 @@ Update engine documentation to reflect both the density unit change and the new 
 
 ### Task 4.1: Update DATA_ENGINE_REFERENCE.md
 
-- [ ] Update `DensityAnalyzer` section — change description from "transients per beat" to "notes per second", update `analyze()` method signature to show BPM parameter
+- [ ] Update `DensityAnalyzer` section (line ~2736):
+  - Change description: "Calculates transients per beat" → "Calculates notes per second"
+  - Update `analyze()` method signature to show `bpm` parameter
+  - Update output types: `BandDensityMetrics.transientsPerBeat` → `notesPerSecond`, same for `min`/`max`
+- [ ] Update `StreamScorer` section (line ~2757):
+  - Update `StreamScorerConfig` table: add `bpm` config option
+  - Update `densityFactor` description in ScoringFactors table (line ~2810): "Bell curve for optimal density scoring" → mention it uses notes/sec with BPM-aware bell curve
+- [ ] Update `CompositeStreamGenerator` section (line ~2812):
+  - Update description to mention BPM-derived density calculation
+- [ ] Update `DifficultyVariantGenerator` section (line ~2825):
+  - Update `targetDensityRange` descriptions from "transients per beat" to "notes per second"
+  - Update `generate()` method signature to show `unifiedBeatMap` parameter (already there)
 - [ ] Update `RhythmQuantizer` section — mention the decide-then-quantize architecture and the new `TempoAwareQuantizer` integration
 - [ ] Add `TempoAwareQuantizer` section — document the rule interface, default rules, and configuration options
-- [ ] Update `DifficultyVariantGenerator` section — update `targetDensityRange` descriptions from notes/beat to notes/second
-- [ ] Update `StreamScorer` section — update density factor description from "2 notes per beat" to notes/second
-- [ ] Update `CompositeStreamGenerator` section — update density threshold descriptions
-- [ ] Update `RhythmGenerator` pipeline phases — add Phase 1.4 for tempo-aware quantization
-- [ ] Update `RhythmGenerationOptions` table — add `tempoQuantizationConfig` option
+- [ ] Update `RhythmGenerator` pipeline phases — add tempo-aware quantization phase
+- [ ] Update `RhythmGenerationOptions` table (line ~2511) — add `tempoQuantizationConfig` option
 - **File:** `playlist-data-engine/DATA_ENGINE_REFERENCE.md`
 
 ### Task 4.2: Update BEAT_DETECTION.md
 
-- [ ] Update "Natural Difficulty Detection" table — change "Transients/Beat" column to "Notes/Second" with new thresholds
+- [ ] Update "Natural Difficulty Detection" table (line ~3464):
+  - Change column header: "Transients/Beat" → "Notes/Second"
+  - Update threshold values: `Sparse: < 1.5`, `Moderate: 1.5 - 2.5`, `Dense: > 2.5` → new notes/sec thresholds
+  - **Note:** This table was already stale (code uses 1.0/1.75, doc shows 1.5/2.5) — fix to match new notes/sec thresholds
+- [ ] Update "Grid Decision Metadata" section (line ~3380):
+  - Update `GridDecision` interface example: add `straight_8th` to grid type union (currently only shows `straight_16th | triplet_8th`)
+  - Note that `confidence: 1.0` indicates a forced grid decision (BPM override or band-forced grid)
 - [ ] Update "Rhythm Quantization" section — describe the decide-then-quantize architecture
 - [ ] Add a new subsection under "Rhythm Quantization" for BPM-aware rules:
   - Explain the rule interface design and extensibility
   - Document the high BPM 16th restriction rule
+  - Explain confidence handling: forced overrides set `confidence: 1.0` and clear offset fields
   - Show example of how grid decisions are modified before quantization
   - Contrast with difficulty-based subdivision limits (which happen later in the pipeline)
-- [ ] Update "Scoring and Composite Generation" section — update density factor description
-- [ ] Update "Difficulty Variant Generation" section — update "Target Density Ranges" from notes/beat to notes/second
+- [ ] Update "Scoring and Composite Generation" section (line ~3405):
+  - Update density factor description: "Bell curve—optimal density scores highest" → mention it now uses notes/sec with BPM-aware optimal value
+- [ ] Update "Target Density Ranges" table (line ~3607):
+  - Change column header: "transients per beat" → "notes per second"
+  - Update `Easy: 0 - 1.0 t/b` → `0 - 2.5 notes/sec`
+  - Update `Medium: 1.0 - 1.75 t/b` → `2.5 - 4.5 notes/sec`
+  - Update `Hard: > 1.75 t/b` → `> 4.5 notes/sec`
+- [ ] Update "Subdivision Limits by Difficulty" table (line ~3615) — no unit change needed (these are grid types, not density), but verify `straight_8th` is listed (currently only shows `straight_16th`, `triplet_8th`)
 - **File:** `playlist-data-engine/docs/BEAT_DETECTION.md`
 
 ---
@@ -346,13 +385,13 @@ Update engine documentation to reflect both the density unit change and the new 
 
 ### Engine source files:
 - `playlist-data-engine/src/core/analysis/beat/DensityAnalyzer.ts` — core rename + BPM param
-- `playlist-data-engine/src/core/analysis/beat/CompositeStreamGenerator.ts` — thresholds + calc
-- `playlist-data-engine/src/core/analysis/beat/StreamScorer.ts` — bell curve + BPM
-- `playlist-data-engine/src/core/analysis/beat/DifficultyVariantGenerator.ts` — ranges + calc
+- `playlist-data-engine/src/core/analysis/beat/CompositeStreamGenerator.ts` — thresholds + internal BPM derivation
+- `playlist-data-engine/src/core/analysis/beat/StreamScorer.ts` — bell curve + `bpm` in config
+- `playlist-data-engine/src/core/analysis/beat/DifficultyVariantGenerator.ts` — ranges + `bpm` param on `calculateDensity()`
 - `playlist-data-engine/src/core/analysis/beat/RhythmQuantizer.ts` — decide-then-quantize refactor
 - `playlist-data-engine/src/core/analysis/beat/TempoAwareQuantizer.ts` — **NEW FILE**
 - `playlist-data-engine/src/core/analysis/LevelSerializer.ts` — compat stub field names
-- `playlist-data-engine/src/core/generation/RhythmGenerator.ts` — thread BPM, JSON types
+- `playlist-data-engine/src/core/generation/RhythmGenerator.ts` — thread BPM, pass BPM to StreamScorer config, JSON types
 - `playlist-data-engine/src/core/analysis/beat/index.ts` — export verification
 - `playlist-data-engine/src/index.ts` — export verification
 
@@ -368,9 +407,9 @@ Update engine documentation to reflect both the density unit change and the new 
 
 ### Frontend files:
 - `playlist-data-showcase/src/components/ui/BeatDetectionTab/RhythmGenerationTab/DifficultyConversionPanel.tsx`
-- `playlist-data-showcase/src/types/rhythmGeneration.ts` (if density types are re-exported)
-- `playlist-data-showcase/src/store/beatDetectionStore.ts` (if density fields are referenced)
-- `playlist-data-showcase/src/hooks/useRhythmGeneration.ts` (if density fields are referenced)
+- `playlist-data-showcase/src/types/rhythmGeneration.ts` — no code changes (re-exports auto-update), verify consumers
+- ~~`playlist-data-showcase/src/store/beatDetectionStore.ts`~~ — **verified: no changes needed**
+- ~~`playlist-data-showcase/src/hooks/useRhythmGeneration.ts`~~ — **verified: no changes needed**
 
 ### Documentation:
 - `playlist-data-engine/DATA_ENGINE_REFERENCE.md`
