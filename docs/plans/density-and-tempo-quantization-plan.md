@@ -306,12 +306,19 @@ tempoQuantizationConfig?: TempoAwareQuantizerConfig;
 
 ### Task 2.7: Write tests for TempoAwareQuantizer
 
-- [ ] Test that at BPM > 160, grid decisions are changed to `straight_8th` instead of `straight_16th`
-- [ ] Test that at normal BPM (< 160), 16th note grid decisions are preserved
-- [ ] Test that overridden decisions have `confidence: 1.0` and cleared offset fields
-- [ ] Test that quantization uses original transient timestamps (not re-quantized data) — verify quantization error is based on original position
-- [ ] Test the rule interface extensibility (add a no-op rule, verify it chains)
-- [ ] Test deduplication when BPM rule causes transients to snap to same grid point
+- [x] Test that at BPM > 160, grid decisions are changed to `straight_8th` instead of `straight_16th`
+- [x] Test that at normal BPM (< 160), 16th note grid decisions are preserved
+- [x] Test that overridden decisions have `confidence: 1.0` and cleared offset fields
+- [x] Test that quantization uses original transient timestamps (not re-quantized data) — verify quantization error is based on original position
+- [x] Test the rule interface extensibility (add a no-op rule, verify it chains)
+- [x] Test deduplication when BPM rule causes transients to snap to same grid point
+- **Verified:** 44 tests across 6 describe blocks. All 149 engine test files (5762 tests) pass. Workspace TypeScript compiles cleanly (no errors).
+- **Test coverage:**
+  - `HighBpmGridRestrictionRule` — applies/threshold tests (default and custom config), 16th→8th override, triplet restriction at high BPM, confidence/offset clearing, mixed grid types, field preservation
+  - `TempoAwareQuantizer` — constructor/config, `applyRules()` (enabled/disabled, rule chaining, skip logic, pass-through), `decideGrids()` full pipeline (high/normal BPM, low band, empty transients)
+  - End-to-end decide-then-quantize — BPM rule override during quantization, original timestamp verification, deduplication, no-accuracy-loss at normal BPM
+  - Rule interface extensibility — no-op rule, custom rule alongside built-in rule, rule ordering, applies() gating
+  - `DEFAULT_TEMPO_AWARE_CONFIG` — structure and behavior verification
 - **File:** `playlist-data-engine/src/core/analysis/beat/TempoAwareQuantizer.test.ts`
 
 ---
