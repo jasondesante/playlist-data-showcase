@@ -118,9 +118,10 @@ const GRID_TYPE_LABELS: Record<string, string> = {
 const DRAG_THRESHOLD = 5;
 
 /**
- * Maximum density to show on the meter (for scaling)
- * Notes per second — 8 n/s covers up to ~320 BPM with 16th notes
+ * Range of density to show on the meter (for scaling).
+ * Notes per second — display starts at 0.5 (below sparse threshold) up to 2.0.
  */
+const MIN_DENSITY_DISPLAY = 0.5;
 const MAX_DENSITY_DISPLAY = 2.0;
 
 // ============================================================
@@ -141,15 +142,17 @@ interface DensityMeterProps {
  * Displays threshold markers and the current position with explanation.
  */
 function DensityMeter({ notesPerSecond, naturalDifficulty, densityCategory }: DensityMeterProps) {
-    // Calculate threshold positions
-    const sparseThresholdPercent = (DENSITY_THRESHOLDS.sparse / MAX_DENSITY_DISPLAY) * 100;
-    const denseThresholdPercent = (DENSITY_THRESHOLDS.dense / MAX_DENSITY_DISPLAY) * 100;
+    const densityRange = MAX_DENSITY_DISPLAY - MIN_DENSITY_DISPLAY;
+
+    // Calculate threshold positions (offset by MIN so 0.5 maps to 0%)
+    const sparseThresholdPercent = ((DENSITY_THRESHOLDS.sparse - MIN_DENSITY_DISPLAY) / densityRange) * 100;
+    const denseThresholdPercent = ((DENSITY_THRESHOLDS.dense - MIN_DENSITY_DISPLAY) / densityRange) * 100;
 
     // Calculate position as percentage, clamped to stay within readable bounds
     // Leave 8% padding on each side so the label doesn't go off-screen
     const minPosition = 8;
     const maxPosition = 92;
-    const rawPercent = (notesPerSecond / MAX_DENSITY_DISPLAY) * 100;
+    const rawPercent = ((notesPerSecond - MIN_DENSITY_DISPLAY) / densityRange) * 100;
     const positionPercent = Math.max(minPosition, Math.min(maxPosition, rawPercent));
 
     return (
@@ -1102,7 +1105,8 @@ const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
     // Calculate density bar position (clamped to 0-100%)
     const densityBarPercent = useMemo(() => {
         if (density === undefined) return 0;
-        return Math.min(100, (density / MAX_DENSITY_DISPLAY) * 100);
+        const densityRange = MAX_DENSITY_DISPLAY - MIN_DENSITY_DISPLAY;
+        return Math.min(100, ((density - MIN_DENSITY_DISPLAY) / densityRange) * 100);
     }, [density]);
 
     // Calculate primary grid type (most common grid type in this variant)
@@ -1146,20 +1150,20 @@ const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
                             {/* Zone indicators */}
                             <div
                                 className="difficulty-conversion-density-bar-zone difficulty-conversion-density-bar-zone--easy"
-                                style={{ width: `${(DENSITY_THRESHOLDS.sparse / MAX_DENSITY_DISPLAY) * 100}%` }}
+                                style={{ width: `${((DENSITY_THRESHOLDS.sparse - MIN_DENSITY_DISPLAY) / (MAX_DENSITY_DISPLAY - MIN_DENSITY_DISPLAY)) * 100}%` }}
                             />
                             <div
                                 className="difficulty-conversion-density-bar-zone difficulty-conversion-density-bar-zone--medium"
                                 style={{
-                                    left: `${(DENSITY_THRESHOLDS.sparse / MAX_DENSITY_DISPLAY) * 100}%`,
-                                    width: `${((DENSITY_THRESHOLDS.dense - DENSITY_THRESHOLDS.sparse) / MAX_DENSITY_DISPLAY) * 100}%`
+                                    left: `${((DENSITY_THRESHOLDS.sparse - MIN_DENSITY_DISPLAY) / (MAX_DENSITY_DISPLAY - MIN_DENSITY_DISPLAY)) * 100}%`,
+                                    width: `${((DENSITY_THRESHOLDS.dense - DENSITY_THRESHOLDS.sparse) / (MAX_DENSITY_DISPLAY - MIN_DENSITY_DISPLAY)) * 100}%`
                                 }}
                             />
                             <div
                                 className="difficulty-conversion-density-bar-zone difficulty-conversion-density-bar-zone--hard"
                                 style={{
-                                    left: `${(DENSITY_THRESHOLDS.dense / MAX_DENSITY_DISPLAY) * 100}%`,
-                                    width: `${100 - (DENSITY_THRESHOLDS.dense / MAX_DENSITY_DISPLAY) * 100}%`
+                                    left: `${((DENSITY_THRESHOLDS.dense - MIN_DENSITY_DISPLAY) / (MAX_DENSITY_DISPLAY - MIN_DENSITY_DISPLAY)) * 100}%`,
+                                    width: `${100 - ((DENSITY_THRESHOLDS.dense - MIN_DENSITY_DISPLAY) / (MAX_DENSITY_DISPLAY - MIN_DENSITY_DISPLAY)) * 100}%`
                                 }}
                             />
                             {/* Current density indicator */}
@@ -1171,13 +1175,13 @@ const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
                         {/* Threshold markers */}
                         <div
                             className="difficulty-conversion-density-bar-threshold"
-                            style={{ left: `${(DENSITY_THRESHOLDS.sparse / MAX_DENSITY_DISPLAY) * 100}%` }}
+                            style={{ left: `${((DENSITY_THRESHOLDS.sparse - MIN_DENSITY_DISPLAY) / (MAX_DENSITY_DISPLAY - MIN_DENSITY_DISPLAY)) * 100}%` }}
                         >
                             <span>{DENSITY_THRESHOLDS.sparse}</span>
                         </div>
                         <div
                             className="difficulty-conversion-density-bar-threshold"
-                            style={{ left: `${(DENSITY_THRESHOLDS.dense / MAX_DENSITY_DISPLAY) * 100}%` }}
+                            style={{ left: `${((DENSITY_THRESHOLDS.dense - MIN_DENSITY_DISPLAY) / (MAX_DENSITY_DISPLAY - MIN_DENSITY_DISPLAY)) * 100}%` }}
                         >
                             <span>{DENSITY_THRESHOLDS.dense}</span>
                         </div>
