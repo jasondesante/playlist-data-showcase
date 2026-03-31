@@ -31,29 +31,30 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 
 ### Task 1.1: Update DensityAnalyzer to accept and use BPM
 
-- [ ] Add `bpm: number` parameter to `DensityAnalyzer.analyze(streams, bpm)` method
-- [ ] Add a helper: `notesPerSecond = transientsPerBeat * (bpm / 60)`
-- [ ] Replace all `transientsPerBeat` values in output with `notesPerSecond` equivalents
-- [ ] Update `DensityAnalyzerConfig` thresholds from notes/beat to notes/second
+- [x] Add `bpm: number` parameter to `DensityAnalyzer.analyze(streams, bpm)` method
+- [x] Add a helper: `notesPerSecond = transientsPerBeat * (bpm / 60)`
+- [x] Replace all `transientsPerBeat` values in output with `notesPerSecond` equivalents
+- [x] Update `DensityAnalyzerConfig` thresholds from notes/beat to notes/second
   - Current: sparse < 1.0, dense > 1.75 (notes/beat)
   - New: sparse < ~2.5, dense > ~4.5 (notes/sec at ~150 BPM reference)
   - **Note:** Thresholds need calibration — will use initial values and tune
-- [ ] Rename fields in `BandDensityMetrics`:
+- [x] Rename fields in `BandDensityMetrics`:
   - `transientsPerBeat` → `notesPerSecond`
   - `minTransientsPerBeat` → `minNotesPerSecond`
   - `maxTransientsPerBeat` → `maxNotesPerSecond`
-- [ ] Rename fields in `SectionDensityMetrics`: same renames
-- [ ] Rename fields in `DensityAnalysisResult.combinedMetrics`: same renames
-- [ ] Keep `perBeatDensity` array name (it's per-beat granularity, not the unit) but update `transientCount` to stay as-is (count is unit-independent)
-- [ ] Update `categorizeDensity()` — rename parameter from `transientsPerBeat` to `notesPerSecond`, update threshold comparisons
-- [ ] Update `determineNaturalDifficulty()` — no change needed (it just maps category)
-- [ ] Update `calculateVariance()` — now takes notes/second values as input
-- [ ] Update `analyzeBand()` — convert `transientsPerBeat` calculation to `notesPerSecond` using BPM
-- [ ] Update `calculateCombinedMetrics()` — same conversion
-- [ ] Update `calculateSectionMetrics()` — same conversion
-- [ ] Update JSDoc example at top of file (lines 15-20) — `transientsPerBeat` → `notesPerSecond`
-- [ ] Update all JSDoc comments that reference "transients per beat" → "notes per second"
+- [x] Rename fields in `SectionDensityMetrics`: same renames
+- [x] Rename fields in `DensityAnalysisResult.combinedMetrics`: same renames
+- [x] Keep `perBeatDensity` array name (it's per-beat granularity, not the unit) but update `transientCount` to stay as-is (count is unit-independent)
+- [x] Update `categorizeDensity()` — rename parameter from `transientsPerBeat` to `notesPerSecond`, update threshold comparisons
+- [x] Update `determineNaturalDifficulty()` — no change needed (it just maps category)
+- [x] Update `calculateVariance()` — now takes notes/second values as input
+- [x] Update `analyzeBand()` — convert `transientsPerBeat` calculation to `notesPerSecond` using BPM
+- [x] Update `calculateCombinedMetrics()` — same conversion
+- [x] Update `calculateSectionMetrics()` — same conversion
+- [x] Update JSDoc example at top of file (lines 15-20) — `transientsPerBeat` → `notesPerSecond`
+- [x] Update all JSDoc comments that reference "transients per beat" → "notes per second"
 - **File:** `playlist-data-engine/src/core/analysis/beat/DensityAnalyzer.ts`
+- **Note:** Also updated cascading references in `RhythmGenerator.ts` (analyzeDensity caller, JSON types, serialization), `LevelSerializer.ts` (compat stub), `DensityAnalyzer.test.ts`, `RhythmGenerator.test.ts`, and `LevelSerializer.compatibility.test.ts` to keep the build green.
 
 ### Task 1.2: Update CompositeStreamGenerator density thresholds and calculation
 
