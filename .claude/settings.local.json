@@ -13,7 +13,9 @@
       "Bash(find:*)",
       "Bash(.venv/bin/python:*)",
       "Bash(ls /Users/jasondesante/playlist-data-engine/src/core/generation/../utils/hash*)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Read(//Users/jasondesante/playlist-data-engine/**)",
+      "Bash(npx jest:*)"
     ],
     "deny": [],
     "ask": []

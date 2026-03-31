@@ -70,9 +70,9 @@ const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
  */
 const DENSITY_THRESHOLDS = {
     /** Below this = sparse (easy). Notes per second. */
-    sparse: 0.9,
+    sparse: 1.0,
     /** Above this = dense (hard). Notes per second. */
-    dense: 1.2,
+    dense: 1.5,
 } as const;
 
 /**
