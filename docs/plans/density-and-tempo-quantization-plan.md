@@ -89,24 +89,25 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 
 ### Task 1.4: Update DifficultyVariantGenerator density ranges and calculation
 
-- [ ] Convert `SUBDIVISION_LIMITS.targetDensityRange` from notes/beat to notes/second:
+- [x] Convert `SUBDIVISION_LIMITS.targetDensityRange` from notes/beat to notes/second:
   - Easy: `{ min: 0, max: 2.5 }` (was 0-1.0 notes/beat)
   - Medium: `{ min: 2.5, max: 4.5 }` (was 1.0-1.75 notes/beat)
   - Hard: `{ min: 4.5, max: Infinity }` (was >1.75 notes/beat)
   - Natural: `{ min: 0, max: Infinity }` (unchanged conceptually)
-- [ ] Update `SubdivisionLimitConfig.targetDensityRange` comment: "transients per beat" → "notes per second" (line 195)
-- [ ] Update private `calculateDensity()` method to return notes/second
+- [x] Update `SubdivisionLimitConfig.targetDensityRange` comment: "transients per beat" → "notes per second" (line 195)
+- [x] Update private `calculateDensity()` method to return notes/second
   - **Fix denominator** to use `maxBeatIndex + 1` (count from beat 0, matching DensityAnalyzer's method). Current uses `maxBeat - minBeat + 1` which gives different results when there are leading/trailing gaps — both analyzers must use the same denominator so `reduceDensityToTarget()` compares against the same scale as the analyzer's thresholds
   - Current: `beats.length / (maxBeat - minBeat + 1)` (notes/beat, wrong denominator) — line 979
   - New: `(beats.length / (maxBeatIndex + 1)) * (bpm / 60)` (notes/sec, correct denominator)
   - Add `bpm: number` parameter to `calculateDensity()`
-- [ ] Update `reduceDensityToTarget()` — passes BPM through to `calculateDensity()`; `targetRange` comparison works as-is since both sides are now notes/sec
-- [ ] Thread BPM through callers:
+- [x] Update `reduceDensityToTarget()` — passes BPM through to `calculateDensity()`; `targetRange` comparison works as-is since both sides are now notes/sec
+- [x] Thread BPM through callers:
   - `generateVariant()` (line 629) — already has `unifiedBeatMap`, derive BPM as `unifiedBeatMap.quarterNoteBpm`, pass to `reduceDensityToTarget()` and `calculateDensity()`
   - No signature changes to `generate()` or `generateVariant()` needed — BPM is already available via `unifiedBeatMap`
-- [ ] Update JSDoc comments on SUBDIVISION_LIMITS entries: "transients/beat" → "notes/sec" (lines 106, 121, 138)
-- [ ] Update `calculateDensity()` JSDoc: "Transients per beat" → "Notes per second" (line 963)
+- [x] Update JSDoc comments on SUBDIVISION_LIMITS entries: "transients/beat" → "notes/sec" (lines 106, 121, 138)
+- [x] Update `calculateDensity()` JSDoc: "Transients per beat" → "Notes per second" (line 963)
 - **Note:** The `densityMultiplier` used in enhancement (lines 284, 340, 1396, 1400) is a ratio multiplier, not an absolute density value — these do NOT need conversion
+- **Note:** Added `unifiedBeatMap?.quarterNoteBpm ?? 120` fallback in `generateVariant()` so existing tests (which don't pass `unifiedBeatMap`) still pass. Full test coverage update is Task 1.8.
 - **File:** `playlist-data-engine/src/core/analysis/beat/DifficultyVariantGenerator.ts`
 
 ### Task 1.5: Update RhythmGenerator pipeline
