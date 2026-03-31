@@ -70,9 +70,9 @@ const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
  */
 const DENSITY_THRESHOLDS = {
     /** Below this = sparse (easy). Notes per second. */
-    sparse: 2.5,
+    sparse: 0.9,
     /** Above this = dense (hard). Notes per second. */
-    dense: 4.5,
+    dense: 1.2,
 } as const;
 
 /**
@@ -121,7 +121,7 @@ const DRAG_THRESHOLD = 5;
  * Maximum density to show on the meter (for scaling)
  * Notes per second — 8 n/s covers up to ~320 BPM with 16th notes
  */
-const MAX_DENSITY_DISPLAY = 8.0;
+const MAX_DENSITY_DISPLAY = 2.0;
 
 // ============================================================
 // DensityMeter Component
