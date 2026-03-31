@@ -349,14 +349,15 @@ Update the frontend to reflect the notes/second metric. The BPM-aware quantizati
 
 ### Task 3.2: Update type imports and usage in frontend
 
-- [ ] `rhythmGeneration.ts` — Re-exports `DensityAnalysisResult` from engine. When engine renames fields, this type automatically updates. No code changes needed in this file — but verify consumers use the new `notesPerSecond` field name.
-- [ ] `beatDetectionStore.ts` — Verified: no references to `transientsPerBeat` or density metric fields. Only references `averageDensityMultiplier` which is a subdivision multiplier (out of scope). **No changes needed.**
-- [ ] `useRhythmGeneration.ts` — Verified: no references to density fields at all. **No changes needed.**
+- [x] `rhythmGeneration.ts` — Re-exports `DensityAnalysisResult` from engine. When engine renames fields, this type automatically updates. No code changes needed in this file — but verify consumers use the new `notesPerSecond` field name.
+- [x] `beatDetectionStore.ts` — Verified: no references to `transientsPerBeat` or density metric fields. Only references `averageDensityMultiplier` which is a subdivision multiplier (out of scope). **No changes needed.**
+- [x] `useRhythmGeneration.ts` — Verified: no references to density fields at all. **No changes needed.**
 
 ### Task 3.3: Update DensityMeter legend labels
 
-- [ ] Update threshold labels in the legend from notes/beat values to notes/second values (lines 223, 229, 235)
-- [ ] Ensure tooltips reference "notes/sec"
+- [x] Update threshold labels in the legend from notes/beat values to notes/second values (lines 223, 229, 235)
+- [x] Ensure tooltips reference "notes/sec"
+- **Verified:** Tooltips already referenced "notes/sec" (done in Task 3.1). Added " notes/sec" unit to all three legend labels: "Easy: <2.5 notes/sec", "Medium: 2.5-4.5 notes/sec", "Hard: >4.5 notes/sec". TypeScript and Vite builds pass cleanly.
 
 ---
 

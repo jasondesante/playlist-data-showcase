@@ -221,19 +221,19 @@ function DensityMeter({ notesPerSecond, naturalDifficulty, densityCategory }: De
                 <div className="density-meter-legend-item">
                     <span className="density-meter-legend-color density-meter-legend-color--easy" />
                     <span className="density-meter-legend-label">
-                        Easy: &lt;{DENSITY_THRESHOLDS.sparse}
+                        Easy: &lt;{DENSITY_THRESHOLDS.sparse} notes/sec
                     </span>
                 </div>
                 <div className="density-meter-legend-item">
                     <span className="density-meter-legend-color density-meter-legend-color--medium" />
                     <span className="density-meter-legend-label">
-                        Medium: {DENSITY_THRESHOLDS.sparse}-{DENSITY_THRESHOLDS.dense}
+                        Medium: {DENSITY_THRESHOLDS.sparse}-{DENSITY_THRESHOLDS.dense} notes/sec
                     </span>
                 </div>
                 <div className="density-meter-legend-item">
                     <span className="density-meter-legend-color density-meter-legend-color--hard" />
                     <span className="density-meter-legend-label">
-                        Hard: &gt;{DENSITY_THRESHOLDS.dense}
+                        Hard: &gt;{DENSITY_THRESHOLDS.dense} notes/sec
                     </span>
                 </div>
             </div>
