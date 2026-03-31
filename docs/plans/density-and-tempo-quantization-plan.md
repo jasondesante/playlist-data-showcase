@@ -329,18 +329,23 @@ Update the frontend to reflect the notes/second metric. The BPM-aware quantizati
 
 ### Task 3.1: Update DifficultyConversionPanel density display
 
-- [ ] Change "X.XX notes/beat" labels to "X.XX notes/sec" (lines 159, 1141)
-- [ ] Update tooltip labels: "notes/beat" → "notes/sec" (lines 168, 176, 184)
-- [ ] Update `DENSITY_THRESHOLDS` constant values from notes/beat to notes/second (lines 71-74)
-  - `sparse: 1.0` → `sparse: ~2.5`
-  - `dense: 1.75` → `dense: ~4.5`
-- [ ] Update `densityStatus` useMemo threshold comparisons (lines 1086-1098)
-- [ ] Update `MAX_DENSITY_DISPLAY` if needed (currently 2.5, will need to be higher for notes/sec)
-- [ ] Update `DensityMeter` component:
+- [x] Change "X.XX notes/beat" labels to "X.XX notes/sec" (lines 159, 1141)
+- [x] Update tooltip labels: "notes/beat" → "notes/sec" (lines 168, 176, 184)
+- [x] Update `DENSITY_THRESHOLDS` constant values from notes/beat to notes/second (lines 71-74)
+  - `sparse: 1.0` → `sparse: 2.5`
+  - `dense: 1.75` → `dense: 4.5`
+- [x] Update `densityStatus` useMemo threshold comparisons (lines 1086-1098) — no changes needed, already uses `DENSITY_THRESHOLDS` constants which were updated
+- [x] Update `MAX_DENSITY_DISPLAY` if needed (currently 2.5, will need to be higher for notes/sec)
+  - Changed to `8.0` (covers up to ~320 BPM with 16th notes)
+- [x] Update `DensityMeter` component:
   - Rename prop `transientsPerBeat` → `notesPerSecond` (line 131)
-  - Update threshold position calculations (lines 144-145, 151)
-- [ ] Update all inline bar zone widths that use `DENSITY_THRESHOLDS` (lines 1148, 1153-1154, 1160-1161, 1173, 1179)
-- **File:** `playlist-data-showcase/src/components/ui/BeatDetectionTab/RhythmGenerationTab/DifficultyConversionPanel.tsx`
+  - Update threshold position calculations (lines 144-145, 151) — no changes needed, already uses `DENSITY_THRESHOLDS` / `MAX_DENSITY_DISPLAY`
+- [x] Update all inline bar zone widths that use `DENSITY_THRESHOLDS` (lines 1148, 1153-1154, 1160-1161, 1173, 1179) — no changes needed, already uses constants
+- [x] Replace local `compositeDensity` (notes/beat) with engine's `rhythm.analysis.densityAnalysis.combinedMetrics.notesPerSecond`
+- [x] Update `variantDensities` to compute notes/sec by deriving BPM from composite beats: `notesPerSecond = (beats.length / totalQuarterNotes) * (bpm / 60)`
+- [x] Updated `DifficultyConversionColumn` `density` prop comment: "notes per quarter note" → "notes per second"
+- **Verified:** TypeScript compilation clean (no errors). Vite build clean (no errors). All density displays now use notes/sec thresholds (2.5/4.5) and labels.
+- **File:** `src/components/ui/BeatDetectionTab/RhythmGenerationTab/DifficultyConversionPanel.tsx`
 
 ### Task 3.2: Update type imports and usage in frontend
 

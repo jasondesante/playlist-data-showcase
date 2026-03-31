@@ -69,10 +69,10 @@ const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
  * These values come from DensityAnalyzer in playlist-data-engine
  */
 const DENSITY_THRESHOLDS = {
-    /** Below this = sparse (easy) */
-    sparse: 1.0,
-    /** Above this = dense (hard) */
-    dense: 1.75,
+    /** Below this = sparse (easy). Notes per second. */
+    sparse: 2.5,
+    /** Above this = dense (hard). Notes per second. */
+    dense: 4.5,
 } as const;
 
 /**
@@ -119,16 +119,17 @@ const DRAG_THRESHOLD = 5;
 
 /**
  * Maximum density to show on the meter (for scaling)
+ * Notes per second — 8 n/s covers up to ~320 BPM with 16th notes
  */
-const MAX_DENSITY_DISPLAY = 2.5;
+const MAX_DENSITY_DISPLAY = 8.0;
 
 // ============================================================
 // DensityMeter Component
 // ============================================================
 
 interface DensityMeterProps {
-    /** The actual transients per beat value from analysis */
-    transientsPerBeat: number;
+    /** The actual notes per second value from analysis */
+    notesPerSecond: number;
     /** The determined natural difficulty */
     naturalDifficulty: DifficultyLevel;
     /** The density category from analysis */
@@ -139,7 +140,7 @@ interface DensityMeterProps {
  * Visual meter showing where the track's density falls on the difficulty scale.
  * Displays threshold markers and the current position with explanation.
  */
-function DensityMeter({ transientsPerBeat, naturalDifficulty, densityCategory }: DensityMeterProps) {
+function DensityMeter({ notesPerSecond, naturalDifficulty, densityCategory }: DensityMeterProps) {
     // Calculate threshold positions
     const sparseThresholdPercent = (DENSITY_THRESHOLDS.sparse / MAX_DENSITY_DISPLAY) * 100;
     const denseThresholdPercent = (DENSITY_THRESHOLDS.dense / MAX_DENSITY_DISPLAY) * 100;
@@ -148,7 +149,7 @@ function DensityMeter({ transientsPerBeat, naturalDifficulty, densityCategory }:
     // Leave 8% padding on each side so the label doesn't go off-screen
     const minPosition = 8;
     const maxPosition = 92;
-    const rawPercent = (transientsPerBeat / MAX_DENSITY_DISPLAY) * 100;
+    const rawPercent = (notesPerSecond / MAX_DENSITY_DISPLAY) * 100;
     const positionPercent = Math.max(minPosition, Math.min(maxPosition, rawPercent));
 
     return (
@@ -156,7 +157,7 @@ function DensityMeter({ transientsPerBeat, naturalDifficulty, densityCategory }:
             <div className="density-meter-header">
                 <span className="density-meter-title">Note Density Analysis</span>
                 <span className="density-meter-value">
-                    {transientsPerBeat.toFixed(2)} notes/beat
+                    {notesPerSecond.toFixed(2)} notes/sec
                 </span>
             </div>
 
@@ -165,7 +166,7 @@ function DensityMeter({ transientsPerBeat, naturalDifficulty, densityCategory }:
                 <div
                     className="density-meter-zone density-meter-zone--easy"
                     style={{ width: `${sparseThresholdPercent}%` }}
-                    title={`Easy zone: < ${DENSITY_THRESHOLDS.sparse} notes/beat`}
+                    title={`Easy zone: < ${DENSITY_THRESHOLDS.sparse} notes/sec`}
                 />
                 <div
                     className="density-meter-zone density-meter-zone--medium"
@@ -173,7 +174,7 @@ function DensityMeter({ transientsPerBeat, naturalDifficulty, densityCategory }:
                         left: `${sparseThresholdPercent}%`,
                         width: `${denseThresholdPercent - sparseThresholdPercent}%`
                     }}
-                    title={`Medium zone: ${DENSITY_THRESHOLDS.sparse} - ${DENSITY_THRESHOLDS.dense} notes/beat`}
+                    title={`Medium zone: ${DENSITY_THRESHOLDS.sparse} - ${DENSITY_THRESHOLDS.dense} notes/sec`}
                 />
                 <div
                     className="density-meter-zone density-meter-zone--hard"
@@ -181,7 +182,7 @@ function DensityMeter({ transientsPerBeat, naturalDifficulty, densityCategory }:
                         left: `${denseThresholdPercent}%`,
                         width: `${100 - denseThresholdPercent}%`
                     }}
-                    title={`Hard zone: > ${DENSITY_THRESHOLDS.dense} notes/beat`}
+                    title={`Hard zone: > ${DENSITY_THRESHOLDS.dense} notes/sec`}
                 />
 
                 {/* Threshold markers */}
@@ -1062,7 +1063,7 @@ interface DifficultyConversionColumnProps {
     color: string;
     currentTime?: number;
     zoomLevel?: number;
-    /** Density (notes per quarter note) for this variant */
+    /** Density (notes per second) for this variant */
     density?: number;
     /** Total quarter notes in the track */
     totalQuarterNotes?: number;
@@ -1138,7 +1139,7 @@ const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
                     <div className="difficulty-conversion-density-header">
                         <span className="difficulty-conversion-density-label">Density</span>
                         <span className="difficulty-conversion-density-value">{density.toFixed(2)}</span>
-                        <span className="difficulty-conversion-density-unit">notes/beat</span>
+                        <span className="difficulty-conversion-density-unit">notes/sec</span>
                     </div>
                     <div className="difficulty-conversion-density-bar">
                         <div className="difficulty-conversion-density-bar-track">
@@ -1319,25 +1320,34 @@ export function DifficultyConversionPanel({
         return Math.max(...compositeBeats.map(b => b.beatIndex)) + 1;
     }, [compositeBeats]);
 
-    // Calculate composite density (notes per quarter note) using merged beats
-    // This is consistent with how variant densities are calculated
-    const compositeDensity = useMemo(() => {
-        if (totalQuarterNotes === 0) return 0;
-        return compositeBeats.length / totalQuarterNotes;
-    }, [compositeBeats, totalQuarterNotes]);
+    // Use engine's notesPerSecond for the density meter
+    const compositeNotesPerSecond = rhythm.analysis.densityAnalysis.combinedMetrics.notesPerSecond;
 
-    // Calculate density (notes per quarter note) for each variant
+    // Derive BPM from composite beats (quarterNoteInterval = 60 / BPM)
+    // Use the first two beats to estimate, or fall back to metadata duration
+    const estimatedBpm = useMemo(() => {
+        if (compositeBeats.length < 2) return 120;
+        const beat0 = compositeBeats[0];
+        const beat1 = compositeBeats[1];
+        if (beat1.beatIndex <= beat0.beatIndex) return 120;
+        const quarterNoteInterval = (beat1.timestamp - beat0.timestamp) / (beat1.beatIndex - beat0.beatIndex);
+        if (quarterNoteInterval <= 0) return 120;
+        return 60 / quarterNoteInterval;
+    }, [compositeBeats]);
+
+    // Calculate density (notes per second) for each variant
     const variantDensities = useMemo(() => {
         if (totalQuarterNotes === 0) {
             return { natural: 0, easy: 0, medium: 0, hard: 0 };
         }
+        const bpmFactor = estimatedBpm / 60;
         return {
-            natural: variants.natural.beats.length / totalQuarterNotes,
-            easy: variants.easy.beats.length / totalQuarterNotes,
-            medium: variants.medium.beats.length / totalQuarterNotes,
-            hard: variants.hard.beats.length / totalQuarterNotes,
+            natural: (variants.natural.beats.length / totalQuarterNotes) * bpmFactor,
+            easy: (variants.easy.beats.length / totalQuarterNotes) * bpmFactor,
+            medium: (variants.medium.beats.length / totalQuarterNotes) * bpmFactor,
+            hard: (variants.hard.beats.length / totalQuarterNotes) * bpmFactor,
         };
-    }, [variants, totalQuarterNotes]);
+    }, [variants, totalQuarterNotes, estimatedBpm]);
 
     return (
         <div className={`difficulty-conversion-panel ${className || ''}`}>
@@ -1369,7 +1379,7 @@ export function DifficultyConversionPanel({
 
             {/* Density Meter - shows note density, thresholds, and natural difficulty */}
             <DensityMeter
-                transientsPerBeat={compositeDensity}
+                notesPerSecond={compositeNotesPerSecond}
                 naturalDifficulty={naturalDifficulty}
                 densityCategory={rhythm.analysis.densityAnalysis.combinedMetrics.densityCategory}
             />
