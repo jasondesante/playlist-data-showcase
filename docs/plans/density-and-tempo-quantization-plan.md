@@ -252,12 +252,12 @@ interface TempoAwareQuantizerConfig {
 
 ### Task 2.4: Implement TempoAwareQuantizer class
 
-- [ ] Constructor takes `TempoAwareQuantizerConfig`
-- [ ] Main method: `decideGrids(transients, unifiedBeatMap, band)` → `GridDecision[]`
+- [x] Constructor takes `TempoAwareQuantizerConfig`
+- [x] Main method: `decideGrids(transients, unifiedBeatMap, band)` → `GridDecision[]`
   - Calls the base `RhythmQuantizer.decideGrids()` to get initial grid decisions
   - Then applies each applicable rule to modify the grid decisions
   - Returns the final, BPM-constrained grid decisions
-- [ ] The TempoAwareQuantizer plugs into the decide-then-quantize flow:
+- [x] The TempoAwareQuantizer plugs into the decide-then-quantize flow:
   ```
   decideGrids()           →  RhythmQuantizer base decisions
   ↓
@@ -265,7 +265,9 @@ interface TempoAwareQuantizerConfig {
   ↓
   quantizeToGrids()       →  Quantize from original timestamps to final grid
   ```
-- [ ] Default config includes the high BPM restriction rule
+- [x] Default config includes the high BPM restriction rule
+- [x] Exported `TempoAwareQuantizer` class and `DEFAULT_TEMPO_AWARE_CONFIG` from both `beat/index.ts` and `src/index.ts`
+- **Verified:** Engine TypeScript compiles cleanly (no new errors). All 147 test files (5717 tests) pass. Workspace TypeScript compilation clean (no errors). Pre-existing flaky performance test still fails (unrelated).
 - **File:** `playlist-data-engine/src/core/analysis/beat/TempoAwareQuantizer.ts`
 
 ### Task 2.5: Integrate into RhythmGenerator pipeline
