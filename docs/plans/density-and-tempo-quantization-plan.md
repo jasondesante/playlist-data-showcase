@@ -192,7 +192,7 @@ This means there is only ONE quantization pass. The BPM rules are consulted duri
 
 ### Task 2.2: Design the TempoAwareQuantizer rule interface
 
-- [ ] Define a `TempoQuantizationRule` interface:
+- [x] Define a `TempoQuantizationRule` interface:
 ```typescript
 interface TempoQuantizationRule {
   id: string;
@@ -215,7 +215,7 @@ interface TempoRuleContext {
   transients: TransientResult[];
 }
 ```
-- [ ] Define `TempoAwareQuantizerConfig`:
+- [x] Define `TempoAwareQuantizerConfig`:
 ```typescript
 interface TempoAwareQuantizerConfig {
   rules: TempoQuantizationRule[];
@@ -223,7 +223,13 @@ interface TempoAwareQuantizerConfig {
   enabled: boolean;
 }
 ```
-- [ ] Create file: `playlist-data-engine/src/core/analysis/beat/TempoAwareQuantizer.ts`
+- [x] Create file: `playlist-data-engine/src/core/analysis/beat/TempoAwareQuantizer.ts`
+  - Defined `TempoQuantizationRule`, `TempoRuleContext`, and `TempoAwareQuantizerConfig` interfaces
+  - Added comprehensive JSDoc documenting the decide-then-quantize architecture and rule contract
+  - `TempoRuleContext.band` uses `'low' | 'mid' | 'high'` literal union (matching RhythmQuantizer's `BandType`)
+  - `TempoAwareQuantizerConfig.enabled` is optional (defaults to true)
+  - All three types exported from `beat/index.ts`
+- **Verified:** Engine build passes cleanly. All 148 test files (5718 tests) pass. Workspace TypeScript compilation clean (no errors).
 
 ### Task 2.3: Implement the first rule — High BPM 16th note restriction
 
