@@ -286,6 +286,36 @@
     line-height: 1.4;
 }
 
+/* Seed input */
+.auto-level-settings__seed-input {
+    width: 100%;
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--muted));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.auto-level-settings__seed-input:focus {
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.2);
+}
+
+.auto-level-settings__seed-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auto-level-settings__seed-input::placeholder {
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-sans);
+    font-style: italic;
+}
+
 /* Advanced toggle */
 .auto-level-settings__advanced-toggle {
     border-top: 1px solid hsl(var(--border));

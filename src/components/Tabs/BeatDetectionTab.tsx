@@ -301,6 +301,7 @@ export function BeatDetectionTab() {
                         maxCumulativeReduction: 0.5,
                     }
                     : undefined,
+                seed: autoLevelSettings.seed,
             });
         }
     }, [
@@ -401,6 +402,7 @@ export function BeatDetectionTab() {
                 buttons: {
                     pitchInfluenceWeight: autoLevelSettings.pitchInfluenceWeight,
                 },
+                seed: autoLevelSettings.seed,
                 pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
                 crepeModelUrl: autoLevelSettings.crepeModelUrl,
                 voicingThreshold: autoLevelSettings.voicingThreshold,
@@ -717,6 +719,7 @@ export function BeatDetectionTab() {
                                                 maxCumulativeReduction: 0.5,
                                             }
                                             : undefined,
+                                        seed: autoLevelSettings.seed,
                                     });
                                 }
                             }}
@@ -741,6 +744,7 @@ export function BeatDetectionTab() {
                                                 maxCumulativeReduction: 0.5,
                                             }
                                             : undefined,
+                                        seed: autoLevelSettings.seed,
                                     });
                                 }
                             }}
@@ -808,6 +812,7 @@ export function BeatDetectionTab() {
                                         buttons: {
                                             pitchInfluenceWeight: autoLevelSettings.pitchInfluenceWeight,
                                         },
+                                        seed: autoLevelSettings.seed,
                                         pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
                                         crepeModelUrl: autoLevelSettings.crepeModelUrl,
                                         voicingThreshold: autoLevelSettings.voicingThreshold,

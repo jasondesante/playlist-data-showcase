@@ -182,6 +182,13 @@ export interface AutoLevelSettings {
     // ============================================================
 
     /**
+     * Seed for deterministic level generation.
+     * When provided, the same seed + same audio + same settings always produces
+     * the same level. When empty/undefined, generation is non-deterministic.
+     */
+    seed?: string;
+
+    /**
      * Controller mode for button mapping.
      * 'ddr' = 4 directional buttons (up, down, left, right)
      * 'guitar_hero' = 5 fret buttons
@@ -237,6 +244,7 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     densityMaxRetries: 0,       // No retries by default
     scoringConfig: undefined,   // Uses engine defaults when undefined
     // Level Settings (Task 1.5)
+    seed: undefined,            // No seed by default — non-deterministic
     controllerMode: 'ddr',      // DDR mode by default
     pitchInfluenceWeight: 0.8,  // Strong pitch influence
     voicingThreshold: 0.2,      // Default voicing threshold

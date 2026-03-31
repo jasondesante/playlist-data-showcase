@@ -17,6 +17,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { ChevronDown, Settings2, Sliders, RotateCcw, Info, Waves, Target, Scale, Joystick, Music2, Cpu } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { CollapsibleSection } from '../Party/CollapsibleSection';
+import { Tooltip } from './Tooltip';
 import type {
     AutoLevelSettings as AutoLevelSettingsType,
     DifficultyLevel,
@@ -234,6 +235,14 @@ export function AutoLevelSettings({
         (e: React.ChangeEvent<HTMLInputElement>) => {
             const value = parseFloat(e.target.value);
             handleChange('voicingThreshold', value);
+        },
+        [handleChange]
+    );
+
+    const handleSeedChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const value = e.target.value.trim();
+            handleChange('seed', value.length > 0 ? value : undefined);
         },
         [handleChange]
     );
@@ -459,6 +468,23 @@ export function AutoLevelSettings({
                                     <p className="auto-level-settings__slider-help">
                                         Determines button layout for gameplay. DDR uses 4 directional buttons; Guitar Hero uses 5 fret buttons.
                                     </p>
+                                </div>
+
+                                {/* Seed for deterministic generation */}
+                                <div className="auto-level-settings__form-group">
+                                    <div className="auto-level-settings__form-label">
+                                        Seed
+                                        <Tooltip content="Optional seed for deterministic generation. The same seed + audio + settings always produces the same level. Leave empty for random generation." />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        className="auto-level-settings__seed-input"
+                                        value={settings.seed ?? ''}
+                                        onChange={handleSeedChange}
+                                        disabled={disabled}
+                                        placeholder="Random"
+                                        spellCheck={false}
+                                    />
                                 </div>
 
                                 {/* Pitch Detection Toggle */}

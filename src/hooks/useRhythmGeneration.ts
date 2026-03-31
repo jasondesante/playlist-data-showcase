@@ -267,6 +267,7 @@ export const useRhythmGeneration = (): UseRhythmGenerationReturn => {
                 // Pass phrase analyzer config
                 phraseAnalyzerConfig: options?.phraseAnalyzerConfig,
                 verbose: options?.verbose ?? false,
+                seed: options?.seed,
             };
 
             const generator = new RhythmGenerator(generatorOptions);

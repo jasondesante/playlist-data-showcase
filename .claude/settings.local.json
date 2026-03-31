@@ -11,7 +11,9 @@
       "mcp__RepoPrompt__apply_edits",
       "mcp__RepoPrompt__file_actions",
       "Bash(find:*)",
-      "Bash(.venv/bin/python:*)"
+      "Bash(.venv/bin/python:*)",
+      "Bash(ls /Users/jasondesante/playlist-data-engine/src/core/generation/../utils/hash*)",
+      "Bash(npx vite:*)"
     ],
     "deny": [],
     "ask": []
