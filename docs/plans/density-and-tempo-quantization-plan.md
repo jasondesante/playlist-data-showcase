@@ -292,11 +292,17 @@ tempoQuantizationConfig?: TempoAwareQuantizerConfig;
 
 ### Task 2.6: Verify difficulty variant generation interaction
 
-- [ ] The `DifficultyVariantGenerator`'s subdivision limits should still work on top of tempo-aware limits
-- [ ] After tempo-aware quantization, the grid types are already constrained — difficulty variants further simplify from there
-- [ ] Verify that Easy difficulty (which limits to 8th notes) still works correctly when tempo-aware quantization has already removed 16th notes
-- [ ] Verify that `collectGridDecisions()` correctly prefers BPM-forced decisions (confidence 1.0) over auto-detected ones
-- [ ] No changes expected — the variant generator simply receives the already-constrained streams
+- [x] The `DifficultyVariantGenerator`'s subdivision limits should still work on top of tempo-aware limits
+- [x] After tempo-aware quantization, the grid types are already constrained — difficulty variants further simplify from there
+- [x] Verify that Easy difficulty (which limits to 8th notes) still works correctly when tempo-aware quantization has already removed 16th notes
+- [x] Verify that `collectGridDecisions()` correctly prefers BPM-forced decisions (confidence 1.0) over auto-detected ones
+- [x] No changes expected — the variant generator simply receives the already-constrained streams
+- **Verified by code analysis (no code changes needed):**
+  - Pipeline order confirmed: quantize (with BPM rules) → composite → variant generation. The variant generator receives already-constrained `CompositeBeat` objects whose `gridType` reflects BPM-forced decisions.
+  - `simplifyBeats()` at line 824-828 passes through beats whose `gridType` is already in the target difficulty's `allowedGridTypes` — so when tempo rules already converted 16th→8th, Easy's simplification is a no-op (correct).
+  - `collectGridDecisions()` at `RhythmGenerator.ts:1325-1342` merges all band grid decisions keeping highest `confidence`. BPM-forced decisions have `confidence: 1.0` (`TempoAwareQuantizer.ts:202`, `RhythmQuantizer.ts:729`), which wins over auto-detected (< 1.0). When multiple forced decisions collide (e.g., low band forced + mid/high BPM-forced), they agree on the same grid type, so iteration order is irrelevant.
+  - Enhancement path (`createBeatsForEmptyIndex`) correctly reads BPM-constrained grid decisions from the `gridDecisions` map, so interpolation also respects tempo constraints.
+  - All 5718 existing tests pass — no regressions.
 
 ### Task 2.7: Write tests for TempoAwareQuantizer
 
