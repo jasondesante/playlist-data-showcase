@@ -112,16 +112,13 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 
 ### Task 1.5: Update RhythmGenerator pipeline
 
-- [ ] Pass BPM to `DensityAnalyzer.analyze()` — BPM available from `unifiedBeatMap.quarterNoteBpm`
-- [ ] Pass BPM to `StreamScorer` via config — `new StreamScorer({ bpm: unifiedBeatMap.quarterNoteBpm })`
-- [ ] `CompositeStreamGenerator` derives BPM internally from `quarterNoteInterval` (Task 1.2) — no changes here
-- [ ] `DifficultyVariantGenerator` derives BPM internally from `unifiedBeatMap.quarterNoteBpm` (Task 1.4) — no changes here
-- [ ] Update `RhythmMetadata.averageDensity` to be notes/second (line 1127: currently `densityAnalysis.combinedMetrics.transientsPerBeat`)
-- [ ] Update JSON serialization types — rename all `transientsPerBeat` → `notesPerSecond` in:
-  - `BandDensityMetricsJSON` (line 546)
-  - `DensityAnalysisResult.combinedMetrics` JSON (line 566)
-  - `SectionDensityMetricsJSON` (line 575)
-- [ ] Update serialize methods (~line 1867) and deserialize methods (~line 1881) for renamed fields
+- [x] Pass BPM to `DensityAnalyzer.analyze()` — BPM available from `unifiedBeatMap.quarterNoteBpm` (already done in Task 1.1)
+- [x] Pass BPM to `StreamScorer` via config — Added `updateConfig()` method to `StreamScorer`; `scoreStreams()` now accepts `bpm` parameter and calls `this.streamScorer.updateConfig({ bpm })` before scoring. BPM comes from `unifiedBeatMap.quarterNoteBpm` at the call site.
+- [x] `CompositeStreamGenerator` derives BPM internally from `quarterNoteInterval` (Task 1.2) — no changes here
+- [x] `DifficultyVariantGenerator` derives BPM internally from `unifiedBeatMap.quarterNoteBpm` (Task 1.4) — no changes here
+- [x] Update `RhythmMetadata.averageDensity` to be notes/second — already uses `notesPerSecond` (done in prior tasks)
+- [x] Update JSON serialization types — all already use `notesPerSecond` (done in prior tasks)
+- [x] Update serialize methods and deserialize methods — all already use `notesPerSecond` (done in prior tasks)
 - **File:** `playlist-data-engine/src/core/generation/RhythmGenerator.ts`
 
 ### Task 1.6: Update LevelSerializer compatibility
