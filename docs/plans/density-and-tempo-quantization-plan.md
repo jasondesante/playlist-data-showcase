@@ -272,20 +272,23 @@ interface TempoAwareQuantizerConfig {
 
 ### Task 2.5: Integrate into RhythmGenerator pipeline
 
-- [ ] Modify `RhythmGenerator.quantizeTransients()` to use the decide-then-quantize flow:
+- [x] Modify `RhythmGenerator.quantizeTransients()` to use the decide-then-quantize flow:
   1. Split transients by band (existing)
   2. Apply density validation per band (existing)
-  3. **Decide grids** — base grid detection per beat
-  4. **Apply BPM-aware rules** — modify grid decisions based on tempo
+  3. **Decide grids** — base grid detection per beat (via `TempoAwareQuantizer.decideGrids()`)
+  4. **Apply BPM-aware rules** — modify grid decisions based on tempo (done internally by `TempoAwareQuantizer`)
   5. **Quantize to final grids** — snap original transients to the BPM-constrained grids
-- [ ] Add `TempoAwareQuantizer` as a collaborator of `RhythmGenerator` (like `RhythmQuantizer`, `DensityAnalyzer`, etc.)
-- [ ] Add to `RhythmGenerationOptions`:
+- [x] Add `TempoAwareQuantizer` as a collaborator of `RhythmGenerator` (like `RhythmQuantizer`, `DensityAnalyzer`, etc.)
+- [x] Add to `RhythmGenerationOptions`:
 ```typescript
-/** BPM-aware quantization rules config. When undefined, default rules apply. */
+/** BPM-aware quantization rules config. When undefined, default rules apply. Set { enabled: false } to disable. */
 tempoQuantizationConfig?: TempoAwareQuantizerConfig;
 ```
-- [ ] Pass BPM from `unifiedBeatMap.quarterNoteBpm`
-- **File:** `playlist-data-engine/src/core/generation/RhythmGenerator.ts`
+- [x] Pass BPM from `unifiedBeatMap.quarterNoteBpm` — `TempoAwareQuantizer` reads this internally from the beat map when calling `decideGrids()`
+- [x] Implementation approach: Added `GridDecider` callback type to `RhythmQuantizer` so `quantize()` accepts an optional custom grid decider. `RhythmGenerator` passes `tempoAwareQuantizer.decideGrids` as this callback, which preserves the density validation and deduplication flow while injecting BPM-aware grid decisions between decide and quantize.
+- [x] Updated cache fingerprint to include `tempoQuantizationConfig`
+- **Verified:** All 148 test files (5718 tests) pass. All 31 RhythmQuantizer tests pass. All 55 RhythmGenerator tests pass. All 13 integration tests pass. Workspace TypeScript compilation clean (no new errors). Pre-existing flaky performance test still passes. Pre-existing showcase test failures (189) are unrelated — involve store migrations, downbeat segments, multi-tempo, subdivision, GrooveMeter, and other UI tests.
+- **Files:** `playlist-data-engine/src/core/generation/RhythmGenerator.ts`, `playlist-data-engine/src/core/analysis/beat/RhythmQuantizer.ts`, `playlist-data-engine/src/core/analysis/beat/index.ts`, `playlist-data-engine/src/index.ts`
 
 ### Task 2.6: Verify difficulty variant generation interaction
 
