@@ -388,29 +388,30 @@ Update engine documentation to reflect both the density unit change and the new 
 
 ### Task 4.2: Update BEAT_DETECTION.md
 
-- [ ] Update "Natural Difficulty Detection" table (line ~3464):
+- [x] Update "Natural Difficulty Detection" table (line ~3464):
   - Change column header: "Transients/Beat" → "Notes/Second"
-  - Update threshold values: `Sparse: < 1.5`, `Moderate: 1.5 - 2.5`, `Dense: > 2.5` → new notes/sec thresholds
-  - **Note:** This table was already stale (code uses 1.0/1.75, doc shows 1.5/2.5) — fix to match new notes/sec thresholds
-- [ ] Update "Grid Decision Metadata" section (line ~3380):
-  - Update `GridDecision` interface example: add `straight_8th` to grid type union (currently only shows `straight_16th | triplet_8th`)
-  - Note that `confidence: 1.0` indicates a forced grid decision (BPM override or band-forced grid)
-- [ ] Update "Rhythm Quantization" section — describe the decide-then-quantize architecture
-- [ ] Add a new subsection under "Rhythm Quantization" for BPM-aware rules:
-  - Explain the rule interface design and extensibility
-  - Document the high BPM 16th restriction rule
-  - Explain confidence handling: forced overrides set `confidence: 1.0` and clear offset fields
-  - Show example of how grid decisions are modified before quantization
-  - Contrast with difficulty-based subdivision limits (which happen later in the pipeline)
-- [ ] Update "Scoring and Composite Generation" section (line ~3405):
-  - Update density factor description: "Bell curve—optimal density scores highest" → mention it now uses notes/sec with BPM-aware optimal value
-- [ ] Update "Target Density Ranges" table (line ~3607):
-  - Change column header: "transients per beat" → "notes per second"
-  - Update `Easy: 0 - 1.0 t/b` → `0 - 2.5 notes/sec`
-  - Update `Medium: 1.0 - 1.75 t/b` → `2.5 - 4.5 notes/sec`
-  - Update `Hard: > 1.75 t/b` → `> 4.5 notes/sec`
-- [ ] Update "Subdivision Limits by Difficulty" table (line ~3615) — no unit change needed (these are grid types, not density), but verify `straight_8th` is listed (currently only shows `straight_16th`, `triplet_8th`)
-- **File:** `playlist-data-engine/docs/BEAT_DETECTION.md`
+  - Update threshold values: `Sparse: < 2.5`, `Moderate: 2.5 - 4.5`, `Dense: > 4.5` notes/sec
+  - Fixed stale doc values (was 1.5/2.5, code now uses 2.5/4.5)
+- [x] Update "Grid Decision Metadata" section (line ~3380):
+  - Updated `GridDecision` interface example: added `straight_8th` to grid type union
+  - Made `straightAvgOffset` and `tripletAvgOffset` optional (undefined when forced)
+  - Added documentation for confidence values (< 1.0 auto-detected, 1.0 forced override)
+- [x] Update "Rhythm Quantization" section — describe the decide-then-quantize architecture
+  - Added "Decide-Then-Quantize Architecture" subsection with ASCII flow diagram
+  - Documents the 3-step flow: decideGrids → applyRules → quantizeToGrids
+- [x] Add a new subsection under "Rhythm Quantization" for BPM-aware rules:
+  - Documented the `TempoQuantizationRule` interface and extensibility
+  - Documented the `HighBpmGridRestrictionRule` with BPM/duration table and threshold table
+  - Explained confidence handling: forced overrides set `confidence: 1.0` and clear offset fields
+  - Documented relationship to difficulty-based subdivision limits (separate pipeline stages)
+- [x] Update "Scoring and Composite Generation" section (line ~3405):
+  - Updated density factor description: "BPM-aware bell curve—optimal density (~4.0 notes/sec) scores highest"
+- [x] Update "Target Density Ranges" table (line ~3607):
+  - Changed column header: "transients per beat" → "notes per second"
+  - Updated `Easy: 0 - 2.5 notes/sec`, `Medium: 2.5 - 4.5 notes/sec`, `Hard: > 4.5 notes/sec`
+- [x] Update "Subdivision Limits by Difficulty" table (line ~3615) — listed all 4 grid types for Medium and Hard
+- [x] Updated Variant Generation Strategy tables: `t/b` values → `notes/sec` values
+- **File:** `docs/engine/docs/BEAT_DETECTION.md`
 
 ---
 
