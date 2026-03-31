@@ -1324,34 +1324,21 @@ export function DifficultyConversionPanel({
         return Math.max(...compositeBeats.map(b => b.beatIndex)) + 1;
     }, [compositeBeats]);
 
-    // Use engine's notesPerSecond for the density meter
-    const compositeNotesPerSecond = rhythm.analysis.densityAnalysis.combinedMetrics.notesPerSecond;
-
-    // Derive BPM from composite beats (quarterNoteInterval = 60 / BPM)
-    // Use the first two beats to estimate, or fall back to metadata duration
-    const estimatedBpm = useMemo(() => {
-        if (compositeBeats.length < 2) return 120;
-        const beat0 = compositeBeats[0];
-        const beat1 = compositeBeats[1];
-        if (beat1.beatIndex <= beat0.beatIndex) return 120;
-        const quarterNoteInterval = (beat1.timestamp - beat0.timestamp) / (beat1.beatIndex - beat0.beatIndex);
-        if (quarterNoteInterval <= 0) return 120;
-        return 60 / quarterNoteInterval;
-    }, [compositeBeats]);
+    // Calculate density from the composite stream (actual beats, not inflated band counts)
+    const compositeNotesPerSecond = duration > 0 ? compositeBeats.length / duration : 0;
 
     // Calculate density (notes per second) for each variant
     const variantDensities = useMemo(() => {
-        if (totalQuarterNotes === 0) {
+        if (!duration || duration <= 0) {
             return { natural: 0, easy: 0, medium: 0, hard: 0 };
         }
-        const bpmFactor = estimatedBpm / 60;
         return {
-            natural: (variants.natural.beats.length / totalQuarterNotes) * bpmFactor,
-            easy: (variants.easy.beats.length / totalQuarterNotes) * bpmFactor,
-            medium: (variants.medium.beats.length / totalQuarterNotes) * bpmFactor,
-            hard: (variants.hard.beats.length / totalQuarterNotes) * bpmFactor,
+            natural: variants.natural.beats.length / duration,
+            easy: variants.easy.beats.length / duration,
+            medium: variants.medium.beats.length / duration,
+            hard: variants.hard.beats.length / duration,
         };
-    }, [variants, totalQuarterNotes, estimatedBpm]);
+    }, [variants, duration]);
 
     return (
         <div className={`difficulty-conversion-panel ${className || ''}`}>
