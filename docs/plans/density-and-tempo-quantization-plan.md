@@ -141,13 +141,14 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 
 ### Task 1.8: Update engine unit tests
 
-- [ ] Update `DensityAnalyzer.test.ts` — all threshold assertions, expected output values, field name references
-- [ ] Update `RhythmGenerator.test.ts` — metadata assertions, JSON serialization field names
-- [ ] Update `LevelSerializer.compatibility.test.ts` — field name assertions (lines 258, 264, 268, 275)
-- [ ] Update `streamScorer.test.ts` — density factor expectations, BPM config
-- [ ] Update `compositeStreamGenerator.test.ts` — natural difficulty assertions
-- [ ] Update `difficultyVariantGenerator.test.ts` — density range expectations
+- [x] Update `DensityAnalyzer.test.ts` — all threshold assertions, expected output values, field name references
+- [x] Update `RhythmGenerator.test.ts` — metadata assertions, JSON serialization field names
+- [x] Update `LevelSerializer.compatibility.test.ts` — field name assertions (lines 258, 264, 268, 275)
+- [x] Update `streamScorer.test.ts` — density factor expectations, BPM config
+- [x] Update `compositeStreamGenerator.test.ts` — natural difficulty assertions, fixed stale "notes/beat" comments
+- [x] Update `difficultyVariantGenerator.test.ts` — density range expectations
 - **Files:** All test files in `playlist-data-engine/tests/` and `src/core/`
+- **Verified:** All 6 test files (261 tests total) pass. All field names use `notesPerSecond`. All tests pass BPM correctly. Fixed 2 stale comments in `compositeStreamGenerator.test.ts` referencing old "notes/beat" units.
 
 ### Task 1.9: Update engine integration tests
 
