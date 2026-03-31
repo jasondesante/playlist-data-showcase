@@ -152,10 +152,11 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 
 ### Task 1.9: Update engine integration tests
 
-- [ ] Update `phraseDensityAnalysis.integration.test.ts` — all `transientsPerBeat` references:
+- [x] Update `phraseDensityAnalysis.integration.test.ts` — all `transientsPerBeat` references:
   - Lines 262, 310, 316, 360, 366, 444, 449, 454, 556, 588, 615, 694, 940, 946, 947, 948
   - Update console.log labels from "Transients per beat" / "Transients/beat" / "t/b" to notes/sec equivalents
   - Update expected values from notes/beat to notes/sec (need BPM context from test setup)
+- **Verified:** All 13 integration tests pass. All `transientsPerBeat` references renamed to `notesPerSecond`. All `analyze()` calls pass BPM 120. All threshold configs converted from notes/beat to notes/sec (×2 at 120 BPM). All expected density values converted. All console.log labels updated. Fixed pre-existing bug: mid band test data now creates 2 transients per beat (matching its "moderate" intent) instead of 1.
 - **File:** `playlist-data-engine/tests/integration/phraseDensityAnalysis.integration.test.ts`
 
 ---
