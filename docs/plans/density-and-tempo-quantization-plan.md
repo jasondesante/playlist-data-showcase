@@ -58,14 +58,14 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 
 ### Task 1.2: Update CompositeStreamGenerator density thresholds and calculation
 
-- [ ] Update `SPARSE_THRESHOLD` and `DENSE_THRESHOLD` constants from notes/beat to notes/second
-- [ ] Update `determineNaturalDifficulty()` to accept BPM and convert to notes/second
+- [x] Update `SPARSE_THRESHOLD` and `DENSE_THRESHOLD` constants from notes/beat to notes/second
+- [x] Update `determineNaturalDifficulty()` to accept BPM and convert to notes/second
   - Current: `notesPerBeat = beats.length / totalQuarterNotes`
   - New: `notesPerSecond = (beats.length / totalQuarterNotes) * (bpm / 60)`
   - This method currently doesn't accept BPM — add it as a parameter
   - Derive BPM inside `generate()` from `streams.streams.low.quarterNoteInterval` (i.e., `60 / quarterNoteInterval`) and pass to `determineNaturalDifficulty()`
   - No changes to the `generate()` signature — BPM is derived internally
-- [ ] Update JSDoc comments: "notes/beat" → "notes/second" (lines 134-136, 345-346)
+- [x] Update JSDoc comments: "notes/beat" → "notes/second" (lines 134-136, 345-346)
 - **File:** `playlist-data-engine/src/core/analysis/beat/CompositeStreamGenerator.ts`
 
 ### Task 1.3: Update StreamScorer density factor
