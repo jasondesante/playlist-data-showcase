@@ -123,9 +123,10 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 
 ### Task 1.6: Update LevelSerializer compatibility
 
-- [ ] Update backward-compat stub that creates fake density data with hardcoded `transientsPerBeat: 0.5`
+- [x] Update backward-compat stub that creates fake density data with hardcoded `transientsPerBeat: 0.5`
   - Change field name to `notesPerSecond` with appropriate value
   - Also rename `minTransientsPerBeat` → `minNotesPerSecond`, `maxTransientsPerBeat` → `maxNotesPerSecond`
+  - **Already done** during Tasks 1.1-1.5 cascading updates. Verified: all fields renamed, value converted to `1.0` notes/sec (0.5 t/b × 120 BPM / 60).
 - **File:** `playlist-data-engine/src/core/analysis/LevelSerializer.ts`
 
 ### Task 1.7: Update engine index.ts exports
