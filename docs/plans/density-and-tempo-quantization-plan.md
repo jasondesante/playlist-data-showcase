@@ -70,18 +70,21 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 
 ### Task 1.3: Update StreamScorer density factor
 
-- [ ] Add `bpm?: number` to `StreamScorerConfig` interface
-- [ ] Update `calculateDensityFactor()` to convert per-beat transient count to notes/sec
+- [x] Add `bpm?: number` to `StreamScorerConfig` interface
+- [x] Update `calculateDensityFactor()` to convert per-beat transient count to notes/sec
   - Current: averages `transientCount` across section beats → notes/beat
   - New: multiply by `(bpm / 60)` to get notes/sec
   - BPM comes from `this.config.bpm`
-- [ ] Update bell curve constants:
+- [x] Update bell curve constants:
   - Current: `optimalDensity = 2.0` (notes/beat), `bellCurveWidth = 1.5`
-  - New: `optimalDensity` should be a notes/sec value — at 120 BPM, 2 notes/beat = 4.0 notes/sec
-  - `bellCurveWidth` needs recalibration for notes/sec scale (multiply by ~2 as starting point)
-- [ ] Update `score()` to validate BPM is available when calculating density factor
-- [ ] Update all JSDoc comments referencing "2 notes per beat" (lines 232, 519, 542-548)
-- [ ] RhythmGenerator will pass BPM via `StreamScorerConfig` when constructing the scorer
+  - New: `optimalDensity = 4.0` (notes/sec, equivalent to 2 notes/beat at 120 BPM), `bellCurveWidth = 3.0`
+  - Bell curve shape is preserved: 2x scale factor matches notes/beat → notes/sec conversion
+  - When BPM is not configured, falls back to `bpmPerSecond = 1` (legacy notes/beat behavior on rescaled curve)
+- [x] Update `score()` to validate BPM is available when calculating density factor
+  - Decided NOT to throw when BPM is missing — fallback to `bpmPerSecond = 1` preserves backward compatibility for tests and standalone usage. BPM validation will happen at the RhythmGenerator level (Task 1.5).
+- [x] Update all JSDoc comments referencing "2 notes per beat" (lines 232, 519, 542-548)
+- [x] RhythmGenerator will pass BPM via `StreamScorerConfig` when constructing the scorer
+- [x] Updated unit test density factor assertions to pass `bpm: 120` and use notes/sec expectations
 - **File:** `playlist-data-engine/src/core/analysis/beat/StreamScorer.ts`
 
 ### Task 1.4: Update DifficultyVariantGenerator density ranges and calculation
