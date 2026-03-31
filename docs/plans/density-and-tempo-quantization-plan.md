@@ -131,9 +131,12 @@ Convert the core density measurement from notes/beat to notes/second. This is th
 
 ### Task 1.7: Update engine index.ts exports
 
-- [ ] Verify all renamed types are still properly exported from `beat/index.ts`
-- [ ] Verify all renamed types are still properly exported from `src/index.ts`
-- [ ] Any new types (if field names changed on interfaces) should be reflected
+- [x] Verify all renamed types are still properly exported from `beat/index.ts`
+- [x] Verify all renamed types are still properly exported from `src/index.ts`
+- [x] Any new types (if field names changed on interfaces) should be reflected
+  - All density types (`BandDensityMetrics`, `SectionDensityMetrics`, `BeatDensityMetrics`, `DensityAnalysisResult`, `DensityAnalyzerConfig`, `DensityCategory`, `NaturalDifficulty`) properly exported in both index files
+  - Fixed pre-existing inconsistency: added `BandBiasWeights` to `beat/index.ts` (was only in `src/index.ts`)
+  - Fixed pre-existing inconsistency: added `VariantBeat` to `src/index.ts` (was only in `beat/index.ts`)
 - **Files:** `playlist-data-engine/src/core/analysis/beat/index.ts`, `playlist-data-engine/src/index.ts`
 
 ### Task 1.8: Update engine unit tests
