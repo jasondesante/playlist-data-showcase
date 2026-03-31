@@ -367,22 +367,23 @@ Update engine documentation to reflect both the density unit change and the new 
 
 ### Task 4.1: Update DATA_ENGINE_REFERENCE.md
 
-- [ ] Update `DensityAnalyzer` section (line ~2736):
+- [x] Update `DensityAnalyzer` section (line ~2736):
   - Change description: "Calculates transients per beat" → "Calculates notes per second"
   - Update `analyze()` method signature to show `bpm` parameter
   - Update output types: `BandDensityMetrics.transientsPerBeat` → `notesPerSecond`, same for `min`/`max`
-- [ ] Update `StreamScorer` section (line ~2757):
+- [x] Update `StreamScorer` section (line ~2757):
   - Update `StreamScorerConfig` table: add `bpm` config option
   - Update `densityFactor` description in ScoringFactors table (line ~2810): "Bell curve for optimal density scoring" → mention it uses notes/sec with BPM-aware bell curve
-- [ ] Update `CompositeStreamGenerator` section (line ~2812):
+- [x] Update `CompositeStreamGenerator` section (line ~2812):
   - Update description to mention BPM-derived density calculation
-- [ ] Update `DifficultyVariantGenerator` section (line ~2825):
+- [x] Update `DifficultyVariantGenerator` section (line ~2825):
   - Update `targetDensityRange` descriptions from "transients per beat" to "notes per second"
   - Update `generate()` method signature to show `unifiedBeatMap` parameter (already there)
-- [ ] Update `RhythmQuantizer` section — mention the decide-then-quantize architecture and the new `TempoAwareQuantizer` integration
-- [ ] Add `TempoAwareQuantizer` section — document the rule interface, default rules, and configuration options
-- [ ] Update `RhythmGenerator` pipeline phases — add tempo-aware quantization phase
-- [ ] Update `RhythmGenerationOptions` table (line ~2511) — add `tempoQuantizationConfig` option
+- [x] Update `RhythmQuantizer` section — mention the decide-then-quantize architecture and the new `TempoAwareQuantizer` integration
+- [x] Add `TempoAwareQuantizer` section — document the rule interface, default rules, and configuration options
+- [x] Update `RhythmGenerator` pipeline phases — add tempo-aware quantization phase
+- [x] Update `RhythmGenerationOptions` table (line ~2511) — add `tempoQuantizationConfig` option
+- **Verified:** TypeScript compilation clean (no errors). All updates applied to `docs/engine/DATA_ENGINE_REFERENCE.md`.
 - **File:** `playlist-data-engine/DATA_ENGINE_REFERENCE.md`
 
 ### Task 4.2: Update BEAT_DETECTION.md
