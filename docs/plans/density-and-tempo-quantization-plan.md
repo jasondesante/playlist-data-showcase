@@ -92,8 +92,9 @@ Convert the core density measurement from notes/beat to notes/second. This is th
   - Natural: `{ min: 0, max: Infinity }` (unchanged conceptually)
 - [ ] Update `SubdivisionLimitConfig.targetDensityRange` comment: "transients per beat" → "notes per second" (line 195)
 - [ ] Update private `calculateDensity()` method to return notes/second
-  - Current: `beats.length / totalBeats` (notes/beat) — line 979
-  - New: `(beats.length / totalBeats) * (bpm / 60)`
+  - **Fix denominator** to use `maxBeatIndex + 1` (count from beat 0, matching DensityAnalyzer's method). Current uses `maxBeat - minBeat + 1` which gives different results when there are leading/trailing gaps — both analyzers must use the same denominator so `reduceDensityToTarget()` compares against the same scale as the analyzer's thresholds
+  - Current: `beats.length / (maxBeat - minBeat + 1)` (notes/beat, wrong denominator) — line 979
+  - New: `(beats.length / (maxBeatIndex + 1)) * (bpm / 60)` (notes/sec, correct denominator)
   - Add `bpm: number` parameter to `calculateDensity()`
 - [ ] Update `reduceDensityToTarget()` — passes BPM through to `calculateDensity()`; `targetRange` comparison works as-is since both sides are now notes/sec
 - [ ] Thread BPM through callers:
