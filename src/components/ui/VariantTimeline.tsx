@@ -29,10 +29,10 @@ import type {
 // ============================================================
 
 /**
- * Extended grid type including simplified subdivisions for Easy difficulty
- * Includes all values from GridType plus 'straight_8th' and 'quarter_triplet'
+ * Extended grid type including simplified subdivisions for Easy difficulty.
+ * Re-exported from playlist-data-engine for convenience.
  */
-type ExtendedGridType = import('../../types/rhythmGeneration').GridType | 'straight_8th' | 'quarter_triplet';
+type ExtendedGridType = import('playlist-data-engine').ExtendedGridType;
 
 /**
  * A beat in a difficulty variant with extended grid type
@@ -112,6 +112,7 @@ const GRID_TYPE_LABELS: Record<ExtendedGridType, string> = {
     triplet_8th: 'Triplet',
     straight_8th: '8th',
     quarter_triplet: 'Q-Triplet',
+    straight_4th: 'Quarter',
 };
 
 /**

@@ -112,6 +112,7 @@ const GRID_TYPE_LABELS: Record<string, string> = {
     triplet_8th: 'Triplet',
     straight_8th: '8th',
     quarter_triplet: 'Q-Triplet',
+    straight_4th: 'Quarter',
 };
 
 /** Pixels of movement before treating as drag (vs click) */
@@ -983,6 +984,22 @@ interface ConversionStatsProps {
                         {conversionMetadata.sixteenthToEighth}
                     </span>
                 </div>
+                {conversionMetadata.tripletToQuarterTriplet > 0 && (
+                    <div className="difficulty-conversion-stat">
+                        <span className="difficulty-conversion-stat-label">Triplet → Q-Triplet</span>
+                        <span className="difficulty-conversion-stat-value">
+                            {conversionMetadata.tripletToQuarterTriplet}
+                        </span>
+                    </div>
+                )}
+                {conversionMetadata.eighthToQuarter > 0 && (
+                    <div className="difficulty-conversion-stat">
+                        <span className="difficulty-conversion-stat-label">8th → Quarter</span>
+                        <span className="difficulty-conversion-stat-value">
+                            {conversionMetadata.eighthToQuarter}
+                        </span>
+                    </div>
+                )}
                 <div className="difficulty-conversion-stat">
                     <span className="difficulty-conversion-stat-label">Removed</span>
                     <span className="difficulty-conversion-stat-value">
@@ -995,6 +1012,14 @@ interface ConversionStatsProps {
                         {reductionPercent.toFixed(0)}%
                     </span>
                 </div>
+                {conversionMetadata.reductionPasses !== undefined && conversionMetadata.reductionPasses > 1 && (
+                    <div className="difficulty-conversion-stat">
+                        <span className="difficulty-conversion-stat-label">Reduction Passes</span>
+                        <span className="difficulty-conversion-stat-value">
+                            {conversionMetadata.reductionPasses}
+                        </span>
+                    </div>
+                )}
             </div>
         );
     }
