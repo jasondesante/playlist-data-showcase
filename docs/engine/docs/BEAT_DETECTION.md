@@ -3713,31 +3713,42 @@ At slow tempos (< 70 BPM), the static `SUBDIVISION_LIMITS` apply. Use `getTempoA
 
 ### Variant Generation Strategy
 
-The strategy depends on the composite's natural difficulty and BPM:
+The system uses a **global target-based density control** approach that calculates the exact number of beats needed from the target density range, then distributes that count across beat indices. A **grid lock mechanism** runs first to ensure all density operations respect the single-grid-per-beat rule.
 
-#### If Composite is Naturally Hard (Dense)
+#### Grid Lock Per Beat Index
 
-| Variant | Strategy |
-|---------|----------|
-| **Hard** | Composite unchanged (unedited), unless BPM > 120 (then 16th→8th) |
-| **Medium** | Grid conversion (if BPM ≥ 70: 16th→8th, triplet→quarter_triplet) + density reduction to ≤1.5 notes/sec |
-| **Easy** | Grid conversion (16th→8th or →quarter at BPM > 120) + density reduction to ≤1.0 notes/sec |
+Before any density work, the system locks the grid type for each beat index:
 
-#### If Composite is Naturally Medium (Moderate)
+1. **Resolve mixed grids** — Run `enforceSingleGridPerBeat()` to resolve any beats with mixed grid types
+2. **Build lock map** — Create a `Map<number, ExtendedGridType>` mapping each beat index to its dominant grid type
+3. **Fill empty indices** — For indices with no beats, resolve from `gridDecisions` map, then use nearest-neighbor fallback (offsets 1, -1, 2, -2, 3, -3), then default to the allowed grid type for the target difficulty
+4. **All operations respect lock** — Enhancement and simplification use the locked grid type, so `enforceSingleGridPerBeat()` never needs to discard newly-added beats
 
-| Variant | Strategy |
-|---------|----------|
-| **Hard** | Density enhancement using pattern library (with BPM-aware grid conversion if BPM > 120) |
-| **Medium** | Composite unchanged (unedited), unless BPM ≥ 70 (then 16th→8th) |
-| **Easy** | Grid conversion + density reduction to ≤1.0 notes/sec |
+#### Global Target Calculation
 
-#### If Composite is Naturally Easy (Sparse)
+For each difficulty, the system calculates an exact target beat count:
 
-| Variant | Strategy |
-|---------|----------|
-| **Hard** | Heavy density enhancement (with BPM-aware grid conversion if BPM > 120) |
-| **Medium** | Moderate density enhancement (with BPM-aware grid conversion if BPM ≥ 70) |
-| **Easy** | Composite unchanged (unedited), unless BPM > 120 (then 8th→quarter) |
+| Difficulty | Target Density (midpoint) | Target Range |
+|------------|---------------------------|--------------|
+| **Easy** | 0.9 notes/sec | [0, 1.0] |
+| **Medium** | 1.25 notes/sec | [1.0, 1.5] |
+| **Hard** | 1.75 notes/sec | [1.5, ∞) |
+
+The target strategy (`densityTargetStrategy` config) adjusts within the range: `'midpoint'` (center), `'lower'` (conservative), or `'upper'` (aggressive).
+
+#### Strategy by Natural Difficulty
+
+| Natural Difficulty | Target Variant | Strategy |
+|-------------------|----------------|----------|
+| Hard (dense) | Easy | Grid conversion (16th→8th or →quarter at high BPM) + **multi-pass reduction** to ≤1.0 nps |
+| Hard (dense) | Medium | Grid conversion (if BPM ≥ 70) + **multi-pass reduction** to [1.0, 1.5] nps |
+| Hard (dense) | Hard | Unchanged (unless BPM > 120, then grid conversion) |
+| Medium | Easy | Grid conversion + **multi-pass reduction** to ≤1.0 nps |
+| Medium | Medium | Unchanged (unless BPM ≥ 70, then grid conversion) |
+| Medium | Hard | **Empty-index-first enhancement** to ≥1.5 nps |
+| Easy (sparse) | Easy | Unchanged (unless BPM > 120, then grid conversion) |
+| Easy (sparse) | Medium | **Empty-index-first enhancement** to [1.0, 1.5] nps |
+| Easy (sparse) | Hard | **Empty-index-first enhancement** to ≥1.5 nps |
 
 ### Custom Configuration
 
@@ -3746,7 +3757,8 @@ The strategy depends on the composite's natural difficulty and BPM:
 ```typescript
 const generator = new DifficultyVariantGenerator({
     simplificationIntensityThreshold: 0.5,
-    enhancementDensityMultiplier: 2.0,
+    densityTargetStrategy: 'lower',  // More conservative targets
+    maxReductionPasses: 5,           // More passes for difficult songs
     logConversions: true,
 });
 
@@ -3762,11 +3774,12 @@ const config = generator.getConfig();
 | `heavySimplificationIntensityThreshold` | `number` | `0.5` | Min intensity for heavy simplification |
 | `moderateSimplificationIntensityThreshold` | `number` | `0.4` | Threshold for removing offbeat 16ths (hard→medium) |
 | `densityReductionMinIntensity` | `number` | `0.25` | Min intensity for density reduction removal |
-| `enhancementDensityMultiplier` | `number` | `1.5` | Target density multiplier for enhancement (1.0 = no change) |
+| `densityTargetStrategy` | `'midpoint' \| 'lower' \| 'upper'` | `'midpoint'` | Where in the density range to target (midpoint=center, lower=conservative, upper=aggressive) |
+| `maxReductionPasses` | `number` | `3` | Safety limit for density reduction passes (normally stops earlier once midpoint beat count is reached) |
 | `interpolatedBeatIntensity` | `number` | `0.5` | Intensity assigned to interpolated beats (0.0–1.0) |
 | `preferPatternInsertion` | `boolean` | `true` | Prefer pattern insertion over simple interpolation |
 | `maxPatternInsertionSize` | `number` | `4` | Max phrase size (in beats) for pattern insertion |
-| `seed` | `string?` | `undefined` | Deterministic seed for probability rolls. Same seed + same beats always produces the same variant |
+| `seed` | `string?` | `undefined` | Deterministic seed for grid-lock-based distribution. Same seed + same beats always produces the same variant |
 
 ### Simplification Rules
 
@@ -3792,24 +3805,59 @@ When reducing density, beats are assigned a priority score (higher = kept longer
 
 This ensures offbeats with low intensity are removed first, preserving musical structure.
 
+#### Multi-Pass Reduction with Convergence Loop
+
+The reduction algorithm targets a **specific beat count** calculated from the midpoint density (e.g., 0.9 nps for easy, 1.25 nps for medium, 1.75 nps for hard), not just the ceiling of the target range. `calculateBeatCountTarget()` converts the midpoint density into an exact beat count, and the loop removes beats until that count is reached.
+
+| Pass | Protections | Purpose |
+|------|-------------|---------|
+| **Pass 1** | Full protections (intensity ≥ 0.4, priority ≥ 0.75) | First attempt with strict safeguards |
+| **Pass 2** | Relaxed (intensity threshold -0.1, priority threshold -0.15, allow low-significance phrase beats) | Reach targets that Pass 1 can't hit |
+| **Pass 3** | Minimal (only strong beats at beatIndex % 4 === 0 or 2 protected) | Last resort fallback |
+
+After each pass, the algorithm checks if the remaining beat count has reached the midpoint target. If so, it stops. Maximum 3 passes by default (configurable via `maxReductionPasses`). The number of passes used is recorded in `SubdivisionConversionMetadata.reductionPasses`.
+
 ### Density Enhancement
 
-When enhancing to harder difficulties:
+When enhancing to harder difficulties, the system uses a **greedy, deterministic distribution** that prioritizes empty indices first:
 
-1. **First priority**: Insert detected patterns from the phrase library
-2. **Fallback**: Simple grid interpolation if no suitable pattern exists
-3. **Respect grid decisions**: Use the per-beat grid choices (16th vs triplet) from quantization
+#### Distribution Phases
+
+**Phase A — Fill Empty Indices First**:
+- For each empty beat index (no existing beats), assign 1-2 beats at preferred positions
+- Small gaps (1-2 consecutive empty indices): Prefer pattern insertion where neighboring beat context is available
+- Large gaps (3+ consecutive empty indices): Use simple half-note or quarter-note beats to maintain the beat
+
+**Phase B — Fill Partially Occupied Indices**:
+- For each occupied index, calculate remaining slots (`maxPositions - currentCount`)
+- Add beats at empty positions within the locked grid type
+- Pattern insertion is preferred; interpolation is the fallback
+
+#### Deterministic Distribution
+
+No probabilistic rolls are used. The distribution is deterministic and greedy:
+- Empty indices are always prioritized
+- The seed is used only for tiebreaking when multiple indices are equally good candidates
+- Timestamps are always derived from the authoritative `unifiedBeatMap` quarter-note positions
+
+#### Grid Lock Respect
+
+All enhancement operations respect the locked grid type per index:
+- `createBeatsForEmptyIndex()` uses the locked grid type
+- `interpolateBeats()` uses the locked grid type and derives timestamps from `unifiedBeatMap`
+- This ensures `enforceSingleGridPerBeat()` never needs to discard newly-added beats
 
 ### Variant Metadata
 
 ```typescript
 interface DifficultyVariant {
   difficulty: 'easy' | 'medium' | 'hard';
-  stream: GeneratedBeat[];
-  isUnedited: boolean;  // true for the composite's natural difficulty
+  beats: VariantBeat[];            // The beats in this variant (may include converted grid types)
+  isUnedited: boolean;             // true for the composite's natural difficulty
   editType: 'none' | 'simplified' | 'interpolated' | 'pattern_inserted';
-  editAmount: number;   // 0-1, how much was changed
-  patternsInserted?: string[];  // IDs of patterns inserted (if any)
+  editAmount: number;              // 0-1, how much was changed
+  patternsInserted?: string[];     // IDs of patterns inserted (if any)
+  conversionMetadata?: SubdivisionConversionMetadata;  // Metadata about subdivision conversions (includes reductionPasses)
 }
 ```
 
@@ -3832,9 +3880,9 @@ const easyVariant = rhythm.difficultyVariants.easy;
 const mediumVariant = rhythm.difficultyVariants.medium;
 const hardVariant = rhythm.difficultyVariants.hard;
 
-console.log(`Easy: ${easyVariant.stream.length} beats`);
-console.log(`Medium: ${mediumVariant.stream.length} beats`);
-console.log(`Hard: ${hardVariant.stream.length} beats`);
+console.log(`Easy: ${easyVariant.beats.length} beats`);
+console.log(`Medium: ${mediumVariant.beats.length} beats`);
+console.log(`Hard: ${hardVariant.beats.length} beats`);
 ```
 
 ### Generate with Default Settings
@@ -3848,7 +3896,7 @@ const analyzer = new AudioAnalyzer();
 const rhythm = await analyzer.generateRhythm('song.mp3', 'track-001');
 
 // Use the medium variant for gameplay
-const beats = rhythm.difficultyVariants.medium.stream;
+const beats = rhythm.difficultyVariants.medium.beats;
 console.log(`Natural difficulty: ${rhythm.composite.naturalDifficulty}`);
 console.log(`Total beats: ${beats.length}`);
 ```
@@ -3880,7 +3928,7 @@ const bassGenerator = new RhythmGenerator({
 const rhythm = await bassGenerator.generate(audioBuffer, beatMap, interpolatedBeatMap);
 
 // All variants are from the low band
-console.log(rhythm.difficultyVariants.medium.stream);
+console.log(rhythm.difficultyVariants.medium.beats);
 ```
 
 ### Custom Scoring with Band Bias
@@ -4067,9 +4115,9 @@ console.log(`Analysis complete:`);
 console.log(`  Transients detected: ${rhythm.metadata.transientsDetected}`);
 console.log(`  Phrases found: ${rhythm.metadata.phrasesDetected}`);
 console.log(`  Natural difficulty: ${rhythm.metadata.naturalDifficulty}`);
-console.log(`  Easy beats: ${rhythm.difficultyVariants.easy.stream.length}`);
-console.log(`  Medium beats: ${rhythm.difficultyVariants.medium.stream.length}`);
-console.log(`  Hard beats: ${rhythm.difficultyVariants.hard.stream.length}`);
+console.log(`  Easy beats: ${rhythm.difficultyVariants.easy.beats.length}`);
+console.log(`  Medium beats: ${rhythm.difficultyVariants.medium.beats.length}`);
+console.log(`  Hard beats: ${rhythm.difficultyVariants.hard.beats.length}`);
 ```
 
 ---
