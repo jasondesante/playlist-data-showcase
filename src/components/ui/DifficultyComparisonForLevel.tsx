@@ -300,7 +300,7 @@ export function DifficultyComparisonForLevel({
                         </span>
                         <span className="difficulty-comparison-summary-separator">•</span>
                         <span className="difficulty-comparison-summary-item">
-                            Mode: <strong>{controllerMode === 'ddr' ? 'DDR' : 'Guitar Hero'}</strong>
+                            Mode: <strong>{controllerMode === 'ddr' ? 'DDR' : controllerMode === 'guitar_hero' ? 'Guitar Hero' : 'Tap'}</strong>
                         </span>
                     </div>
                 </div>

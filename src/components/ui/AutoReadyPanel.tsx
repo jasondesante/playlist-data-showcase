@@ -130,7 +130,7 @@ function LevelSummaryCard({ level, difficulty }: LevelSummaryCardProps) {
                 </div>
                 <div className="auto-ready-summary-mode">
                     <Gamepad2 size={14} />
-                    {stats.controllerMode === 'ddr' ? 'DDR Mode' : 'Guitar Hero Mode'}
+                    {stats.controllerMode === 'ddr' ? 'DDR Mode' : stats.controllerMode === 'guitar_hero' ? 'Guitar Hero Mode' : 'Tap Mode'}
                 </div>
             </div>
             <div className="auto-ready-summary-stats">

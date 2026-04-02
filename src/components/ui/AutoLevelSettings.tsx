@@ -515,9 +515,28 @@ export function AutoLevelSettings({
                                                 1 2 3 4 5
                                             </span>
                                         </button>
+                                        <button
+                                            type="button"
+                                            className={cn(
+                                                'auto-level-settings__controller-mode-button',
+                                                settings.controllerMode === 'tap' && 'auto-level-settings__controller-mode-button--active'
+                                            )}
+                                            onClick={() => handleControllerModeChange('tap')}
+                                            disabled={disabled}
+                                            title="Single tap per beat — no direction or fret assignment"
+                                        >
+                                            <span className="auto-level-settings__controller-mode-button-text">
+                                                Tap
+                                            </span>
+                                            <span className="auto-level-settings__controller-mode-button-desc">
+                                                Tap
+                                            </span>
+                                        </button>
                                     </div>
                                     <p className="auto-level-settings__slider-help">
-                                        Determines button layout for gameplay. DDR uses 4 directional buttons; Guitar Hero uses 5 fret buttons.
+                                        {settings.controllerMode === 'tap'
+                                            ? 'Tap mode: all beats are simple taps with no button assignment. Pitch detection and button mapping are skipped for fastest generation.'
+                                            : 'Determines button layout for gameplay. DDR uses 4 directional buttons; Guitar Hero uses 5 fret buttons.'}
                                     </p>
                                 </div>
 
@@ -539,6 +558,7 @@ export function AutoLevelSettings({
                                 </div>
 
                                 {/* Pitch Detection Toggle */}
+                                {settings.controllerMode !== 'tap' && (
                                 <div className="auto-level-settings__form-group">
                                     <div className="auto-level-settings__toggle-row">
                                         <label className="auto-level-settings__toggle-label">
@@ -565,8 +585,10 @@ export function AutoLevelSettings({
                                             : 'Pitch detection will be skipped. Button mapping uses rhythmic patterns only.'}
                                     </p>
                                 </div>
+                                )}
 
                                 {/* Pitch Influence Weight Slider */}
+                                {settings.controllerMode !== 'tap' && (
                                 <div className="auto-level-settings__form-group">
                                     <div className="auto-level-settings__slider-header">
                                         <label className="auto-level-settings__slider-label">
@@ -598,8 +620,10 @@ export function AutoLevelSettings({
                                         How strongly pitch analysis affects button mapping. Drag to 0% to disable pitch detection entirely.
                                     </p>
                                 </div>
+                                )}
 
                                 {/* Voicing Threshold Slider */}
+                                {settings.controllerMode !== 'tap' && (
                                 <div className="auto-level-settings__form-group">
                                     <div className="auto-level-settings__slider-header">
                                         <label className="auto-level-settings__slider-label">
@@ -628,6 +652,7 @@ export function AutoLevelSettings({
                                         Minimum confidence for pitch detection. Higher values require stronger pitch signals to be considered valid.
                                     </p>
                                 </div>
+                                )}
 
                                 {/* Difficulty Selection */}
                                 <div className="auto-level-settings__form-group">
@@ -661,6 +686,8 @@ export function AutoLevelSettings({
                     </div>
 
                     {/* Essentia Pitch Detection Toggle */}
+                    {settings.controllerMode !== 'tap' && (
+                    <>
                     <div className="auto-level-settings__essentia-toggle">
                         <button
                             type="button"
@@ -767,6 +794,8 @@ export function AutoLevelSettings({
                             </div>
                         )}
                     </div>
+                    </>
+                    )}
 
                     {/* Advanced Options Toggle */}
                     <div className="auto-level-settings__advanced-toggle">

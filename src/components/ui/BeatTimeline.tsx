@@ -928,7 +928,7 @@ export function BeatTimeline({
                 ? 'beat-timeline-marker--selected'
                 : ''
             } ${
-              beat.requiredKey ? 'beat-timeline-marker--has-key' : ''
+              beat.requiredKey && beat.requiredKey !== 'tap' ? 'beat-timeline-marker--has-key' : ''
             }`}
             style={{
               left: `${position * 100}%`,
@@ -966,7 +966,8 @@ export function BeatTimeline({
             {/* Downbeat accent ring */}
             {beat.isDownbeat && <div className="beat-timeline-marker-ring" />}
             {/* Phase 5 Task 5.2: Required key indicator for rhythm game chart mode */}
-            {beat.requiredKey && (
+            {/* Tap mode has no directional/fret key to display */}
+            {beat.requiredKey && beat.requiredKey !== 'tap' && (
               <KeyIndicatorMini
                 requiredKey={beat.requiredKey as SupportedKey}
                 isUpcoming={isUpcoming}

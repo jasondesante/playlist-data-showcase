@@ -42,6 +42,7 @@ interface PatternInfo {
 // ============================================================
 
 function getAllPatterns(controllerMode: ControllerMode): PatternInfo[] {
+    if (controllerMode === 'tap') return [];
     const library = controllerMode === 'ddr' ? DDR_PATTERN_LIBRARY : GUITAR_HERO_PATTERN_LIBRARY;
     return library.patterns.map(pattern => ({
         id: pattern.id,
@@ -139,6 +140,16 @@ export function PatternLibraryBrowser({ controllerMode, className }: PatternLibr
     const allPatterns = useMemo(() => getAllPatterns(controllerMode), [controllerMode]);
     const allCategories = useMemo(() => getCategories(allPatterns), [allPatterns]);
     const stats = useMemo(() => {
+        if (controllerMode === 'tap') {
+            return {
+                totalPatterns: 0,
+                byCategory: { basic: 0, roll: 0, stream: 0, jump: 0, chord: 0, transition: 0 },
+                byDifficulty: Object.fromEntries(Array.from({ length: 10 }, (_, i) => [i + 1, 0])),
+                averageKeyCount: 0,
+                minKeys: 0,
+                maxKeys: 0,
+            };
+        }
         if (controllerMode === 'ddr') {
             return getPatternLibraryStats(DDR_PATTERN_LIBRARY);
         }
@@ -175,7 +186,7 @@ export function PatternLibraryBrowser({ controllerMode, className }: PatternLibr
                     <span className="plb-header-title">
                         Pattern Library
                         <span className="plb-header-mode">
-                            {controllerMode === 'ddr' ? 'DDR (4-Panel)' : 'Guitar Hero (5-Fret)'}
+                            {controllerMode === 'ddr' ? 'DDR (4-Panel)' : controllerMode === 'guitar_hero' ? 'Guitar Hero (5-Fret)' : 'Tap'}
                         </span>
                     </span>
                 </div>

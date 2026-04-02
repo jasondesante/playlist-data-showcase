@@ -145,7 +145,7 @@ function getButtonMappingData(level: GeneratedLevel | undefined | null): {
  * Format controller mode for display.
  */
 function formatControllerMode(mode: ControllerMode): string {
-    return mode === 'ddr' ? 'DDR (4-Panel)' : 'Guitar Hero (5-Fret)';
+    return mode === 'ddr' ? 'DDR (4-Panel)' : mode === 'guitar_hero' ? 'Guitar Hero (5-Fret)' : 'Tap';
 }
 
 // ============================================================
@@ -240,7 +240,7 @@ export function ButtonMappingPanel({ className, pitchInfluenceWeight, voicingThr
                 <h3 className="button-panel-title">Button Mapping</h3>
                 <span className={cn(
                     'button-mode-badge',
-                    mappingData.controllerMode === 'ddr' ? 'button-mode-ddr' : 'button-mode-guitar'
+                    mappingData.controllerMode === 'ddr' ? 'button-mode-ddr' : mappingData.controllerMode === 'guitar_hero' ? 'button-mode-guitar' : 'button-mode-tap'
                 )}>
                     {formatControllerMode(mappingData.controllerMode)}
                 </span>

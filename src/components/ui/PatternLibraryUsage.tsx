@@ -73,6 +73,7 @@ function getPatternDetails(
     patternId: string,
     controllerMode: ControllerMode
 ): PatternInfo | null {
+    if (controllerMode === 'tap') return null;
     if (controllerMode === 'ddr') {
         const pattern = getPatternById(DDR_PATTERN_LIBRARY, patternId);
         if (!pattern) return null;
@@ -216,7 +217,7 @@ function PatternKeySequence({ keys, controllerMode }: PatternKeySequenceProps) {
         <div className="pattern-keys-sequence">
             {keys.map((key, index) => (
                 <span key={index} className="pattern-key-wrapper">
-                    {controllerMode === 'ddr' ? (
+                    {controllerMode === 'tap' ? null : controllerMode === 'ddr' ? (
                         <DDRButtonIcon button={key as DDRButton} size="sm" />
                     ) : (
                         <GuitarHeroButtonIcon button={key as GuitarHeroButton} size="sm" />

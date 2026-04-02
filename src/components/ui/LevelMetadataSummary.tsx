@@ -66,7 +66,7 @@ const DIFFICULTY_LABELS: Record<DifficultyLevel, string> = {
  */
 function formatControllerMode(mode: ControllerMode | undefined): string {
     if (!mode) return 'DDR';
-    return mode === 'ddr' ? 'DDR' : 'Guitar Hero';
+    return mode === 'ddr' ? 'DDR' : mode === 'guitar_hero' ? 'Guitar Hero' : 'Tap';
 }
 
 /**
