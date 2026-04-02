@@ -34,7 +34,8 @@ import type { StreamScorerConfig } from 'playlist-data-engine';
 import {
     DEFAULT_AUTO_LEVEL_SETTINGS,
     DEFAULT_BAND_TRANSIENT_CONFIG,
-    DEFAULT_RHYTHMIC_BALANCE_CONFIG,
+    getControllerModeScoringDefaults,
+    getControllerModeBalanceDefaults,
 } from '../../types/rhythmGeneration';
 import './AutoLevelSettings.css';
 
@@ -229,9 +230,28 @@ export function AutoLevelSettings({
 
     const handleControllerModeChange = useCallback(
         (mode: ControllerMode) => {
-            handleChange('controllerMode', mode);
+            const scoringDefaults = getControllerModeScoringDefaults(mode);
+            const balanceDefaults = getControllerModeBalanceDefaults(mode);
+            onChange({
+                ...settings,
+                controllerMode: mode,
+                scoringConfig: {
+                    ioiVarianceWeight: scoringDefaults.ioiVarianceWeight,
+                    syncopationWeight: scoringDefaults.syncopationWeight,
+                    phraseSignificanceWeight: scoringDefaults.phraseSignificanceWeight,
+                    densityWeight: scoringDefaults.densityWeight,
+                    bandBiasWeights: settings.scoringConfig?.bandBiasWeights
+                        ?? scoringDefaults.bandBiasWeights,
+                },
+                rhythmicBalanceConfig: {
+                    strongBeatEmphasis: balanceDefaults.strongBeatEmphasis,
+                    downbeatProximityRange: balanceDefaults.downbeatProximityRange,
+                    fillEmptyMeasures: balanceDefaults.fillEmptyMeasures,
+                    addedBeatIntensity: balanceDefaults.addedBeatIntensity,
+                },
+            });
         },
-        [handleChange]
+        [handleChange, settings, onChange]
     );
 
     const handleVoicingThresholdChange = useCallback(
@@ -254,12 +274,13 @@ export function AutoLevelSettings({
     // Scoring Config Handlers
     // ============================================================================
 
-    // Default factor weights from the engine
+    // Default factor weights from the engine (mode-specific)
+    const modeScoringDefaults = getControllerModeScoringDefaults(settings.controllerMode);
     const DEFAULT_FACTOR_WEIGHTS = {
-        ioiVarianceWeight: 0.30,
-        syncopationWeight: 0.30,
-        phraseSignificanceWeight: 0.25,
-        densityWeight: 0.15,
+        ioiVarianceWeight: modeScoringDefaults.ioiVarianceWeight,
+        syncopationWeight: modeScoringDefaults.syncopationWeight,
+        phraseSignificanceWeight: modeScoringDefaults.phraseSignificanceWeight,
+        densityWeight: modeScoringDefaults.densityWeight,
     };
 
     // Default band bias weights from the engine
@@ -367,6 +388,9 @@ export function AutoLevelSettings({
     // Rhythmic Balance Handlers
     // ============================================================================
 
+    // Mode-specific balance defaults (for reset and fallback)
+    const modeBalanceDefaults = getControllerModeBalanceDefaults(settings.controllerMode);
+
     const STRONG_BEAT_EMPHASIS_OPTIONS: { value: StrongBeatEmphasis; label: string; description: string }[] = [
         { value: 'natural', label: 'Natural', description: 'Emphasize beats 1, 3 in 4/4 (metric accents)' },
         { value: 'backbeat', label: 'Backbeat', description: 'Emphasize beats 2, 4 in 4/4 (rock/pop feel)' },
@@ -394,22 +418,35 @@ export function AutoLevelSettings({
         <K extends keyof import('../../types/rhythmGeneration').RhythmicBalanceConfig>(
             key: K
         ): import('../../types/rhythmGeneration').RhythmicBalanceConfig[K] => {
-            return settings.rhythmicBalanceConfig?.[key] ?? DEFAULT_RHYTHMIC_BALANCE_CONFIG[key];
+            return settings.rhythmicBalanceConfig?.[key] ?? modeBalanceDefaults[key];
         },
-        [settings.rhythmicBalanceConfig]
+        [settings.rhythmicBalanceConfig, modeBalanceDefaults]
     );
 
     const resetRhythmicBalance = useCallback(() => {
         if (disabled) return;
+        const defaults = getControllerModeBalanceDefaults(settings.controllerMode);
         onChange({
             ...settings,
-            rhythmicBalanceConfig: undefined,
+            rhythmicBalanceConfig: {
+                strongBeatEmphasis: defaults.strongBeatEmphasis,
+                downbeatProximityRange: defaults.downbeatProximityRange,
+                fillEmptyMeasures: defaults.fillEmptyMeasures,
+                addedBeatIntensity: defaults.addedBeatIntensity,
+            },
         });
     }, [disabled, onChange, settings]);
 
     const hasCustomRhythmicBalance = useMemo((): boolean => {
-        return settings.rhythmicBalanceConfig !== undefined;
-    }, [settings.rhythmicBalanceConfig]);
+        const defaults = modeBalanceDefaults;
+        const config = settings.rhythmicBalanceConfig;
+        return config !== undefined && (
+            config.strongBeatEmphasis !== defaults.strongBeatEmphasis ||
+            config.downbeatProximityRange !== defaults.downbeatProximityRange ||
+            config.fillEmptyMeasures !== defaults.fillEmptyMeasures ||
+            config.addedBeatIntensity !== defaults.addedBeatIntensity
+        );
+    }, [settings.rhythmicBalanceConfig, modeBalanceDefaults]);
 
     return (
         <div className={cn('auto-level-settings', className)}>
@@ -1468,12 +1505,12 @@ export function AutoLevelSettings({
                                                         type="range"
                                                         min="0"
                                                         max="4"
-                                                        step="1"
+                                                        step="0.5"
                                                         value={getRhythmicBalanceValue('downbeatProximityRange')}
                                                         onChange={(e) =>
                                                             handleRhythmicBalanceChange(
                                                                 'downbeatProximityRange',
-                                                                parseInt(e.target.value, 10)
+                                                                parseFloat(e.target.value)
                                                             )
                                                         }
                                                         className="auto-level-settings__band-config-slider"

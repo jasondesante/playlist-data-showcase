@@ -73,7 +73,7 @@ export type {
 } from 'playlist-data-engine';
 
 export type { StrongBeatEmphasis, BalancerAction, BalanceStats, BalanceResult } from 'playlist-data-engine';
-export { DEFAULT_RHYTHMIC_BALANCE_CONFIG, isStrongBeatForEmphasis } from 'playlist-data-engine';
+export { DEFAULT_RHYTHMIC_BALANCE_CONFIG, isStrongBeatForEmphasis, getControllerModeScoringDefaults, getControllerModeBalanceDefaults } from 'playlist-data-engine';
 
 /**
  * Generation mode for the beat detection wizard.

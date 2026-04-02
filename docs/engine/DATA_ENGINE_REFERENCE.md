@@ -2882,6 +2882,22 @@ constructor(config?: Partial<StreamScorerConfig>)
 |--------|---------|-------------|
 | `score(streams, phraseAnalysis, densityAnalysis)` | `StreamScoringResult` | Score band streams for rhythmic interest |
 
+**Exported Functions:**
+
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `getControllerModeScoringDefaults(controllerMode)` | `StreamScorerConfig` | Get default scoring config for a controller mode. Returns mode-specific factor weights with shared band bias defaults |
+
+**Controller Mode Scoring Defaults:**
+
+Factor weights vary per controller mode (band bias weights are shared):
+
+| Controller Mode | `ioiVarianceWeight` | `syncopationWeight` | `phraseSignificanceWeight` | `densityWeight` |
+|-----------------|--------------------:|--------------------:|---------------------------:|----------------:|
+| DDR | 0.20 | 0.15 | 0.35 | 0.30 |
+| Guitar Hero | 0.30 | 0.30 | 0.25 | 0.15 |
+| Tap | 0.30 | 0.20 | 0.30 | 0.20 |
+
 **Scoring Factors:**
 
 | Factor | Description |
@@ -2927,7 +2943,7 @@ constructor(config?: Partial<RhythmicBalanceConfig>)
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `strongBeatEmphasis` | `'natural' \| 'backbeat' \| 'neutral'` | `'natural'` | Which beats are "strong" for density reduction priority. Derives grouping from time signature automatically |
-| `downbeatProximityRange` | `number` | `2` | Max distance in quarter-note beats from an upbeat note to the nearest downbeat. 0 = same beat only, 4 = same measure |
+| `downbeatProximityRange` | `number` | `2` | Max distance in quarter-note beats from an upbeat note to the nearest downbeat. 0 = same beat only, 1 = one beat, 1.5 = one beat (half-beat increments supported), 4 = same measure. Supports whole beats and 0.5 increments; intermediate fractional values are rounded down to the nearest supported step (e.g., 1.7 behaves like 1.5) |
 | `fillEmptyMeasures` | `boolean` | `true` | Whether to fill empty measures with a beat on beat 1 downbeat |
 | `addedBeatIntensity` | `number` | `0.45` | Intensity for beats added by the balancer. Lower than detected beats so they're removable during density reduction |
 
@@ -2985,6 +3001,15 @@ Describes what action the balancer took on a beat (tagged on `CompositeBeat.bala
 | `isMetricWeakBeat(beatInMeasure, groupSize)` | `boolean` | Check if position is a weak beat in its group |
 | `isStrongBeatForEmphasis(beatInMeasure, beatsPerMeasure, emphasis)` | `boolean` | Check if beat is "strong" based on emphasis mode |
 | `findActiveSegment(segments, beatIndex)` | `DownbeatSegment` | Find the active segment for a beat index |
+| `getControllerModeBalanceDefaults(controllerMode)` | `RhythmicBalanceConfig` | Get default balance config for a controller mode (`'ddr'`, `'guitar_hero'`, `'tap'`). Each mode has tailored `downbeatProximityRange`: DDR=1, Guitar Hero=2, Tap=1.5 |
+
+**Controller Mode Balance Defaults:**
+
+| Controller Mode | `strongBeatEmphasis` | `downbeatProximityRange` | `fillEmptyMeasures` | `addedBeatIntensity` |
+|-----------------|---------------------|--------------------------|---------------------|----------------------|
+| DDR | `'natural'` | `1` | `true` | `0.45` |
+| Guitar Hero | `'natural'` | `2` | `true` | `0.45` |
+| Tap | `'natural'` | `1.5` | `true` | `0.45` |
 
 ### DifficultyVariantGenerator
 *Location:* *[src/core/analysis/beat/DifficultyVariantGenerator.ts](src/core/analysis/beat/DifficultyVariantGenerator.ts)*
@@ -3053,12 +3078,13 @@ This section covers pitch detection, melody analysis, button mapping, and level 
 
 ### Controller Modes
 
-The button mapper supports two controller styles:
+The button mapper supports three controller styles:
 
 | Mode | Buttons | Axes | Pitch Expression | See Details |
 |------|---------|------|------------------|-------------|
 | DDR | up, down, left, right | 2 (vertical + horizontal) | Vertical: up→high, down→low; Horizontal: left→low, right→high | [BEAT_DETECTION.md#ddr-mode](docs/BEAT_DETECTION.md#ddr-mode) |
 | Guitar Hero | 1, 2, 3, 4, 5 | 1 (horizontal only) | Fretboard metaphor: 1→lowest pitch, 5→highest pitch | [BEAT_DETECTION.md#guitar-hero-mode](docs/BEAT_DETECTION.md#guitar-hero-mode) |
+| Tap | tap | 0 | None — skips pitch detection entirely, all beats are simple taps | [BEAT_DETECTION.md#tap-mode](docs/BEAT_DETECTION.md#tap-mode) |
 
 ### PitchDetector
 
@@ -3301,7 +3327,7 @@ new ButtonMapper(config: Partial<ButtonMappingConfig>)
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `controllerMode` | string | Controller mode used ('ddr' or 'guitar_hero') |
+| `controllerMode` | string | Controller mode used ('ddr', 'guitar_hero', or 'tap') |
 | `keysUsed` | string[] | All unique keys used in the chart |
 | `pitchInfluencedBeats` | number | Number of beats influenced by pitch |
 | `patternInfluencedBeats` | number | Number of beats from pattern library |
@@ -3323,7 +3349,7 @@ new ButtonMapper(config: Partial<ButtonMappingConfig>)
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `difficulty` | DifficultyPreset | 'medium' | Difficulty preset |
-| `controllerMode` | ControllerMode | 'ddr' | Controller mode ('ddr' or 'guitar_hero') |
+| `controllerMode` | ControllerMode | 'ddr' | Controller mode ('ddr', 'guitar_hero', or 'tap') |
 | `pitchInfluenceWeight` | number | 1.0 | How strongly pitch affects buttons (0-1) |
 | `emphasizeDownbeats` | boolean | true | Emphasize downbeats with specific patterns |
 | `emphasizeSyncopation` | boolean | false | Emphasize syncopated beats |
