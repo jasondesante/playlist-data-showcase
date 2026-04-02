@@ -200,6 +200,12 @@
     font-family: var(--font-mono);
 }
 
+/* Measure boundary lines (downbeats) - more prominent than regular beat lines */
+.multi-band-grid-line--measure {
+    background: hsl(var(--muted-foreground) / 0.3);
+    width: 2px;
+}
+
 /* ============================================
    SUBDIVISION GRID LINES (16th notes/triplets)
    Fainter than beat lines

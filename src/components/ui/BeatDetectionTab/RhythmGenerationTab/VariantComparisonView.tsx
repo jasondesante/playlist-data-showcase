@@ -283,7 +283,7 @@ const VariantRow = memo(function VariantRow({
         if (!unifiedBeatMap || unifiedBeatMap.beats.length === 0) return [];
 
         const segments = unifiedBeatMap.downbeatConfig?.segments;
-        const lines: Array<{ timestamp: number; beatIndex: number; position: number; isStrongBeat: boolean }> = [];
+        const lines: Array<{ timestamp: number; beatIndex: number; position: number; isStrongBeat: boolean; isDownbeat: boolean; measureNumber: number }> = [];
 
         for (let i = 0; i < unifiedBeatMap.beats.length; i++) {
             const beat = unifiedBeatMap.beats[i];
@@ -307,7 +307,14 @@ const VariantRow = memo(function VariantRow({
                         isStrong = isStrongBeatForEmphasis(beat.beatInMeasure, activeSegment.timeSignature.beatsPerMeasure, strongBeatEmphasis);
                     }
 
-                    lines.push({ timestamp, beatIndex: i, position, isStrongBeat: isStrong });
+                    lines.push({
+                        timestamp,
+                        beatIndex: i,
+                        position,
+                        isStrongBeat: isStrong,
+                        isDownbeat: beat.isDownbeat ?? false,
+                        measureNumber: beat.measureNumber ?? 0,
+                    });
                 }
             }
         }
@@ -408,16 +415,16 @@ const VariantRow = memo(function VariantRow({
                 <div className="variant-comparison-track-bg" />
 
                 {/* Beat grid lines (quarter notes) - strong beats get extra emphasis */}
-                {visibleGridLines.map(({ beatIndex, position, isStrongBeat }) => (
+                {visibleGridLines.map(({ beatIndex, position, isStrongBeat, isDownbeat, measureNumber }) => (
                     <div
                         key={`grid-line-${beatIndex}`}
-                        className={`variant-comparison-grid-line${isStrongBeat ? ' variant-comparison-grid-line--strong' : ''}`}
+                        className={`variant-comparison-grid-line${isDownbeat ? ' variant-comparison-grid-line--measure' : ''}${isStrongBeat ? ' variant-comparison-grid-line--strong' : ''}`}
                         style={{ left: `${position * 100}%` }}
                     >
-                        {/* Beat number label for every 4th beat (measure numbers) */}
-                        {beatIndex % 4 === 0 && (
+                        {/* Measure number label on downbeats */}
+                        {isDownbeat && (
                             <span className="variant-comparison-grid-label">
-                                {Math.floor(beatIndex / 4) + 1}
+                                {measureNumber + 1}
                             </span>
                         )}
                     </div>

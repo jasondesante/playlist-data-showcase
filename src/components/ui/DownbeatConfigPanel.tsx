@@ -165,13 +165,17 @@ export function DownbeatConfigPanel({ disabled = false, hideEditDownbeat = false
             return;
         }
 
-        // Clamp to valid range on blur
-        const clampedValue = Math.max(0, Math.min(parsedValue, maxBeatIndex));
-        if (clampedValue !== parsedValue) {
-            useBeatDetectionStore.getState().actions.setDownbeatPosition(
-                clampedValue,
-                timeSignature
-            );
+        // Only clamp to valid range when we have a beat map.
+        // Before analysis, we don't know the beat count yet — accept the user's input
+        // as a pre-configuration that the engine will validate during generation.
+        if (maxBeatIndex > 0) {
+            const clampedValue = Math.max(0, Math.min(parsedValue, maxBeatIndex));
+            if (clampedValue !== parsedValue) {
+                useBeatDetectionStore.getState().actions.setDownbeatPosition(
+                    clampedValue,
+                    timeSignature
+                );
+            }
         }
     };
 

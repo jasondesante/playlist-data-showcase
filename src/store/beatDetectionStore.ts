@@ -1938,11 +1938,13 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             const generator = getGenerator(mergedOptions);
 
                             // Generate with progress callback
-                            // Note: downbeatConfig is undefined (use default), progress callback is 4th arg
+                            // Pass stored downbeatConfig if user configured one before analysis,
+                            // otherwise undefined (engine uses default: beat 0 = downbeat, 4/4 time)
+                            const preAnalysisConfig = get().downbeatConfig;
                             const beatMap = await generator.generateBeatMap(
                                 audioUrl,
                                 audioId,
-                                undefined, // downbeatConfig - use default (beat 0 = downbeat, 4/4 time)
+                                preAnalysisConfig ?? undefined,
                                 (progress) => {
                                     set({ generationProgress: progress });
                                     logger.debug('BeatDetection', 'Generation progress', {
@@ -2047,9 +2049,8 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 cachedUnifiedBeatMaps,
                                 unifiedBeatMap,
                                 subdividedBeatMap: null, // Clear subdivision when unified changes
-                                // Task 6.1: Reset downbeat config when generating a new beat map
-                                // Each beat map should start with default downbeat configuration
-                                downbeatConfig: null,
+                                // Preserve downbeatConfig — it was either pre-configured by the user
+                                // or the engine already baked it into the beat map during generation
                             });
 
                             // Clear active generator reference
@@ -2662,8 +2663,10 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         const state = get();
                         const { beatMap, interpolatedBeatMap, subdividedBeatMap, subdivisionConfig } = state;
 
+                        // When no beat map exists yet, just clear the stored config
                         if (!beatMap) {
-                            logger.warn('BeatDetection', 'No beat map loaded, cannot reset downbeat config');
+                            set({ downbeatConfig: null });
+                            logger.info('BeatDetection', 'Cleared pre-analysis downbeat config');
                             return;
                         }
 
@@ -2767,8 +2770,23 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         const state = get();
                         const { beatMap } = state;
 
+                        // When no beat map exists yet (pre-analysis), save the config
+                        // to the store so it will be passed to the engine on generateBeatMap.
+                        // We can't clamp or apply without a beat map, but we can remember the intent.
                         if (!beatMap) {
-                            logger.warn('BeatDetection', 'No beat map loaded, cannot set downbeat position');
+                            logger.info('BeatDetection', 'Saving downbeat position before analysis', {
+                                beatIndex,
+                                beatsPerMeasure,
+                            });
+                            set({
+                                downbeatConfig: {
+                                    segments: [{
+                                        startBeat: 0,
+                                        downbeatBeatIndex: Math.max(0, beatIndex),
+                                        timeSignature: { beatsPerMeasure },
+                                    }],
+                                },
+                            });
                             return;
                         }
 
@@ -2802,11 +2820,6 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         const state = get();
                         const { downbeatConfig, beatMap } = state;
 
-                        if (!beatMap) {
-                            logger.warn('BeatDetection', 'No beat map loaded, cannot add segment');
-                            return;
-                        }
-
                         // Get current segments or start with default
                         const currentSegments = downbeatConfig?.segments ?? [...DEFAULT_DOWNBEAT_CONFIG.segments];
 
@@ -2818,6 +2831,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             beatsPerMeasure: segment.timeSignature.beatsPerMeasure,
                             newSegmentCount: newSegments.length,
                         });
+
+                        // When no beat map exists yet, just save the config to the store
+                        if (!beatMap) {
+                            set({ downbeatConfig: { segments: newSegments } });
+                            return;
+                        }
 
                         // Apply the updated config
                         state.actions.applyDownbeatConfig({ segments: newSegments });

@@ -282,6 +282,12 @@
     background: hsl(var(--primary) / 0.35);
 }
 
+/* Measure boundary lines (downbeats) - more prominent than regular beat lines */
+.variant-comparison-grid-line--measure {
+    background: hsl(var(--muted-foreground) / 0.3);
+    width: 2px;
+}
+
 /* Beat number labels (measure numbers on every 4th beat) */
 .variant-comparison-grid-label {
     position: absolute;

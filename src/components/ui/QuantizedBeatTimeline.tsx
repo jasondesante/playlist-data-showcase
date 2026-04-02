@@ -542,13 +542,21 @@ export function QuantizedBeatTimeline({
         timestamp: number;
         beatIndex: number;
         position: number;
+        isDownbeat: boolean;
+        measureNumber: number;
     }> => {
         if (!unifiedBeatMap || unifiedBeatMap.beats.length === 0) return [];
 
         const minTime = smoothTime - pastWindow;
         const maxTime = smoothTime + anticipationWindow;
 
-        const lines: Array<{ timestamp: number; beatIndex: number; position: number }> = [];
+        const lines: Array<{
+            timestamp: number;
+            beatIndex: number;
+            position: number;
+            isDownbeat: boolean;
+            measureNumber: number;
+        }> = [];
 
         for (let i = 0; i < unifiedBeatMap.beats.length; i++) {
             const beat = unifiedBeatMap.beats[i];
@@ -557,7 +565,13 @@ export function QuantizedBeatTimeline({
             if (timestamp >= minTime && timestamp <= maxTime) {
                 const position = calculatePosition(timestamp);
                 if (position >= 0 && position <= 1) {
-                    lines.push({ timestamp, beatIndex: i, position });
+                    lines.push({
+                        timestamp,
+                        beatIndex: i,
+                        position,
+                        isDownbeat: beat.isDownbeat ?? false,
+                        measureNumber: beat.measureNumber ?? 0,
+                    });
                 }
             }
         }
@@ -791,19 +805,19 @@ export function QuantizedBeatTimeline({
                 <div className="quantized-beat-timeline-future-region" />
 
                 {/* Beat grid lines */}
-                {visibleGridLines.map(({ beatIndex, position }) => (
+                {visibleGridLines.map(({ beatIndex, position, isDownbeat, measureNumber }) => (
                     <div
                         key={`grid-line-${beatIndex}`}
-                        className="quantized-beat-timeline-grid-line"
+                        className={`quantized-beat-timeline-grid-line ${isDownbeat ? 'quantized-beat-timeline-grid-line--measure' : ''}`}
                         style={{
                             left: `${position * 100}%`,
                             opacity: gridLineOpacity,
                         }}
                     >
-                        {/* Beat number label for every 4th beat */}
-                        {beatIndex % 4 === 0 && (
+                        {/* Measure number label on downbeats */}
+                        {isDownbeat && (
                             <span className="quantized-beat-timeline-grid-label">
-                                {Math.floor(beatIndex / 4) + 1}
+                                {measureNumber + 1}
                             </span>
                         )}
                     </div>

@@ -500,10 +500,18 @@ function BandTimeline({
         timestamp: number;
         beatIndex: number;
         position: number;
+        isDownbeat: boolean;
+        measureNumber: number;
     }> => {
         if (!beatMap || beatMap.beats.length === 0) return [];
 
-        const lines: Array<{ timestamp: number; beatIndex: number; position: number }> = [];
+        const lines: Array<{
+            timestamp: number;
+            beatIndex: number;
+            position: number;
+            isDownbeat: boolean;
+            measureNumber: number;
+        }> = [];
 
         for (let i = 0; i < beatMap.beats.length; i++) {
             const beat = beatMap.beats[i];
@@ -512,7 +520,13 @@ function BandTimeline({
             if (timestamp >= minTime && timestamp <= maxTime) {
                 const position = calculatePosition(timestamp);
                 if (position >= 0 && position <= 1) {
-                    lines.push({ timestamp, beatIndex: i, position });
+                    lines.push({
+                        timestamp,
+                        beatIndex: i,
+                        position,
+                        isDownbeat: beat.isDownbeat ?? false,
+                        measureNumber: beat.measureNumber ?? 0,
+                    });
                 }
             }
         }
@@ -630,19 +644,19 @@ function BandTimeline({
                 <div className="multi-band-timeline-accent" style={{ backgroundColor: color }} />
 
                 {/* Beat grid lines (quarter notes) */}
-                {visibleGridLines.map(({ beatIndex, position }) => (
+                {visibleGridLines.map(({ beatIndex, position, isDownbeat, measureNumber }) => (
                     <div
                         key={`grid-line-${beatIndex}`}
-                        className="multi-band-grid-line"
+                        className={`multi-band-grid-line ${isDownbeat ? 'multi-band-grid-line--measure' : ''}`}
                         style={{
                             left: `${position * 100}%`,
                             opacity: gridLineOpacity,
                         }}
                     >
-                        {/* Measure number label for downbeats (every 4th beat) */}
-                        {beatIndex % 4 === 0 && (
+                        {/* Measure number label on downbeats */}
+                        {isDownbeat && (
                             <span className="multi-band-grid-label">
-                                {Math.floor(beatIndex / 4) + 1}
+                                {measureNumber + 1}
                             </span>
                         )}
                     </div>

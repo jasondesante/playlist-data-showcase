@@ -585,7 +585,13 @@ export function TransientTimeline({
         const minTime = smoothTime - pastWindow;
         const maxTime = smoothTime + anticipationWindow;
 
-        const lines: Array<{ timestamp: number; beatIndex: number; position: number }> = [];
+        const lines: Array<{
+            timestamp: number;
+            beatIndex: number;
+            position: number;
+            isDownbeat: boolean;
+            measureNumber: number;
+        }> = [];
 
         for (let i = 0; i < unifiedBeatMap.beats.length; i++) {
             const beat = unifiedBeatMap.beats[i];
@@ -594,7 +600,13 @@ export function TransientTimeline({
             if (timestamp >= minTime && timestamp <= maxTime) {
                 const position = calculateGridLinePosition(timestamp);
                 if (position >= 0 && position <= 1) {
-                    lines.push({ timestamp, beatIndex: i, position });
+                    lines.push({
+                        timestamp,
+                        beatIndex: i,
+                        position,
+                        isDownbeat: beat.isDownbeat ?? false,
+                        measureNumber: beat.measureNumber ?? 0,
+                    });
                 }
             }
         }
@@ -710,16 +722,16 @@ export function TransientTimeline({
                 <div className="transient-timeline-future-region" />
 
                 {/* Beat grid lines (from unified beat map) */}
-                {visibleGridLines.map(({ beatIndex, position }) => (
+                {visibleGridLines.map(({ beatIndex, position, isDownbeat, measureNumber }) => (
                     <div
                         key={`grid-line-${beatIndex}`}
-                        className="transient-timeline-grid-line"
+                        className={`transient-timeline-grid-line ${isDownbeat ? 'transient-timeline-grid-line--measure' : ''}`}
                         style={{ left: `${position * 100}%` }}
                     >
-                        {/* Beat number label for every 4th beat (measure numbers) */}
-                        {beatIndex % 4 === 0 && (
+                        {/* Measure number label on downbeats */}
+                        {isDownbeat && (
                             <span className="transient-timeline-grid-label">
-                                {Math.floor(beatIndex / 4) + 1}
+                                {measureNumber + 1}
                             </span>
                         )}
                     </div>

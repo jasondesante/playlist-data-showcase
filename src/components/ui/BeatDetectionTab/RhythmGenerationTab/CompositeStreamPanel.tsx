@@ -542,7 +542,13 @@ function BandStreamTimeline({
     const visibleGridLines = useMemo(() => {
         if (!unifiedBeatMap || unifiedBeatMap.beats.length === 0) return [];
 
-        const lines: Array<{ timestamp: number; beatIndex: number; position: number }> = [];
+        const lines: Array<{
+            timestamp: number;
+            beatIndex: number;
+            position: number;
+            isDownbeat: boolean;
+            measureNumber: number;
+        }> = [];
 
         for (let i = 0; i < unifiedBeatMap.beats.length; i++) {
             const beat = unifiedBeatMap.beats[i];
@@ -552,7 +558,13 @@ function BandStreamTimeline({
                 const timeUntilBeat = timestamp - smoothTime;
                 const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
                 if (position >= 0 && position <= 1) {
-                    lines.push({ timestamp, beatIndex: i, position });
+                    lines.push({
+                        timestamp,
+                        beatIndex: i,
+                        position,
+                        isDownbeat: beat.isDownbeat ?? false,
+                        measureNumber: beat.measureNumber ?? 0,
+                    });
                 }
             }
         }
@@ -656,16 +668,16 @@ function BandStreamTimeline({
                 <div className="composite-band-timeline-accent" style={{ backgroundColor: color }} />
 
                 {/* Beat grid lines (quarter notes from unified beat map) */}
-                {visibleGridLines.map(({ beatIndex, position }) => (
+                {visibleGridLines.map(({ beatIndex, position, isDownbeat, measureNumber }) => (
                     <div
                         key={`grid-line-${beatIndex}`}
-                        className="composite-band-grid-line"
+                        className={`composite-band-grid-line ${isDownbeat ? 'composite-band-grid-line--measure' : ''}`}
                         style={{ left: `${position * 100}%` }}
                     >
-                        {/* Beat number label for every 4th beat (measure start) */}
-                        {beatIndex % 4 === 0 && (
+                        {/* Measure number label on downbeats */}
+                        {isDownbeat && (
                             <span className="composite-band-grid-label">
-                                {Math.floor(beatIndex / 4) + 1}
+                                {measureNumber + 1}
                             </span>
                         )}
                     </div>
@@ -1263,7 +1275,13 @@ function CompositeTimeline({
     const visibleGridLines = useMemo(() => {
         if (!unifiedBeatMap || unifiedBeatMap.beats.length === 0) return [];
 
-        const lines: Array<{ timestamp: number; beatIndex: number; position: number }> = [];
+        const lines: Array<{
+            timestamp: number;
+            beatIndex: number;
+            position: number;
+            isDownbeat: boolean;
+            measureNumber: number;
+        }> = [];
 
         for (let i = 0; i < unifiedBeatMap.beats.length; i++) {
             const beat = unifiedBeatMap.beats[i];
@@ -1273,7 +1291,13 @@ function CompositeTimeline({
                 const timeUntilBeat = timestamp - smoothTime;
                 const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
                 if (position >= 0 && position <= 1) {
-                    lines.push({ timestamp, beatIndex: i, position });
+                    lines.push({
+                        timestamp,
+                        beatIndex: i,
+                        position,
+                        isDownbeat: beat.isDownbeat ?? false,
+                        measureNumber: beat.measureNumber ?? 0,
+                    });
                 }
             }
         }
@@ -1428,16 +1452,16 @@ function CompositeTimeline({
                 }} />
 
                 {/* Beat grid lines */}
-                {visibleGridLines.map(({ beatIndex, position }) => (
+                {visibleGridLines.map(({ beatIndex, position, isDownbeat, measureNumber }) => (
                     <div
                         key={`grid-line-${beatIndex}`}
-                        className="composite-timeline-grid-line"
+                        className={`composite-timeline-grid-line ${isDownbeat ? 'composite-timeline-grid-line--measure' : ''}`}
                         style={{ left: `${position * 100}%` }}
                     >
-                        {/* Beat number label for every 4th beat */}
-                        {beatIndex % 4 === 0 && (
+                        {/* Measure number label on downbeats */}
+                        {isDownbeat && (
                             <span className="composite-timeline-grid-label">
-                                {Math.floor(beatIndex / 4) + 1}
+                                {measureNumber + 1}
                             </span>
                         )}
                     </div>

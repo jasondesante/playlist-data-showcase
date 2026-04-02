@@ -436,6 +436,12 @@
     pointer-events: none;
 }
 
+/* Measure boundary lines (downbeats) - more prominent than regular beat lines */
+.composite-band-grid-line--measure {
+    background: hsl(var(--muted-foreground) / 0.3);
+    width: 2px;
+}
+
 /* ============================================
    SUBDIVISION GRID LINES (16th notes)
    Fainter than beat lines
@@ -476,6 +482,12 @@
     font-weight: 600;
     color: hsl(var(--muted-foreground) / 0.5);
     pointer-events: none;
+}
+
+/* Measure boundary lines (downbeats) - more prominent than regular beat lines */
+.composite-timeline-grid-line--measure {
+    background: hsl(var(--muted-foreground) / 0.3);
+    width: 2px;
 }
 
 .composite-timeline-subdivision-line {
