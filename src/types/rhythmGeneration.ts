@@ -14,6 +14,7 @@ import type {
     OutputMode,
     StreamScorerConfig,
     ControllerMode,
+    RhythmicBalanceConfig,
 } from 'playlist-data-engine';
 
 // Re-export types from playlist-data-engine
@@ -67,7 +68,12 @@ export type {
     // Stream scoring configuration types
     StreamScorerConfig,
     BandBiasWeights,
+    // Rhythmic balance configuration types
+    RhythmicBalanceConfig,
 } from 'playlist-data-engine';
+
+export type { StrongBeatEmphasis, BalancerAction, BalanceStats, BalanceResult } from 'playlist-data-engine';
+export { DEFAULT_RHYTHMIC_BALANCE_CONFIG, isStrongBeatForEmphasis } from 'playlist-data-engine';
 
 /**
  * Generation mode for the beat detection wizard.
@@ -86,6 +92,7 @@ export type RhythmGenerationPhase =
     | 'quantize'       // Beat quantization
     | 'phrases'        // Phrase detection
     | 'composite'      // Composite stream generation
+    | 'balancing'      // Rhythmic balancing (downbeat anchoring, empty measure fill)
     | 'variants';      // Difficulty variant generation
 
 /**
@@ -177,6 +184,14 @@ export interface AutoLevelSettings {
      */
     scoringConfig?: Partial<StreamScorerConfig>;
 
+    /**
+     * Rhythmic balance configuration - controls how the engine enforces metric structure
+     * on the composite stream before generating difficulty variants.
+     * Includes strong beat emphasis mode, downbeat proximity, and empty measure filling.
+     * When undefined, engine defaults are used.
+     */
+    rhythmicBalanceConfig?: Partial<RhythmicBalanceConfig>;
+
     // ============================================================
     // Level Settings (Task 1.5)
     // ============================================================
@@ -243,6 +258,7 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     enableDensityValidation: false,  // Density validation disabled by default (opt-in)
     densityMaxRetries: 0,       // No retries by default
     scoringConfig: undefined,   // Uses engine defaults when undefined
+    rhythmicBalanceConfig: undefined, // Uses engine defaults when undefined
     // Level Settings (Task 1.5)
     seed: undefined,            // No seed by default — non-deterministic
     controllerMode: 'ddr',      // DDR mode by default

@@ -30,6 +30,8 @@ import type {
     DifficultyLevel,
     EditType,
     CompositeBeat,
+    BalancerAction,
+    BalanceStats,
 } from '../../../../types/rhythmGeneration';
 
 // Type alias for variant beats
@@ -379,6 +381,16 @@ function detectAddedBeats(
 // ============================================================
 
 /**
+ * Labels for balancer actions (shown in beat tooltips).
+ */
+const BALANCER_ACTION_LABELS: Record<BalancerAction, string> = {
+    none: '',
+    shifted_to_downbeat: 'Shifted to downbeat',
+    empty_measure_fill: 'Empty measure fill',
+    proximity_shift: 'Proximity shift',
+};
+
+/**
  * Memoized baseline marker component for performance.
  * Prevents unnecessary re-renders when parent updates.
  */
@@ -395,16 +407,24 @@ const BaselineMarker = memo(function BaselineMarker({
 }: BaselineMarkerProps) {
     const size = 4 + (beat.intensity || 0.5) * 6;
 
+    const balancerClass = beat.balancerAction
+        ? `difficulty-conversion-baseline-marker--balancer-${beat.balancerAction}`
+        : '';
+
+    const balancerLabel = beat.balancerAction
+        ? ` | ${BALANCER_ACTION_LABELS[beat.balancerAction]}`
+        : '';
+
     return (
         <div
-            className="difficulty-conversion-baseline-marker"
+            className={`difficulty-conversion-baseline-marker ${balancerClass}`}
             style={{
                 left: `${leftPercent}%`,
                 width: `${size}px`,
                 height: `${size}px`,
-                backgroundColor: color,
+                backgroundColor: beat.balancerAction === 'empty_measure_fill' ? 'transparent' : color,
             }}
-            title={`${beat.timestamp.toFixed(3)}s`}
+            title={`${beat.timestamp.toFixed(3)}s | ${(beat.intensity * 100).toFixed(0)}%${balancerLabel}`}
         />
     );
 });
@@ -461,6 +481,7 @@ interface CompositeBaselineTimelineProps {
     duration: number;
     currentTime?: number;
     zoomLevel?: number;
+    balanceStats?: BalanceStats;
 }
 
 function CompositeBaselineTimeline({
@@ -468,6 +489,7 @@ function CompositeBaselineTimeline({
     duration,
     currentTime: propCurrentTime = 0,
     zoomLevel = 1,
+    balanceStats,
 }: CompositeBaselineTimelineProps) {
     const trackRef = useRef<HTMLDivElement>(null);
 
@@ -752,6 +774,16 @@ function CompositeBaselineTimeline({
         <div className="difficulty-conversion-baseline">
             <div className="difficulty-conversion-baseline-label">
                 Composite Baseline ({beats.length} beats)
+                {balanceStats && (balanceStats.beatsAdded + balanceStats.beatsShifted) > 0 && (
+                    <span className="difficulty-conversion-balance-stats">
+                        {balanceStats.beatsAdded > 0 && (
+                            <span>+{balanceStats.beatsAdded} added</span>
+                        )}
+                        {balanceStats.beatsShifted > 0 && (
+                            <span>{balanceStats.beatsAdded > 0 ? ', ' : ''}{balanceStats.beatsShifted} shifted</span>
+                        )}
+                    </span>
+                )}
             </div>
             <div className="difficulty-conversion-baseline-timeline">
                 <div
@@ -1406,6 +1438,7 @@ export function DifficultyConversionPanel({
                 duration={duration}
                 currentTime={currentTime}
                 zoomLevel={zoomLevel}
+                balanceStats={rhythm.metadata.balanceStats}
             />
 
             {/* Side-by-side difficulty columns */}

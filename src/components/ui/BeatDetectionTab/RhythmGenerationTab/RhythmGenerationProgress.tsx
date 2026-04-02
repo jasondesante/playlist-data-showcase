@@ -10,7 +10,8 @@
  * 3. Quantization - Quantizing to beat grid
  * 4. Phrase Detection - Detecting rhythmic phrases
  * 5. Composite Stream - Building composite stream
- * 6. Difficulty Variants - Generating difficulty variants
+ * 6. Rhythmic Balancing - Enforcing metric structure
+ * 7. Difficulty Variants - Generating difficulty variants
  *
  * @example
  * ```tsx
@@ -60,10 +61,11 @@ const PIPELINE_STAGES: StageInfo[] = [
     { id: 'quantize', label: 'Quantization', description: 'Quantizing to beat grid' },
     { id: 'phrases', label: 'Phrase Detection', description: 'Detecting rhythmic phrases' },
     { id: 'composite', label: 'Composite Stream', description: 'Building composite stream' },
+    { id: 'balancing', label: 'Rhythmic Balancing', description: 'Enforcing metric structure' },
     { id: 'variants', label: 'Difficulty Variants', description: 'Generating difficulty variants' },
 ];
 
-const PHASE_ORDER: RhythmGenerationPhase[] = ['multiBand', 'transients', 'quantize', 'phrases', 'composite', 'variants'];
+const PHASE_ORDER: RhythmGenerationPhase[] = ['multiBand', 'transients', 'quantize', 'phrases', 'composite', 'balancing', 'variants'];
 
 // ============================================================
 // Helper Functions

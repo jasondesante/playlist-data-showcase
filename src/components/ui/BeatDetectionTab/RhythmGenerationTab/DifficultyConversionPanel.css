@@ -331,6 +331,32 @@
     transform: translate(-50%, -50%) scale(1.3);
 }
 
+/* Balancer-modified beats: dashed outline to distinguish from detected beats */
+.difficulty-conversion-baseline-marker--balancer-shifted_to_downbeat,
+.difficulty-conversion-baseline-marker--balancer-proximity_shift {
+    outline: 1.5px dashed hsl(var(--foreground) / 0.5);
+    outline-offset: 1.5px;
+    opacity: 0.85;
+}
+
+/* Empty measure fills: hollow circle with thin border */
+.difficulty-conversion-baseline-marker--balancer-empty_measure_fill {
+    background-color: transparent !important;
+    border: 1.5px solid hsl(var(--primary) / 0.7);
+    opacity: 0.85;
+}
+
+.difficulty-conversion-balance-stats {
+    font-weight: 400;
+    color: hsl(var(--muted-foreground) / 0.7);
+    font-size: 0.7rem;
+    margin-left: 0.5rem;
+}
+
+.difficulty-conversion-balance-stats span + span::before {
+    content: '';
+}
+
 .difficulty-conversion-baseline-playhead {
     position: absolute;
     top: 0;

@@ -1199,6 +1199,74 @@
     }
 }
 
+/* Rhythmic Balance Section */
+.auto-level-settings__rhythmic-balance {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background-color: hsl(var(--surface-2));
+    border-radius: var(--radius);
+}
+
+.auto-level-settings__emphasis-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.auto-level-settings__emphasis-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--surface-3));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out-cubic);
+}
+
+.auto-level-settings__emphasis-button:hover:not(:disabled) {
+    background-color: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.5);
+}
+
+.auto-level-settings__emphasis-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3);
+}
+
+.auto-level-settings__emphasis-button--active {
+    background-color: hsl(var(--primary) / 0.15);
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+}
+
+.auto-level-settings__emphasis-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auto-level-settings__emphasis-button-text {
+    font-weight: 600;
+}
+
+/* Mobile adjustments for rhythmic balance */
+@media (max-width: 640px) {
+    .auto-level-settings__rhythmic-balance {
+        gap: 0.5rem;
+    }
+
+    .auto-level-settings__emphasis-buttons {
+        width: 100%;
+    }
+}
+
 /* ============================================
    LEVEL SETTINGS SECTION
    Task 1.5 of PITCH_DETECTION_LEVEL_GENERATION_UI_PLAN.md

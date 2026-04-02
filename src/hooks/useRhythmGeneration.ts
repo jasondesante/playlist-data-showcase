@@ -64,11 +64,12 @@ export interface UseRhythmGenerationReturn {
  */
 const mapPhaseToRhythmGenerationPhase = (
     phase: string,
-    progress: number
+    progress: number,
+    message?: string
 ): { phase: RhythmGenerationPhase; adjustedProgress: number } => {
     // Phase 1: Multi-band Analysis, Transient Detection, Quantization (0% - 33%)
     // Phase 2: Phrase Analysis, Density Analysis (33% - 66%)
-    // Phase 3: Scoring, Composite Generation, Difficulty Variants (66% - 100%)
+    // Phase 3: Scoring, Composite Generation, Rhythmic Balancing, Difficulty Variants (66% - 100%)
 
     if (phase.includes('Phase 1') || phase === 'multiBand' || phase === 'transients' || phase === 'quantize') {
         // Within Phase 1, subdivide into our phases
@@ -93,15 +94,18 @@ const mapPhaseToRhythmGenerationPhase = (
         return { phase: 'phrases', adjustedProgress: 33 + progress * 0.33 };
     }
 
-    if (phase.includes('Phase 3') || phase === 'composite' || phase === 'variants') {
-        // Within Phase 3
+    if (phase.includes('Phase 3') || phase === 'composite' || phase === 'balancing' || phase === 'variants') {
+        // Within Phase 3: composite 66-75%, balancing 75-84%, variants 84-100%
+        if (message?.includes('Balanced composite') || phase === 'balancing') {
+            return { phase: 'balancing', adjustedProgress: 75 + progress * 0.09 }; // 75-84%
+        }
         if (phase.includes('composite') || phase === 'composite') {
-            return { phase: 'composite', adjustedProgress: 66 + progress * 0.17 }; // 66-83%
+            return { phase: 'composite', adjustedProgress: 66 + progress * 0.09 }; // 66-75%
         }
         if (phase.includes('variant') || phase === 'variants') {
-            return { phase: 'variants', adjustedProgress: 83 + progress * 0.17 }; // 83-100%
+            return { phase: 'variants', adjustedProgress: 84 + progress * 0.16 }; // 84-100%
         }
-        return { phase: 'composite', adjustedProgress: 66 + progress * 0.34 };
+        return { phase: 'composite', adjustedProgress: 66 + progress * 0.09 };
     }
 
     // Handle 'Cache' phase (immediate return)
@@ -264,6 +268,8 @@ export const useRhythmGeneration = (): UseRhythmGenerationReturn => {
                 densityValidation: options?.densityValidation,
                 // Pass scoring config (includes factor weights AND band bias)
                 scoringConfig: options?.scoringConfig,
+                // Pass rhythmic balance config
+                rhythmicBalanceConfig: options?.rhythmicBalanceConfig,
                 // Pass phrase analyzer config
                 phraseAnalyzerConfig: options?.phraseAnalyzerConfig,
                 verbose: options?.verbose ?? false,
@@ -279,7 +285,8 @@ export const useRhythmGeneration = (): UseRhythmGenerationReturn => {
 
                 const { phase: mappedPhase, adjustedProgress } = mapPhaseToRhythmGenerationPhase(
                     phase,
-                    progressFraction * 100
+                    progressFraction * 100,
+                    message
                 );
 
                 actions.setRhythmGenerationProgress({

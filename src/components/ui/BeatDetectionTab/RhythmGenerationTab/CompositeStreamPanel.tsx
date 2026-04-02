@@ -28,6 +28,7 @@ import type {
     CompositeBeat,
     CompositeSection,
     StreamScorerConfig,
+    BalanceStats,
 } from '../../../../types/rhythmGeneration';
 
 // ============================================================
@@ -771,6 +772,16 @@ interface CompositeBeatMarkerProps {
     color: string;
 }
 
+const BALANCER_ACTION_LABELS: Record<string, string> = {
+    shifted_to_downbeat: 'Shifted to downbeat',
+    empty_measure_fill: 'Filled empty measure',
+    proximity_shift: 'Shifted for downbeat proximity',
+};
+
+function hasBalancerActivity(stats: BalanceStats): boolean {
+    return stats.beatsAdded > 0 || stats.beatsShifted > 0;
+}
+
 const CompositeBeatMarker = memo(function CompositeBeatMarker({
     beat,
     position,
@@ -782,12 +793,20 @@ const CompositeBeatMarker = memo(function CompositeBeatMarker({
         e.stopPropagation();
     }, []);
 
+    const balancerClass = beat.balancerAction
+        ? `composite-timeline-marker--balancer-${beat.balancerAction}`
+        : '';
+
+    const balancerLabel = beat.balancerAction
+        ? ` | ${BALANCER_ACTION_LABELS[beat.balancerAction]}`
+        : '';
+
     return (
         <div
-            className={`composite-timeline-marker ${isPast ? 'composite-timeline-marker--past' : ''}`}
+            className={`composite-timeline-marker ${isPast ? 'composite-timeline-marker--past' : ''} ${balancerClass}`}
             style={{ left: `${position * 100}%` }}
             onMouseDown={handleMouseDown}
-            title={`${beat.timestamp.toFixed(3)}s | ${(beat.intensity * 100).toFixed(0)}% | ${beat.sourceBand}`}
+            title={`${beat.timestamp.toFixed(3)}s | ${(beat.intensity * 100).toFixed(0)}% | ${beat.sourceBand}${balancerLabel}`}
         >
             <div
                 className="composite-timeline-marker-dot"
@@ -1924,6 +1943,48 @@ export function CompositeStreamPanel({
                             </>
                         )}
                     </span>
+                </div>
+            )}
+
+            {/* Rhythmic balancing stats */}
+            {rhythm.metadata.balanceStats && hasBalancerActivity(rhythm.metadata.balanceStats) && (
+                <div className="composite-balance-stats">
+                    <div className="composite-balance-stats-header">
+                        <Info size={14} />
+                        <span className="composite-balance-stats-title">Rhythmic Balancing</span>
+                    </div>
+                    <div className="composite-balance-stats-grid">
+                        {rhythm.metadata.balanceStats.beatsAdded > 0 && (
+                            <div className="composite-balance-stat-card">
+                                <span className="composite-balance-stat-value">{rhythm.metadata.balanceStats.beatsAdded}</span>
+                                <span className="composite-balance-stat-label">Beats Added</span>
+                            </div>
+                        )}
+                        {rhythm.metadata.balanceStats.beatsShifted > 0 && (
+                            <div className="composite-balance-stat-card">
+                                <span className="composite-balance-stat-value">{rhythm.metadata.balanceStats.beatsShifted}</span>
+                                <span className="composite-balance-stat-label">Beats Shifted</span>
+                            </div>
+                        )}
+                        {rhythm.metadata.balanceStats.emptyMeasuresFilled > 0 && (
+                            <div className="composite-balance-stat-card">
+                                <span className="composite-balance-stat-value">{rhythm.metadata.balanceStats.emptyMeasuresFilled}</span>
+                                <span className="composite-balance-stat-label">Measures Filled</span>
+                            </div>
+                        )}
+                        {rhythm.metadata.balanceStats.shiftedToDownbeat > 0 && (
+                            <div className="composite-balance-stat-card">
+                                <span className="composite-balance-stat-value">{rhythm.metadata.balanceStats.shiftedToDownbeat}</span>
+                                <span className="composite-balance-stat-label">Lone Notes Moved</span>
+                            </div>
+                        )}
+                        {rhythm.metadata.balanceStats.proximityShifts > 0 && (
+                            <div className="composite-balance-stat-card">
+                                <span className="composite-balance-stat-value">{rhythm.metadata.balanceStats.proximityShifts}</span>
+                                <span className="composite-balance-stat-label">Proximity Shifts</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 

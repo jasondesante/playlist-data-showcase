@@ -276,6 +276,12 @@
     z-index: 5;
 }
 
+/* Strong beat grid lines - slightly thicker and more visible */
+.variant-comparison-grid-line--strong {
+    width: 2px;
+    background: hsl(var(--primary) / 0.35);
+}
+
 /* Beat number labels (measure numbers on every 4th beat) */
 .variant-comparison-grid-label {
     position: absolute;
@@ -528,6 +534,12 @@
     background: hsl(var(--surface-3));
 }
 
+.variant-comparison-control--active {
+    border-color: hsl(var(--primary) / 0.5);
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.15);
+}
+
 /* Zoom level display */
 .variant-comparison-zoom-level {
     font-size: 0.75rem;
@@ -663,6 +675,19 @@
     height: 14px;
     border-radius: 50%;
     background: hsl(var(--muted-foreground));
+}
+
+/* Grid line legend markers */
+.variant-comparison-legend-gridline {
+    width: 1px;
+    height: 14px;
+    background: hsl(var(--border) / 0.5);
+    border-radius: 1px;
+}
+
+.variant-comparison-legend-gridline--strong {
+    width: 2px;
+    background: hsl(var(--primary) / 0.35);
 }
 
 /* Instructions footer */

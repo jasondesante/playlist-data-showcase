@@ -28,11 +28,13 @@ import type {
     BandBiasWeights,
     ControllerMode,
     PitchAlgorithm,
+    StrongBeatEmphasis,
 } from '../../types/rhythmGeneration';
 import type { StreamScorerConfig } from 'playlist-data-engine';
 import {
     DEFAULT_AUTO_LEVEL_SETTINGS,
     DEFAULT_BAND_TRANSIENT_CONFIG,
+    DEFAULT_RHYTHMIC_BALANCE_CONFIG,
 } from '../../types/rhythmGeneration';
 import './AutoLevelSettings.css';
 
@@ -118,6 +120,7 @@ export function AutoLevelSettings({
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
     const [isTransientConfigOpen, setIsTransientConfigOpen] = useState(false);
     const [isScoringConfigOpen, setIsScoringConfigOpen] = useState(false);
+    const [isRhythmicBalanceOpen, setIsRhythmicBalanceOpen] = useState(false);
     const [isLevelSettingsOpen, setIsLevelSettingsOpen] = useState(false);
     const [isEssentiaOpen, setIsEssentiaOpen] = useState(false);
 
@@ -359,6 +362,54 @@ export function AutoLevelSettings({
     const hasCustomBandBias = useMemo((): boolean => {
         return settings.scoringConfig?.bandBiasWeights !== undefined;
     }, [settings.scoringConfig]);
+
+    // ============================================================================
+    // Rhythmic Balance Handlers
+    // ============================================================================
+
+    const STRONG_BEAT_EMPHASIS_OPTIONS: { value: StrongBeatEmphasis; label: string; description: string }[] = [
+        { value: 'natural', label: 'Natural', description: 'Emphasize beats 1, 3 in 4/4 (metric accents)' },
+        { value: 'backbeat', label: 'Backbeat', description: 'Emphasize beats 2, 4 in 4/4 (rock/pop feel)' },
+        { value: 'neutral', label: 'Neutral', description: 'No positional preference' },
+    ];
+
+    const handleRhythmicBalanceChange = useCallback(
+        <K extends keyof import('../../types/rhythmGeneration').RhythmicBalanceConfig>(
+            key: K,
+            value: import('../../types/rhythmGeneration').RhythmicBalanceConfig[K]
+        ) => {
+            if (disabled) return;
+            onChange({
+                ...settings,
+                rhythmicBalanceConfig: {
+                    ...settings.rhythmicBalanceConfig,
+                    [key]: value,
+                },
+            });
+        },
+        [disabled, onChange, settings]
+    );
+
+    const getRhythmicBalanceValue = useCallback(
+        <K extends keyof import('../../types/rhythmGeneration').RhythmicBalanceConfig>(
+            key: K
+        ): import('../../types/rhythmGeneration').RhythmicBalanceConfig[K] => {
+            return settings.rhythmicBalanceConfig?.[key] ?? DEFAULT_RHYTHMIC_BALANCE_CONFIG[key];
+        },
+        [settings.rhythmicBalanceConfig]
+    );
+
+    const resetRhythmicBalance = useCallback(() => {
+        if (disabled) return;
+        onChange({
+            ...settings,
+            rhythmicBalanceConfig: undefined,
+        });
+    }, [disabled, onChange, settings]);
+
+    const hasCustomRhythmicBalance = useMemo((): boolean => {
+        return settings.rhythmicBalanceConfig !== undefined;
+    }, [settings.rhythmicBalanceConfig]);
 
     return (
         <div className={cn('auto-level-settings', className)}>
@@ -1278,6 +1329,183 @@ export function AutoLevelSettings({
                                     )}
                                 </div>
 
+                                {/* Rhythmic Balance Section */}
+                                <div className="auto-level-settings__section">
+                                    <button
+                                        type="button"
+                                        className={cn(
+                                            'auto-level-settings__subsection-toggle',
+                                            isRhythmicBalanceOpen && 'auto-level-settings__subsection-toggle--active'
+                                        )}
+                                        onClick={() => setIsRhythmicBalanceOpen(!isRhythmicBalanceOpen)}
+                                        disabled={disabled}
+                                    >
+                                        <Scale size={16} />
+                                        <span>Rhythmic Balance</span>
+                                        {hasCustomRhythmicBalance && (
+                                            <span className="auto-level-settings__badge">Custom</span>
+                                        )}
+                                        <ChevronDown
+                                            size={16}
+                                            className={cn(
+                                                'auto-level-settings__subsection-chevron',
+                                                isRhythmicBalanceOpen && 'auto-level-settings__subsection-chevron--rotated'
+                                            )}
+                                        />
+                                    </button>
+
+                                    {isRhythmicBalanceOpen && (
+                                        <div className="auto-level-settings__rhythmic-balance">
+                                            <div className="auto-level-settings__info-box">
+                                                <Info size={14} />
+                                                <p>
+                                                    <strong>Rhythmic Balance:</strong> Post-processes the composite stream
+                                                    to ensure every chart has a solid rhythmic foundation — downbeats where
+                                                    players expect them, and density reduction that preserves structural
+                                                    beats over decorative ones.
+                                                </p>
+                                            </div>
+
+                                            {/* Strong Beat Emphasis */}
+                                            <h4 className="auto-level-settings__subsection-title">
+                                                Strong Beat Emphasis
+                                            </h4>
+                                            <p className="auto-level-settings__help-text">
+                                                Which beats are considered "strong" for density reduction priority.
+                                                Strong beats are removed last when creating easier variants.
+                                            </p>
+                                            <div className="auto-level-settings__emphasis-buttons">
+                                                {STRONG_BEAT_EMPHASIS_OPTIONS.map((opt) => (
+                                                    <button
+                                                        key={opt.value}
+                                                        type="button"
+                                                        className={cn(
+                                                            'auto-level-settings__emphasis-button',
+                                                            getRhythmicBalanceValue('strongBeatEmphasis') === opt.value &&
+                                                                'auto-level-settings__emphasis-button--active'
+                                                        )}
+                                                        onClick={() => handleRhythmicBalanceChange('strongBeatEmphasis', opt.value)}
+                                                        disabled={disabled}
+                                                        title={opt.description}
+                                                    >
+                                                        <span className="auto-level-settings__emphasis-button-text">
+                                                            {opt.label}
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <p className="auto-level-settings__slider-help">
+                                                {getRhythmicBalanceValue('strongBeatEmphasis') === 'natural'
+                                                    ? 'Preserves metric accents (e.g., 4/4 → beats 1, 3)'
+                                                    : getRhythmicBalanceValue('strongBeatEmphasis') === 'backbeat'
+                                                        ? 'Preserves backbeat positions (e.g., 4/4 → beats 2, 4)'
+                                                        : 'No positional preference during density reduction'}
+                                            </p>
+
+                                            {/* Fill Empty Measures Toggle */}
+                                            <div className="auto-level-settings__toggle-row">
+                                                <label className="auto-level-settings__toggle-label">
+                                                    Fill Empty Measures
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    className={cn(
+                                                        'auto-level-settings__toggle-switch',
+                                                        getRhythmicBalanceValue('fillEmptyMeasures') &&
+                                                            'auto-level-settings__toggle-switch--active'
+                                                    )}
+                                                    onClick={() => handleRhythmicBalanceChange(
+                                                        'fillEmptyMeasures',
+                                                        !getRhythmicBalanceValue('fillEmptyMeasures')
+                                                    )}
+                                                    disabled={disabled}
+                                                    role="switch"
+                                                    aria-checked={getRhythmicBalanceValue('fillEmptyMeasures')}
+                                                >
+                                                    <span className="auto-level-settings__toggle-thumb" />
+                                                </button>
+                                            </div>
+                                            <p className="auto-level-settings__slider-help">
+                                                Ensure every measure has at least a beat 1 downbeat.
+                                            </p>
+
+                                            {/* Downbeat Proximity Range Slider */}
+                                            <div className="auto-level-settings__band-config-row">
+                                                <label className="auto-level-settings__band-config-label">
+                                                    Downbeat Proximity
+                                                </label>
+                                                <div className="auto-level-settings__band-config-slider-wrap">
+                                                    <input
+                                                        type="range"
+                                                        min="0"
+                                                        max="4"
+                                                        step="1"
+                                                        value={getRhythmicBalanceValue('downbeatProximityRange')}
+                                                        onChange={(e) =>
+                                                            handleRhythmicBalanceChange(
+                                                                'downbeatProximityRange',
+                                                                parseInt(e.target.value, 10)
+                                                            )
+                                                        }
+                                                        className="auto-level-settings__band-config-slider"
+                                                        disabled={disabled}
+                                                    />
+                                                    <span className="auto-level-settings__band-config-value">
+                                                        {getRhythmicBalanceValue('downbeatProximityRange')} beats
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <p className="auto-level-settings__slider-help">
+                                                Max distance from an upbeat note to the nearest downbeat.
+                                                Upbeats without a nearby downbeat get shifted to the downbeat position.
+                                            </p>
+
+                                            {/* Added Beat Intensity Slider */}
+                                            <div className="auto-level-settings__band-config-row">
+                                                <label className="auto-level-settings__band-config-label">
+                                                    Added Beat Intensity
+                                                </label>
+                                                <div className="auto-level-settings__band-config-slider-wrap">
+                                                    <input
+                                                        type="range"
+                                                        min="0.1"
+                                                        max="0.8"
+                                                        step="0.05"
+                                                        value={getRhythmicBalanceValue('addedBeatIntensity')}
+                                                        onChange={(e) =>
+                                                            handleRhythmicBalanceChange(
+                                                                'addedBeatIntensity',
+                                                                parseFloat(e.target.value)
+                                                            )
+                                                        }
+                                                        className="auto-level-settings__band-config-slider"
+                                                        disabled={disabled}
+                                                    />
+                                                    <span className="auto-level-settings__band-config-value">
+                                                        {getRhythmicBalanceValue('addedBeatIntensity').toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <p className="auto-level-settings__slider-help">
+                                                Intensity for beats added by the balancer (empty measure fills, shifted notes).
+                                                Lower values make them easier to remove during density reduction.
+                                            </p>
+
+                                            {/* Reset Button */}
+                                            <div className="auto-level-settings__reset-row">
+                                                <button
+                                                    type="button"
+                                                    className="auto-level-settings__reset-btn"
+                                                    onClick={resetRhythmicBalance}
+                                                    disabled={disabled || !hasCustomRhythmicBalance}
+                                                >
+                                                    <RotateCcw size={12} />
+                                                    Reset to Default
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
 
                                 {/* Preset Selection */}
                                 <div className="auto-level-settings__form-group">

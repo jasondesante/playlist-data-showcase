@@ -13,7 +13,7 @@
  */
 
 import { useRef, useState, useEffect, useCallback, useMemo, memo } from 'react';
-import { Trophy, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Trophy, ZoomIn, ZoomOut, RotateCcw, Gauge } from 'lucide-react';
 import './VariantComparisonView.css';
 import { useAudioPlayerStore } from '../../../../store/audioPlayerStore';
 import { usePlaylistStore } from '../../../../store/playlistStore';
@@ -25,6 +25,8 @@ import type {
     Band,
     EditType,
 } from '../../../../types/rhythmGeneration';
+import { isStrongBeatForEmphasis } from '../../../../types/rhythmGeneration';
+import type { StrongBeatEmphasis } from '../../../../types/rhythmGeneration';
 
 // ============================================================
 // Types
@@ -122,6 +124,10 @@ interface VariantRowProps {
     smoothTime: number;
     /** The unified beat map for grid lines */
     unifiedBeatMap: ReturnType<typeof useUnifiedBeatMap>;
+    /** Strong beat emphasis mode used during generation */
+    strongBeatEmphasis: StrongBeatEmphasis;
+    /** Whether to highlight strong beats on the grid */
+    showStrongBeats: boolean;
 }
 
 /** Pixels of movement before treating as drag (vs click) */
@@ -136,6 +142,8 @@ const VariantRow = memo(function VariantRow({
     anticipationWindow,
     smoothTime,
     unifiedBeatMap,
+    strongBeatEmphasis,
+    showStrongBeats,
 }: VariantRowProps) {
     const trackRef = useRef<HTMLDivElement>(null);
 
@@ -268,12 +276,14 @@ const VariantRow = memo(function VariantRow({
     // ========================================
 
     /**
-     * Calculate visible beat grid lines using the unified beat map
+     * Calculate visible beat grid lines using the unified beat map.
+     * Marks strong beats (downbeats, etc.) for visual emphasis.
      */
     const visibleGridLines = useMemo(() => {
         if (!unifiedBeatMap || unifiedBeatMap.beats.length === 0) return [];
 
-        const lines: Array<{ timestamp: number; beatIndex: number; position: number }> = [];
+        const segments = unifiedBeatMap.downbeatConfig?.segments;
+        const lines: Array<{ timestamp: number; beatIndex: number; position: number; isStrongBeat: boolean }> = [];
 
         for (let i = 0; i < unifiedBeatMap.beats.length; i++) {
             const beat = unifiedBeatMap.beats[i];
@@ -283,13 +293,27 @@ const VariantRow = memo(function VariantRow({
                 const timeUntilBeat = timestamp - smoothTime;
                 const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
                 if (position >= 0 && position <= 1) {
-                    lines.push({ timestamp, beatIndex: i, position });
+                    // Determine if this beat is a strong beat
+                    let isStrong = false;
+                    if (showStrongBeats && segments && segments.length > 0 && strongBeatEmphasis !== 'neutral') {
+                        let activeSegment = segments[0];
+                        for (const segment of segments) {
+                            if (segment.startBeat <= i) {
+                                activeSegment = segment;
+                            } else {
+                                break;
+                            }
+                        }
+                        isStrong = isStrongBeatForEmphasis(beat.beatInMeasure, activeSegment.timeSignature.beatsPerMeasure, strongBeatEmphasis);
+                    }
+
+                    lines.push({ timestamp, beatIndex: i, position, isStrongBeat: isStrong });
                 }
             }
         }
 
         return lines;
-    }, [unifiedBeatMap, smoothTime, minTime, maxTime, anticipationWindow]);
+    }, [unifiedBeatMap, smoothTime, minTime, maxTime, anticipationWindow, strongBeatEmphasis, showStrongBeats]);
 
     /**
      * Calculate visible subdivision lines within each beat (16th notes)
@@ -383,11 +407,11 @@ const VariantRow = memo(function VariantRow({
                 {/* Background */}
                 <div className="variant-comparison-track-bg" />
 
-                {/* Beat grid lines (quarter notes) */}
-                {visibleGridLines.map(({ beatIndex, position }) => (
+                {/* Beat grid lines (quarter notes) - strong beats get extra emphasis */}
+                {visibleGridLines.map(({ beatIndex, position, isStrongBeat }) => (
                     <div
                         key={`grid-line-${beatIndex}`}
-                        className="variant-comparison-grid-line"
+                        className={`variant-comparison-grid-line${isStrongBeat ? ' variant-comparison-grid-line--strong' : ''}`}
                         style={{ left: `${position * 100}%` }}
                     >
                         {/* Beat number label for every 4th beat (measure numbers) */}
@@ -491,6 +515,13 @@ export function VariantComparisonView({
 
     // Get the unified beat map for grid lines (shared across all rows)
     const unifiedBeatMap = useUnifiedBeatMap();
+
+    // Get the emphasis mode used during generation (for strong beat highlighting)
+    const strongBeatEmphasis: StrongBeatEmphasis =
+        (rhythm.metadata.generationConfig as any)?.rhythmicBalanceConfig?.strongBeatEmphasis ?? 'natural';
+
+    // Toggle for strong beat grid line highlighting
+    const [showStrongBeats, setShowStrongBeats] = useState(false);
 
     const variants = rhythm.difficultyVariants;
 
@@ -781,6 +812,13 @@ export function VariantComparisonView({
                     >
                         <RotateCcw size={16} />
                     </button>
+                    <button
+                        className={`variant-comparison-control${showStrongBeats ? ' variant-comparison-control--active' : ''}`}
+                        onClick={() => setShowStrongBeats(prev => !prev)}
+                        title={`Strong beats: ${showStrongBeats ? 'on' : 'off'}`}
+                    >
+                        <Gauge size={16} />
+                    </button>
                 </div>
 
                 {/* Beat counts summary */}
@@ -815,6 +853,8 @@ export function VariantComparisonView({
                         anticipationWindow={anticipationWindow}
                         smoothTime={smoothTime}
                         unifiedBeatMap={unifiedBeatMap}
+                        strongBeatEmphasis={strongBeatEmphasis}
+                        showStrongBeats={showStrongBeats}
                     />
                 ))}
             </div>
@@ -854,6 +894,18 @@ export function VariantComparisonView({
                         <span>Intensity</span>
                     </div>
                 </div>
+                {showStrongBeats && (
+                    <div className="variant-comparison-legend-section">
+                        <div className="variant-comparison-legend-item">
+                            <div className="variant-comparison-legend-gridline" />
+                            <span>Beat</span>
+                        </div>
+                        <div className="variant-comparison-legend-item">
+                            <div className="variant-comparison-legend-gridline variant-comparison-legend-gridline--strong" />
+                            <span>Strong beat</span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Instructions */}

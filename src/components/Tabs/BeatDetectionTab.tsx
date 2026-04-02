@@ -294,6 +294,7 @@ export function BeatDetectionTab() {
                 minimumTransientIntensity: autoLevelSettings.intensityThreshold,
                 transientConfig: autoLevelSettings.transientConfig,
                 scoringConfig: autoLevelSettings.scoringConfig,
+                rhythmicBalanceConfig: autoLevelSettings.rhythmicBalanceConfig,
                 densityValidation: autoLevelSettings.enableDensityValidation
                     ? {
                         maxRetries: autoLevelSettings.densityMaxRetries,
@@ -712,6 +713,7 @@ export function BeatDetectionTab() {
                                         minimumTransientIntensity: autoLevelSettings.intensityThreshold,
                                         transientConfig: autoLevelSettings.transientConfig,
                                         scoringConfig: autoLevelSettings.scoringConfig,
+                                        rhythmicBalanceConfig: autoLevelSettings.rhythmicBalanceConfig,
                                         densityValidation: autoLevelSettings.enableDensityValidation
                                             ? {
                                                 maxRetries: autoLevelSettings.densityMaxRetries,
@@ -737,6 +739,7 @@ export function BeatDetectionTab() {
                                         minimumTransientIntensity: newThreshold,
                                         transientConfig: autoLevelSettings.transientConfig,
                                         scoringConfig: autoLevelSettings.scoringConfig,
+                                        rhythmicBalanceConfig: autoLevelSettings.rhythmicBalanceConfig,
                                         densityValidation: autoLevelSettings.enableDensityValidation
                                             ? {
                                                 maxRetries: autoLevelSettings.densityMaxRetries,

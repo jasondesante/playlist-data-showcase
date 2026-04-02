@@ -685,10 +685,10 @@ interface BeatDetectionState {
     /**
      * Progress state for rhythm generation pipeline.
      * Tracks the current phase and progress percentage.
-     * Phases: multiBand → transients → quantize → phrases → composite → variants
+     * Phases: multiBand → transients → quantize → phrases → composite → balancing → variants
      */
     rhythmGenerationProgress: {
-        phase: 'multiBand' | 'transients' | 'quantize' | 'phrases' | 'composite' | 'variants';
+        phase: 'multiBand' | 'transients' | 'quantize' | 'phrases' | 'composite' | 'balancing' | 'variants';
         progress: number;
         message: string;
     } | null;
@@ -1405,7 +1405,7 @@ interface BeatDetectionActions {
      * @param progress - The current progress of the rhythm generation pipeline
      */
     setRhythmGenerationProgress: (progress: {
-        phase: 'multiBand' | 'transients' | 'quantize' | 'phrases' | 'composite' | 'variants';
+        phase: 'multiBand' | 'transients' | 'quantize' | 'phrases' | 'composite' | 'balancing' | 'variants';
         progress: number;
         message: string;
     } | null) => void;
@@ -4486,7 +4486,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                      * Set the rhythm generation progress state.
                      */
                     setRhythmGenerationProgress: (progress: {
-                        phase: 'multiBand' | 'transients' | 'quantize' | 'phrases' | 'composite' | 'variants';
+                        phase: 'multiBand' | 'transients' | 'quantize' | 'phrases' | 'composite' | 'balancing' | 'variants';
                         progress: number;
                         message: string;
                     } | null) => {
