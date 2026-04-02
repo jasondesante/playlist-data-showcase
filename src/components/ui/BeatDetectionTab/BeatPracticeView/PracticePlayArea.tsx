@@ -73,6 +73,9 @@ export interface PracticePlayAreaProps {
   isDownbeatSelectionMode: boolean;
   showMeasureBoundaries: boolean;
 
+  // Grid overlay (quarter note timestamps from unified beat map)
+  gridOverlayLines?: Array<{ timestamp: number; isDownbeat: boolean }>;
+
   // Callbacks
   handleSeek: (time: number) => void;
   handleBeatClick: (beatIndex: number) => void;
@@ -107,6 +110,7 @@ export function PracticePlayArea({
   showTempoDriftVisualization,
   isDownbeatSelectionMode,
   showMeasureBoundaries,
+  gridOverlayLines,
   handleSeek,
   handleBeatClick,
 }: PracticePlayAreaProps) {
@@ -160,6 +164,7 @@ export function PracticePlayArea({
               ? !!subdividedBeatMap
               : !!realtimeSubdividedBeatMap
           }
+          externalGridTimestamps={gridOverlayLines}
         />
       )}
 

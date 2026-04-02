@@ -103,6 +103,11 @@ interface BeatTimelineProps {
    * Part of Phase 5: Practice Mode Key Support (Task 5.2)
    */
   keyMap?: Map<number, string>;
+  /**
+   * External grid overlay timestamps (e.g. from unified beat map).
+   * Rendered inside the track div alongside beat markers using smoothTime for 60fps animation.
+   */
+  externalGridTimestamps?: Array<{ timestamp: number; isDownbeat: boolean }>;
 }
 
 /**
@@ -134,6 +139,7 @@ export function BeatTimeline({
   subdividedBeatMap = null,
   showSubdivisionVisualization = true,
   keyMap,
+  externalGridTimestamps,
 }: BeatTimelineProps) {
   // Default keyMap to empty Map if not provided
   const beatKeyMap = keyMap ?? new Map<number, string>();
@@ -810,6 +816,25 @@ export function BeatTimeline({
             style={{ left: `${gridLine.position * 100}%` }}
           />
         ))}
+
+        {/* External grid lines from unified beat map (calculated with smoothTime for 60fps) */}
+        {externalGridTimestamps && (() => {
+          const minTime = smoothTime - pastWindow;
+          const maxTime = smoothTime + anticipationWindow;
+          return externalGridTimestamps
+            .filter(b => b.timestamp >= minTime && b.timestamp <= maxTime)
+            .map(b => {
+              const pos = calculateBeatPosition(b.timestamp);
+              if (pos < 0 || pos > 1) return null;
+              return (
+                <div
+                  key={`ext-grid-${b.timestamp.toFixed(3)}`}
+                  className={`beat-timeline-grid-line ${b.isDownbeat ? 'beat-timeline-grid-line--measure' : ''}`}
+                  style={{ left: `${pos * 100}%` }}
+                />
+              );
+            });
+        })()}
 
         {/* Task 4.3: Measure Boundary Lines */}
         {/* Task 4.4: Measure Number Labels */}

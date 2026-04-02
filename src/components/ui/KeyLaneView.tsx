@@ -22,6 +22,7 @@ import { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { cn } from '@/utils/cn';
 import { KeyLane, getLanesForStyle, type LaneBeat } from './KeyLane';
 import { ComboFeedbackDisplay } from './ComboFeedbackDisplay';
+import { useUnifiedBeatMap } from '../../store/beatDetectionStore';
 import type {
     ChartStyle,
     SupportedKey,
@@ -676,6 +677,51 @@ export function KeyLaneView({
         return null;
     }, [styleMismatch, chartStyle, detectedChartStyle]);
 
+    // ========================================
+    // Beat Grid Lines (horizontal reference lines at quarter note positions from unified beat map)
+    // ========================================
+
+    const unifiedBeatMap = useUnifiedBeatMap();
+
+    const visibleBeatGridLines = useMemo(() => {
+        if (!unifiedBeatMap || !unifiedBeatMap.beats || unifiedBeatMap.beats.length === 0) return [];
+
+        const invertDirection = chartStyle === 'ddr';
+        const hitZonePercent = 85;
+        const minTime = smoothTime - 1.5;
+        const maxTime = smoothTime + visibilityWindow;
+
+        const lines: Array<{ key: string; position: number; isMeasureStart: boolean }> = [];
+
+        let prevMeasureNumber = -1;
+
+        for (let i = 0; i < unifiedBeatMap.beats.length; i++) {
+            const beat = unifiedBeatMap.beats[i];
+            const timestamp = beat.timestamp;
+            if (timestamp < minTime) {
+                prevMeasureNumber = beat.measureNumber ?? prevMeasureNumber;
+                continue;
+            }
+            if (timestamp > maxTime) break;
+
+            const isMeasureStart = (beat.measureNumber ?? 0) !== prevMeasureNumber;
+            prevMeasureNumber = beat.measureNumber ?? 0;
+
+            const timeUntilBeat = timestamp - smoothTime;
+            let position = hitZonePercent - (timeUntilBeat / visibilityWindow) * hitZonePercent;
+            position = invertDirection ? 100 - position : position;
+            const clampedPosition = Math.max(0, Math.min(100, position));
+
+            lines.push({
+                key: `grid-${timestamp.toFixed(3)}`,
+                position: clampedPosition,
+                isMeasureStart,
+            });
+        }
+
+        return lines;
+    }, [unifiedBeatMap, smoothTime, visibilityWindow, chartStyle]);
+
     return (
         <div
             className={cn(
@@ -718,6 +764,22 @@ export function KeyLaneView({
                 aria-valuenow={smoothTime}
                 tabIndex={onSeek ? 0 : undefined}
             >
+                {/* Beat grid lines - horizontal reference lines at regular beat intervals */}
+                {visibleBeatGridLines.length > 0 && (
+                    <div
+                        className="key-lane-view-grid-container"
+                        style={{ width: lanesWidth > 0 ? `${lanesWidth}px` : undefined }}
+                    >
+                        {visibleBeatGridLines.map(({ key, position, isMeasureStart }) => (
+                            <div
+                                key={key}
+                                className={`key-lane-view-grid-line${isMeasureStart ? ' key-lane-view-grid-line--measure-start' : ''}`}
+                                style={{ top: `${position}%` }}
+                            />
+                        ))}
+                    </div>
+                )}
+
                 {/* Individual lane components */}
                 {lanes.map((laneKey) => {
                     const laneBeats = beatsByLane.get(laneKey) || [];

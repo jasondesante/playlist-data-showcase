@@ -20,6 +20,7 @@ import {
     useKeyLaneViewMode,
     useTapStatistics,
     useAccuracyThresholds,
+    useUnifiedBeatMap,
 } from '../../../store/beatDetectionStore';
 import { useBeatStream } from '../../../hooks/useBeatStream';
 import { useKeyboardInput } from '../../../hooks/useKeyboardInput';
@@ -96,10 +97,15 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     // Combo and XP result
     const currentCombo = useBeatDetectionStore((state) => state.currentCombo);
     const lastRhythmXPResult = useBeatDetectionStore((state) => state.lastRhythmXPResult);
-
-    // Audio player state
     const { playbackState, currentTime, pause, resume, seek, play, currentUrl } = useAudioPlayerStore();
     const duration = useTrackDuration();
+
+    // Unified beat map for grid line overlay on BeatTimeline (raw timestamps - BeatTimeline handles positioning)
+    const unifiedBeatMap = useUnifiedBeatMap();
+    const gridTimestamps = useMemo(() => {
+        if (!unifiedBeatMap || !unifiedBeatMap.beats || unifiedBeatMap.beats.length === 0) return undefined;
+        return unifiedBeatMap.beats.map(b => ({ timestamp: b.timestamp, isDownbeat: b.isDownbeat }));
+    }, [unifiedBeatMap]);
     const isPlaying = playbackState === 'playing';
 
     // Groove state for GrooveMeter display
@@ -467,6 +473,7 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
             {/* Main practice play area - BeatTimeline or KeyLaneView */}
             {convertedBeatMap && (
                 <PracticePlayArea
+                    gridOverlayLines={keyLaneViewMode === 'off' ? gridTimestamps : undefined}
                     keyLaneViewMode={keyLaneViewMode}
                     beatMap={convertedBeatMap}
                     subdividedBeatMap={subdividedBeatMap}
@@ -494,7 +501,7 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
                     showGridOverlay={false}
                     showTempoDriftVisualization={false}
                     isDownbeatSelectionMode={false}
-                    showMeasureBoundaries={false}
+                    showMeasureBoundaries={true}
                     handleSeek={handleSeek}
                     handleBeatClick={() => {}}
                 />

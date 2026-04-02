@@ -90,6 +90,35 @@
     touch-action: none; /* Prevent scroll while dragging */
 }
 
+/* ============================================
+   BEAT GRID LINES - Horizontal reference lines at regular beat intervals
+   ============================================ */
+
+/* Container constrains grid lines to the lane columns area */
+.key-lane-view-grid-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.key-lane-view-grid-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: hsl(var(--muted-foreground) / 0.12);
+    pointer-events: none;
+}
+
+/* Measure boundary lines - more prominent than regular quarter note lines */
+.key-lane-view-grid-line--measure-start {
+    height: 1px;
+    background: hsl(var(--muted-foreground) / 0.25);
+}
+
 /* Draggable state - indicates lanes can be dragged to seek */
 .key-lane-view-lanes--draggable {
     cursor: grab;
