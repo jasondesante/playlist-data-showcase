@@ -99,8 +99,8 @@
     top: 0;
     bottom: 0;
     width: 1px;
-    background: var(--border-color-light, #1a1a2a);
-    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateX(-50%);
 }
 
 /* ============================================
@@ -758,7 +758,6 @@
     }
 
     .charted-beat-map-measure-line {
-        background: var(--border-color, #2a2a4a);
-        opacity: 1;
+        background: rgba(255, 255, 255, 0.25);
     }
 }

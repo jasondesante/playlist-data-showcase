@@ -32,7 +32,6 @@ import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 import {
     useBeatDetectionStore,
-    useGeneratedRhythm,
     useLevelGenerationProgress as useStoredProgress,
     useBeatDetectionActions,
     useAllDifficultyLevels as useStoredAllDifficulties,
@@ -108,7 +107,6 @@ let activeLevelGenerator: LevelGenerator | null = null;
  */
 export const useLevelGeneration = (): UseLevelGenerationReturn => {
     // Get state from selectors
-    const cachedRhythm = useGeneratedRhythm();
     const progress = useStoredProgress();
     const allDifficulties = useStoredAllDifficulties();
     const actions = useBeatDetectionActions();
@@ -196,7 +194,7 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
         logger.info('LevelGeneration', 'Starting level generation', {
             audioUrl,
             hasOptions: !!options,
-            hasCachedRhythm: !!cachedRhythm,
+            hasCachedRhythm: !!useBeatDetectionStore.getState().generatedRhythm,
         });
 
         // Check if we have a unified beat map
@@ -218,7 +216,7 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
         actions.setLevelGenerationProgress({
             stage: 'rhythm',
             progress: 0,
-            message: cachedRhythm
+            message: useBeatDetectionStore.getState().generatedRhythm
                 ? 'Starting level generation with cached rhythm...'
                 : 'Starting level generation...',
         });
@@ -239,6 +237,11 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
             }
 
             // Create the level generator options
+            // Read cached rhythm from store at call time (not from closure) so that
+            // callers can clear it (e.g. clearGeneratedRhythm) before invoking generate
+            // and the engine will see the cleared value and regenerate rhythm from scratch.
+            const currentCachedRhythm = useBeatDetectionStore.getState().generatedRhythm;
+
             const generatorOptions: Partial<LevelGenerationOptions> = {
                 difficulty: options?.difficulty ?? 'medium',
                 controllerMode: options?.controllerMode ?? 'ddr',
@@ -246,7 +249,7 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
                 buttons: options?.buttons,
                 seed: options?.seed,
                 // Pass the cached rhythm from the store to avoid re-generation
-                cachedRhythm: cachedRhythm ?? undefined,
+                cachedRhythm: currentCachedRhythm ?? undefined,
                 // Pitch detection settings
                 pitchAlgorithm: options?.pitchAlgorithm,
                 crepeModelUrl: options?.crepeModelUrl,
@@ -294,6 +297,13 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
                 actions.setPitchAnalysis(selectedLevel.pitchAnalysis);
             }
 
+            // Restore generated rhythm from the level result.
+            // This is needed when regenerate was triggered after a downbeat change
+            // (which cleared the rhythm so the engine would regenerate it from scratch).
+            if (selectedLevel?.rhythm) {
+                actions.setGeneratedRhythm(selectedLevel.rhythm);
+            }
+
             actions.setLevelGenerationProgress({
                 stage: 'finalizing',
                 progress: 100,
@@ -337,7 +347,7 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
 
             return null;
         }
-    }, [actions, cachedRhythm, fetchAndDecodeAudio, selectedDifficulty]);
+    }, [actions, fetchAndDecodeAudio, selectedDifficulty]);
 
     /**
      * Cancel an ongoing level generation.

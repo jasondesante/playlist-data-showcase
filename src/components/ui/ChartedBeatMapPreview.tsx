@@ -40,6 +40,15 @@ export interface ChartedBeatMapPreviewProps {
     height?: number;
     /** Show beat indices on hover */
     showBeatIndices?: boolean;
+    /** Override downbeat config for measure line calculation (e.g. from live store) */
+    downbeatConfigOverride?: import('playlist-data-engine').DownbeatConfig;
+    /**
+     * Actual quarter-note timestamps from UnifiedBeatMap.
+     * quarterNoteTimestamps[i] = timestamp of quarter note i.
+     * When provided, measure lines use real beat positions (no BPM drift).
+     * Falls back to fixed-BPM calculation when omitted.
+     */
+    quarterNoteTimestamps?: number[];
     /** Additional CSS class names */
     className?: string;
 }
@@ -132,6 +141,8 @@ export function ChartedBeatMapPreview({
     disabled = false,
     height = 120,
     showBeatIndices = true,
+    downbeatConfigOverride,
+    quarterNoteTimestamps,
     className,
 }: ChartedBeatMapPreviewProps) {
     // Audio player state
@@ -270,6 +281,64 @@ export function ChartedBeatMapPreview({
         const timeUntilEvent = timestamp - smoothTime;
         return 0.5 + (timeUntilEvent / anticipationWindow) * 0.5;
     }, [smoothTime, anticipationWindow]);
+
+    // Use override if provided (live store value), otherwise fall back to chart's baked-in config
+    const effectiveDownbeatConfig = downbeatConfigOverride ?? chart?.downbeatConfig;
+
+    // Calculate measure line positions for the visible window
+    const measureLines = useMemo(() => {
+        if (!chart?.beats?.length) return [];
+
+        // Get beats per measure from effective downbeat config
+        const firstSegment = effectiveDownbeatConfig?.segments?.[0];
+        const beatsPerMeasure = firstSegment?.timeSignature?.beatsPerMeasure ?? 4;
+        const downbeatBeatIndex = firstSegment?.downbeatBeatIndex ?? 0;
+
+        // When we have real quarter-note timestamps from the unified beat map,
+        // use them directly — no BPM drift.
+        if (quarterNoteTimestamps && quarterNoteTimestamps.length > 0) {
+            const lines: number[] = [];
+            for (let qi = downbeatBeatIndex; qi < quarterNoteTimestamps.length; qi += beatsPerMeasure) {
+                const ts = quarterNoteTimestamps[qi];
+                if (ts === undefined) break;
+                if (ts > visibleEndTime) break;
+                if (ts >= visibleStartTime) {
+                    lines.push(ts);
+                }
+            }
+            return lines;
+        }
+
+        // Fallback: fixed-BPM estimation from chart data (will drift on tempo changes)
+        const qni = chart.quarterNoteInterval;
+        if (!qni || qni <= 0) return [];
+
+        const measureDuration = qni * beatsPerMeasure;
+
+        let minQni = chart.beats[0].quarterNoteIndex ?? 0;
+        let anchorBeatTs = chart.beats[0].timestamp;
+        for (let i = 1; i < chart.beats.length; i++) {
+            const qi = chart.beats[i].quarterNoteIndex ?? 0;
+            if (qi < minQni) {
+                minQni = qi;
+                anchorBeatTs = chart.beats[i].timestamp;
+            }
+        }
+        const gridStartTs = anchorBeatTs - minQni * qni;
+        const firstDownbeatTs = gridStartTs + downbeatBeatIndex * qni;
+
+        const lines: number[] = [];
+        const measuresBeforeWindow = Math.ceil((visibleStartTime - firstDownbeatTs) / measureDuration);
+        const startLine = firstDownbeatTs + measuresBeforeWindow * measureDuration;
+
+        for (let t = startLine; t <= visibleEndTime; t += measureDuration) {
+            if (t >= visibleStartTime) {
+                lines.push(t);
+            }
+        }
+
+        return lines;
+    }, [chart?.beats, effectiveDownbeatConfig, chart?.quarterNoteInterval, quarterNoteTimestamps, visibleStartTime, visibleEndTime]);
 
     // Get visible beats
     const visibleBeats = useMemo((): VisibleBeat[] => {
@@ -506,20 +575,17 @@ export function ChartedBeatMapPreview({
 
                 {/* Grid lines for measures */}
                 <div className="charted-beat-map-grid">
-                    {/* Generate measure markers */}
-                    {chart.beats
-                        .filter((beat) => beat.isDownbeat)
-                        .map((beat) => {
-                            const position = calculatePosition(beat.timestamp);
-                            if (position < 0 || position > 1) return null;
-                            return (
-                                <div
-                                    key={`measure-${beat.timestamp}`}
-                                    className="charted-beat-map-measure-line"
-                                    style={{ left: `${position * 100}%` }}
-                                />
-                            );
-                        })}
+                    {measureLines.map((timestamp) => {
+                        const position = calculatePosition(timestamp);
+                        if (position < 0 || position > 1) return null;
+                        return (
+                            <div
+                                key={`measure-${timestamp}`}
+                                className="charted-beat-map-measure-line"
+                                style={{ left: `${position * 100}%` }}
+                            />
+                        );
+                    })}
                 </div>
 
                 {/* Beat markers */}
@@ -665,7 +731,7 @@ export function ChartedBeatMapPreview({
                             </span>
                             <span className="charted-beat-map-tooltip-separator">•</span>
                             <span className="charted-beat-map-tooltip-source">
-                                {hoveredBeat.isDetected ? 'Detected' : 'Generated'}
+                                {hoveredBeat.isDetected ? '<10ms' : '>=10ms'}
                             </span>
                             {hoveredBeat.isDownbeat && (
                                 <>
@@ -684,11 +750,9 @@ export function ChartedBeatMapPreview({
                                 </>
                             )}
                         </div>
-                        {hoveredBeat.quantizationError !== undefined && (
-                            <div className="charted-beat-map-tooltip-extra">
-                                Quantization error: {hoveredBeat.quantizationError.toFixed(1)}ms
-                            </div>
-                        )}
+                        <div className="charted-beat-map-tooltip-extra">
+                            Quantization error: {hoveredBeat.quantizationError !== undefined ? `${hoveredBeat.quantizationError.toFixed(1)}ms` : '0ms'}
+                        </div>
                     </>
                 ) : (
                     <>

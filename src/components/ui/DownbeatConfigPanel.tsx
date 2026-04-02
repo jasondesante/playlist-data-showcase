@@ -94,9 +94,11 @@ const getToggleTabIndex = (beats: TimeSignatureValue, currentBeats: TimeSignatur
 interface DownbeatConfigPanelProps {
     /** Whether the panel is disabled (no beat map available) */
     disabled?: boolean;
+    /** Hide the "Edit Downbeat" button and selection-mode hint */
+    hideEditDownbeat?: boolean;
 }
 
-export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelProps) {
+export function DownbeatConfigPanel({ disabled = false, hideEditDownbeat = false }: DownbeatConfigPanelProps) {
     // Get downbeat configuration from store
     const config = useDownbeatConfig();
     const timeSignature = useTimeSignature();
@@ -360,6 +362,7 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                     </div>
 
                     {/* Hint Box - Task 2.6 / Task 5.3 */}
+                    {!hideEditDownbeat && (
                     <div className={`downbeat-config-panel-hint ${isSelectionMode ? 'downbeat-config-panel-hint--selection-mode' : ''}`}>
                         {isSelectionMode ? (
                             <>
@@ -377,6 +380,7 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                             </>
                         )}
                     </div>
+                    )}
 
                     {/* Measure Visualization Toggle - Task 4.1 */}
                     <div className="downbeat-config-panel-toggle">
@@ -574,6 +578,7 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                     {/* Actions */}
                     <div className="downbeat-config-panel-actions">
                         {/* Edit Downbeat / Done toggle button */}
+                        {!hideEditDownbeat && (
                         <Button
                             variant={isSelectionMode ? 'primary' : 'outline'}
                             size="sm"
@@ -585,6 +590,7 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                         >
                             {isSelectionMode ? 'Done' : 'Edit Downbeat'}
                         </Button>
+                        )}
                         <Button
                             variant="outline"
                             size="sm"

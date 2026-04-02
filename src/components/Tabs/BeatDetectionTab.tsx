@@ -120,6 +120,7 @@ export function BeatDetectionTab() {
     // Task 0.3: Track if we were generating level to detect level completion
     const wasLevelGeneratingRef = useRef(isLevelGenerating);
 
+
     // Compute completed steps set
     const completedSteps = useMemo(() => {
         const completed = new Set<number>();
@@ -437,6 +438,36 @@ export function BeatDetectionTab() {
         // Update the ref for the next render
         wasLevelGeneratingRef.current = isLevelGenerating;
     }, [isLevelGenerating, allDifficulties, generationMode, currentStep, setCurrentStep]);
+
+    /**
+     * Regenerate levels when downbeat or time signature changes in auto mode.
+     * DownbeatConfigPanel updates the store via applyDownbeatConfig which regenerates
+     * beat maps. The user must click "Regenerate Levels" to re-run level generation.
+     *
+     * Clears rhythm and levels first so the engine regenerates everything from
+     * scratch with the updated beat map (rhythm is measure-aware via rhythmicBalancer).
+     */
+    const handleRegenerateLevels = useCallback(() => {
+        if (!selectedTrack?.audio_url || !generatedRhythm || isLevelGenerating) return;
+
+        logger.info('BeatDetection', 'User triggered full level regeneration after downbeat change');
+
+        // Clear rhythm (cascades to clear levels, pitch, and progress too)
+        useBeatDetectionStore.getState().actions.clearGeneratedRhythm();
+
+        // Regenerate with fresh rhythm using the updated beat map
+        generateLevel(selectedTrack.audio_url, {
+            difficulty: autoLevelSettings.difficulty,
+            controllerMode: autoLevelSettings.controllerMode,
+            buttons: {
+                pitchInfluenceWeight: autoLevelSettings.pitchInfluenceWeight,
+            },
+            seed: autoLevelSettings.seed,
+            pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
+            crepeModelUrl: autoLevelSettings.crepeModelUrl,
+            voicingThreshold: autoLevelSettings.voicingThreshold,
+        });
+    }, [selectedTrack?.audio_url, generatedRhythm, isLevelGenerating, autoLevelSettings, generateLevel]);
 
     /**
      * Map beat generation phases to human-readable labels
@@ -885,6 +916,8 @@ export function BeatDetectionTab() {
                     return wrapContent(
                         <AutoReadyPanel
                             onStartPractice={handleStartPracticeMode}
+                            onRegenerate={handleRegenerateLevels}
+                            isRegenerating={isLevelGenerating}
                         />
                     );
                 }

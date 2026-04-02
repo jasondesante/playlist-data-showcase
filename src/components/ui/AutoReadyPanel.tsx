@@ -8,23 +8,38 @@
  * - Difficulty switcher (Natural | Easy | Medium | Hard)
  * - ChartedBeatMapPreview showing the selected difficulty's chart
  * - Level metadata summary
+ * - Downbeat configuration with timeline for beat selection
+ * - Regenerate Levels button when downbeat/time signature changes
  * - Start Practice button
  *
  * Task 8.1: Update ReadyTab for Auto Mode
  */
 
-import { useMemo, useCallback } from 'react';
-import { Play, Gamepad2, Music, Activity } from 'lucide-react';
+import { useMemo, useCallback, useEffect, useState } from 'react';
+import { Play, Gamepad2, Music, Activity, RefreshCw, Pause } from 'lucide-react';
 import './AutoReadyPanel.css';
 import { Card } from './Card';
 import { Button } from './Button';
 import { DifficultySwitcher, getDifficultyColor, getDifficultyLabel } from './DifficultySwitcher';
 import { ChartedBeatMapPreview } from './ChartedBeatMapPreview';
+import { DownbeatConfigPanel } from './DownbeatConfigPanel';
+import { BeatTimeline } from './BeatTimeline';
 import {
     useAllDifficultyLevels,
     useSelectedDifficulty,
     useBeatDetectionActions,
+    useBeatDetectionStore,
+    useIsDownbeatSelectionMode,
+    useTimeSignature,
+    useShowMeasureBoundaries,
+    useInterpolationVisualizationData,
+    useShowGridOverlay,
+    useShowTempoDriftVisualization,
+    useBeatMap,
+    useDownbeatConfig,
+    useUnifiedBeatMap,
 } from '../../store/beatDetectionStore';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import type { DifficultyLevel } from '../../types/levelGeneration';
 import type { GeneratedLevel, ControllerMode } from 'playlist-data-engine';
 import { cn } from '../../utils/cn';
@@ -37,6 +52,10 @@ import { logger } from '../../utils/logger';
 export interface AutoReadyPanelProps {
     /** Callback when user clicks Start Practice */
     onStartPractice: () => void;
+    /** Callback to regenerate levels after downbeat/time signature change */
+    onRegenerate?: () => void;
+    /** Whether level regeneration is in progress */
+    isRegenerating?: boolean;
     /** Additional CSS class names */
     className?: string;
 }
@@ -132,10 +151,61 @@ function LevelSummaryCard({ level, difficulty }: LevelSummaryCardProps) {
 // Main Component
 // ============================================================
 
-export function AutoReadyPanel({ onStartPractice, className }: AutoReadyPanelProps) {
+export function AutoReadyPanel({ onStartPractice, onRegenerate, isRegenerating, className }: AutoReadyPanelProps) {
     const allDifficulties = useAllDifficultyLevels();
     const selectedDifficulty = useSelectedDifficulty();
     const actions = useBeatDetectionActions();
+    const beatMap = useBeatMap();
+    const downbeatConfig = useDownbeatConfig();
+    const unifiedBeatMap = useUnifiedBeatMap();
+    const quarterNoteTimestamps = useMemo(
+        () => unifiedBeatMap?.beats.map((b) => b.timestamp) ?? undefined,
+        [unifiedBeatMap]
+    );
+    const isDownbeatSelectionMode = useIsDownbeatSelectionMode();
+    const timeSignature = useTimeSignature();
+    const showMeasureBoundaries = useShowMeasureBoundaries();
+    const interpolationData = useInterpolationVisualizationData();
+    const showGridOverlay = useShowGridOverlay();
+    const showTempoDriftVisualization = useShowTempoDriftVisualization();
+
+    // Audio player state for preview timeline sync
+    const { playbackState, currentTime: audioTime, pause, resume, seek } = useAudioPlayerStore();
+    const isAudioPlaying = playbackState === 'playing';
+
+    // Preview timeline state
+    const [manualPreviewTime, setManualPreviewTime] = useState(0);
+    const previewTime = isAudioPlaying ? audioTime : manualPreviewTime;
+
+    // Track whether downbeat config has changed since levels were last generated
+    const [isStale, setIsStale] = useState(false);
+
+    // Use a zustand subscription to reliably detect downbeatConfig changes,
+    // regardless of how applyDownbeatConfig updates the store.
+    useEffect(() => {
+        const unsubscribe = useBeatDetectionStore.subscribe(
+            (state, prevState) => {
+                if (state.downbeatConfig !== prevState.downbeatConfig) {
+                    setIsStale(true);
+                }
+            }
+        );
+        return unsubscribe;
+    }, []);
+
+    // Sync manual preview time to audio position when playback pauses
+    useEffect(() => {
+        if (!isAudioPlaying && audioTime > 0) {
+            setManualPreviewTime(audioTime);
+        }
+    }, [isAudioPlaying, audioTime]);
+
+    // Reset manual preview time when exiting selection mode
+    useEffect(() => {
+        if (!isDownbeatSelectionMode) {
+            setManualPreviewTime(0);
+        }
+    }, [isDownbeatSelectionMode]);
 
     // Get the currently selected level
     const selectedLevel = useMemo((): GeneratedLevel | null => {
@@ -166,6 +236,33 @@ export function AutoReadyPanel({ onStartPractice, className }: AutoReadyPanelPro
 
     // Check if we have valid data
     const hasLevel = selectedLevel?.chart?.beats && selectedLevel.chart.beats.length > 0;
+
+    // Handle regenerate click — mark as no longer stale once regeneration starts
+    const handleRegenerate = useCallback(() => {
+        setIsStale(false);
+        onRegenerate?.();
+    }, [onRegenerate]);
+
+    // Handle seek in preview timeline
+    const handlePreviewSeek = useCallback((time: number) => {
+        setManualPreviewTime(time);
+        seek(time);
+    }, [seek]);
+
+    // Handle play/pause for the preview timeline
+    const handlePlayPause = useCallback(() => {
+        if (isAudioPlaying) {
+            pause();
+        } else {
+            resume();
+        }
+    }, [isAudioPlaying, pause, resume]);
+
+    // Handle beat click for downbeat selection
+    const handleBeatClick = useCallback((beatIndex: number) => {
+        if (!isDownbeatSelectionMode) return;
+        useBeatDetectionStore.getState().actions.setDownbeatPosition(beatIndex, timeSignature);
+    }, [isDownbeatSelectionMode, timeSignature]);
 
     if (!allDifficulties) {
         return (
@@ -209,6 +306,63 @@ export function AutoReadyPanel({ onStartPractice, className }: AutoReadyPanelPro
             {/* Level Summary */}
             <LevelSummaryCard level={selectedLevel} difficulty={selectedDifficulty} />
 
+            {/* Downbeat Configuration */}
+            <DownbeatConfigPanel disabled={!hasLevel} />
+
+            {/* Regenerate Levels prompt when downbeat/time signature changed */}
+            {isStale && onRegenerate && (
+                <div className="auto-ready-regenerate">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        leftIcon={RefreshCw}
+                        onClick={handleRegenerate}
+                        disabled={isRegenerating}
+                        isLoading={isRegenerating}
+                        className="auto-ready-regenerate-btn"
+                    >
+                        Regenerate Levels
+                    </Button>
+                    <span className="auto-ready-regenerate-hint">
+                        Downbeat or time signature changed — regenerate to update levels
+                    </span>
+                </div>
+            )}
+
+            {/* Beat Timeline for downbeat selection (matches manual mode behavior) */}
+            {isDownbeatSelectionMode && beatMap && (
+                <div className="auto-ready-timeline">
+                    <div className="auto-ready-timeline-header">
+                        <span className="auto-ready-timeline-label">
+                            Drag to navigate, click a beat marker to set as downbeat:
+                        </span>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handlePlayPause}
+                            leftIcon={isAudioPlaying ? Pause : Play}
+                            className="auto-ready-timeline-play-btn"
+                        >
+                            {isAudioPlaying ? 'Pause' : 'Play'}
+                        </Button>
+                    </div>
+                    <BeatTimeline
+                        beatMap={beatMap}
+                        currentTime={previewTime}
+                        anticipationWindow={5}
+                        pastWindow={10}
+                        isPlaying={isAudioPlaying}
+                        interpolationData={interpolationData}
+                        showGridOverlay={showGridOverlay}
+                        showTempoDriftVisualization={showTempoDriftVisualization}
+                        enableBeatSelection={isDownbeatSelectionMode}
+                        onBeatClick={handleBeatClick}
+                        onSeek={handlePreviewSeek}
+                        showMeasureBoundaries={showMeasureBoundaries}
+                    />
+                </div>
+            )}
+
             {/* Chart Preview */}
             <div className="auto-ready-chart-section">
                 <h4 className="auto-ready-section-title">Chart Preview</h4>
@@ -217,6 +371,8 @@ export function AutoReadyPanel({ onStartPractice, className }: AutoReadyPanelPro
                     controllerMode={controllerMode}
                     height={140}
                     showBeatIndices={true}
+                    downbeatConfigOverride={downbeatConfig}
+                    quarterNoteTimestamps={quarterNoteTimestamps}
                 />
             </div>
 

@@ -55,6 +55,7 @@
 import { Info, RotateCcw, AlertTriangle, ChevronDown } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 import { BeatInterpolationSettings } from './BeatInterpolationSettings';
+import { DownbeatConfigPanel } from './DownbeatConfigPanel';
 import './BeatDetectionSettings.css';
 import { useBeatDetectionStore, useOseSettingsChanged, useInterpolationSettingsChanged } from '../../store/beatDetectionStore';
 import {
@@ -1202,6 +1203,9 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
           )}
         </div>
       </details>
+
+      {/* Quick Downbeat Configuration */}
+      <DownbeatConfigPanel disabled={disabled} hideEditDownbeat />
 
       {/* Note about tracks without clear beat (Task 7.2) */}
       <div className="beat-detection-settings-note">
