@@ -1399,6 +1399,22 @@ export interface FullBeatMapExportData {
         keyCount: number;
         usedKeys: string[];
     } | null;
+
+    // Track reference (optional, for song validation on import)
+    /** Identifies the song this level was created for */
+    trackReference?: {
+        playlistTxId?: string;
+        playlistName?: string;
+        trackId: string;
+        trackUuid: string;
+        trackIndex: number;
+        txId?: string;
+        title: string;
+        artist: string;
+        audioUrl: string;
+        imageUrl?: string;
+        duration: number;
+    };
 }
 
 /**

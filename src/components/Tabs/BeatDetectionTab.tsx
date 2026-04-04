@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback, useMemo, useRef } from 'react';
 import { Music, Sparkles, Drum, Download, ArrowRight, SkipForward, Upload } from 'lucide-react';
+import { LevelSerializer, validateTrackMatch } from 'playlist-data-engine';
 import './BeatDetectionTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useBeatDetection } from '../../hooks/useBeatDetection';
@@ -111,6 +112,7 @@ export function BeatDetectionTab() {
     // Track if we were generating to detect analysis completion
     const wasGeneratingRef = useRef(isBeatGenerating);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const step1FileInputRef = useRef<HTMLInputElement>(null);
 
     // Task 2.5: Flag to trigger auto-start of rhythm generation in auto mode
     const shouldAutoStartRhythmGenerationRef = useRef(false);
@@ -174,10 +176,60 @@ export function BeatDetectionTab() {
     }, [exportFullBeatMap, selectedTrack?.title]);
 
     /**
-     * Import a complete beat map from JSON file.
-     * Restores all beat data: detected, interpolated, subdivided, and chart keys.
+     * Export auto-generated level as JSON using LevelSerializer with track reference.
      */
-    const handleImportBeatMap = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleExportAutoLevel = useCallback(() => {
+        const { selectedDifficulty: diff, autoSubMode: mode, customDensityLevel: customLevel, allDifficultyLevels: allDiffs } =
+            useBeatDetectionStore.getState();
+        const playlistState = usePlaylistStore.getState();
+        const track = playlistState.selectedTrack;
+
+        const level = mode === 'customDensity' ? customLevel : allDiffs?.[diff] ?? null;
+        if (!level) return;
+
+        const trackReference = track ? {
+            playlistTxId: playlistState.playlistTxId ?? undefined,
+            playlistName: playlistState.currentPlaylist?.name,
+            trackId: track.id,
+            trackUuid: track.uuid,
+            trackIndex: track.playlist_index,
+            txId: track.tx_id,
+            title: track.title,
+            artist: track.artist,
+            audioUrl: track.audio_url,
+            imageUrl: track.image_url,
+            duration: track.duration,
+        } : undefined;
+
+        const json = LevelSerializer.toJSON(level, {
+            includeAudioTitle: !!track?.title,
+            audioTitle: track?.title,
+            trackReference,
+        });
+
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const safeName = (track?.title || 'level').replace(/[^a-zA-Z0-9]/g, '-');
+        link.download = `level-${safeName}-${timestamp}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }, []);
+
+    /**
+     * Unified import handler for both manual and auto-generated levels.
+     *
+     * Flow:
+     * 1. Parse the JSON file
+     * 2. If the file has a trackReference, validate against the currently selected track
+     * 3. If generationSource === 'procedural', reconstruct via LevelSerializer and store as auto level
+     * 4. Otherwise, use importFullBeatMap for manual beat map import
+     */
+    const handleImportLevel = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
@@ -188,6 +240,64 @@ export function BeatDetectionTab() {
             const text = await file.text();
             const data = JSON.parse(text);
 
+            // Track mismatch validation (only when trackReference exists)
+            if (data.trackReference && selectedTrack) {
+                const matchResult = validateTrackMatch(data.trackReference, {
+                    id: selectedTrack.id,
+                    title: selectedTrack.title,
+                    artist: selectedTrack.artist,
+                    playlist_index: selectedTrack.playlist_index,
+                    tx_id: selectedTrack.tx_id,
+                });
+
+                if (!matchResult.matches) {
+                    const req = matchResult.requiredTrack;
+                    const playlist = req?.playlistName ? ` in "${req.playlistName}"` : '';
+                    const trackNum = req?.trackIndex != null ? req.trackIndex + 1 : '?';
+                    alert(
+                        `This level is for "${req?.title}" by ${req?.artist}${playlist} (track #${trackNum}).\n\nPlease switch to that song first.`
+                    );
+                    return;
+                }
+            }
+
+            // Procedural (auto-generated) level import
+            if (data.generationSource === 'procedural') {
+                try {
+                    const level = LevelSerializer.fromExportData(data);
+
+                    // Switch to automatic mode and store the imported level
+                    useBeatDetectionStore.getState().actions.setGenerationMode('automatic');
+                    const difficulty = level.metadata.difficulty;
+                    useBeatDetectionStore.getState().actions.setSelectedDifficulty(difficulty);
+
+                    // Store as single difficulty level
+                    useBeatDetectionStore.getState().actions.setGeneratedLevel(level);
+
+                    // Also set as custom density level so it's available regardless of sub-mode
+                    useBeatDetectionStore.getState().actions.setCustomDensityLevel(level);
+
+                    // We can't build a full allDifficultyLevels (easy/medium/hard are required),
+                    // so we set customDensityLevel instead. Switch to customDensity sub-mode so
+                    // AutoReadyPanel shows the imported level.
+                    useBeatDetectionStore.getState().actions.setAutoSubMode('customDensity');
+
+                    // Advance to Step 4 (Ready)
+                    setCurrentStep(4);
+
+                    logger.info('BeatDetection', 'Auto-generated level imported successfully', {
+                        difficulty,
+                        beatCount: level.chart.beats.length,
+                    });
+                } catch (err) {
+                    const message = err instanceof Error ? err.message : 'Failed to reconstruct level';
+                    logger.error('BeatDetection', 'Auto-level import error', { error: message });
+                    alert(`Auto-level import failed: ${message}`);
+                }
+                return;
+            }
+
+            // Manual beat map import (existing flow)
             const result = importFullBeatMap(data);
 
             if (result.success) {
@@ -198,10 +308,8 @@ export function BeatDetectionTab() {
                     detectedBeats: data.detectedBeats?.length,
                     mergedBeats: data.mergedBeats?.length,
                 });
-                // Could show a success toast here
             } else {
                 logger.warn('BeatDetection', 'Beat map import failed', { errors: result.errors });
-                // Could show an error toast here
                 alert(`Import failed: ${result.errors.join(', ')}`);
             }
         } catch (err) {
@@ -209,7 +317,7 @@ export function BeatDetectionTab() {
             logger.error('BeatDetection', 'Beat map import error', { error: message });
             alert(`Import error: ${message}`);
         }
-    }, [importFullBeatMap]);
+    }, [importFullBeatMap, selectedTrack, setCurrentStep]);
 
     /**
      * Load cached beat map when the selected track changes.
@@ -695,6 +803,23 @@ export function BeatDetectionTab() {
                                             ? `${beatProgress.progress}% - ${getPhaseLabel(beatProgress.phase)}`
                                             : beatMap ? 'Re-Analyze' : 'Analyze Beats'}
                                     </Button>
+                                    <input
+                                        ref={step1FileInputRef}
+                                        type="file"
+                                        accept=".json,application/json"
+                                        onChange={handleImportLevel}
+                                        style={{ display: 'none' }}
+                                        aria-hidden="true"
+                                    />
+                                    <Button
+                                        variant="outline"
+                                        size="lg"
+                                        onClick={() => step1FileInputRef.current?.click()}
+                                        leftIcon={Upload}
+                                        className="audio-analysis-import-btn"
+                                    >
+                                        Import Level
+                                    </Button>
                                 </div>
                                 {/* Task 2.3: Show AutoLevelSettings when auto mode is on */}
                                 {generationMode === 'automatic' && (
@@ -976,6 +1101,7 @@ export function BeatDetectionTab() {
                     return wrapContent(
                         <AutoReadyPanel
                             onStartPractice={handleStartPracticeMode}
+                            onExport={handleExportAutoLevel}
                             onRegenerate={handleRegenerateLevels}
                             isRegenerating={isLevelGenerating}
                         />
@@ -1007,7 +1133,7 @@ export function BeatDetectionTab() {
                                             ref={fileInputRef}
                                             type="file"
                                             accept=".json,application/json"
-                                            onChange={handleImportBeatMap}
+                                            onChange={handleImportLevel}
                                             style={{ display: 'none' }}
                                             aria-hidden="true"
                                         />
@@ -1052,7 +1178,7 @@ export function BeatDetectionTab() {
         handleBeatAnalysis,
         handleStartPracticeMode,
         handleExportBeatMap,
-        handleImportBeatMap,
+        handleImportLevel,
         clearOldestCachedBeatMaps,
         clearStorageError,
         getAnalysisStatus,
@@ -1061,6 +1187,7 @@ export function BeatDetectionTab() {
         stepCompletion,
         chartStatistics,
         fileInputRef,
+        step1FileInputRef,
         generationMode,
         allDifficulties,
     ]);

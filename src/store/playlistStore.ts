@@ -21,9 +21,11 @@ interface PlaylistState {
     rawResponseData: unknown;
     /** ISO timestamp of when playlist was parsed */
     parsedTimestamp: string | null;
+    /** Arweave transaction ID of the playlist (null when loaded from JSON) */
+    playlistTxId: string | null;
 
     /** Set the current playlist and clear previous state */
-    setPlaylist: (playlist: ServerlessPlaylist, rawData?: unknown) => void;
+    setPlaylist: (playlist: ServerlessPlaylist, rawData?: unknown, txId?: string) => void;
     /** Select a track for analysis and clear any previous audio profile */
     selectTrack: (track: PlaylistTrack) => void;
     /** Set audio profile for current track after analysis */
@@ -81,24 +83,27 @@ export const usePlaylistStore = create<PlaylistState>()(
             error: null,
             rawResponseData: null,
             parsedTimestamp: null,
+            playlistTxId: null,
 
             /**
              * Set the current playlist and update state
              * @param playlist - The parsed ServerlessPlaylist object
              * @param rawData - Optional raw response data for debugging
+             * @param txId - Optional Arweave transaction ID (set when loaded from arweave)
              * @example
              * ```ts
              * const playlist = await parser.parse(jsonString);
              * setPlaylist(playlist, jsonString);
              * ```
              */
-            setPlaylist: (playlist, rawData) => {
-                logger.info('Store', 'Setting playlist', { name: playlist.name, tracks: playlist.tracks.length });
+            setPlaylist: (playlist, rawData, txId) => {
+                logger.info('Store', 'Setting playlist', { name: playlist.name, tracks: playlist.tracks.length, txId });
                 set({
                     currentPlaylist: playlist,
                     error: null,
                     rawResponseData: rawData ?? null,
                     parsedTimestamp: new Date().toISOString(),
+                    playlistTxId: txId ?? null,
                     // Clear audio profile when loading new playlist
                     audioProfile: null,
                     // Clear music classification when loading new playlist
@@ -195,7 +200,8 @@ export const usePlaylistStore = create<PlaylistState>()(
                     musicClassification: null,
                     error: null,
                     rawResponseData: null,
-                    parsedTimestamp: null
+                    parsedTimestamp: null,
+                    playlistTxId: null,
                 });
             },
         }),
@@ -212,6 +218,7 @@ export const usePlaylistStore = create<PlaylistState>()(
                 error: state.error,
                 rawResponseData: state.rawResponseData,
                 parsedTimestamp: state.parsedTimestamp,
+                playlistTxId: state.playlistTxId,
             }),
             // Callback after zustand finishes hydrating from localStorage
             // This is critical because setPlaylist is NOT called during hydration

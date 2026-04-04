@@ -105,7 +105,9 @@ import {
     type AllDifficultiesResult,
     // Pitch types (Task 0.1)
     type PitchAtBeat,
+    type TrackReference,
 } from 'playlist-data-engine';
+import { usePlaylistStore } from './playlistStore';
 import type { MelodyContour } from '@/types/levelGeneration';
 import type { DensityGenerationConfig } from '@/types/rhythmGeneration';
 import { DEFAULT_DENSITY_CONFIG } from '@/types/rhythmGeneration';
@@ -3751,6 +3753,23 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         const interpolatedMap = state.interpolatedBeatMap;
                         const originalBeatMap = state.beatMap;
 
+                        // Build track reference from playlist store
+                        const playlistState = usePlaylistStore.getState();
+                        const track = playlistState.selectedTrack;
+                        const trackReference: TrackReference | undefined = track ? {
+                            playlistTxId: playlistState.playlistTxId ?? undefined,
+                            playlistName: playlistState.currentPlaylist?.name,
+                            trackId: track.id,
+                            trackUuid: track.uuid,
+                            trackIndex: track.playlist_index,
+                            txId: track.tx_id,
+                            title: track.title,
+                            artist: track.artist,
+                            audioUrl: track.audio_url,
+                            imageUrl: track.image_url,
+                            duration: track.duration,
+                        } : undefined;
+
                         // Build the export data
                         const exportData: FullBeatMapExportData = {
                             version: 1,
@@ -3838,6 +3857,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 keyCount: getKeyCount(state.subdividedBeatMap),
                                 usedKeys: getUsedKeys(state.subdividedBeatMap),
                             } : null,
+                            trackReference,
                         };
 
                         logger.info('BeatDetection', 'Exported full beat map', {
@@ -3846,6 +3866,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             mergedBeatCount: exportData.mergedBeats.length,
                             hasSubdivision: !!exportData.subdivision,
                             hasChart: !!exportData.chart,
+                            hasTrackReference: !!exportData.trackReference,
                         });
 
                         return exportData;

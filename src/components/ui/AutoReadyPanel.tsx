@@ -16,7 +16,7 @@
  */
 
 import { useMemo, useCallback, useEffect, useState } from 'react';
-import { Play, Gamepad2, Music, Activity, RefreshCw, Pause } from 'lucide-react';
+import { Play, Gamepad2, Music, Activity, RefreshCw, Pause, Download } from 'lucide-react';
 import './AutoReadyPanel.css';
 import { Card } from './Card';
 import { Button } from './Button';
@@ -55,6 +55,8 @@ import { logger } from '../../utils/logger';
 export interface AutoReadyPanelProps {
     /** Callback when user clicks Start Practice */
     onStartPractice: () => void;
+    /** Callback when user clicks Export */
+    onExport?: () => void;
     /** Callback to regenerate levels after downbeat/time signature change */
     onRegenerate?: () => void;
     /** Whether level regeneration is in progress */
@@ -155,7 +157,7 @@ function LevelSummaryCard({ level, difficulty }: LevelSummaryCardProps) {
 // Main Component
 // ============================================================
 
-export function AutoReadyPanel({ onStartPractice, onRegenerate, isRegenerating, className }: AutoReadyPanelProps) {
+export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRegenerating, className }: AutoReadyPanelProps) {
     const allDifficulties = useAllDifficultyLevels();
     const selectedDifficulty = useSelectedDifficulty();
     const actions = useBeatDetectionActions();
@@ -442,6 +444,17 @@ export function AutoReadyPanel({ onStartPractice, onRegenerate, isRegenerating, 
                     <Play size={18} />
                     Start Practice
                 </Button>
+                {onExport && (
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={onExport}
+                        disabled={!hasLevel}
+                    >
+                        <Download size={18} />
+                        Export Level
+                    </Button>
+                )}
             </div>
         </Card>
     );

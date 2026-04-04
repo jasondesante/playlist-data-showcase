@@ -47,18 +47,19 @@ export const usePlaylistParser = () => {
                     }
                     throw jsonError;
                 }
+                setPlaylist(playlist, rawData);
             } else {
                 // Validate Arweave ID format before fetching
-                const trimmedInput = input.trim();
-                if (trimmedInput.length === 0) {
+                const txId = input.trim();
+                if (txId.length === 0) {
                     throw new Error('Please enter an Arweave transaction ID or playlist JSON.');
                 }
-                if (trimmedInput.length < 10) {
+                if (txId.length < 10) {
                     throw new Error('Invalid Arweave ID format. Arweave IDs are typically 43 characters long.');
                 }
 
-                logger.info('PlaylistParser', 'Fetching from Arweave', trimmedInput);
-                const url = `https://arweave.net/${trimmedInput}`;
+                logger.info('PlaylistParser', 'Fetching from Arweave', txId);
+                const url = `https://arweave.net/${txId}`;
                 let json: unknown;
                 try {
                     const resolvedUrl = await arweaveGatewayManager.resolveUrl(url);
@@ -66,7 +67,7 @@ export const usePlaylistParser = () => {
 
                     if (!response.ok) {
                         if (response.status === 404) {
-                            throw new Error(`Playlist not found on Arweave (404). The transaction ID "${trimmedInput}" may not exist or the data hasn\'t been confirmed yet.`);
+                            throw new Error(`Playlist not found on Arweave (404). The transaction ID "${txId}" may not exist or the data hasn\'t been confirmed yet.`);
                         } else if (response.status === 403) {
                             throw new Error(`Access denied (403). You may not have permission to access this playlist.`);
                         } else if (response.status >= 500) {
@@ -89,6 +90,7 @@ export const usePlaylistParser = () => {
 
                 rawData = json; // Store raw Arweave response
                 playlist = await parser.parse(json as Parameters<typeof parser.parse>[0]);
+                setPlaylist(playlist, rawData, txId);
             }
 
             logger.info('PlaylistParser', 'Playlist parsed successfully', {
@@ -96,7 +98,6 @@ export const usePlaylistParser = () => {
                 tracks: playlist.tracks.length
             });
 
-            setPlaylist(playlist, rawData);
             return playlist;
         } catch (error) {
             handleError(error, 'PlaylistParser');
