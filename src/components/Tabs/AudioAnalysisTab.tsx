@@ -4,7 +4,8 @@ import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
-import { useMusicClassifier, MODEL_PRESETS, UseMusicClassifierOptions } from '../../hooks/useMusicClassifier';
+import { useMusicClassifier, GENRE_PRESET_LABELS, MOOD_PRESET_LABELS, type UseMusicClassifierOptions } from '../../hooks/useMusicClassifier';
+import type { GenrePreset, MoodPreset } from 'playlist-data-engine';
 import { useTrackDuration } from '../../hooks/useTrackDuration';
 import { GenreClassificationCard } from '../AudioAnalysis/GenreClassificationCard';
 import { MoodClassificationCard } from '../AudioAnalysis/MoodClassificationCard';
@@ -77,9 +78,9 @@ export function AudioAnalysisTab() {
   const [genreTopN, setGenreTopN] = useState(10); // 1-20 genres to return
   const genreThreshold = 0.01; // Fixed at 1% - always show all results
 
-  // Model selection state - keys from MODEL_PRESETS (defaults set when selector opens)
-  const [selectedGenreModel, setSelectedGenreModel] = useState<string | null>(null);
-  const [selectedMoodModel, setSelectedMoodModel] = useState<string | null>(null);
+  // Model selection state - preset names from the engine
+  const [selectedGenreModel, setSelectedGenreModel] = useState<GenrePreset | null>(null);
+  const [selectedMoodModel, setSelectedMoodModel] = useState<MoodPreset | null>(null);
   const [showModelSelector, setShowModelSelector] = useState(false);
 
   // When opening model selector, initialize with defaults
@@ -93,14 +94,14 @@ export function AudioAnalysisTab() {
   };
 
   // Model selection handlers - always require one selection (no deselection allowed)
-  const handleSelectGenreModel = (key: string) => {
+  const handleSelectGenreModel = (key: GenrePreset) => {
     // Only change if selecting a different model (prevent deselection)
     if (selectedGenreModel !== key) {
       setSelectedGenreModel(key);
     }
   };
 
-  const handleSelectMoodModel = (key: string) => {
+  const handleSelectMoodModel = (key: MoodPreset) => {
     // Only change if selecting a different model (prevent deselection)
     if (selectedMoodModel !== key) {
       setSelectedMoodModel(key);
@@ -180,53 +181,25 @@ export function AudioAnalysisTab() {
 
     if (analysisMode === 'genre') {
       // Genre analysis mode - ML-based classification
-      // Build options object - pass directly to analyze() to avoid async state issues
+      // Pass preset names to the engine — it resolves them to URLs internally
 
-      if (selectedGenreModel || selectedMoodModel) {
-        // User selected custom models - pass them explicitly
-        const models: {
-          genre?: typeof MODEL_PRESETS.genre.discogs400.config;
-          mood?: typeof MODEL_PRESETS.mood.jamendo.config;
-          danceability?: typeof MODEL_PRESETS.danceability.default.config;
-        } = {};
+      const preset: UseMusicClassifierOptions['preset'] = {
+        genre: selectedGenreModel ?? 'discogs400',
+        mood: selectedMoodModel ?? 'jamendo',
+        danceability: 'default',
+      };
 
-        if (selectedGenreModel) {
-          const genreKey = selectedGenreModel as keyof typeof MODEL_PRESETS.genre;
-          models.genre = MODEL_PRESETS.genre[genreKey].config as typeof MODEL_PRESETS.genre.discogs400.config;
-        }
-        if (selectedMoodModel) {
-          const moodKey = selectedMoodModel as keyof typeof MODEL_PRESETS.mood;
-          models.mood = MODEL_PRESETS.mood[moodKey].config as typeof MODEL_PRESETS.mood.jamendo.config;
-        }
-        // Danceability always uses default
-        models.danceability = MODEL_PRESETS.danceability.default.config;
+      const classifierOptions: UseMusicClassifierOptions = {
+        preset,
+        topN: genreTopN,
+        threshold: genreThreshold,
+      };
 
-        const classifierOptions: UseMusicClassifierOptions = {
-          topN: genreTopN,
-          threshold: genreThreshold,
-          models,
-        };
+      // Also update state for UI consistency
+      setOptions(classifierOptions);
 
-        // Also update state for UI consistency
-        setOptions(classifierOptions);
-
-        // Analyze music - pass options directly to bypass async state issue
-        await analyze(selectedTrack.audio_url, classifierOptions);
-      } else {
-        // No custom models selected - DON'T include models property at all
-        // This lets the engine constructor use its internal defaults
-        const classifierOptions: UseMusicClassifierOptions = {
-          topN: genreTopN,
-          threshold: genreThreshold,
-          // models is NOT included - engine will use its defaults
-        };
-
-        // Also update state for UI consistency
-        setOptions(classifierOptions);
-
-        // Analyze music - pass options directly to bypass async state issue
-        await analyze(selectedTrack.audio_url, classifierOptions);
-      }
+      // Analyze music - pass options directly to bypass async state issue
+      await analyze(selectedTrack.audio_url, classifierOptions);
     } else if (analysisMode === 'timeline') {
       // Timeline analysis mode - analyze full song with timeline data points
       const strategy = timelineMode === 'count'
@@ -718,17 +691,17 @@ export function AudioAnalysisTab() {
                       <div className="audio-analysis-model-defaults">
                         <div className="audio-analysis-model-default-item">
                           <span className="audio-analysis-model-label">Genre:</span>
-                          <span className="audio-analysis-model-value">{MODEL_PRESETS.genre.discogs400.label}</span>
-                          <span className="audio-analysis-model-desc">{MODEL_PRESETS.genre.discogs400.description}</span>
+                          <span className="audio-analysis-model-value">{GENRE_PRESET_LABELS.discogs400.label}</span>
+                          <span className="audio-analysis-model-desc">{GENRE_PRESET_LABELS.discogs400.description}</span>
                         </div>
                         <div className="audio-analysis-model-default-item">
                           <span className="audio-analysis-model-label">Mood:</span>
-                          <span className="audio-analysis-model-value">{MODEL_PRESETS.mood.jamendo.label}</span>
-                          <span className="audio-analysis-model-desc">{MODEL_PRESETS.mood.jamendo.description}</span>
+                          <span className="audio-analysis-model-value">{MOOD_PRESET_LABELS.jamendo.label}</span>
+                          <span className="audio-analysis-model-desc">{MOOD_PRESET_LABELS.jamendo.description}</span>
                         </div>
                         <div className="audio-analysis-model-default-item">
                           <span className="audio-analysis-model-label">Danceability:</span>
-                          <span className="audio-analysis-model-value">{MODEL_PRESETS.danceability.default.label}</span>
+                          <span className="audio-analysis-model-value">Danceability</span>
                           <span className="audio-analysis-model-desc">(fixed)</span>
                         </div>
                       </div>
@@ -741,12 +714,12 @@ export function AudioAnalysisTab() {
                         <div className="audio-analysis-model-selector-group">
                           <span className="audio-analysis-model-selector-label">Genre Model</span>
                           <div className="audio-analysis-model-buttons" role="radiogroup" aria-label="Genre model selection">
-                            {Object.entries(MODEL_PRESETS.genre).map(([key, preset]) => (
+                            {Object.entries(GENRE_PRESET_LABELS).map(([key, preset]) => (
                               <button
                                 key={key}
                                 type="button"
                                 className={`audio-analysis-model-btn ${selectedGenreModel === key ? 'audio-analysis-model-btn-active' : ''}`}
-                                onClick={() => handleSelectGenreModel(key)}
+                                onClick={() => handleSelectGenreModel(key as GenrePreset)}
                                 disabled={isGenreAnalyzing || isGenreModelLoading}
                                 role="radio"
                                 aria-checked={selectedGenreModel === key}
@@ -762,12 +735,12 @@ export function AudioAnalysisTab() {
                         <div className="audio-analysis-model-selector-group">
                           <span className="audio-analysis-model-selector-label">Mood Model</span>
                           <div className="audio-analysis-model-buttons" role="radiogroup" aria-label="Mood model selection">
-                            {Object.entries(MODEL_PRESETS.mood).map(([key, preset]) => (
+                            {Object.entries(MOOD_PRESET_LABELS).map(([key, preset]) => (
                               <button
                                 key={key}
                                 type="button"
                                 className={`audio-analysis-model-btn ${selectedMoodModel === key ? 'audio-analysis-model-btn-active' : ''}`}
-                                onClick={() => handleSelectMoodModel(key)}
+                                onClick={() => handleSelectMoodModel(key as MoodPreset)}
                                 disabled={isGenreAnalyzing || isGenreModelLoading}
                                 role="radio"
                                 aria-checked={selectedMoodModel === key}
@@ -783,7 +756,7 @@ export function AudioAnalysisTab() {
                         <div className="audio-analysis-model-selector-group audio-analysis-model-selector-group-fixed">
                           <span className="audio-analysis-model-selector-label">Danceability</span>
                           <div className="audio-analysis-model-fixed">
-                            <span className="audio-analysis-model-fixed-name">{MODEL_PRESETS.danceability.default.label}</span>
+                            <span className="audio-analysis-model-fixed-name">Danceability</span>
                             <span className="audio-analysis-model-fixed-desc">(fixed model)</span>
                           </div>
                         </div>

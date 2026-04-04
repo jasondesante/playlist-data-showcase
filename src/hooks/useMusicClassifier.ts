@@ -1,17 +1,16 @@
 import { useState, useCallback, useRef } from 'react';
 import {
     MusicClassifier,
+    type GenrePreset,
+    type MoodPreset,
     type TwoStepModelConfig,
     type SingleStepModelConfig,
-    DEFAULT_ARWEAVE_MODELS
+    type ClassifierPreset
 } from 'playlist-data-engine';
 import type { MusicClassifierOptions, MusicClassificationProfile } from '@/types';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 import { usePlaylistStore } from '@/store/playlistStore';
-
-// Re-export for use in Phase 3 (Arweave URLs)
-export { DEFAULT_ARWEAVE_MODELS };
 
 /**
  * Error categories for music classification
@@ -28,129 +27,50 @@ export interface ClassificationError {
 }
 
 /**
- * Extended options for the MusicClassifier hook
- * Omits 'models' from MusicClassifierOptions to allow our extended type
+ * Extended options for the MusicClassifier hook.
+ * Supports both preset names and custom model URLs.
  */
-export interface UseMusicClassifierOptions extends Omit<Partial<MusicClassifierOptions>, 'models'> {
-    /** Model paths - can be single-step (string/object) or two-step (object), or undefined to use engine defaults */
+export interface UseMusicClassifierOptions {
+    /** Preset names resolved by the engine */
+    preset?: ClassifierPreset;
+    /** Custom model URLs — overrides preset for the same category */
     models?: {
-        genre?: string | SingleStepModelConfig | TwoStepModelConfig;
-        mood?: string | SingleStepModelConfig | TwoStepModelConfig;
-        danceability?: string | SingleStepModelConfig | TwoStepModelConfig;
-        voice?: string | SingleStepModelConfig | TwoStepModelConfig;
-        acoustic?: string | SingleStepModelConfig | TwoStepModelConfig;
-    } | undefined;
+        genre?: SingleStepModelConfig | TwoStepModelConfig;
+        mood?: SingleStepModelConfig | TwoStepModelConfig;
+        danceability?: SingleStepModelConfig | TwoStepModelConfig;
+        voice?: SingleStepModelConfig | TwoStepModelConfig;
+        acoustic?: SingleStepModelConfig | TwoStepModelConfig;
+    };
+    topN?: number;
+    threshold?: number;
 }
 
-/**
- * Pre-configured model presets for easy model switching.
- * All presets use Arweave-hosted models for reliability.
- *
- * ## Gateway Independence
- *
- * The URLs below use `arweave.net` as the gateway, but **any Arweave gateway can serve
- * any transaction ID (txId)**. The content is identified by the txId, not the gateway.
- *
- * If a gateway fails (e.g., timeout, 4xx/5xx errors), the engine automatically tries
- * alternate gateways in priority order:
- * 1. arweave.net (primary)
- * 2. ar.io
- * 3. ardrive.net
- * 4. turbo-gateway.com (fallback)
- *
- * Gateway resolution is automatic - no manual configuration needed.
- */
-export const MODEL_PRESETS = {
-    genre: {
-        // Discogs 400 - 400 genres, two-step architecture
-        discogs400: {
-            label: 'Discogs 400',
-            description: '400 genres (two-step)',
-            config: {
-                embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
-                embeddingType: 'effnet' as const,
-                classifier: 'https://arweave.net/ZY-GSfMe7crJUITAtHITcoLCNfNWVP1HMwywivZ_LAQ/model.json',
-                classifierType: 'discogs400' as const
-            }
-        },
-        // MTG Jamendo - 80+ genres, two-step architecture
-        jamendo: {
-            label: 'Jamendo',
-            description: '80+ genres (two-step)',
-            config: {
-                embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
-                embeddingType: 'effnet' as const,
-                classifier: 'https://arweave.net/MuhF5mek1BJPZLoPNY1TBTPUUBEXbVmMfAGgBp-_MyA/model.json',
-                classifierType: 'jamendo' as const
-            }
-        },
-        // Tzanetakis - 10 genres, single-step musicnn
-        tzanetakis: {
-            label: 'Tzanetakis',
-            description: '10 genres (single-step)',
-            config: {
-                modelUrl: 'https://arweave.net/7MQD4W5yJeUUK2tRg8TEdomew-ZY7s0K91nk35FxleM/model.json',
-                modelType: 'musicnn' as const,
-                genreType: 'tzanetakis' as const
-            }
-        },
-        // MTT Musicnn - 50 tags, single-step musicnn
-        musicnn: {
-            label: 'Musicnn',
-            description: '50 tags (single-step)',
-            config: {
-                modelUrl: 'https://arweave.net/KCZQ1geu4ymxp8axAql95FDY98VjnOzSymdkCiM9BXo/model.json',
-                modelType: 'musicnn' as const,
-                genreType: 'mtt_musicnn' as const
-            }
-        }
-    },
-    mood: {
-        // MTG Jamendo Mood - two-step architecture
-        jamendo: {
-            label: 'Jamendo',
-            description: 'Mood themes (two-step)',
-            config: {
-                embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
-                embeddingType: 'effnet' as const,
-                classifier: 'https://arweave.net/BUXf3AoFuIsrNDkV2hW6BhiwSVTuFllWOUQv5mu6qQ8/model.json',
-                classifierType: 'jamendo' as const
-            }
-        },
-        // Happy Musicnn - single-step
-        happyMusicnn: {
-            label: 'Happy',
-            description: 'Happy/sad (single-step)',
-            config: {
-                modelUrl: 'https://arweave.net/kUIS-Xxr4k3MZ4K2gHdvMgZxK7aBYce_FPGIkGA_hjM/model.json',
-                modelType: 'musicnn' as const
-            }
-        }
-    },
-    danceability: {
-        // Danceability - single-step musicnn
-        default: {
-            label: 'Danceability',
-            description: 'Fixed model',
-            config: {
-                modelUrl: 'https://arweave.net/nX9KX1OVhEaT1dStNcsRiZKCQTWuHjAMl4MWprIFyZU/model.json',
-                modelType: 'musicnn' as const
-            }
-        }
-    }
-} as const;
+// ============================================================================
+// UI-only labels and descriptions for engine presets
+// ============================================================================
+
+export const GENRE_PRESET_LABELS: Record<GenrePreset, { label: string; description: string }> = {
+    discogs400: { label: 'Discogs 400', description: '400 genres (two-step)' },
+    jamendo:    { label: 'Jamendo',    description: '80+ genres (two-step)' },
+    tzanetakis: { label: 'Tzanetakis', description: '10 genres (single-step)' },
+    musicnn:    { label: 'Musicnn',    description: '50 tags (single-step)' },
+};
+
+export const MOOD_PRESET_LABELS: Record<MoodPreset, { label: string; description: string }> = {
+    jamendo:       { label: 'Jamendo', description: 'Mood themes (two-step)' },
+    happyMusicnn:  { label: 'Happy',   description: 'Happy/sad (single-step)' },
+};
 
 /**
  * Default options for the MusicClassifier.
- * Derived from MODEL_PRESETS to avoid duplication.
  */
 const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
     topN: 10,
     threshold: 0.05,
-    models: {
-        genre: MODEL_PRESETS.genre.discogs400.config,
-        mood: MODEL_PRESETS.mood.jamendo.config,
-        danceability: MODEL_PRESETS.danceability.default.config,
+    preset: {
+        genre: 'discogs400',
+        mood: 'jamendo',
+        danceability: 'default',
     }
 };
 
