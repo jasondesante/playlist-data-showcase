@@ -280,11 +280,11 @@ export interface AutoLevelSettings {
     pitchAlgorithm: PitchAlgorithm;
 
     /**
-     * URL to the CREPE TFJS model.
-     * Only required when pitchAlgorithm is 'pitch_crepe'.
-     * Default: 'https://arweave.net/PLACEHOLDER_CREPE_TINY'
+     * Custom URL to the CREPE TFJS model.
+     * Only used when pitchAlgorithm is 'pitch_crepe'.
+     * Omit to use the engine's default CREPE model URL.
      */
-    crepeModelUrl: string;
+    crepeModelUrl?: string;
 }
 
 /**
@@ -307,8 +307,7 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     pitchInfluenceWeight: 0.8,  // Strong pitch influence
     voicingThreshold: 0.2,      // Default voicing threshold
     // Pitch Detection
-    pitchAlgorithm: 'pitch_melodia',            // Essentia pitch_melodia by default
-    crepeModelUrl: 'https://arweave.net/PLACEHOLDER_CREPE_TINY', // CREPE tiny model placeholder
+    pitchAlgorithm: 'pitch_melodia',
 };
 
 /**

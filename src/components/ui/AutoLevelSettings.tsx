@@ -76,12 +76,6 @@ const PITCH_ALGORITHMS: { value: PitchAlgorithm; label: string; description: str
     { value: 'pitch_crepe', label: 'CREPE (Neural Net)', description: 'High accuracy neural network — requires external model', group: 'External Model' },
 ];
 
-const CREPE_MODEL_VARIANTS = [
-    { value: 'https://arweave.net/PLACEHOLDER_CREPE_TINY', label: 'Tiny (~2MB)', description: 'Fastest download (Recommended)' },
-    { value: 'https://arweave.net/PLACEHOLDER_CREPE_SMALL', label: 'Small (~6MB)', description: 'Better accuracy' },
-    { value: 'custom', label: 'Custom URL', description: 'Provide your own CREPE model URL' },
-] as const;
-
 const BAND_COLORS: Record<Band, string> = {
     low: 'hsl(217, 91%, 60%)',
     mid: 'hsl(142, 76%, 36%)',
@@ -1034,39 +1028,23 @@ export function AutoLevelSettings({
                                     </p>
                                 </div>
 
-                                {/* CREPE Model Variant (only when pitch_crepe is selected) */}
+                                {/* Custom CREPE Model URL (only when pitch_crepe is selected) */}
                                 {settings.pitchAlgorithm === 'pitch_crepe' && (
                                     <div className="auto-level-settings__form-group">
                                         <label className="auto-level-settings__form-label">
-                                            CREPE Model
+                                            Custom CREPE Model URL
                                         </label>
-                                        {settings.crepeModelUrl !== 'custom' ? (
-                                            <select
-                                                className="auto-level-settings__select"
-                                                value={settings.crepeModelUrl}
-                                                onChange={(e) => handleChange('crepeModelUrl', e.target.value)}
-                                                disabled={disabled}
-                                                aria-label="CREPE model variant"
-                                            >
-                                                {CREPE_MODEL_VARIANTS.map((variant) => (
-                                                    <option key={variant.value} value={variant.value}>
-                                                        {variant.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            <input
-                                                type="text"
-                                                className="auto-level-settings__text-input"
-                                                value={settings.crepeModelUrl}
-                                                onChange={() => {}} // Keep custom text as-is
-                                                disabled={disabled}
-                                                placeholder="Enter CREPE model URL"
-                                                aria-label="Custom CREPE model URL"
-                                            />
-                                        )}
+                                        <input
+                                            type="text"
+                                            className="auto-level-settings__text-input"
+                                            value={settings.crepeModelUrl ?? ''}
+                                            onChange={(e) => handleChange('crepeModelUrl', e.target.value || undefined)}
+                                            disabled={disabled}
+                                            placeholder="Use engine default"
+                                            aria-label="Custom CREPE model URL (leave empty for engine default)"
+                                        />
                                         <p className="auto-level-settings__slider-help">
-                                            {CREPE_MODEL_VARIANTS.find(v => v.value === settings.crepeModelUrl)?.description || 'Custom CREPE model URL'}
+                                            Leave empty to use the engine's built-in CREPE model.
                                         </p>
                                         <div className="auto-level-settings__info-box auto-level-settings__info-box--warning">
                                             <Info size={14} />

@@ -1479,6 +1479,20 @@ Genre models auto-detect their taxonomy from URL keywords (see [`GenreListType`]
 | `isTwoStepModel()` | Type guard for two-step config |
 | `isSingleStepModel()` | Type guard for single-step config |
 
+### Arweave Gateway Resolution
+
+The engine includes a built-in Arweave gateway manager (`arweaveGatewayManager`) that provides automatic fallback to alternate gateways when Arweave URLs fail. `MusicClassifier`, `EssentiaPitchDetector`, `ColorExtractor`, and `PlaylistParser` all use this internally — no configuration needed.
+
+| Export | Description |
+|--------|-------------|
+| `arweaveGatewayManager` | Singleton instance for resolving Arweave URLs with gateway fallback |
+| `ArweaveGatewayManager` | Class: create custom instances with custom gateway lists |
+| `isArweaveUrl` | Utility: check if a URL is an Arweave transaction |
+
+**Gateway priority order:** arweave.net → ar.io → ardrive.net → turbo-gateway.com
+
+All model loading includes exponential backoff retries (1s, 2s, 4s) on transient failures, combined with automatic gateway resolution. Non-Arweave URLs pass through unchanged.
+
 ### ColorExtractor
 
 *Also known as: Color palette extractor, dominant colors, k-means color analyzer*
@@ -3375,7 +3389,7 @@ Available pitch detection algorithms, separated by category:
 | `multipitch_melodia` | Multiple simultaneous F0 contours (MELODIA) | No | Multi F0 |
 | `multipitch_klapuri` | Harmonic summation multi-pitch detection | No | Multi F0 |
 
-**External model algorithm** (requires TFJS model loaded via `crepeModelUrl`):
+**External model algorithm** (uses `DEFAULT_CREPE_MODEL_URL` by default; override via `crepeModelUrl`):
 
 | Algorithm | Best For | Returns Confidence? | Polyphonic? |
 |-----------|----------|-------------------|-------------|
@@ -3407,7 +3421,7 @@ Uses a static factory pattern (same as `MusicClassifier`) to handle async WASM m
 | `frameSize` | number | 2048 | Frame size in samples (~46ms at 44.1kHz) |
 | `hopSize` | number | 128 | Hop size in samples (~2.9ms at 44.1kHz). Essentia prefers finer hop sizes than pYIN's 512. |
 | `targetSampleRate` | number | 44100 | Target sample rate for analysis |
-| `crepeModelUrl` | string | `'https://arweave.net/PLACEHOLDER_CREPE_TINY'` | URL to CREPE TFJS model (only for `pitch_crepe`) |
+| `crepeModelUrl` | string | `DEFAULT_CREPE_MODEL_URL` | URL to CREPE TFJS model (only for `pitch_crepe`). Omit to use the default Arweave-hosted model. |
 
 #### Algorithm Output Behavior
 
