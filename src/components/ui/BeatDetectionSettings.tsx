@@ -20,7 +20,7 @@
  * - Linear scale: 0 = keep all, 1 = only strongest
  * - Works independently from sensitivity
  *
- * **BPM Range** (40-240, default: 60-180)
+ * **BPM Range** (40-240, default: 90-180)
  * - Min/Max dual sliders for expected tempo range
  * - Helps algorithm focus on relevant tempo window
  *
@@ -66,10 +66,11 @@ import {
   MEL_BANDS_PRESETS,
   GAUSSIAN_SMOOTH_PRESETS,
 } from '@/types';
+import { DEFAULT_BEATMAP_GENERATOR_OPTIONS } from 'playlist-data-engine';
 
 /**
  * Default values for beat detection options.
- * These must match the engine defaults (see beatDetectionStore.ts).
+ * Imported from the engine to avoid maintaining duplicate copies.
  *
  * SENSITIVITY (default: 1.0, range: 0.1-10.0)
  * - Pre-processing parameter that controls beat detection aggressiveness
@@ -82,12 +83,12 @@ import {
  * - 1 = keep only the strongest beats
  */
 const DEFAULTS = {
-  minBpm: 60,
-  maxBpm: 180,
-  sensitivity: 1.0,  // Default: 1.0 (range 0.1-10.0)
-  filter: 0.0,       // Default: 0.0 (range 0.0-1.0)
-  tempoCenter: 0.5,
-  noiseFloorThreshold: 0,  // Default: 0 (range 0.0-0.5) - was 0.1, caused 82% beat loss
+  minBpm: DEFAULT_BEATMAP_GENERATOR_OPTIONS.minBpm,
+  maxBpm: DEFAULT_BEATMAP_GENERATOR_OPTIONS.maxBpm,
+  sensitivity: DEFAULT_BEATMAP_GENERATOR_OPTIONS.sensitivity,
+  filter: DEFAULT_BEATMAP_GENERATOR_OPTIONS.filter,
+  tempoCenter: DEFAULT_BEATMAP_GENERATOR_OPTIONS.tempoCenter,
+  noiseFloorThreshold: DEFAULT_BEATMAP_GENERATOR_OPTIONS.noiseFloorThreshold,
 };
 
 // ============================================

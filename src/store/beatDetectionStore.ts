@@ -92,6 +92,7 @@ LevelExportData,
 } from '@/types';
 import {
     BeatMapGenerator,
+    DEFAULT_BEATMAP_GENERATOR_OPTIONS,
     BeatInterpolator,
     BeatSubdivider,
     SubdivisionPlaybackController,
@@ -219,29 +220,18 @@ const DEFAULT_GAUSSIAN_SMOOTH_CONFIG: GaussianSmoothConfig = {
 
 /**
  * Default options for beat map generation.
- * Matches the engine's defaults.
+ * Spread from the engine's DEFAULT_BEATMAP_GENERATOR_OPTIONS with local
+ * overrides for OSE config presets resolved from the UI mode selectors.
  *
  * Note: The raw numeric values (hopSizeMs, melBands, gaussianSmoothMs) are
  * resolved from the OSE config modes by the helper functions before being
  * passed to the engine. The OSE config objects track the user's selected modes.
  */
 const DEFAULT_GENERATOR_OPTIONS: BeatMapGeneratorOptions = {
-    minBpm: 60,
-    maxBpm: 180,
-    sensitivity: 1.0,  // Pre-processing sensitivity (0.1-10.0)
-    filter: 0.0,       // Post-processing grid-alignment filter (0.0-1.0)
-    noiseFloorThreshold: 0,  // Changed from 0.1 - was filtering out too many valid beats
-    hopSizeMs: HOP_SIZE_PRESETS.standard.value,  // 4ms - resolved from 'standard' mode
-    fftSize: 2048,
-    rollingBpmWindowSize: 8,
-    dpAlpha: 680,
-    melBands: MEL_BANDS_PRESETS.standard.value,  // 40 bands - resolved from 'standard' mode
-    highPassCutoff: 0.4,
-    gaussianSmoothMs: GAUSSIAN_SMOOTH_PRESETS.standard.value,  // 20ms - resolved from 'standard' mode
-    tempoCenter: 0.5,
-    tempoWidth: 1.4,
-    useOctaveResolution: false,  // Opt-in - uses TPS2 to prevent half-tempo/double-tempo errors
-    useTripleMeter: false,  // Opt-in - uses TPS3 for triple meter detection (waltzes, 6/8 shuffles)
+    ...DEFAULT_BEATMAP_GENERATOR_OPTIONS,
+    hopSizeMs: HOP_SIZE_PRESETS.standard.value,  // resolved from 'standard' mode
+    melBands: MEL_BANDS_PRESETS.standard.value,  // resolved from 'standard' mode
+    gaussianSmoothMs: GAUSSIAN_SMOOTH_PRESETS.standard.value,  // resolved from 'standard' mode
 };
 
 /**
@@ -3901,21 +3891,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 algorithm: 'imported',
                                 version: '1.0',
                                 generatedAt: new Date().toISOString(),
-                                minBpm: 60,
-                                maxBpm: 180,
-                                sensitivity: 1.0,
-                                filter: 0.0,
-                                noiseFloorThreshold: 0,
-                                hopSizeMs: 4,
-                                fftSize: 2048,
-                                dpAlpha: 680,
-                                melBands: 40,
-                                highPassCutoff: 0.4,
-                                gaussianSmoothMs: 20,
-                                tempoCenter: 0.5,
-                                tempoWidth: 1.4,
-                                useOctaveResolution: false,
-                                useTripleMeter: false,
+                                ...DEFAULT_BEATMAP_GENERATOR_OPTIONS,
                             },
                             detectedBeats: data.detectedBeats.map(b => ({
                                 timestamp: b.timestamp,
@@ -3981,21 +3957,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 algorithm: 'imported',
                                 version: '1.0',
                                 generatedAt: new Date().toISOString(),
-                                minBpm: 60,
-                                maxBpm: 180,
-                                sensitivity: 1.0,
-                                filter: 0.0,
-                                noiseFloorThreshold: 0,
-                                hopSizeMs: 4,
-                                fftSize: 2048,
-                                dpAlpha: 680,
-                                melBands: 40,
-                                highPassCutoff: 0.4,
-                                gaussianSmoothMs: 20,
-                                tempoCenter: 0.5,
-                                tempoWidth: 1.4,
-                                useOctaveResolution: false,
-                                useTripleMeter: false,
+                                ...DEFAULT_BEATMAP_GENERATOR_OPTIONS,
                             },
                         };
 
