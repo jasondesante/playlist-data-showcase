@@ -1,9 +1,8 @@
 import { useState, useCallback } from 'react';
-import { PlaylistParser } from 'playlist-data-engine';
+import { PlaylistParser, arweaveGatewayManager } from 'playlist-data-engine';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
-import { config } from '@/utils/env';
 
 /**
  * React hook for parsing playlists from the Playlist Data Engine.
@@ -59,36 +58,33 @@ export const usePlaylistParser = () => {
                 }
 
                 logger.info('PlaylistParser', 'Fetching from Arweave', trimmedInput);
-                let response: Response;
-                try {
-                    // Use configured Arweave gateway (can be overridden via VITE_ARWEAVE_GATEWAY env var)
-                    response = await fetch(`https://${config.arweaveGateway}/${trimmedInput}`);
-                } catch (fetchError) {
-                    // Handle network errors (CORS, offline, etc.)
-                    if (fetchError instanceof TypeError) {
-                        throw new Error('Network error: Unable to connect to Arweave. This could be due to CORS restrictions or network connectivity issues. Please try again or check your connection.');
-                    }
-                    throw fetchError;
-                }
-
-                if (!response.ok) {
-                    // Provide specific error messages based on HTTP status
-                    if (response.status === 404) {
-                        throw new Error(`Playlist not found on Arweave (404). The transaction ID "${trimmedInput}" may not exist or the data hasn\'t been confirmed yet.`);
-                    } else if (response.status === 403) {
-                        throw new Error(`Access denied (403). You may not have permission to access this playlist.`);
-                    } else if (response.status >= 500) {
-                        throw new Error(`Arweave server error (${response.status}). Please try again later.`);
-                    } else {
-                        throw new Error(`Failed to fetch playlist: ${response.statusText} (${response.status})`);
-                    }
-                }
-
+                const url = `https://arweave.net/${trimmedInput}`;
                 let json: unknown;
                 try {
+                    const resolvedUrl = await arweaveGatewayManager.resolveUrl(url);
+                    const response = await fetch(resolvedUrl);
+
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            throw new Error(`Playlist not found on Arweave (404). The transaction ID "${trimmedInput}" may not exist or the data hasn\'t been confirmed yet.`);
+                        } else if (response.status === 403) {
+                            throw new Error(`Access denied (403). You may not have permission to access this playlist.`);
+                        } else if (response.status >= 500) {
+                            throw new Error(`Arweave server error (${response.status}). Please try again later.`);
+                        } else {
+                            throw new Error(`Failed to fetch playlist: ${response.status} (${response.statusText})`);
+                        }
+                    }
+
                     json = await response.json();
-                } catch (jsonError) {
-                    throw new Error('The response from Arweave is not valid JSON. This transaction may not contain playlist data.');
+                } catch (error) {
+                    if (error instanceof TypeError) {
+                        throw new Error('Network error: Unable to connect to Arweave. This could be due to CORS restrictions or network connectivity issues. Please try again or check your connection.');
+                    }
+                    if (error instanceof SyntaxError) {
+                        throw new Error('The response from Arweave is not valid JSON. This transaction may not contain playlist data.');
+                    }
+                    throw error;
                 }
 
                 rawData = json; // Store raw Arweave response
