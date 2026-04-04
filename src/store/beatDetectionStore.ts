@@ -6134,6 +6134,17 @@ export const useStepAvailability = (): Set<number> => {
             if (generatedRhythm !== null) {
                 available.add(3);
             }
+
+            // Imported levels bypass step availability — they already have a generated level
+            // with no intermediate pipeline state (beatMap, generatedRhythm). Allow direct
+            // access to Step 4 when a level has been loaded externally.
+            if (!beatMap && !generatedRhythm) {
+                const hasLevel = useBeatDetectionStore.getState().customDensityLevel
+                    || useBeatDetectionStore.getState().allDifficultyLevels;
+                if (hasLevel) {
+                    available.add(4);
+                }
+            }
         } else {
             // Manual mode: 4 steps (Analyze → Subdivide → Chart → Ready)
             // Step 2 is available when step1 is complete (beatMap exists)

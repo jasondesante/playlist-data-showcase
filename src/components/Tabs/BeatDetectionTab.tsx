@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useMemo, useRef } from 'react';
 import { Music, Sparkles, Drum, Download, ArrowRight, SkipForward, Upload } from 'lucide-react';
 import { LevelSerializer, validateTrackMatch } from 'playlist-data-engine';
+import type { LevelPackExport, GeneratedLevel } from 'playlist-data-engine';
 import './BeatDetectionTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useBeatDetection } from '../../hooks/useBeatDetection';
@@ -154,6 +155,18 @@ export function BeatDetectionTab() {
     }, [navigationDirection]);
 
     /**
+     * Map chart style or controller mode to a readable file name segment.
+     */
+    const getModeLabel = (style?: string): string => {
+        switch (style) {
+            case 'ddr': return 'ddr';
+            case 'guitar': case 'guitar_hero': return 'gh';
+            case 'tap': return 'tap';
+            default: return 'ddr';
+        }
+    };
+
+    /**
      * Export complete beat map as JSON for full state preservation.
      * Includes detected beats, interpolated beats, subdivided beats, and chart with required keys.
      * This export can be imported back to fully restore the beat map state.
@@ -168,7 +181,9 @@ export function BeatDetectionTab() {
         const link = document.createElement('a');
         link.href = url;
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-        link.download = `beatmap-${exportData.audioId}-${timestamp}.json`;
+        const safeName = (selectedTrack?.title || 'beatmap').replace(/[^a-zA-Z0-9]/g, '-');
+        const mode = getModeLabel(exportData.chart?.style);
+        link.download = `beatmap-${mode}-${safeName}-${timestamp}.json`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -176,16 +191,15 @@ export function BeatDetectionTab() {
     }, [exportFullBeatMap, selectedTrack?.title]);
 
     /**
-     * Export auto-generated level as JSON using LevelSerializer with track reference.
+     * Export auto-generated levels as JSON using LevelSerializer.
+     * Exports all difficulties as a level pack when multiple exist,
+     * or a single level when only one (custom density) exists.
      */
     const handleExportAutoLevel = useCallback(() => {
-        const { selectedDifficulty: diff, autoSubMode: mode, customDensityLevel: customLevel, allDifficultyLevels: allDiffs } =
+        const { autoSubMode: subMode, customDensityLevel: customLevel, allDifficultyLevels: allDiffs } =
             useBeatDetectionStore.getState();
         const playlistState = usePlaylistStore.getState();
         const track = playlistState.selectedTrack;
-
-        const level = mode === 'customDensity' ? customLevel : allDiffs?.[diff] ?? null;
-        if (!level) return;
 
         const trackReference = track ? {
             playlistTxId: playlistState.playlistTxId ?? undefined,
@@ -201,11 +215,22 @@ export function BeatDetectionTab() {
             duration: track.duration,
         } : undefined;
 
-        const json = LevelSerializer.toJSON(level, {
+        const options = {
             includeAudioTitle: !!track?.title,
             audioTitle: track?.title,
             trackReference,
-        });
+        };
+
+        let json: string;
+        if (subMode === 'customDensity' && customLevel) {
+            // Single difficulty — export as a pack with just 'custom'
+            json = LevelSerializer.packToJSON({ custom: customLevel }, options);
+        } else if (allDiffs) {
+            // Multiple difficulties — export the full pack
+            json = LevelSerializer.packToJSON(allDiffs, options);
+        } else {
+            return;
+        }
 
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -213,7 +238,8 @@ export function BeatDetectionTab() {
         link.href = url;
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
         const safeName = (track?.title || 'level').replace(/[^a-zA-Z0-9]/g, '-');
-        link.download = `level-${safeName}-${timestamp}.json`;
+        const mode = getModeLabel(customLevel?.metadata?.controllerMode ?? allDiffs?.medium?.metadata?.controllerMode);
+        link.download = `level-${mode}-${safeName}-${timestamp}.json`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -262,30 +288,64 @@ export function BeatDetectionTab() {
             }
 
             // Procedural (auto-generated) level import
-            if (data.generationSource === 'procedural') {
+            if (data.generationSource === 'procedural' || data.format === 'level-pack') {
                 try {
-                    const level = LevelSerializer.fromExportData(data);
+                    type ImportedLevels = { natural?: GeneratedLevel; easy?: GeneratedLevel; medium?: GeneratedLevel; hard?: GeneratedLevel; custom?: GeneratedLevel };
+                    let importedLevels: ImportedLevels;
+                    let level: GeneratedLevel;
+                    type DiffKey = keyof ImportedLevels;
 
-                    // Switch to automatic mode and store the imported level
-                    useBeatDetectionStore.getState().actions.setGenerationMode('automatic');
+                    if (data.format === 'level-pack') {
+                        // Level pack format: multiple difficulties in one file
+                        importedLevels = LevelSerializer.fromPack(data as LevelPackExport);
+                        const count = Object.keys(importedLevels).length;
+                        if (count === 0) {
+                            alert('Level pack contains no valid difficulties.');
+                            return;
+                        }
+
+                        // Pick the first available difficulty as the selected one
+                        const preferredOrder: DiffKey[] = ['medium', 'easy', 'hard', 'natural', 'custom'];
+                        const firstKey = preferredOrder.find((k) => importedLevels[k]) ?? preferredOrder.find((k) => !!importedLevels[k])!;
+                        level = importedLevels[firstKey]!;
+                    } else {
+                        // Legacy single-difficulty format
+                        level = LevelSerializer.fromExportData(data);
+                        importedLevels = { [level.metadata.difficulty as DiffKey]: level };
+                    }
+
                     const difficulty = level.metadata.difficulty;
+
+                    // Determine sub-mode BEFORE any store mutations.
+                    // preset = has all 3 required difficulties (easy, medium, hard)
+                    // customDensity = single difficulty (custom density or legacy single-difficulty file)
+                    const hasAllPresets = !!(importedLevels.easy && importedLevels.medium && importedLevels.hard);
+                    const subMode = hasAllPresets ? 'preset' : 'customDensity';
+
+                    // === Phase 1: Destructive clears (both clear level-related state) ===
+                    useBeatDetectionStore.getState().actions.setGenerationMode('automatic');
+                    useBeatDetectionStore.getState().actions.setAutoSubMode(subMode);
+
+                    // === Phase 2: Set data (AFTER all clears have run) ===
                     useBeatDetectionStore.getState().actions.setSelectedDifficulty(difficulty);
-
-                    // Store as single difficulty level
                     useBeatDetectionStore.getState().actions.setGeneratedLevel(level);
-
-                    // Also set as custom density level so it's available regardless of sub-mode
                     useBeatDetectionStore.getState().actions.setCustomDensityLevel(level);
 
-                    // We can't build a full allDifficultyLevels (easy/medium/hard are required),
-                    // so we set customDensityLevel instead. Switch to customDensity sub-mode so
-                    // AutoReadyPanel shows the imported level.
-                    useBeatDetectionStore.getState().actions.setAutoSubMode('customDensity');
+                    if (hasAllPresets) {
+                        useBeatDetectionStore.getState().actions.setAllDifficultyLevels({
+                            easy: importedLevels.easy!,
+                            medium: importedLevels.medium!,
+                            hard: importedLevels.hard!,
+                            natural: importedLevels.natural,
+                        });
+                    }
 
                     // Advance to Step 4 (Ready)
                     setCurrentStep(4);
 
                     logger.info('BeatDetection', 'Auto-generated level imported successfully', {
+                        format: data.format,
+                        difficulties: Object.keys(importedLevels),
                         difficulty,
                         beatCount: level.chart.beats.length,
                     });
@@ -1080,8 +1140,20 @@ export function BeatDetectionTab() {
 
             case 4:
                 // Step 4: Ready/Practice - Beat map summary, practice mode, export
-                // Now works for both manual and auto mode (4 steps each)
                 // In auto mode with generated levels, show AutoReadyPanel
+                if (generationMode === 'automatic' && (allDifficulties || customDensityLevel)) {
+                    // Imported levels may not have a beatMap — skip the !beatMap guard for auto mode
+                    return wrapContent(
+                        <AutoReadyPanel
+                            onStartPractice={handleStartPracticeMode}
+                            onExport={handleExportAutoLevel}
+                            onRegenerate={handleRegenerateLevels}
+                            isRegenerating={isLevelGenerating}
+                        />
+                    );
+                }
+
+                // Manual mode or auto mode without generated levels — requires beatMap
                 if (!beatMap) {
                     return wrapContent(
                         <Card variant="elevated" padding="lg" className="beat-detection-results-card">
@@ -1093,18 +1165,6 @@ export function BeatDetectionTab() {
                                 </p>
                             </div>
                         </Card>
-                    );
-                }
-
-                // In auto mode with generated levels, show AutoReadyPanel with difficulty switcher
-                if (generationMode === 'automatic' && (allDifficulties || customDensityLevel)) {
-                    return wrapContent(
-                        <AutoReadyPanel
-                            onStartPractice={handleStartPracticeMode}
-                            onExport={handleExportAutoLevel}
-                            onRegenerate={handleRegenerateLevels}
-                            isRegenerating={isLevelGenerating}
-                        />
                     );
                 }
 
