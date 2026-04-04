@@ -20,7 +20,6 @@ import { CollapsibleSection } from '../Party/CollapsibleSection';
 import { Tooltip } from './Tooltip';
 import type {
     AutoLevelSettings as AutoLevelSettingsType,
-    DifficultyLevel,
     RhythmPresetName,
     OutputMode,
     BandTransientConfig,
@@ -29,6 +28,9 @@ import type {
     ControllerMode,
     PitchAlgorithm,
     StrongBeatEmphasis,
+    AutoSubMode,
+    DensityGenerationConfig,
+    ExtendedGridType,
 } from '../../types/rhythmGeneration';
 import type { StreamScorerConfig } from 'playlist-data-engine';
 import {
@@ -50,7 +52,7 @@ const PRESETS: { value: RhythmPresetName; label: string; description: string }[]
     { value: 'bass', label: 'Bass', description: 'Focus on low-frequency patterns' },
 ];
 
-const DIFFICULTIES: { value: DifficultyLevel; label: string; description: string }[] = [
+const DIFFICULTIES: { value: 'natural' | 'easy' | 'medium' | 'hard'; label: string; description: string }[] = [
     { value: 'natural', label: 'Natural', description: 'Unedited composite stream as detected' },
     { value: 'easy', label: 'Easy', description: 'Simplified patterns for beginners' },
     { value: 'medium', label: 'Medium', description: 'Standard patterns for normal play' },
@@ -103,6 +105,14 @@ export interface AutoLevelSettingsProps {
     disabled?: boolean;
     /** Whether the panel is initially collapsed */
     defaultCollapsed?: boolean;
+    /** Current auto sub-mode ('preset' or 'customDensity') */
+    autoSubMode?: AutoSubMode;
+    /** Callback when sub-mode changes */
+    onAutoSubModeChange?: (mode: AutoSubMode) => void;
+    /** Current density config (for customDensity mode) */
+    densityConfig?: DensityGenerationConfig;
+    /** Callback when density config changes */
+    onDensityConfigChange?: (config: DensityGenerationConfig) => void;
 }
 
 /**
@@ -117,6 +127,10 @@ export function AutoLevelSettings({
     className,
     disabled = false,
     defaultCollapsed = false,
+    autoSubMode = 'preset',
+    onAutoSubModeChange,
+    densityConfig,
+    onDensityConfigChange,
 }: AutoLevelSettingsProps) {
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
     const [isTransientConfigOpen, setIsTransientConfigOpen] = useState(false);
@@ -124,6 +138,8 @@ export function AutoLevelSettings({
     const [isRhythmicBalanceOpen, setIsRhythmicBalanceOpen] = useState(false);
     const [isLevelSettingsOpen, setIsLevelSettingsOpen] = useState(false);
     const [isEssentiaOpen, setIsEssentiaOpen] = useState(false);
+
+    const isCustomDensity = autoSubMode === 'customDensity';
 
     const handleChange = useCallback(
         <K extends keyof AutoLevelSettingsType>(key: K, value: AutoLevelSettingsType[K]) => {
@@ -141,7 +157,7 @@ export function AutoLevelSettings({
     );
 
     const handleDifficultyChange = useCallback(
-        (difficulty: DifficultyLevel) => {
+        (difficulty: AutoLevelSettingsType['difficulty']) => {
             handleChange('difficulty', difficulty);
         },
         [handleChange]
@@ -223,6 +239,69 @@ export function AutoLevelSettings({
         onChange({ ...DEFAULT_AUTO_LEVEL_SETTINGS });
         setIsTransientConfigOpen(false);
     }, [onChange]);
+
+    // ============================================================================
+    // Custom Density Handlers
+    // ============================================================================
+
+    const handleDensityChange = useCallback(
+        <K extends keyof DensityGenerationConfig>(key: K, value: DensityGenerationConfig[K]) => {
+            if (disabled || !densityConfig || !onDensityConfigChange) return;
+            onDensityConfigChange({ ...densityConfig, [key]: value });
+        },
+        [disabled, densityConfig, onDensityConfigChange]
+    );
+
+    const handleTargetDensityChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            handleDensityChange('targetDensity', parseFloat(e.target.value));
+        },
+        [handleDensityChange]
+    );
+
+    const handleMaxGridTypeChange = useCallback(
+        (e: React.ChangeEvent<HTMLSelectElement>) => {
+            handleDensityChange('maxGridType', e.target.value as ExtendedGridType);
+        },
+        [handleDensityChange]
+    );
+
+    const handleBpmBasedQuantizationToggle = useCallback(
+        (checked: boolean) => {
+            handleDensityChange('bpmBasedQuantization', checked);
+        },
+        [handleDensityChange]
+    );
+
+    const handleRestrictBpmChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            handleDensityChange('restrictBpm', parseInt(e.target.value, 10) || 70);
+        },
+        [handleDensityChange]
+    );
+
+    const handleQuarterNoteBpmChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            handleDensityChange('quarterNoteBpm', parseInt(e.target.value, 10) || 120);
+        },
+        [handleDensityChange]
+    );
+
+    const handleSubModeChange = useCallback(
+        (mode: AutoSubMode) => {
+            if (disabled || !onAutoSubModeChange) return;
+            onAutoSubModeChange(mode);
+        },
+        [disabled, onAutoSubModeChange]
+    );
+
+    const GRID_TYPE_OPTIONS: { value: ExtendedGridType; label: string; positionsPerBeat: number }[] = [
+        { value: 'straight_4th', label: 'Quarter Notes', positionsPerBeat: 1 },
+        { value: 'straight_8th', label: '8th Notes', positionsPerBeat: 2 },
+        { value: 'quarter_triplet', label: 'Quarter Triplets', positionsPerBeat: 1 },
+        { value: 'triplet_8th', label: '8th Triplets', positionsPerBeat: 3 },
+        { value: 'straight_16th', label: '16th Notes', positionsPerBeat: 4 },
+    ];
 
     // ============================================================================
     // Level Settings Handlers (Task 1.5)
@@ -458,6 +537,174 @@ export function AutoLevelSettings({
             >
                 <div className="auto-level-settings__content">
 
+                    {/* Sub-Mode Selector: Preset Difficulties vs Custom Density */}
+                    <div className="auto-level-settings__form-group">
+                        <label className="auto-level-settings__form-label">Generation Mode</label>
+                        <div className="auto-level-settings__sub-mode-buttons">
+                            <button
+                                type="button"
+                                className={cn(
+                                    'auto-level-settings__sub-mode-button',
+                                    autoSubMode === 'preset' && 'auto-level-settings__sub-mode-button--active'
+                                )}
+                                onClick={() => handleSubModeChange('preset')}
+                                disabled={disabled}
+                            >
+                                <Target size={14} />
+                                <span>Preset Difficulties</span>
+                            </button>
+                            <button
+                                type="button"
+                                className={cn(
+                                    'auto-level-settings__sub-mode-button',
+                                    autoSubMode === 'customDensity' && 'auto-level-settings__sub-mode-button--active'
+                                )}
+                                onClick={() => handleSubModeChange('customDensity')}
+                                disabled={disabled}
+                            >
+                                <Scale size={14} />
+                                <span>Custom Density</span>
+                            </button>
+                        </div>
+                        <p className="auto-level-settings__slider-help">
+                            {isCustomDensity
+                                ? 'Generate a single level at a specific density and quantization.'
+                                : 'Generate all difficulty variants (Natural, Easy, Medium, Hard).'}
+                        </p>
+                    </div>
+
+                    {/* Custom Density Controls */}
+                    {isCustomDensity && (
+                        <div className="auto-level-settings__density-section">
+                            {/* Target Density Slider */}
+                            <div className="auto-level-settings__form-group">
+                                <div className="auto-level-settings__slider-header">
+                                    <label className="auto-level-settings__slider-label">
+                                        Target Density
+                                    </label>
+                                    <span className="auto-level-settings__slider-value">
+                                        {densityConfig?.targetDensity.toFixed(1)} notes/sec
+                                    </span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="0.5"
+                                    max="5.0"
+                                    step="0.1"
+                                    value={densityConfig?.targetDensity ?? 2.0}
+                                    onChange={handleTargetDensityChange}
+                                    className="auto-level-settings__slider"
+                                    disabled={disabled}
+                                    aria-label="Target density (notes per second)"
+                                />
+                                <div className="auto-level-settings__slider-labels">
+                                    <span>Sparse (0.5)</span>
+                                    <span>Dense (5.0)</span>
+                                </div>
+                                <p className="auto-level-settings__slider-help">
+                                    Target number of notes per second. The generator will simplify or enhance
+                                    to reach this density.
+                                </p>
+                            </div>
+
+                            {/* Max Grid Type Selector */}
+                            <div className="auto-level-settings__form-group">
+                                <label className="auto-level-settings__form-label">Max Quantization Grid</label>
+                                <select
+                                    value={densityConfig?.maxGridType ?? 'straight_16th'}
+                                    onChange={handleMaxGridTypeChange}
+                                    className="auto-level-settings__select"
+                                    disabled={disabled}
+                                    aria-label="Maximum quantization grid type"
+                                >
+                                    {GRID_TYPE_OPTIONS.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label} ({opt.positionsPerBeat} position{opt.positionsPerBeat !== 1 ? 's' : ''}/beat)
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="auto-level-settings__slider-help">
+                                    Maximum subdivision allowed. Finer grids allow denser patterns but may be
+                                    harder to play at fast tempos.
+                                </p>
+                            </div>
+
+                            {/* BPM-Based Quantization Toggle */}
+                            <div className="auto-level-settings__form-group">
+                                <div className="auto-level-settings__toggle-row">
+                                    <label className="auto-level-settings__toggle-label">
+                                        BPM-Based Restrictions
+                                    </label>
+                                    <button
+                                        type="button"
+                                        role="switch"
+                                        aria-checked={densityConfig?.bpmBasedQuantization ?? false}
+                                        className={cn(
+                                            'auto-level-settings__toggle-switch',
+                                            (densityConfig?.bpmBasedQuantization ?? false) && 'auto-level-settings__toggle-switch--active'
+                                        )}
+                                        onClick={() => handleBpmBasedQuantizationToggle(!densityConfig?.bpmBasedQuantization)}
+                                        disabled={disabled}
+                                    >
+                                        <span className="auto-level-settings__toggle-thumb" />
+                                    </button>
+                                </div>
+                                <p className="auto-level-settings__slider-help">
+                                    When enabled, automatically restricts finer subdivisions at higher BPMs
+                                    for playability.
+                                </p>
+
+                                {/* BPM Thresholds (shown when BPM-based quantization is on) */}
+                                {(densityConfig?.bpmBasedQuantization ?? false) && (
+                                    <div className="auto-level-settings__bpm-thresholds">
+                                        <div className="auto-level-settings__form-group">
+                                            <div className="auto-level-settings__slider-header">
+                                                <label className="auto-level-settings__slider-label">
+                                                    Quantize 16ths → 8ths above
+                                                </label>
+                                                <span className="auto-level-settings__slider-value">
+                                                    {densityConfig?.restrictBpm ?? 70} BPM
+                                                </span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="50"
+                                                max="120"
+                                                step="5"
+                                                value={densityConfig?.restrictBpm ?? 70}
+                                                onChange={handleRestrictBpmChange}
+                                                className="auto-level-settings__slider"
+                                                disabled={disabled}
+                                                aria-label="BPM threshold for restricting 16th notes"
+                                            />
+                                        </div>
+                                        <div className="auto-level-settings__form-group">
+                                            <div className="auto-level-settings__slider-header">
+                                                <label className="auto-level-settings__slider-label">
+                                                    Quantize 8ths → ¼ notes above
+                                                </label>
+                                                <span className="auto-level-settings__slider-value">
+                                                    {densityConfig?.quarterNoteBpm ?? 120} BPM
+                                                </span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="80"
+                                                max="200"
+                                                step="5"
+                                                value={densityConfig?.quarterNoteBpm ?? 120}
+                                                onChange={handleQuarterNoteBpmChange}
+                                                className="auto-level-settings__slider"
+                                                disabled={disabled}
+                                                aria-label="BPM threshold for restricting to quarter notes"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Intensity Threshold Slider */}
                     <div className="auto-level-settings__form-group">
                         <div className="auto-level-settings__slider-header">
@@ -691,7 +938,8 @@ export function AutoLevelSettings({
                                 </div>
                                 )}
 
-                                {/* Difficulty Selection */}
+                                {/* Difficulty Selection (hidden in custom density mode — density replaces difficulty) */}
+                                {!isCustomDensity && (
                                 <div className="auto-level-settings__form-group">
                                     <label className="auto-level-settings__form-label">Difficulty</label>
                                     <div className="auto-level-settings__difficulty-buttons">
@@ -718,6 +966,7 @@ export function AutoLevelSettings({
                                         Default difficulty for the generated level. All difficulties are generated and can be switched later.
                                     </p>
                                 </div>
+                                )}
                             </div>
                         )}
                     </div>

@@ -22,6 +22,8 @@ import './PitchDetectionPanel.css';
 import { cn } from '../../utils/cn';
 import {
     useAllDifficultyLevels,
+    useCustomDensityLevel,
+    useAutoSubMode,
 } from '../../store/beatDetectionStore';
 import {
     useSelectedDifficulty,
@@ -195,14 +197,18 @@ function CompositePitchDetail({ pitches }: CompositePitchDetailProps) {
 export function PitchDetectionPanel({ className, voicingThreshold = 0.2, pitchAlgorithm = 'pitch_melodia' }: PitchDetectionPanelProps) {
     // Get data from store
     const allDifficulties = useAllDifficultyLevels();
+    const customDensityLevel = useCustomDensityLevel();
+    const autoSubMode = useAutoSubMode();
     const selectedDifficulty = useSelectedDifficulty();
+    const isDensityMode = autoSubMode === 'customDensity';
 
-    // Get pitch analysis from the selected difficulty level
+    // Get pitch analysis from the active level (preset or density)
     const pitchAnalysis = useMemo(() => {
+        if (isDensityMode) return customDensityLevel?.pitchAnalysis ?? null;
         const levels = allDifficulties as AllDifficultiesWithNatural | null;
         const level = levels?.[selectedDifficulty as keyof AllDifficultiesWithNatural] as GeneratedLevel | undefined;
         return level?.pitchAnalysis ?? null;
-    }, [allDifficulties, selectedDifficulty]);
+    }, [isDensityMode, customDensityLevel, allDifficulties, selectedDifficulty]);
 
     // State for selected pitch
     const [selectedPitch, setSelectedPitch] = useState<SelectedPitchData | null>(null);

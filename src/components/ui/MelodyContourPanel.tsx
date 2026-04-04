@@ -24,6 +24,8 @@ import { useTrackDuration } from '../../hooks/useTrackDuration';
 import {
     usePitchAnalysis,
     useAllDifficultyLevels,
+    useCustomDensityLevel,
+    useAutoSubMode,
 } from '../../store/beatDetectionStore';
 import {
     useSelectedDifficulty,
@@ -182,8 +184,11 @@ function SummaryStats({ totalBeats, voicedBeats, overallDirection, totalSegments
 export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
     // Get data from store
     const allDifficulties = useAllDifficultyLevels();
+    const customDensityLevel = useCustomDensityLevel();
+    const autoSubMode = useAutoSubMode();
     const selectedDifficulty = useSelectedDifficulty();
     const pitchAnalysis = usePitchAnalysis();
+    const isDensityMode = autoSubMode === 'customDensity';
 
     // Shared smooth time - single RAF loop for all child timelines
     const { smoothTime, isPlaying } = useSmoothPlaybackTime();
@@ -191,12 +196,13 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
     // Selected beat for timeline interaction
     const [selectedBeatIndex, setSelectedBeatIndex] = useState<number | undefined>(undefined);
 
-    // Get melody contour data from the selected difficulty level
+    // Get melody contour data from the active level (preset or density)
     const melodyData = useMemo(() => {
+        if (isDensityMode) return getMelodyContourData(customDensityLevel);
         const levels = allDifficulties as AllDifficultiesWithNatural | null;
         const level = levels?.[selectedDifficulty as keyof AllDifficultiesWithNatural] as GeneratedLevel | undefined;
         return getMelodyContourData(level);
-    }, [allDifficulties, selectedDifficulty]);
+    }, [isDensityMode, customDensityLevel, allDifficulties, selectedDifficulty]);
 
     // Handle beat selection from timeline
     const handleBeatClick = useMemo(() => (beat: PitchAtBeat) => {

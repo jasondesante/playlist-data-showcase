@@ -65,6 +65,7 @@ export const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
     easy: '#22c55e',    // Green
     medium: '#f59e0b',  // Amber
     hard: '#ef4444',    // Red
+    custom: '#06b6d4',  // Cyan (density-based)
 };
 
 /** Difficulty RGB colors for rgba usage */
@@ -73,6 +74,7 @@ export const DIFFICULTY_COLORS_RGB: Record<DifficultyLevel, string> = {
     easy: '34, 197, 94',
     medium: '245, 158, 11',
     hard: '239, 68, 68',
+    custom: '6, 182, 212',
 };
 
 // ============================================================

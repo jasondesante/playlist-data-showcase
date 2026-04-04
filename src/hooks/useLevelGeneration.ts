@@ -37,6 +37,7 @@ import {
     useAllDifficultyLevels as useStoredAllDifficulties,
 } from '@/store/beatDetectionStore';
 import type { LevelGenerationProgress as UILevelGenerationProgress } from '@/store/beatDetectionStore';
+import type { DensityGenerationConfig } from '@/types/rhythmGeneration';
 
 /**
  * Return type for the useLevelGeneration hook.
@@ -62,6 +63,12 @@ export interface UseLevelGenerationReturn {
     clearError: () => void;
     /** Retry the last generation */
     retry: () => Promise<AllDifficultiesResult | null>;
+    /** Generate a single level at a target density (custom density mode) */
+    generateAtDensity: (
+        audioUrl: string,
+        config: DensityGenerationConfig,
+        options?: Partial<LevelGenerationOptions>
+    ) => Promise<GeneratedLevel | null>;
 }
 
 /**
@@ -282,7 +289,7 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
 
             // Check if the result has a natural variant
             // The engine generates all difficulties including natural
-            const fullResult = result as AllDifficultiesResult & { natural?: GeneratedLevel };
+            const fullResult = result as AllDifficultiesResult & { natural?: GeneratedLevel; custom?: GeneratedLevel };
 
             actions.setAllDifficultyLevels(fullResult);
 
@@ -350,6 +357,154 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
     }, [actions, fetchAndDecodeAudio, selectedDifficulty]);
 
     /**
+     * Generate a single level at a target density using the engine's generateAtDensity().
+     *
+     * This method:
+     * 1. Gets the cached GeneratedRhythm from the store (if available)
+     * 2. Fetches and decodes the audio
+     * 3. Creates a LevelGenerator with the provided options
+     * 4. Generates a single density-based level with progress tracking
+     * 5. Stores the result in customDensityLevel in the beat detection store
+     */
+    const generateAtDensityFn = useCallback(async (
+        audioUrl: string,
+        config: DensityGenerationConfig,
+        options?: Partial<LevelGenerationOptions>
+    ): Promise<GeneratedLevel | null> => {
+        if (!isMountedRef.current) {
+            logger.warn('LevelGeneration', 'generateAtDensity called after unmount');
+            return null;
+        }
+
+        logger.info('LevelGeneration', 'Starting density-based level generation', {
+            audioUrl,
+            config,
+        });
+
+        const currentUnifiedBeatMap = useBeatDetectionStore.getState().unifiedBeatMap;
+        if (!currentUnifiedBeatMap) {
+            const error = 'No unified beat map available. Run beat detection and rhythm generation first.';
+            logger.error('LevelGeneration', error);
+            actions.setLevelGenerationProgress({
+                stage: 'rhythm',
+                progress: 0,
+                message: error,
+            });
+            return null;
+        }
+
+        isGeneratingRef.current = true;
+
+        actions.setLevelGenerationProgress({
+            stage: 'rhythm',
+            progress: 0,
+            message: 'Starting density-based level generation...',
+        });
+
+        try {
+            actions.setLevelGenerationProgress({
+                stage: 'rhythm',
+                progress: 5,
+                message: 'Loading audio...',
+            });
+
+            const audioBuffer = await fetchAndDecodeAudio(audioUrl);
+
+            if (!isMountedRef.current) {
+                logger.warn('LevelGeneration', 'Density generation cancelled during audio fetch');
+                return null;
+            }
+
+            const currentCachedRhythm = useBeatDetectionStore.getState().generatedRhythm;
+
+            const generatorOptions: Partial<LevelGenerationOptions> = {
+                difficulty: 'medium', // Fallback; density overrides actual difficulty
+                controllerMode: options?.controllerMode ?? 'ddr',
+                buttons: options?.buttons,
+                seed: options?.seed,
+                cachedRhythm: currentCachedRhythm ?? undefined,
+                pitchAlgorithm: options?.pitchAlgorithm,
+                crepeModelUrl: options?.crepeModelUrl,
+                voicingThreshold: options?.voicingThreshold,
+            };
+
+            const generator = new LevelGenerator(generatorOptions);
+            activeLevelGenerator = generator;
+
+            const onProgress = (engineProgress: LevelGenerationProgress) => {
+                if (!isMountedRef.current) return;
+                const uiProgress = mapStageToProgress(engineProgress);
+                actions.setLevelGenerationProgress(uiProgress);
+            };
+
+            const result = await generator.generateAtDensity(
+                audioBuffer,
+                currentUnifiedBeatMap,
+                config,
+                onProgress,
+                undefined // No abort signal
+            );
+
+            if (!isMountedRef.current) {
+                logger.warn('LevelGeneration', 'Density generation completed but component unmounted');
+                return null;
+            }
+
+            // Store in customDensityLevel (not allDifficultyLevels)
+            useBeatDetectionStore.getState().actions.setCustomDensityLevel(result);
+
+            // Also set as the active generatedLevel for downstream consumers
+            actions.setGeneratedLevel(result);
+
+            if (result?.pitchAnalysis) {
+                actions.setPitchAnalysis(result.pitchAnalysis);
+            }
+
+            // Restore generated rhythm from the level result
+            if (result?.rhythm) {
+                actions.setGeneratedRhythm(result.rhythm);
+            }
+
+            actions.setLevelGenerationProgress({
+                stage: 'finalizing',
+                progress: 100,
+                message: 'Density-based level generation complete!',
+            });
+
+            setTimeout(() => {
+                actions.setLevelGenerationProgress(null);
+            }, 500);
+
+            logger.info('LevelGeneration', 'Density-based level generation complete', {
+                beatCount: result.chart.beats.length,
+                targetDensity: config.targetDensity,
+            });
+
+            isGeneratingRef.current = false;
+            activeLevelGenerator = null;
+
+            return result;
+        } catch (err) {
+            if (!isMountedRef.current) return null;
+
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error during density generation';
+            logger.error('LevelGeneration', 'Density-based level generation failed', { error: errorMessage });
+            handleError(err, 'LevelGeneration');
+
+            actions.setLevelGenerationProgress({
+                stage: 'rhythm',
+                progress: 0,
+                message: `Error: ${errorMessage}`,
+            });
+
+            isGeneratingRef.current = false;
+            activeLevelGenerator = null;
+
+            return null;
+        }
+    }, [actions, fetchAndDecodeAudio]);
+
+    /**
      * Cancel an ongoing level generation.
      */
     const cancel = useCallback(() => {
@@ -411,6 +566,7 @@ export const useLevelGeneration = (): UseLevelGenerationReturn => {
         clearLevel,
         clearError,
         retry,
+        generateAtDensity: generateAtDensityFn,
     };
 };
 
@@ -447,5 +603,5 @@ export const useIsLevelGenerating = (): boolean =>
  *
  * @returns The currently selected difficulty
  */
-export const useSelectedDifficulty = (): 'natural' | 'easy' | 'medium' | 'hard' =>
+export const useSelectedDifficulty = (): 'natural' | 'easy' | 'medium' | 'hard' | 'custom' =>
     useBeatDetectionStore((state) => state.selectedDifficulty);

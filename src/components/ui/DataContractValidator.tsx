@@ -282,15 +282,15 @@ export function validateGeneratedRhythm(rhythm: GeneratedRhythm | null): Generat
         fields.push(...validateBeatsArray(compositeBeats as GeneratedBeat[] | undefined, 'composite.stream'));
     }
 
-    // Validate difficultyVariants
-    const difficultyVariants = r.difficultyVariants as Record<string, unknown> | undefined;
+    // Validate difficultyVariants (nullable when skipDifficultyVariants is used in custom density mode)
+    const difficultyVariants = r.difficultyVariants as Record<string, unknown> | null | undefined;
     if (!difficultyVariants) {
+        // Null is valid when using density-based generation (skipDifficultyVariants)
         fields.push({
             field: 'difficultyVariants',
-            valid: false,
-            message: 'difficultyVariants is missing',
+            valid: true,
+            message: '(skipped — density-based generation mode)',
         });
-        errors.push('difficultyVariants is required');
     } else {
         fields.push(...validateDifficultyVariant(difficultyVariants.easy, 'easy'));
         fields.push(...validateDifficultyVariant(difficultyVariants.medium, 'medium'));

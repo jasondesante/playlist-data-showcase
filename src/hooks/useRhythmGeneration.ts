@@ -274,6 +274,8 @@ export const useRhythmGeneration = (): UseRhythmGenerationReturn => {
                 phraseAnalyzerConfig: options?.phraseAnalyzerConfig,
                 verbose: options?.verbose ?? false,
                 seed: options?.seed,
+                // Skip preset difficulty variants when generating for custom density mode
+                skipDifficultyVariants: options?.skipDifficultyVariants,
             };
 
             const generator = new RhythmGenerator(generatorOptions);

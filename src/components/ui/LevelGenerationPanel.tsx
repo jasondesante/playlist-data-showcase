@@ -13,11 +13,14 @@
  */
 
 import { useMemo, useCallback } from 'react';
-import { Gamepad2 } from 'lucide-react';
+import { Gamepad2, Target } from 'lucide-react';
 import './LevelGenerationPanel.css';
 import { cn } from '../../utils/cn';
 import {
     useAllDifficultyLevels,
+    useCustomDensityLevel,
+    useAutoSubMode,
+    useDensityConfig,
     useBeatDetectionActions,
 } from '../../store/beatDetectionStore';
 import {
@@ -64,23 +67,36 @@ function getLevelForDifficulty(
 export function LevelGenerationPanel({ className }: LevelGenerationPanelProps) {
     // Get data from store
     const allDifficulties = useAllDifficultyLevels() as AllDifficultiesWithNatural | null;
+    const customDensityLevel = useCustomDensityLevel();
+    const autoSubMode = useAutoSubMode();
+    const densityConfig = useDensityConfig();
     const selectedDifficulty = useSelectedDifficulty();
     const actions = useBeatDetectionActions();
+    const isDensityMode = autoSubMode === 'customDensity';
 
-    // Calculate beat counts for each difficulty
+    // Get the currently selected level (preset or density)
+    const currentLevel = useMemo((): GeneratedLevel | undefined => {
+        if (isDensityMode) return customDensityLevel ?? undefined;
+        return getLevelForDifficulty(allDifficulties, selectedDifficulty);
+    }, [isDensityMode, customDensityLevel, allDifficulties, selectedDifficulty]);
+
+    // Calculate actual density for the density level
+    const actualDensity = useMemo(() => {
+        if (!customDensityLevel?.chart) return null;
+        const duration = customDensityLevel.chart.duration || 1;
+        return customDensityLevel.chart.beats.length / duration;
+    }, [customDensityLevel]);
+
+    // Calculate beat counts for preset mode
     const beatCounts = useMemo((): Record<DifficultyLevel, number> => {
         return {
             natural: allDifficulties?.natural?.chart?.beats?.length ?? 0,
             easy: allDifficulties?.easy?.chart?.beats?.length ?? 0,
             medium: allDifficulties?.medium?.chart?.beats?.length ?? 0,
             hard: allDifficulties?.hard?.chart?.beats?.length ?? 0,
+            custom: allDifficulties?.custom?.chart?.beats?.length ?? 0,
         };
     }, [allDifficulties]);
-
-    // Get the currently selected level
-    const currentLevel = useMemo(() => {
-        return getLevelForDifficulty(allDifficulties, selectedDifficulty);
-    }, [allDifficulties, selectedDifficulty]);
 
     // Handle difficulty change
     const handleDifficultyChange = useCallback((difficulty: DifficultyLevel) => {
@@ -88,7 +104,8 @@ export function LevelGenerationPanel({ className }: LevelGenerationPanelProps) {
     }, [actions]);
 
     // Don't render if no levels generated
-    if (!allDifficulties) {
+    const hasLevel = isDensityMode ? customDensityLevel !== null : allDifficulties !== null;
+    if (!hasLevel) {
         return (
             <div className={cn('level-generation-panel', 'level-generation-panel--empty', className)}>
                 <div className="level-panel-empty-content">
@@ -118,16 +135,37 @@ export function LevelGenerationPanel({ className }: LevelGenerationPanelProps) {
                 <h3 className="level-panel-title">Final Level</h3>
             </div>
 
-            {/* Difficulty Switcher */}
-            <DifficultySwitcher
-                selected={selectedDifficulty}
-                onChange={handleDifficultyChange}
-                beatCounts={beatCounts}
-            />
+            {/* Density Badge (custom density mode) or Difficulty Switcher (preset mode) */}
+            {isDensityMode ? (
+                <div className="level-density-badge">
+                    <div className="level-density-badge-label">
+                        <Target size={14} />
+                        Custom Density
+                    </div>
+                    <div className="level-density-badge-stats">
+                        <span className="level-density-badge-stat">
+                            <span className="level-density-badge-value">{densityConfig.targetDensity.toFixed(1)}</span>
+                            <span className="level-density-badge-unit">target</span>
+                        </span>
+                        {actualDensity !== null && (
+                            <span className="level-density-badge-stat">
+                                <span className="level-density-badge-value">{actualDensity.toFixed(2)}</span>
+                                <span className="level-density-badge-unit">actual</span>
+                            </span>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <DifficultySwitcher
+                    selected={selectedDifficulty}
+                    onChange={handleDifficultyChange}
+                    beatCounts={beatCounts}
+                />
+            )}
 
             {/* Compact Metadata Summary */}
             <LevelMetadataSummary
-                difficulty={selectedDifficulty}
+                difficulty={isDensityMode ? 'custom' : selectedDifficulty}
                 controllerMode={controllerMode}
                 totalBeats={totalBeats}
                 bpm={bpm}
@@ -141,8 +179,10 @@ export function LevelGenerationPanel({ className }: LevelGenerationPanelProps) {
                 showBeatIndices={true}
             />
 
-            {/* Difficulty Comparison (Optional Expandable) */}
-            <DifficultyComparisonForLevel defaultExpanded={false} />
+            {/* Difficulty Comparison (preset mode only) */}
+            {!isDensityMode && (
+                <DifficultyComparisonForLevel defaultExpanded={false} />
+            )}
 
             {/* Action Button */}
             <div className="level-panel-actions">

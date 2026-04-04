@@ -107,6 +107,8 @@ import {
     type PitchAtBeat,
 } from 'playlist-data-engine';
 import type { MelodyContour } from '@/types/levelGeneration';
+import type { DensityGenerationConfig } from '@/types/rhythmGeneration';
+import { DEFAULT_DENSITY_CONFIG } from '@/types/rhythmGeneration';
 
 /**
  * TapResult extends ExtendedButtonPressResult with additional metadata for history tracking.
@@ -187,6 +189,7 @@ export interface LevelGenerationProgress {
  */
 export interface AllDifficultiesWithNatural extends AllDifficultiesResult {
     natural?: GeneratedLevel;
+    custom?: GeneratedLevel;
 }
 
 /**
@@ -730,7 +733,26 @@ interface BeatDetectionState {
      * Determines which variant from allDifficultyLevels is shown in the UI.
      * Default: 'medium'
      */
-    selectedDifficulty: 'natural' | 'easy' | 'medium' | 'hard';
+    selectedDifficulty: 'natural' | 'easy' | 'medium' | 'hard' | 'custom';
+
+    /**
+     * Auto sub-mode: 'preset' generates all difficulties, 'customDensity' generates one at a target density.
+     * Default: 'preset'
+     */
+    autoSubMode: 'preset' | 'customDensity';
+
+    /**
+     * Density generation config for custom density mode.
+     * Only used when autoSubMode === 'customDensity'.
+     */
+    densityConfig: DensityGenerationConfig;
+
+    /**
+     * Single generated level from custom density mode.
+     * Only used when autoSubMode === 'customDensity'.
+     * Stored separately from allDifficultyLevels since the data shape differs.
+     */
+    customDensityLevel: GeneratedLevel | null;
 
     // ============================================================
     // Rhythm Validation State (Task 0.7)
@@ -1472,7 +1494,23 @@ interface BeatDetectionActions {
      * Set the selected difficulty level for display.
      * @param difficulty - The difficulty to select ('natural', 'easy', 'medium', or 'hard')
      */
-    setSelectedDifficulty: (difficulty: 'natural' | 'easy' | 'medium' | 'hard') => void;
+    setSelectedDifficulty: (difficulty: 'natural' | 'easy' | 'medium' | 'hard' | 'custom') => void;
+
+    /**
+     * Set the auto sub-mode ('preset' or 'customDensity').
+     * When switching sub-modes, clears the related level state.
+     */
+    setAutoSubMode: (mode: 'preset' | 'customDensity') => void;
+
+    /**
+     * Set the custom density level from generateAtDensity().
+     */
+    setCustomDensityLevel: (level: GeneratedLevel | null) => void;
+
+    /**
+     * Set the density generation config.
+     */
+    setDensityConfig: (config: DensityGenerationConfig) => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -1666,6 +1704,11 @@ const createInitialState = (): BeatDetectionState => ({
     levelGenerationProgress: null, // Session-only
     pitchAnalysis: null, // Session-only
     selectedDifficulty: 'medium', // Default to medium difficulty
+
+    // Custom Density mode state
+    autoSubMode: 'preset',
+    densityConfig: DEFAULT_DENSITY_CONFIG,
+    customDensityLevel: null,
 
     // Rhythm Validation state (Task 0.7)
     rhythmValidation: null, // Session-only
@@ -2157,6 +2200,9 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             levelGenerationProgress: null,
                             pitchAnalysis: null,
                             selectedDifficulty: 'medium',
+                            autoSubMode: 'preset',
+                            densityConfig: DEFAULT_DENSITY_CONFIG,
+                            customDensityLevel: null,
                         });
                     },
 
@@ -4547,6 +4593,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 levelGenerationProgress: null,
                                 pitchAnalysis: null,
                                 selectedDifficulty: 'medium',
+                                customDensityLevel: null,
                             });
                         }
                     },
@@ -4599,6 +4646,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 allDifficultyLevels: null,
                                 levelGenerationProgress: null,
                                 pitchAnalysis: null,
+                                customDensityLevel: null,
                             });
                         }
                     },
@@ -4635,6 +4683,32 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     setSelectedDifficulty: (difficulty) => {
                         logger.info('BeatDetection', 'Setting selected difficulty', { difficulty });
                         set({ selectedDifficulty: difficulty });
+                    },
+
+                    setAutoSubMode: (mode) => {
+                        logger.info('BeatDetection', 'Setting auto sub-mode', { mode });
+                        set({
+                            autoSubMode: mode,
+                            // Clear level state when switching sub-modes
+                            customDensityLevel: null,
+                            allDifficultyLevels: null,
+                            generatedLevel: null,
+                            levelGenerationProgress: null,
+                            pitchAnalysis: null,
+                        });
+                    },
+
+                    setCustomDensityLevel: (level) => {
+                        logger.info('BeatDetection', 'Setting custom density level', {
+                            hasLevel: !!level,
+                            beatCount: level?.chart?.beats?.length,
+                        });
+                        set({ customDensityLevel: level });
+                    },
+
+                    setDensityConfig: (config) => {
+                        logger.info('BeatDetection', 'Setting density config', config);
+                        set({ densityConfig: config });
                     },
 
                     /**
@@ -5959,6 +6033,7 @@ export const useStepCompletion = (): StepCompletionStatus => {
     const subdividedBeatMap = useBeatDetectionStore(useShallow((state) => state.subdividedBeatMap));
     const generatedRhythm = useBeatDetectionStore(useShallow((state) => state.generatedRhythm));
     const allDifficultyLevels = useBeatDetectionStore(useShallow((state) => state.allDifficultyLevels));
+    const customDensityLevel = useBeatDetectionStore(useShallow((state) => state.customDensityLevel));
     const generationMode = useBeatDetectionStore(useShallow((state) => state.generationMode));
 
     // Step 2: Memoize the computed result based on stable raw data
@@ -5968,7 +6043,7 @@ export const useStepCompletion = (): StepCompletionStatus => {
             return {
                 step1: beatMap !== null,
                 step2: generatedRhythm !== null,
-                step3: allDifficultyLevels !== null, // Pitch & Level complete when levels are generated
+                step3: allDifficultyLevels !== null || customDensityLevel !== null, // Pitch & Level complete when levels are generated
                 step4: false, // Ready step has no completion status
             };
         }
@@ -6182,6 +6257,24 @@ export const useLevelGenerationProgress = () =>
  */
 export const useSelectedDifficulty = () =>
     useBeatDetectionStore((state) => state.selectedDifficulty);
+
+/**
+ * Selector to get the auto sub-mode ('preset' or 'customDensity').
+ */
+export const useAutoSubMode = () =>
+    useBeatDetectionStore((state) => state.autoSubMode);
+
+/**
+ * Selector to get the density generation config.
+ */
+export const useDensityConfig = () =>
+    useBeatDetectionStore((state) => state.densityConfig);
+
+/**
+ * Selector to get the custom density level (single GeneratedLevel from generateAtDensity).
+ */
+export const useCustomDensityLevel = () =>
+    useBeatDetectionStore((state) => state.customDensityLevel);
 
 /**
  * Navigation direction for step content animations.

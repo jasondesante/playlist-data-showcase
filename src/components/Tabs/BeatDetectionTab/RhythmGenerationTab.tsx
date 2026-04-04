@@ -36,6 +36,9 @@ import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,
     useBeatDetectionActions,
+    useAutoSubMode,
+    useCustomDensityLevel,
+    useDensityConfig,
 } from '../../../store/beatDetectionStore';
 import { useAudioPlayerStore } from '../../../store/audioPlayerStore';
 import { usePlaylistStore } from '../../../store/playlistStore';
@@ -45,8 +48,10 @@ import type {
     HighlightedRegion,
     BandTransientConfigOverrides,
     StreamScorerConfig,
+    DensityGenerationConfig,
 } from '../../../types/rhythmGeneration';
 import { getPhraseHighlightColor } from '../../../types/rhythmGeneration';
+import type { GeneratedLevel } from 'playlist-data-engine';
 import { cn } from '../../../utils/cn';
 
 // ============================================================
@@ -145,6 +150,10 @@ interface RhythmGenerationResultProps {
     enableDensityValidation?: boolean;
     /** Stream scoring configuration (factor weights and band bias) that was used during generation */
     scoringConfig?: Partial<StreamScorerConfig>;
+    /** Custom density level (when generated via generateAtDensity) */
+    customDensityLevel?: GeneratedLevel | null;
+    /** Density config used for custom density generation */
+    densityConfig?: DensityGenerationConfig;
 }
 
 // Section identifiers for accordion behavior
@@ -164,6 +173,8 @@ function RhythmGenerationResult({
     isRegenerating = false,
     enableDensityValidation = false,
     scoringConfig,
+    customDensityLevel,
+    densityConfig,
 }: RhythmGenerationResultProps) {
     const { metadata } = rhythm;
 
@@ -368,14 +379,16 @@ function RhythmGenerationResult({
 
                 <div ref={(el) => { sectionRefs.current.conversion = el; }}>
                     <CollapsibleSection
-                        title="Difficulty Conversion"
-                        subtitle="How composite becomes Easy/Medium/Hard"
+                        title={customDensityLevel ? "Density Conversion" : "Difficulty Conversion"}
+                        subtitle={customDensityLevel ? "How composite becomes the custom density variant" : "How composite becomes Easy/Medium/Hard"}
                         icon={<GitBranch size={18} />}
                         collapsed={openSection !== 'conversion'}
                         onCollapsedChange={() => handleSectionToggle('conversion')}
                     >
                         <DifficultyConversionPanel
                             rhythm={rhythm}
+                            customDensityLevel={customDensityLevel}
+                            densityConfig={densityConfig}
                             currentTime={currentTime}
                             duration={duration}
                             isPlaying={isPlaying}
@@ -395,6 +408,7 @@ function RhythmGenerationResult({
                     >
                         <VariantComparisonView
                             rhythm={rhythm}
+                            customDensityLevel={customDensityLevel}
                             currentTime={currentTime}
                             duration={duration}
                             isPlaying={isPlaying}
@@ -511,6 +525,9 @@ export function RhythmGenerationTab({
     const generatedRhythm = useGeneratedRhythm();
     const progress = useRhythmGenerationProgress();
     const actions = useBeatDetectionActions();
+    const autoSubMode = useAutoSubMode();
+    const customDensityLevel = useCustomDensityLevel();
+    const densityConfig = useDensityConfig();
 
     // Get audio player state for timeline sync
     const currentTime = useAudioPlayerStore((state) => state.currentTime);
@@ -613,6 +630,8 @@ export function RhythmGenerationTab({
                     isRegenerating={isGenerating}
                     enableDensityValidation={enableDensityValidation}
                     scoringConfig={scoringConfig}
+                    customDensityLevel={autoSubMode === 'customDensity' ? customDensityLevel : null}
+                    densityConfig={autoSubMode === 'customDensity' ? densityConfig : undefined}
                 />
             );
         }

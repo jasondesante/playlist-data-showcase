@@ -24,6 +24,8 @@ import { useTrackDuration } from '../../hooks/useTrackDuration';
 import {
     useAllDifficultyLevels,
     useBeatDetectionActions,
+    useCustomDensityLevel,
+    useAutoSubMode,
 } from '../../store/beatDetectionStore';
 import { useSelectedDifficulty } from '../../hooks/useLevelGeneration';
 import { DifficultySwitcher } from './DifficultySwitcher';
@@ -126,8 +128,11 @@ function formatTimePrecise(seconds: number): string {
 
 export function MappingSourceTimeline({ className }: MappingSourceTimelineProps) {
     const allDifficulties = useAllDifficultyLevels();
+    const customDensityLevel = useCustomDensityLevel();
+    const autoSubMode = useAutoSubMode();
     const selectedDifficulty = useSelectedDifficulty();
     const actions = useBeatDetectionActions();
+    const isDensityMode = autoSubMode === 'customDensity';
 
     // Audio player state
     const currentTime = useAudioPlayerStore((state) => state.currentTime);
@@ -182,9 +187,11 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
     const pastWindow = basePastWindow / zoomLevel;
     const totalWindow = pastWindow + anticipationWindow;
 
-    // Get current level and its chart
+    // Get current level and its chart (preset or density)
     const levels = allDifficulties as AllDifficultiesWithNatural | null;
-    const currentLevel = levels?.[selectedDifficulty as keyof AllDifficultiesWithNatural] as GeneratedLevel | undefined;
+    const currentLevel = isDensityMode
+        ? (customDensityLevel as GeneratedLevel | undefined)
+        : (levels?.[selectedDifficulty as keyof AllDifficultiesWithNatural] as GeneratedLevel | undefined);
     const chart: ChartedBeatMap | null = currentLevel?.chart ?? null;
     const controllerMode: ControllerMode = currentLevel?.metadata?.controllerMode ?? 'ddr';
     const trackDuration = duration || chart?.duration || 0;
@@ -262,12 +269,13 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
 
     // Beat counts per difficulty
     const beatCounts = useMemo((): Record<DifficultyLevel, number> => {
-        if (!levels) return { natural: 0, easy: 0, medium: 0, hard: 0 };
+        if (!levels) return { natural: 0, easy: 0, medium: 0, hard: 0, custom: 0 };
         return {
             natural: (levels.natural?.chart?.beats?.length) ?? 0,
             easy: levels.easy?.chart?.beats?.length ?? 0,
             medium: levels.medium?.chart?.beats?.length ?? 0,
             hard: levels.hard?.chart?.beats?.length ?? 0,
+            custom: levels.custom?.chart?.beats?.length ?? 0,
         };
     }, [levels]);
 
@@ -473,19 +481,21 @@ export function MappingSourceTimeline({ className }: MappingSourceTimelineProps)
 
     return (
         <div className={cn('mapping-source-timeline', className)}>
-            {/* Header with difficulty switcher */}
+            {/* Header with difficulty switcher (preset mode only) */}
             <div className="mapping-source-header">
                 <div className="mapping-source-header-left">
                     <GitBranch size={16} className="mapping-source-header-icon" />
                     <span className="mapping-source-header-title">Mapping Sources</span>
                 </div>
-                <DifficultySwitcher
-                    selected={selectedDifficulty}
-                    onChange={handleDifficultyChange}
-                    beatCounts={beatCounts}
-                    size="compact"
-                    showCounts={true}
-                />
+                {!isDensityMode && (
+                    <DifficultySwitcher
+                        selected={selectedDifficulty}
+                        onChange={handleDifficultyChange}
+                        beatCounts={beatCounts}
+                        size="compact"
+                        showCounts={true}
+                    />
+                )}
             </div>
 
             {/* Summary bar */}

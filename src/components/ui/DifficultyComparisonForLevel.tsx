@@ -54,7 +54,7 @@ interface DifficultyStats {
 // Constants
 // ============================================================
 
-const DIFFICULTY_ORDER: DifficultyLevel[] = ['natural', 'easy', 'medium', 'hard'];
+const DIFFICULTY_ORDER: DifficultyLevel[] = ['natural', 'easy', 'medium', 'hard', 'custom'];
 
 // ============================================================
 // Helper Functions

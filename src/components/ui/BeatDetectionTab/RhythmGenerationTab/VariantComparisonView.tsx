@@ -20,6 +20,7 @@ import { usePlaylistStore } from '../../../../store/playlistStore';
 import { useUnifiedBeatMap } from '../../../../store/beatDetectionStore';
 import type {
     GeneratedRhythm,
+    GeneratedLevel,
     DifficultyLevel,
     DifficultyVariant,
     Band,
@@ -55,6 +56,8 @@ interface VariantBeat {
 export interface VariantComparisonViewProps {
     /** The generated rhythm containing difficulty variants */
     rhythm: GeneratedRhythm;
+    /** Custom density level (when generated via generateAtDensity) */
+    customDensityLevel?: GeneratedLevel | null;
     /** Current audio playback time in seconds (for timeline sync) */
     currentTime?: number;
     /** Total audio duration in seconds */
@@ -79,6 +82,7 @@ const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
     easy: '#22c55e',    // Green
     medium: '#f59e0b',  // Amber
     hard: '#ef4444',    // Red
+    custom: '#06b6d4',  // Cyan (density-based)
 };
 
 /**
@@ -99,11 +103,6 @@ const EDIT_TYPE_COLORS: Record<EditType, string> = {
     interpolated: '#8b5cf6',
     pattern_inserted: '#ec4899',
 };
-
-/**
- * Difficulty display order
- */
-const DIFFICULTY_ORDER: DifficultyLevel[] = ['natural', 'easy', 'medium', 'hard'];
 
 // ============================================================
 // Sub-components
@@ -491,6 +490,7 @@ const VariantRow = memo(function VariantRow({
  */
 export function VariantComparisonView({
     rhythm,
+    customDensityLevel,
     currentTime: _currentTime = 0,
     duration: propDuration,
     isPlaying: _isPlaying = false,
@@ -532,19 +532,69 @@ export function VariantComparisonView({
 
     const variants = rhythm.difficultyVariants;
 
+    // Dynamic display rows: preset mode shows natural/easy/medium/hard,
+    // density mode shows the custom density variant.
+    interface DisplayRow {
+        key: string;
+        difficulty: DifficultyLevel;
+        variant: DifficultyVariant;
+        color: string;
+        label: string;
+    }
+
+    const displayRows = useMemo<DisplayRow[]>(() => {
+        if (variants) {
+            const presetOrder: Array<'natural' | 'easy' | 'medium' | 'hard'> = ['natural', 'easy', 'medium', 'hard'];
+            return presetOrder
+                .filter((diff) => variants[diff])
+                .map((diff) => ({
+                    key: diff,
+                    difficulty: diff as DifficultyLevel,
+                    variant: variants[diff],
+                    color: DIFFICULTY_COLORS[diff],
+                    label: diff.charAt(0).toUpperCase() + diff.slice(1),
+                }));
+        }
+
+        if (customDensityLevel?.variant) {
+            return [{
+                key: 'custom',
+                difficulty: 'custom' as DifficultyLevel,
+                variant: customDensityLevel.variant,
+                color: DIFFICULTY_COLORS['custom'],
+                label: 'Custom',
+            }];
+        }
+
+        return [];
+    }, [variants, customDensityLevel]);
+
+    const isDensityMode = !variants && !!customDensityLevel?.variant;
+
     // Calculate duration from beat timestamps
     const duration = useMemo(() => {
         if (propDuration && propDuration > 0) return propDuration;
 
-        const allBeats = [
-            ...variants.easy.beats,
-            ...variants.medium.beats,
-            ...variants.hard.beats,
-        ];
-        if (allBeats.length === 0) return 0;
-        const maxTime = Math.max(...allBeats.map(b => b.timestamp));
-        return maxTime + 1;
-    }, [propDuration, variants]);
+        if (variants) {
+            const allBeats = [
+                ...variants.easy.beats,
+                ...variants.medium.beats,
+                ...variants.hard.beats,
+            ];
+            if (allBeats.length === 0) return 0;
+            const maxTime = Math.max(...allBeats.map(b => b.timestamp));
+            return maxTime + 1;
+        }
+
+        if (customDensityLevel?.variant) {
+            const beats = customDensityLevel.variant.beats;
+            if (beats.length === 0) return 0;
+            const maxTime = Math.max(...beats.map(b => b.timestamp));
+            return maxTime + 1;
+        }
+
+        return 0;
+    }, [propDuration, variants, customDensityLevel]);
 
     // Zoom state - controls the visible time window
     const [zoomLevel, setZoomLevel] = useState(1);
@@ -737,8 +787,8 @@ export function VariantComparisonView({
     // Get all beats for quick scroll markers (sampled for performance)
     const quickScrollBeats = useMemo(() => {
         const allBeats: Array<{ timestamp: number; band: Band }> = [];
-        DIFFICULTY_ORDER.forEach((diff) => {
-            variants[diff].beats.forEach((beat) => {
+        displayRows.forEach((row) => {
+            row.variant.beats.forEach((beat) => {
                 allBeats.push({
                     timestamp: beat.timestamp,
                     band: beat.sourceBand,
@@ -752,28 +802,32 @@ export function VariantComparisonView({
         // Sample every Nth beat for performance (max ~100 markers)
         const sampleRate = Math.max(1, Math.floor(allBeats.length / 100));
         return allBeats.filter((_, idx) => idx % sampleRate === 0);
-    }, [variants]);
+    }, [displayRows]);
 
     // Calculate comparison stats
     const comparisonStats = useMemo(() => {
-        const counts: Record<DifficultyLevel, number> = {
-            natural: variants.natural.beats.length,
-            easy: variants.easy.beats.length,
-            medium: variants.medium.beats.length,
-            hard: variants.hard.beats.length,
-        };
+        const counts: Record<string, number> = {};
+        for (const row of displayRows) {
+            counts[row.key] = row.variant.beats.length;
+        }
+        const values = Object.values(counts);
+        const maxCount = values.length > 0 ? Math.max(...values) : 0;
+        const total = values.reduce((a, b) => a + b, 0);
 
-        const maxCount = Math.max(counts.easy, counts.medium, counts.hard);
+        return { counts, maxCount, total };
+    }, [displayRows]);
 
-        return {
-            counts,
-            maxCount,
-            total: counts.easy + counts.medium + counts.hard,
-        };
-    }, [variants]);
+    // Guard against no data or invalid duration
+    if (displayRows.length === 0) {
+        return (
+            <div className={`variant-comparison-view ${className || ''}`}>
+                <div className="variant-comparison-loading">
+                    No variants to display
+                </div>
+            </div>
+        );
+    }
 
-    // Guard against invalid duration - this can happen if audioPlayerStore hasn't loaded yet
-    // or if the duration prop is NaN/undefined
     if (!duration || !isFinite(duration) || duration <= 0) {
         return (
             <div className={`variant-comparison-view ${className || ''}`}>
@@ -790,7 +844,7 @@ export function VariantComparisonView({
             <div className="variant-comparison-header">
                 <div className="variant-comparison-title">
                     <Trophy size={18} />
-                    <span>Difficulty Comparison</span>
+                    <span>{isDensityMode ? 'Custom Density Level' : 'Difficulty Comparison'}</span>
                 </div>
 
                 {/* Zoom controls */}
@@ -830,17 +884,17 @@ export function VariantComparisonView({
 
                 {/* Beat counts summary */}
                 <div className="variant-comparison-summary">
-                    {DIFFICULTY_ORDER.map((diff) => (
+                    {displayRows.map((row) => (
                         <div
-                            key={diff}
+                            key={row.key}
                             className="variant-comparison-summary-item"
-                            style={{ color: DIFFICULTY_COLORS[diff] }}
+                            style={{ color: row.color }}
                         >
                             <span className="variant-comparison-summary-label">
-                                {diff.charAt(0).toUpperCase() + diff.slice(1)}:
+                                {row.label}:
                             </span>
                             <span className="variant-comparison-summary-value">
-                                {comparisonStats.counts[diff]}
+                                {comparisonStats.counts[row.key]}
                             </span>
                         </div>
                     ))}
@@ -849,13 +903,13 @@ export function VariantComparisonView({
 
             {/* Stacked timelines */}
             <div className="variant-comparison-rows" ref={containerRef}>
-                {DIFFICULTY_ORDER.map((difficulty) => (
+                {displayRows.map((row) => (
                     <VariantRow
-                        key={difficulty}
-                        difficulty={difficulty}
-                        variant={variants[difficulty]}
+                        key={row.key}
+                        difficulty={row.difficulty}
+                        variant={row.variant}
                         duration={duration}
-                        color={DIFFICULTY_COLORS[difficulty]}
+                        color={row.color}
                         pastWindow={pastWindow}
                         anticipationWindow={anticipationWindow}
                         smoothTime={smoothTime}
@@ -869,14 +923,14 @@ export function VariantComparisonView({
             {/* Legend */}
             <div className="variant-comparison-legend">
                 <div className="variant-comparison-legend-section">
-                    <span className="variant-comparison-legend-title">Difficulties:</span>
-                    {DIFFICULTY_ORDER.map((diff) => (
-                        <div key={diff} className="variant-comparison-legend-item">
+                    <span className="variant-comparison-legend-title">{isDensityMode ? 'Level:' : 'Difficulties:'}</span>
+                    {displayRows.map((row) => (
+                        <div key={row.key} className="variant-comparison-legend-item">
                             <div
                                 className="variant-comparison-legend-marker"
-                                style={{ backgroundColor: DIFFICULTY_COLORS[diff] }}
+                                style={{ backgroundColor: row.color }}
                             />
-                            <span>{diff.charAt(0).toUpperCase() + diff.slice(1)}</span>
+                            <span>{row.label}</span>
                         </div>
                     ))}
                 </div>

@@ -19,6 +19,8 @@ import './ButtonMappingPanel.css';
 import { cn } from '../../utils/cn';
 import {
     useAllDifficultyLevels,
+    useCustomDensityLevel,
+    useAutoSubMode,
 } from '../../store/beatDetectionStore';
 import {
     useSelectedDifficulty,
@@ -205,14 +207,18 @@ function SummaryStats({
 export function ButtonMappingPanel({ className, pitchInfluenceWeight, voicingThreshold }: ButtonMappingPanelProps) {
     // Get data from store
     const allDifficulties = useAllDifficultyLevels();
+    const customDensityLevel = useCustomDensityLevel();
+    const autoSubMode = useAutoSubMode();
     const selectedDifficulty = useSelectedDifficulty();
+    const isDensityMode = autoSubMode === 'customDensity';
 
-    // Get button mapping data from the selected difficulty level
+    // Get button mapping data from the active level (preset or density)
     const mappingData = useMemo(() => {
+        if (isDensityMode) return getButtonMappingData(customDensityLevel);
         const levels = allDifficulties as AllDifficultiesWithNatural | null;
         const level = levels?.[selectedDifficulty as keyof AllDifficultiesWithNatural] as GeneratedLevel | undefined;
         return getButtonMappingData(level);
-    }, [allDifficulties, selectedDifficulty]);
+    }, [isDensityMode, customDensityLevel, allDifficulties, selectedDifficulty]);
 
     // Don't render if no button mapping data available
     if (!mappingData) {

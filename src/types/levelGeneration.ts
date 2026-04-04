@@ -204,7 +204,7 @@ export interface MelodyContourAnalysisResult {
 /**
  * Available difficulty levels for generated levels.
  */
-export type DifficultyLevel = 'natural' | 'easy' | 'medium' | 'hard';
+export type DifficultyLevel = 'natural' | 'easy' | 'medium' | 'hard' | 'custom';
 
 /**
  * All difficulty variants including the natural (unedited) variant.
@@ -219,4 +219,6 @@ export interface AllDifficultiesWithNatural {
     hard: GeneratedLevelType;
     /** Natural difficulty - unedited composite stream (optional) */
     natural?: GeneratedLevelType;
+    /** Custom density difficulty (optional) */
+    custom?: GeneratedLevelType;
 }

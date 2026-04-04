@@ -46,6 +46,7 @@ export type {
     BandAnalysis,
     QuantizedBandStreams,
     GeneratedBeat,
+    GeneratedLevel,
     GridType,
     GridDecision,
     RhythmicPhrase,
@@ -81,6 +82,47 @@ export { DEFAULT_RHYTHMIC_BALANCE_CONFIG, isStrongBeatForEmphasis, getController
  * - 'automatic': 3-step wizard (Analyze → Rhythm Generation → Ready)
  */
 export type GenerationMode = 'manual' | 'automatic';
+
+/**
+ * Auto sub-mode within automatic generation mode.
+ * - 'preset': Generate all difficulty variants (natural/easy/medium/hard) via generateAllDifficulties()
+ * - 'customDensity': Generate a single level at a user-specified density via generateAtDensity()
+ */
+export type AutoSubMode = 'preset' | 'customDensity';
+
+/**
+ * Maximum quantization grid type for density-based generation.
+ * Re-exported from playlist-data-engine.
+ */
+export type { ExtendedGridType } from 'playlist-data-engine';
+
+/**
+ * Configuration for density-based level generation.
+ * Passed to LevelGenerator.generateAtDensity().
+ */
+export interface DensityGenerationConfig {
+    /** Target density in notes per second */
+    targetDensity: number;
+    /** Maximum quantization grid allowed */
+    maxGridType: import('playlist-data-engine').ExtendedGridType;
+    /** When true, apply BPM-based restrictions on top of maxGridType. Default: false */
+    bpmBasedQuantization?: boolean;
+    /** BPM threshold for restricting 16th/triplet_8th to 8ths. Default: 70 */
+    restrictBpm?: number;
+    /** BPM threshold for restricting 8ths to quarter notes. Default: 120 */
+    quarterNoteBpm?: number;
+}
+
+/**
+ * Default density generation config.
+ */
+export const DEFAULT_DENSITY_CONFIG: DensityGenerationConfig = {
+    targetDensity: 2.0,
+    maxGridType: 'straight_16th',
+    bpmBasedQuantization: false,
+    restrictBpm: 70,
+    quarterNoteBpm: 120,
+};
 
 /**
  * Phases of the rhythm generation pipeline.

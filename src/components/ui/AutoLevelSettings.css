@@ -484,6 +484,73 @@
     cursor: not-allowed;
 }
 
+/* Sub-mode selector buttons */
+.auto-level-settings__sub-mode-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.auto-level-settings__sub-mode-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--surface-3));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out-cubic);
+    flex: 1;
+    justify-content: center;
+}
+
+.auto-level-settings__sub-mode-button:hover:not(:disabled) {
+    background-color: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.5);
+}
+
+.auto-level-settings__sub-mode-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3);
+}
+
+.auto-level-settings__sub-mode-button--active {
+    background-color: hsl(var(--primary) / 0.15);
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+}
+
+.auto-level-settings__sub-mode-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Density section */
+.auto-level-settings__density-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-top: 0.75rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-top: 1px solid hsl(var(--border));
+    border-bottom: 1px solid hsl(var(--border));
+}
+
+.auto-level-settings__bpm-thresholds {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+    padding: 0.75rem;
+    background-color: hsl(var(--surface-2));
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+}
+
 /* Responsive adjustments */
 @media (max-width: 640px) {
     .auto-level-settings__preset-buttons,

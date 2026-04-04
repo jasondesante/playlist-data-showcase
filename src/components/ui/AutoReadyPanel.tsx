@@ -38,6 +38,9 @@ import {
     useBeatMap,
     useDownbeatConfig,
     useUnifiedBeatMap,
+    useAutoSubMode,
+    useCustomDensityLevel,
+    useDensityConfig,
 } from '../../store/beatDetectionStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import type { DifficultyLevel } from '../../types/levelGeneration';
@@ -75,13 +78,14 @@ function getControllerMode(level: GeneratedLevel | null): ControllerMode {
  * Get beat counts for all difficulties
  */
 function getBeatCounts(
-    allDifficulties: { easy?: GeneratedLevel; medium?: GeneratedLevel; hard?: GeneratedLevel; natural?: GeneratedLevel } | null
+    allDifficulties: { easy?: GeneratedLevel; medium?: GeneratedLevel; hard?: GeneratedLevel; natural?: GeneratedLevel; custom?: GeneratedLevel } | null
 ): Record<DifficultyLevel, number> {
     return {
         natural: allDifficulties?.natural?.chart?.beats?.length || 0,
         easy: allDifficulties?.easy?.chart?.beats?.length || 0,
         medium: allDifficulties?.medium?.chart?.beats?.length || 0,
         hard: allDifficulties?.hard?.chart?.beats?.length || 0,
+        custom: allDifficulties?.custom?.chart?.beats?.length || 0,
     };
 }
 
@@ -156,6 +160,9 @@ export function AutoReadyPanel({ onStartPractice, onRegenerate, isRegenerating, 
     const selectedDifficulty = useSelectedDifficulty();
     const actions = useBeatDetectionActions();
     const beatMap = useBeatMap();
+    const autoSubMode = useAutoSubMode();
+    const customDensityLevel = useCustomDensityLevel();
+    const densityConfig = useDensityConfig();
     const downbeatConfig = useDownbeatConfig();
     const unifiedBeatMap = useUnifiedBeatMap();
     const quarterNoteTimestamps = useMemo(
@@ -209,9 +216,10 @@ export function AutoReadyPanel({ onStartPractice, onRegenerate, isRegenerating, 
 
     // Get the currently selected level
     const selectedLevel = useMemo((): GeneratedLevel | null => {
+        if (autoSubMode === 'customDensity') return customDensityLevel;
         if (!allDifficulties) return null;
         return allDifficulties[selectedDifficulty] || null;
-    }, [allDifficulties, selectedDifficulty]);
+    }, [autoSubMode, customDensityLevel, allDifficulties, selectedDifficulty]);
 
     // Get beat counts for the difficulty switcher
     const beatCounts = useMemo(() => getBeatCounts(allDifficulties), [allDifficulties]);
@@ -264,7 +272,9 @@ export function AutoReadyPanel({ onStartPractice, onRegenerate, isRegenerating, 
         useBeatDetectionStore.getState().actions.setDownbeatPosition(beatIndex, timeSignature);
     }, [isDownbeatSelectionMode, timeSignature]);
 
-    if (!allDifficulties) {
+    const hasAnyLevel = autoSubMode === 'customDensity' ? !!customDensityLevel : !!allDifficulties;
+
+    if (!hasAnyLevel) {
         return (
             <Card variant="elevated" padding="lg" className={cn('auto-ready-panel', 'auto-ready-panel--empty', className)}>
                 <div className="auto-ready-placeholder">
@@ -293,15 +303,59 @@ export function AutoReadyPanel({ onStartPractice, onRegenerate, isRegenerating, 
                 </p>
             </div>
 
-            {/* Difficulty Switcher */}
-            <div className="auto-ready-difficulty-section">
-                <DifficultySwitcher
-                    selected={selectedDifficulty}
-                    onChange={handleDifficultyChange}
-                    beatCounts={beatCounts}
-                    showCounts={true}
-                />
-            </div>
+            {/* Difficulty Switcher (preset mode only) */}
+            {autoSubMode !== 'customDensity' && (
+                <div className="auto-ready-difficulty-section">
+                    <DifficultySwitcher
+                        selected={selectedDifficulty}
+                        onChange={handleDifficultyChange}
+                        beatCounts={beatCounts}
+                        showCounts={true}
+                    />
+                </div>
+            )}
+
+            {/* Density Summary (custom density mode only) */}
+            {autoSubMode === 'customDensity' && (
+                <div className="auto-ready-density-summary">
+                    <div className="auto-ready-summary-header">
+                        <div
+                            className="auto-ready-summary-difficulty"
+                            style={{ backgroundColor: 'hsl(142, 76%, 36%)' }}
+                        >
+                            Custom Density
+                        </div>
+                        <div className="auto-ready-summary-mode">
+                            <Gamepad2 size={14} />
+                            {selectedLevel?.metadata?.controllerMode === 'ddr' ? 'DDR Mode' : selectedLevel?.metadata?.controllerMode === 'guitar_hero' ? 'Guitar Hero Mode' : 'Tap Mode'}
+                        </div>
+                    </div>
+                    <div className="auto-ready-summary-stats">
+                        <div className="auto-ready-stat">
+                            <span className="auto-ready-stat-value">{densityConfig.targetDensity.toFixed(1)}</span>
+                            <span className="auto-ready-stat-label">Target (notes/sec)</span>
+                        </div>
+                        {selectedLevel && (
+                            <div className="auto-ready-stat">
+                                <span className="auto-ready-stat-value">
+                                    {(selectedLevel.chart.beats.length / (selectedLevel.chart.duration || 1)).toFixed(2)}
+                                </span>
+                                <span className="auto-ready-stat-label">Actual (notes/sec)</span>
+                            </div>
+                        )}
+                        <div className="auto-ready-stat">
+                            <span className="auto-ready-stat-value">{densityConfig.maxGridType.replace(/_/g, ' ')}</span>
+                            <span className="auto-ready-stat-label">Max Grid</span>
+                        </div>
+                        {selectedLevel && (
+                            <div className="auto-ready-stat">
+                                <span className="auto-ready-stat-value">{selectedLevel.chart.beats.length}</span>
+                                <span className="auto-ready-stat-label">Total Beats</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Level Summary */}
             <LevelSummaryCard level={selectedLevel} difficulty={selectedDifficulty} />

@@ -83,6 +83,7 @@ const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
     easy: '#22c55e',    // Green
     medium: '#f59e0b',  // Amber
     hard: '#ef4444',    // Red
+    custom: '#06b6d4',  // Cyan (density-based)
 };
 
 /**

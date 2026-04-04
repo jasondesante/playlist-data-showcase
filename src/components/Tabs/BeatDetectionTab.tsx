@@ -18,7 +18,7 @@ import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { AutoBeatPracticeView } from '../ui/BeatDetectionTab/AutoBeatPracticeView';
 import { BeatPracticeView } from '../ui/BeatDetectionTab/BeatPracticeView';
 import { StepCompletionPrompt } from '../ui/StepCompletionPrompt';
-import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection, useStepsForMode, useGenerationMode } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection, useStepsForMode, useGenerationMode, useAutoSubMode, useDensityConfig, useCustomDensityLevel } from '../../store/beatDetectionStore';
 import { StepNav } from '../ui/StepNav';
 import { Tooltip } from '../ui/Tooltip';
 import { AutoLevelToggle } from '../ui/AutoLevelToggle';
@@ -83,6 +83,9 @@ export function BeatDetectionTab() {
     const navigationDirection = useStepNavigationDirection();
     const steps = useStepsForMode();
     const generationMode = useGenerationMode();
+    const autoSubMode = useAutoSubMode();
+    const densityConfig = useDensityConfig();
+    const customDensityLevel = useCustomDensityLevel();
 
     // Task 2.3: Auto level settings state for Step 1 when auto mode is on
     const [autoLevelSettings, setAutoLevelSettings] = React.useState<AutoLevelSettingsType>(
@@ -100,6 +103,7 @@ export function BeatDetectionTab() {
     // Task 0.3: Level generation hook for auto-continue pipeline
     const {
         generate: generateLevel,
+        generateAtDensity,
         isGenerating: isLevelGenerating,
         allDifficulties,
     } = useLevelGeneration();
@@ -304,6 +308,8 @@ export function BeatDetectionTab() {
                     }
                     : undefined,
                 seed: autoLevelSettings.seed,
+                // In custom density mode, skip preset variant generation — density-based path generates its own variant
+                skipDifficultyVariants: autoSubMode === 'customDensity',
             });
         }
     }, [
@@ -315,6 +321,7 @@ export function BeatDetectionTab() {
         generatedRhythm,
         autoLevelSettings,
         generateRhythm,
+        autoSubMode,
     ]);
 
     /**
@@ -352,9 +359,21 @@ export function BeatDetectionTab() {
             shouldAutoStartLevelGenerationRef.current &&
             selectedTrack?.audio_url &&
             generatedRhythm &&
-            !isLevelGenerating &&
-            !allDifficulties
+            !isLevelGenerating
         ) {
+            // In customDensity mode, check customDensityLevel instead of allDifficulties
+            if (autoSubMode === 'customDensity') {
+                if (customDensityLevel) {
+                    shouldAutoStartLevelGenerationRef.current = false;
+                    return;
+                }
+            } else {
+                if (allDifficulties) {
+                    shouldAutoStartLevelGenerationRef.current = false;
+                    return;
+                }
+            }
+
             // Clear the flag so we don't trigger again
             shouldAutoStartLevelGenerationRef.current = false;
 
@@ -397,18 +416,31 @@ export function BeatDetectionTab() {
             // Task 1.2: Advance to Step 3 (Pitch & Level) when level generation starts
             setCurrentStep(3);
 
-            // Start level generation
-            generateLevel(selectedTrack.audio_url, {
-                difficulty: autoLevelSettings.difficulty,
-                controllerMode: autoLevelSettings.controllerMode,
-                buttons: {
-                    pitchInfluenceWeight: autoLevelSettings.pitchInfluenceWeight,
-                },
-                seed: autoLevelSettings.seed,
-                pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
-                crepeModelUrl: autoLevelSettings.crepeModelUrl,
-                voicingThreshold: autoLevelSettings.voicingThreshold,
-            });
+            // Branch on sub-mode: use generateAtDensity for custom density, generate for presets
+            if (autoSubMode === 'customDensity') {
+                generateAtDensity(selectedTrack.audio_url, densityConfig, {
+                    controllerMode: autoLevelSettings.controllerMode,
+                    buttons: {
+                        pitchInfluenceWeight: autoLevelSettings.pitchInfluenceWeight,
+                    },
+                    seed: autoLevelSettings.seed,
+                    pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
+                    crepeModelUrl: autoLevelSettings.crepeModelUrl,
+                    voicingThreshold: autoLevelSettings.voicingThreshold,
+                });
+            } else {
+                generateLevel(selectedTrack.audio_url, {
+                    difficulty: autoLevelSettings.difficulty,
+                    controllerMode: autoLevelSettings.controllerMode,
+                    buttons: {
+                        pitchInfluenceWeight: autoLevelSettings.pitchInfluenceWeight,
+                    },
+                    seed: autoLevelSettings.seed,
+                    pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
+                    crepeModelUrl: autoLevelSettings.crepeModelUrl,
+                    voicingThreshold: autoLevelSettings.voicingThreshold,
+                });
+            }
         }
     }, [
         generationMode,
@@ -417,8 +449,12 @@ export function BeatDetectionTab() {
         isRhythmGenerating,
         isLevelGenerating,
         allDifficulties,
+        autoSubMode,
+        customDensityLevel,
+        densityConfig,
         autoLevelSettings,
         generateLevel,
+        generateAtDensity,
         setCurrentStep,
     ]);
 
@@ -428,16 +464,21 @@ export function BeatDetectionTab() {
      */
     useEffect(() => {
         // Check if we just finished level generation
-        if (wasLevelGeneratingRef.current && !isLevelGenerating && allDifficulties) {
+        if (wasLevelGeneratingRef.current && !isLevelGenerating) {
             // Task 1.2: In auto mode, advance to Step 4 (Ready) when level generation completes
             if (generationMode === 'automatic' && currentStep === 3) {
-                logger.info('BeatDetection', 'Auto mode: level generation complete, advancing to Step 4 (Ready)');
-                setCurrentStep(4);
+                const hasResult = autoSubMode === 'customDensity'
+                    ? !!customDensityLevel
+                    : !!allDifficulties;
+                if (hasResult) {
+                    logger.info('BeatDetection', 'Auto mode: level generation complete, advancing to Step 4 (Ready)');
+                    setCurrentStep(4);
+                }
             }
         }
         // Update the ref for the next render
         wasLevelGeneratingRef.current = isLevelGenerating;
-    }, [isLevelGenerating, allDifficulties, generationMode, currentStep, setCurrentStep]);
+    }, [isLevelGenerating, allDifficulties, customDensityLevel, generationMode, currentStep, autoSubMode, setCurrentStep]);
 
     /**
      * Regenerate levels when downbeat or time signature changes in auto mode.
@@ -455,19 +496,32 @@ export function BeatDetectionTab() {
         // Clear rhythm (cascades to clear levels, pitch, and progress too)
         useBeatDetectionStore.getState().actions.clearGeneratedRhythm();
 
-        // Regenerate with fresh rhythm using the updated beat map
-        generateLevel(selectedTrack.audio_url, {
-            difficulty: autoLevelSettings.difficulty,
-            controllerMode: autoLevelSettings.controllerMode,
-            buttons: {
-                pitchInfluenceWeight: autoLevelSettings.pitchInfluenceWeight,
-            },
-            seed: autoLevelSettings.seed,
-            pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
-            crepeModelUrl: autoLevelSettings.crepeModelUrl,
-            voicingThreshold: autoLevelSettings.voicingThreshold,
-        });
-    }, [selectedTrack?.audio_url, generatedRhythm, isLevelGenerating, autoLevelSettings, generateLevel]);
+        // Branch on sub-mode
+        if (autoSubMode === 'customDensity') {
+            generateAtDensity(selectedTrack.audio_url, densityConfig, {
+                controllerMode: autoLevelSettings.controllerMode,
+                buttons: {
+                    pitchInfluenceWeight: autoLevelSettings.pitchInfluenceWeight,
+                },
+                seed: autoLevelSettings.seed,
+                pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
+                crepeModelUrl: autoLevelSettings.crepeModelUrl,
+                voicingThreshold: autoLevelSettings.voicingThreshold,
+            });
+        } else {
+            generateLevel(selectedTrack.audio_url, {
+                difficulty: autoLevelSettings.difficulty,
+                controllerMode: autoLevelSettings.controllerMode,
+                buttons: {
+                    pitchInfluenceWeight: autoLevelSettings.pitchInfluenceWeight,
+                },
+                seed: autoLevelSettings.seed,
+                pitchAlgorithm: autoLevelSettings.pitchAlgorithm,
+                crepeModelUrl: autoLevelSettings.crepeModelUrl,
+                voicingThreshold: autoLevelSettings.voicingThreshold,
+            });
+        }
+    }, [selectedTrack?.audio_url, generatedRhythm, isLevelGenerating, autoLevelSettings, generateLevel, autoSubMode, densityConfig, generateAtDensity]);
 
     /**
      * Map beat generation phases to human-readable labels
@@ -649,6 +703,10 @@ export function BeatDetectionTab() {
                                         onChange={setAutoLevelSettings}
                                         disabled={isBeatGenerating}
                                         defaultCollapsed={false}
+                                        autoSubMode={autoSubMode}
+                                        onAutoSubModeChange={(mode) => useBeatDetectionStore.getState().actions.setAutoSubMode(mode)}
+                                        densityConfig={densityConfig}
+                                        onDensityConfigChange={(config) => useBeatDetectionStore.getState().actions.setDensityConfig(config)}
                                     />
                                 )}
                                 {beatError && (
@@ -753,6 +811,7 @@ export function BeatDetectionTab() {
                                             }
                                             : undefined,
                                         seed: autoLevelSettings.seed,
+                                        skipDifficultyVariants: autoSubMode === 'customDensity',
                                     });
                                 }
                             }}
@@ -779,6 +838,7 @@ export function BeatDetectionTab() {
                                             }
                                             : undefined,
                                         seed: autoLevelSettings.seed,
+                                        skipDifficultyVariants: autoSubMode === 'customDensity',
                                     });
                                 }
                             }}
@@ -912,7 +972,7 @@ export function BeatDetectionTab() {
                 }
 
                 // In auto mode with generated levels, show AutoReadyPanel with difficulty switcher
-                if (generationMode === 'automatic' && allDifficulties) {
+                if (generationMode === 'automatic' && (allDifficulties || customDensityLevel)) {
                     return wrapContent(
                         <AutoReadyPanel
                             onStartPractice={handleStartPracticeMode}
@@ -1074,7 +1134,7 @@ export function BeatDetectionTab() {
             {/* Beat Practice View - Full-width immersive experience */}
             {/* Task 8.2: Use AutoBeatPracticeView for auto mode with generated levels */}
             {selectedTrack && practiceModeActive && beatMap && (
-                generationMode === 'automatic' && allDifficulties ? (
+                generationMode === 'automatic' && (allDifficulties || customDensityLevel) ? (
                     <AutoBeatPracticeView onExit={handleExitPracticeMode} />
                 ) : (
                     <BeatPracticeView onExit={handleExitPracticeMode} />

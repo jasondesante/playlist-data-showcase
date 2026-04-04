@@ -69,6 +69,8 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     const allDifficultyLevels = useBeatDetectionStore((state) => state.allDifficultyLevels);
     const selectedDifficulty = useBeatDetectionStore((state) => state.selectedDifficulty);
     const setSelectedDifficulty = useBeatDetectionStore((state) => state.actions.setSelectedDifficulty);
+    const autoSubMode = useBeatDetectionStore((state) => state.autoSubMode);
+    const customDensityLevel = useBeatDetectionStore((state) => state.customDensityLevel);
     const recordTap = useBeatDetectionStore((state) => state.actions.recordTap);
     const stopPracticeMode = useBeatDetectionStore((state) => state.actions.stopPracticeMode);
     const setKeyLaneViewMode = useBeatDetectionStore((state) => state.actions.setKeyLaneViewMode);
@@ -149,8 +151,10 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
         : null;
     const hasCharacter = !!trackCharacter;
 
-    // Get the current beat map based on selected difficulty
-    const currentBeatMap = getBeatMapForDifficulty(allDifficultyLevels, selectedDifficulty);
+    // Get the current beat map based on mode and selected difficulty
+    const currentBeatMap = autoSubMode === 'customDensity'
+        ? customDensityLevel
+        : getBeatMapForDifficulty(allDifficultyLevels, selectedDifficulty);
 
     // Convert ChartedBeatMap to BeatMap format for useBeatStream
     // Memoized to prevent infinite loop: initGrooveAnalyzer sets grooveState,
@@ -414,6 +418,7 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
             easy: allDifficultyLevels.easy.chart.beats.length,
             medium: allDifficultyLevels.medium.chart.beats.length,
             hard: allDifficultyLevels.hard.chart.beats.length,
+            custom: allDifficultyLevels.custom?.chart.beats.length ?? 0,
         }
         : undefined;
 
@@ -507,7 +512,8 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
                 />
             )}
 
-            {/* Difficulty switcher */}
+            {/* Difficulty switcher (preset mode only) */}
+            {autoSubMode !== 'customDensity' && (
             <div className="auto-beat-practice-difficulty-section">
                 <DifficultySwitcher
                     selected={selectedDifficulty}
@@ -517,6 +523,7 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
                     size="default"
                 />
             </div>
+            )}
 
             {/* Tap Statistics */}
             <TapStats />
@@ -585,6 +592,8 @@ function getBeatMapForDifficulty(
             return levels.medium;
         case 'hard':
             return levels.hard;
+        case 'custom':
+            return levels.custom || levels.medium;
         default:
             return levels.medium;
     }

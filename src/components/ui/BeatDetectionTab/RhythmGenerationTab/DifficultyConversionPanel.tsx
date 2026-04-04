@@ -32,10 +32,12 @@ import type {
     CompositeBeat,
     BalancerAction,
     BalanceStats,
+    DensityGenerationConfig,
 } from '../../../../types/rhythmGeneration';
+import type { GeneratedLevel } from 'playlist-data-engine';
 
-// Type alias for variant beats
-type VariantBeat = GeneratedRhythm['difficultyVariants']['easy']['beats'][number];
+// Type alias for variant beats (from any variant)
+type VariantBeat = DifficultyVariant['beats'][number];
 
 // ============================================================
 // Types
@@ -44,6 +46,10 @@ type VariantBeat = GeneratedRhythm['difficultyVariants']['easy']['beats'][number
 export interface DifficultyConversionPanelProps {
     /** The generated rhythm containing composite and variant data */
     rhythm: GeneratedRhythm;
+    /** Custom density level (when generated via generateAtDensity) */
+    customDensityLevel?: GeneratedLevel | null;
+    /** Density config used for custom density generation */
+    densityConfig?: DensityGenerationConfig;
     /** Current audio playback time in seconds (for timeline sync) */
     currentTime?: number;
     /** Total audio duration in seconds */
@@ -64,6 +70,7 @@ const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
     easy: '#22c55e',    // Green
     medium: '#f59e0b',  // Amber
     hard: '#ef4444',    // Red
+    custom: '#06b6d4',  // Cyan (density-based)
 };
 
 /**
@@ -1127,6 +1134,8 @@ interface DifficultyConversionColumnProps {
     density?: number;
     /** Total quarter notes in the track */
     totalQuarterNotes?: number;
+    /** Density config (custom density mode only) */
+    densityConfig?: DensityGenerationConfig;
 }
 
 const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
@@ -1142,10 +1151,12 @@ const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
     zoomLevel = 1,
     density,
     totalQuarterNotes,
+    densityConfig,
 }: DifficultyConversionColumnProps) {
     // Determine if this density is within the expected range for this difficulty
     const densityStatus = useMemo(() => {
         if (density === undefined) return 'unknown';
+        if (difficulty === 'custom') return 'correct'; // Custom density has no preset range
         if (difficulty === 'easy') {
             return density < DENSITY_THRESHOLDS.sparse ? 'correct' : 'too-high';
         } else if (difficulty === 'medium') {
@@ -1302,6 +1313,31 @@ const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
                 ghostBeatCount={ghostBeats.length}
                 addedBeatCount={addedBeats.length}
             />
+
+            {/* Density config summary for custom mode */}
+            {difficulty === 'custom' && densityConfig && (
+                <div className="difficulty-conversion-density-config">
+                    <div className="difficulty-conversion-stat">
+                        <span className="difficulty-conversion-stat-label">Target</span>
+                        <span className="difficulty-conversion-stat-value">{densityConfig.targetDensity.toFixed(1)} nps</span>
+                    </div>
+                    <div className="difficulty-conversion-stat">
+                        <span className="difficulty-conversion-stat-label">Max Grid</span>
+                        <span className="difficulty-conversion-stat-value">{GRID_TYPE_LABELS[densityConfig.maxGridType] ?? densityConfig.maxGridType}</span>
+                    </div>
+                    {densityConfig.bpmBasedQuantization && (
+                        <div className="difficulty-conversion-stat">
+                            <span className="difficulty-conversion-stat-label">BPM Restrict</span>
+                            <span className="difficulty-conversion-stat-value">≥{densityConfig.restrictBpm ?? 70}/{densityConfig.quarterNoteBpm ?? 120}</span>
+                        </div>
+                    )}
+                    {variant.densityClamped && (
+                        <div className="difficulty-conversion-density-clamped">
+                            Clamped to max achievable density
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 });
@@ -1315,17 +1351,26 @@ const DifficultyConversionColumn = memo(function DifficultyConversionColumn({
  *
  * Visualizes how the composite stream is converted to difficulty variants.
  * Shows the diff between composite baseline and each variant.
+ *
+ * In preset mode (difficultyVariants present): shows Natural/Easy/Medium/Hard columns.
+ * In custom density mode (difficultyVariants null): shows a single Custom column.
  */
 export function DifficultyConversionPanel({
     rhythm,
+    customDensityLevel,
+    densityConfig,
     currentTime = 0,
     duration: propDuration,
     isPlaying: _isPlaying = false,
     onSeek: _onSeek,
     className,
 }: DifficultyConversionPanelProps) {
-    // Get data from rhythm
     const variants = rhythm.difficultyVariants;
+    const isCustomDensityMode = !variants && !!customDensityLevel;
+
+    // In custom density mode, extract the variant from the level
+    const customVariant = customDensityLevel?.variant ?? null;
+
     const naturalDifficulty = rhythm.metadata.naturalDifficulty;
     const compositeBeats = rhythm.composite.beats;
 
@@ -1343,25 +1388,35 @@ export function DifficultyConversionPanel({
         return maxTime + 1;
     }, [propDuration, rhythm.metadata.duration, compositeBeats]);
 
-    // Difficulty levels in display order
-    const difficulties: DifficultyLevel[] = ['natural', 'easy', 'medium', 'hard'];
+    // Preset difficulty levels in display order
+    const presetDifficulties: Exclude<DifficultyLevel, 'custom'>[] = ['natural', 'easy', 'medium', 'hard'];
 
-    // Calculate ghost and added beats for each difficulty (memoized for performance)
-    // These are pre-computed once and passed to each DifficultyConversionColumn
+    // Calculate ghost and added beats for each preset difficulty (memoized for performance)
     const variantDiffData = useMemo(() => {
-        return difficulties.reduce((acc, difficulty) => {
+        if (!variants) return {} as Record<Exclude<DifficultyLevel, 'custom'>, { ghostBeats: CompositeBeat[]; addedBeats: VariantBeat[] }>;
+        return presetDifficulties.reduce((acc, difficulty) => {
             const variant = variants[difficulty];
             acc[difficulty] = {
                 ghostBeats: detectGhostBeats(compositeBeats, variant.beats),
                 addedBeats: detectAddedBeats(compositeBeats, variant.beats),
             };
             return acc;
-        }, {} as Record<DifficultyLevel, { ghostBeats: CompositeBeat[]; addedBeats: VariantBeat[] }>);
-    }, [compositeBeats, variants]);
+        }, {} as Record<Exclude<DifficultyLevel, 'custom'>, { ghostBeats: CompositeBeat[]; addedBeats: VariantBeat[] }>);
+    }, [compositeBeats, variants, presetDifficulties]);
 
-    // Calculate summary stats
+    // Calculate custom density diff data (memoized)
+    const customDiffData = useMemo(() => {
+        if (!customVariant) return null;
+        return {
+            ghostBeats: detectGhostBeats(compositeBeats, customVariant.beats),
+            addedBeats: detectAddedBeats(compositeBeats, customVariant.beats),
+        };
+    }, [compositeBeats, customVariant]);
+
+    // Calculate summary stats for preset mode
     const summaryStats = useMemo(() => {
-        const counts: Record<DifficultyLevel, number> = {
+        if (!variants) return null;
+        const counts = {
             natural: variants.natural.beats.length,
             easy: variants.easy.beats.length,
             medium: variants.medium.beats.length,
@@ -1384,9 +1439,9 @@ export function DifficultyConversionPanel({
     // Calculate density from the composite stream (actual beats, not inflated band counts)
     const compositeNotesPerSecond = duration > 0 ? compositeBeats.length / duration : 0;
 
-    // Calculate density (notes per second) for each variant
+    // Calculate density (notes per second) for each preset variant
     const variantDensities = useMemo(() => {
-        if (!duration || duration <= 0) {
+        if (!variants || !duration || duration <= 0) {
             return { natural: 0, easy: 0, medium: 0, hard: 0 };
         }
         return {
@@ -1397,24 +1452,52 @@ export function DifficultyConversionPanel({
         };
     }, [variants, duration]);
 
+    // Custom density value
+    const customDensity = useMemo(() => {
+        if (!customVariant || !duration || duration <= 0) return 0;
+        return customVariant.beats.length / duration;
+    }, [customVariant, duration]);
+
+    // Custom density summary
+    const customSummary = useMemo(() => {
+        if (!customVariant) return null;
+        return {
+            compositeBeats: compositeBeats.length,
+            customBeats: customVariant.beats.length,
+            targetDensity: densityConfig?.targetDensity ?? 0,
+            actualDensity: customDensity,
+            maxGridType: densityConfig?.maxGridType ?? 'straight_16th',
+        };
+    }, [customVariant, compositeBeats, densityConfig, customDensity]);
+
     return (
         <div className={`difficulty-conversion-panel ${className || ''}`}>
             {/* Header */}
             <div className="difficulty-conversion-panel-header">
                 <div className="difficulty-conversion-panel-title">
                     <GitBranch size={18} />
-                    <span>Difficulty Conversion</span>
+                    <span>{isCustomDensityMode ? 'Density Conversion' : 'Difficulty Conversion'}</span>
                 </div>
                 <div className="difficulty-conversion-panel-summary">
-                    <span className="difficulty-conversion-panel-summary-item">
-                        Composite: {summaryStats.compositeBeats} beats
-                    </span>
-                    <span className="difficulty-conversion-panel-summary-divider">→</span>
-                    <span className="difficulty-conversion-panel-summary-item">
-                        E: {summaryStats.variantCounts.easy} |
-                        M: {summaryStats.variantCounts.medium} |
-                        H: {summaryStats.variantCounts.hard}
-                    </span>
+                    {isCustomDensityMode && customSummary ? (
+                        <span className="difficulty-conversion-panel-summary-item">
+                            Composite: {customSummary.compositeBeats} beats
+                            <span className="difficulty-conversion-panel-summary-divider">→</span>
+                            Custom: {customSummary.customBeats} beats @ {customSummary.actualDensity.toFixed(2)} nps
+                        </span>
+                    ) : summaryStats ? (
+                        <>
+                            <span className="difficulty-conversion-panel-summary-item">
+                                Composite: {summaryStats.compositeBeats} beats
+                            </span>
+                            <span className="difficulty-conversion-panel-summary-divider">→</span>
+                            <span className="difficulty-conversion-panel-summary-item">
+                                E: {summaryStats.variantCounts.easy} |
+                                M: {summaryStats.variantCounts.medium} |
+                                H: {summaryStats.variantCounts.hard}
+                            </span>
+                        </>
+                    ) : null}
                 </div>
                 <ZoomControls
                     zoomLevel={zoomLevel}
@@ -1441,25 +1524,43 @@ export function DifficultyConversionPanel({
                 balanceStats={rhythm.metadata.balanceStats}
             />
 
-            {/* Side-by-side difficulty columns */}
+            {/* Difficulty columns: preset mode or custom density mode */}
             <div className="difficulty-conversion-columns">
-                {difficulties.map((difficulty) => (
+                {isCustomDensityMode && customVariant && customDiffData ? (
                     <DifficultyConversionColumn
-                        key={difficulty}
-                        difficulty={difficulty}
-                        variant={variants[difficulty]}
-                        isNatural={difficulty === naturalDifficulty}
+                        difficulty="custom"
+                        variant={customVariant}
+                        isNatural={false}
                         compositeBeats={compositeBeats}
-                        ghostBeats={variantDiffData[difficulty].ghostBeats}
-                        addedBeats={variantDiffData[difficulty].addedBeats}
+                        ghostBeats={customDiffData.ghostBeats}
+                        addedBeats={customDiffData.addedBeats}
                         duration={duration}
-                        color={DIFFICULTY_COLORS[difficulty]}
+                        color={DIFFICULTY_COLORS.custom}
                         currentTime={currentTime}
                         zoomLevel={zoomLevel}
-                        density={variantDensities[difficulty]}
+                        density={customDensity}
                         totalQuarterNotes={totalQuarterNotes}
+                        densityConfig={densityConfig}
                     />
-                ))}
+                ) : variants ? (
+                    presetDifficulties.map((difficulty) => (
+                        <DifficultyConversionColumn
+                            key={difficulty}
+                            difficulty={difficulty}
+                            variant={variants[difficulty]}
+                            isNatural={difficulty === naturalDifficulty}
+                            compositeBeats={compositeBeats}
+                            ghostBeats={variantDiffData[difficulty].ghostBeats}
+                            addedBeats={variantDiffData[difficulty].addedBeats}
+                            duration={duration}
+                            color={DIFFICULTY_COLORS[difficulty]}
+                            currentTime={currentTime}
+                            zoomLevel={zoomLevel}
+                            density={variantDensities[difficulty]}
+                            totalQuarterNotes={totalQuarterNotes}
+                        />
+                    ))
+                ) : null}
             </div>
 
             {/* Legend */}
