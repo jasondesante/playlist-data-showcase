@@ -5,6 +5,7 @@ import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
 import { useMusicClassifier, GENRE_PRESET_LABELS, MOOD_PRESET_LABELS, type UseMusicClassifierOptions } from '../../hooks/useMusicClassifier';
+import { usePitchAnalyzer } from '../../hooks/usePitchAnalyzer';
 import type { GenrePreset, MoodPreset } from 'playlist-data-engine';
 import { useTrackDuration } from '../../hooks/useTrackDuration';
 import { GenreClassificationCard } from '../AudioAnalysis/GenreClassificationCard';
@@ -55,7 +56,7 @@ const PITCH_ALGORITHM_DEFAULT_MAX_FREQ: Partial<Record<PitchAlgorithm, number>> 
  * 8. Interactive multiplier controls for real-time frequency adjustment
  */
 export function AudioAnalysisTab() {
-  const { selectedTrack, audioProfile, setAudioProfile, musicClassification } = usePlaylistStore();
+  const { selectedTrack, audioProfile, setAudioProfile, musicClassification, pitchAnalysisProfile } = usePlaylistStore();
   const { playbackState, currentTime, seek } = useAudioPlayerStore();
   // Use shared hook for validated duration with metadata fallback
   const duration = useTrackDuration();
@@ -69,6 +70,11 @@ export function AudioAnalysisTab() {
     error: genreError,
     retry: retryGenreAnalysis,
   } = useMusicClassifier();
+  const {
+    analyze: analyzePitch,
+    isAnalyzing: isPitchAnalyzing,
+    progress: pitchProgress,
+  } = usePitchAnalyzer();
   const [animateBars, setAnimateBars] = useState(false);
   const tabContext = useTabContext();
   const previousTabRef = useRef<string | undefined>(undefined);
@@ -234,6 +240,15 @@ export function AudioAnalysisTab() {
 
       // Analyze music - pass options directly to bypass async state issue
       await analyze(selectedTrack.audio_url, classifierOptions);
+    } else if (analysisMode === 'pitch') {
+      // Pitch analysis mode - standalone pitch detection
+      const pitchOptions = {
+        algorithm: pitchAlgorithm,
+        minFrequency: pitchMinFreq,
+        maxFrequency: pitchMaxFreq,
+        includeContour: pitchIncludeContour,
+      };
+      await analyzePitch(selectedTrack.audio_url, pitchOptions);
     } else if (analysisMode === 'timeline') {
       // Timeline analysis mode - analyze full song with timeline data points
       const strategy = timelineMode === 'count'
@@ -899,24 +914,41 @@ export function AudioAnalysisTab() {
             {/* 4. Action Section */}
             <div className="audio-analysis-action-integration">
               <Button
-                onClick={analysisMode === 'genre' ? handleAnalyze : (audioProfile ? handleApplyMultipliers : handleAnalyze)}
-                disabled={isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing || (analysisMode !== 'genre' && playbackState !== 'playing')}
-                isLoading={isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing}
+                onClick={
+                  analysisMode === 'genre'
+                    ? handleAnalyze
+                    : analysisMode === 'pitch'
+                      ? handleAnalyze
+                      : (audioProfile ? handleApplyMultipliers : handleAnalyze)
+                }
+                disabled={
+                  isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing || isPitchAnalyzing ||
+                  (analysisMode !== 'genre' && analysisMode !== 'pitch' && playbackState !== 'playing')
+                }
+                isLoading={isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing || isPitchAnalyzing}
                 variant="primary"
                 size="lg"
                 className="audio-analysis-primary-action-button"
-                title={analysisMode !== 'genre' && playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
+                title={
+                  analysisMode !== 'genre' && analysisMode !== 'pitch' && playbackState !== 'playing'
+                    ? 'Start playing audio first to analyze'
+                    : ''
+                }
               >
-                {isGenreAnalyzing
-                  ? `${genreProgress}%`
-                  : isAnalyzing || isTimelineAnalyzing
-                    ? `${progress}%`
-                    : analysisMode === 'genre'
-                      ? (musicClassification ? 'Re-Analyze Genre' : 'Analyze Genre')
-                      : (audioProfile ? 'Re-Analyze' : 'Analyze Audio')}
+                {isPitchAnalyzing
+                  ? `${pitchProgress}%`
+                  : isGenreAnalyzing
+                    ? `${genreProgress}%`
+                    : isAnalyzing || isTimelineAnalyzing
+                      ? `${progress}%`
+                      : analysisMode === 'pitch'
+                        ? (pitchAnalysisProfile ? 'Re-Analyze Pitch' : 'Analyze Pitch')
+                        : analysisMode === 'genre'
+                          ? (musicClassification ? 'Re-Analyze Genre' : 'Analyze Genre')
+                          : (audioProfile ? 'Re-Analyze' : 'Analyze Audio')}
               </Button>
 
-              {analysisMode !== 'genre' && playbackState !== 'playing' && !isAnalyzing && !isTimelineAnalyzing && (
+              {analysisMode !== 'genre' && analysisMode !== 'pitch' && playbackState !== 'playing' && !isAnalyzing && !isTimelineAnalyzing && !isPitchAnalyzing && (
                 <div className="audio-analysis-playback-warning">
                   Play audio to enable
                 </div>

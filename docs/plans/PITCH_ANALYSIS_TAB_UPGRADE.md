@@ -130,13 +130,13 @@ Shown when `analysisMode === 'pitch'`, following the same pattern as timeline/ge
 - [x] Follow existing CSS pattern for options sub-panels (`.audio-analysis-timeline-options`, `.audio-analysis-genre-model-selector`)
 
 ### Task 4.5: Update analyze button logic
-- [ ] In `handleAnalyze()`, add `analysisMode === 'pitch'` branch:
+- [x] In `handleAnalyze()`, add `analysisMode === 'pitch'` branch:
   - Build `UsePitchAnalyzerOptions` from current state
   - Call `analyze(audioUrl, options)` from `usePitchAnalyzer`
-- [ ] Button label: "Analyze Pitch" / "Re-Analyze Pitch" when pitch mode is active
-- [ ] No "play audio first" warning for pitch mode (like genre mode — it fetches/decodes internally)
-- [ ] Disable button when pitch analysis is running
-- [ ] Show progress percentage during analysis
+- [x] Button label: "Analyze Pitch" / "Re-Analyze Pitch" when pitch mode is active
+- [x] No "play audio first" warning for pitch mode (like genre mode — it fetches/decodes internally)
+- [x] Disable button when pitch analysis is running
+- [x] Show progress percentage during analysis
 
 ---
 
