@@ -20,10 +20,10 @@ Add a 4th analysis mode ("Pitch") to the existing `AudioAnalysisTab` that uses t
 - [x] Add these to the barrel export (currently only `PitchResult` is exported at line 1520) — Also added `PitchAnalyzer` class export for use in Task 2.1 hook
 
 ### Task 1.2: Add pitch analysis state to `src/store/playlistStore.ts`
-- [ ] Add `pitchAnalysisProfile: PitchAnalysisProfile | null` to `PlaylistState` interface
-- [ ] Add `setPitchAnalysisProfile: (profile: PitchAnalysisProfile | null) => void` action
-- [ ] Initialize `pitchAnalysisProfile: null` in the store
-- [ ] Clear `pitchAnalysisProfile` in `setPlaylist()` and `selectTrack()` (alongside existing `audioProfile` and `musicClassification` clears)
+- [x] Add `pitchAnalysisProfile: PitchAnalysisProfile | null` to `PlaylistState` interface
+- [x] Add `setPitchAnalysisProfile: (profile: PitchAnalysisProfile | null) => void` action
+- [x] Initialize `pitchAnalysisProfile: null` in the store
+- [x] Clear `pitchAnalysisProfile` in `setPlaylist()` and `selectTrack()` (alongside existing `audioProfile` and `musicClassification` clears)
 
 ---
 

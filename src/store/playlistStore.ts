@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { ServerlessPlaylist, PlaylistTrack, AudioProfile, MusicClassificationProfile } from '@/types';
+import { ServerlessPlaylist, PlaylistTrack, AudioProfile, MusicClassificationProfile, PitchAnalysisProfile } from '@/types';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
 
@@ -13,6 +13,8 @@ interface PlaylistState {
     audioProfile: AudioProfile | null;
     /** Full music classification result including genres, moods, and vibe metrics */
     musicClassification: MusicClassificationProfile | null;
+    /** Full-track pitch analysis result (standalone, no beat map required) */
+    pitchAnalysisProfile: PitchAnalysisProfile | null;
     /** Loading state for playlist operations */
     isLoading: boolean;
     /** Error message from playlist operations */
@@ -32,6 +34,8 @@ interface PlaylistState {
     setAudioProfile: (profile: AudioProfile | null) => void;
     /** Set full music classification result (genres, moods, vibe metrics) */
     setMusicClassification: (profile: MusicClassificationProfile | null) => void;
+    /** Set full-track pitch analysis result */
+    setPitchAnalysisProfile: (profile: PitchAnalysisProfile | null) => void;
     /** Set loading state for playlist operations */
     setLoading: (loading: boolean) => void;
     /** Set error message from playlist operations */
@@ -79,6 +83,7 @@ export const usePlaylistStore = create<PlaylistState>()(
             selectedTrack: null,
             audioProfile: null,
             musicClassification: null,
+            pitchAnalysisProfile: null,
             isLoading: false,
             error: null,
             rawResponseData: null,
@@ -107,7 +112,9 @@ export const usePlaylistStore = create<PlaylistState>()(
                     // Clear audio profile when loading new playlist
                     audioProfile: null,
                     // Clear music classification when loading new playlist
-                    musicClassification: null
+                    musicClassification: null,
+                    // Clear pitch analysis when loading new playlist
+                    pitchAnalysisProfile: null
                 });
 
                 // Notify all registered callbacks that playlist has been loaded
@@ -125,7 +132,7 @@ export const usePlaylistStore = create<PlaylistState>()(
              */
             selectTrack: (track) => {
                 logger.debug('Store', 'Selected track', track.title);
-                set({ selectedTrack: track, audioProfile: null, musicClassification: null }); // Clear profiles when changing tracks
+                set({ selectedTrack: track, audioProfile: null, musicClassification: null, pitchAnalysisProfile: null }); // Clear profiles when changing tracks
             },
 
             /**
@@ -169,6 +176,19 @@ export const usePlaylistStore = create<PlaylistState>()(
             },
 
             /**
+             * Set the full-track pitch analysis result
+             * @param profile - PitchAnalysisProfile from PitchAnalyzer or null to clear
+             */
+            setPitchAnalysisProfile: (profile) => {
+                logger.debug('Store', 'Setting pitch analysis profile', {
+                    voicingRatio: profile?.voicingRatio,
+                    totalFrames: profile?.totalFrames,
+                    algorithm: profile?.analysis_metadata?.algorithm_used
+                });
+                set({ pitchAnalysisProfile: profile });
+            },
+
+            /**
              * Set the loading state for playlist operations
              * @param loading - True when loading, false when complete
              */
@@ -198,6 +218,7 @@ export const usePlaylistStore = create<PlaylistState>()(
                     selectedTrack: null,
                     audioProfile: null,
                     musicClassification: null,
+                    pitchAnalysisProfile: null,
                     error: null,
                     rawResponseData: null,
                     parsedTimestamp: null,
@@ -214,6 +235,7 @@ export const usePlaylistStore = create<PlaylistState>()(
                 currentPlaylist: state.currentPlaylist,
                 audioProfile: state.audioProfile,
                 musicClassification: state.musicClassification,
+                pitchAnalysisProfile: state.pitchAnalysisProfile,
                 isLoading: state.isLoading,
                 error: state.error,
                 rawResponseData: state.rawResponseData,
