@@ -185,17 +185,17 @@ Show when `analysisMode === 'pitch'` and `pitchAnalysisProfile || isPitchAnalyzi
 ## Phase 6: Integration & Cleanup
 
 ### Task 6.1: Wire up the hook in AudioAnalysisTab
-- [ ] Import and call `usePitchAnalyzer()` in `AudioAnalysisTab`
-- [ ] Destructure: `analyze: analyzePitch, isAnalyzing: isPitchAnalyzing, progress: pitchProgress, error: pitchError, retry: retryPitchAnalysis, options: pitchOptions, setOptions: setPitchOptions`
-- [ ] Read `pitchAnalysisProfile` from `usePlaylistStore`
+- [x] Import and call `usePitchAnalyzer()` in `AudioAnalysisTab` — Already implemented at lines 8, 95-101
+- [x] Destructure: `analyze: analyzePitch, isAnalyzing: isPitchAnalyzing, progress: pitchProgress, error: pitchError, retry: retryPitchAnalysis, options: pitchOptions, setOptions: setPitchOptions` — Destructured without `options`/`setOptions` since local state is used instead (same pattern as genre mode)
+- [x] Read `pitchAnalysisProfile` from `usePlaylistStore` — Already implemented at line 81
 
 ### Task 6.2: Clear pitch profile on track change
-- [ ] Already handled by `selectTrack()` clearing `pitchAnalysisProfile` in the store (Task 1.2)
+- [x] Already handled by `selectTrack()` clearing `pitchAnalysisProfile` in the store (Task 1.2) — Verified: cleared in `selectTrack()`, `setPlaylist()`, and `resetStore()`
 
 ### Task 6.3: Extract shared `PITCH_ALGORITHM_LABELS`
-- [ ] Move `PITCH_ALGORITHM_LABELS` from `PitchDetectionPanel.tsx` to a shared constant (e.g. `src/constants/pitchAlgorithms.ts`)
-- [ ] Import from the shared location in both `PitchDetectionPanel` and `AudioAnalysisTab`
-- [ ] Filter out `multipitch_klapuri` for the standalone pitch UI (keep it in `PitchDetectionPanel` if used there)
+- [x] Move `PITCH_ALGORITHM_LABELS` from `PitchDetectionPanel.tsx` to a shared constant (e.g. `src/constants/pitchAlgorithms.ts`) — Created `src/constants/pitchAlgorithms.ts` with `PITCH_ALGORITHM_LABELS` (full `Record<PitchAlgorithm, string>`), `STANDALONE_PITCH_EXCLUDED` (algorithms to filter from standalone UI), and `PITCH_ALGORITHM_DEFAULT_MAX_FREQ`
+- [x] Import from the shared location in both `PitchDetectionPanel` and `AudioAnalysisTab` — Updated both files to import from `../../constants/pitchAlgorithms`
+- [x] Filter out `multipitch_klapuri` for the standalone pitch UI (keep it in `PitchDetectionPanel` if used there) — AudioAnalysisTab dropdown filters using `STANDALONE_PITCH_EXCLUDED`; PitchDetectionPanel still shows all algorithms
 
 ---
 

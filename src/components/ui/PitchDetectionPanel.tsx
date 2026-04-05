@@ -35,16 +35,7 @@ import type {
 import type { PitchAlgorithm } from '../../types/rhythmGeneration';
 import type { GeneratedLevel } from 'playlist-data-engine';
 
-/** Human-readable label for each pitch algorithm value. */
-const PITCH_ALGORITHM_LABELS: Record<PitchAlgorithm, string> = {
-    pyin_legacy: 'pYIN (Legacy)',
-    pitch_melodia: 'Pitch Melodia',
-    predominant_melodia: 'Predominant Melodia',
-    pitch_yin_probabilistic: 'Pitch YIN (Probabilistic)',
-    multipitch_melodia: 'MultiPitch Melodia',
-    multipitch_klapuri: 'MultiPitch Klapuri',
-    pitch_crepe: 'CREPE (Neural Net)',
-};
+import { PITCH_ALGORITHM_LABELS } from '../../constants/pitchAlgorithms';
 import { PitchTimeline } from './PitchTimeline';
 import { PitchInspector, type SelectedPitchData } from './PitchInspector';
 import { PitchProbabilityHistogram } from './PitchProbabilityHistogram';

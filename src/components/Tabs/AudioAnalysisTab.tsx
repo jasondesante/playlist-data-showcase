@@ -23,26 +23,7 @@ import { PitchContourGraph } from '../ui/PitchContourGraph';
 import { ColorExtractor } from 'playlist-data-engine';
 import type { PitchAlgorithm } from '../../types/rhythmGeneration';
 import type { PitchContourDirection } from '../../types';
-
-/** Human-readable labels for pitch algorithms (excludes multipitch_klapuri for standalone analysis). */
-const PITCH_ALGORITHM_LABELS: Partial<Record<PitchAlgorithm, string>> = {
-  pyin_legacy: 'pYIN (Legacy)',
-  pitch_melodia: 'Pitch Melodia',
-  predominant_melodia: 'Predominant Melodia',
-  pitch_yin_probabilistic: 'Pitch YIN (Probabilistic)',
-  multipitch_melodia: 'MultiPitch Melodia',
-  pitch_crepe: 'CREPE (Neural Net)',
-};
-
-/** Default max frequency per algorithm for standalone pitch analysis. */
-const PITCH_ALGORITHM_DEFAULT_MAX_FREQ: Partial<Record<PitchAlgorithm, number>> = {
-  pyin_legacy: 1000,
-  pitch_melodia: 20000,
-  predominant_melodia: 20000,
-  pitch_yin_probabilistic: 20000,
-  multipitch_melodia: 20000,
-  pitch_crepe: 20000,
-};
+import { PITCH_ALGORITHM_LABELS, STANDALONE_PITCH_EXCLUDED, PITCH_ALGORITHM_DEFAULT_MAX_FREQ } from '../../constants/pitchAlgorithms';
 
 /** Small badge showing a PitchContourDirection with color and icon. */
 function DirectionBadge({ direction }: { direction: PitchContourDirection }) {
@@ -864,7 +845,9 @@ export function AudioAnalysisTab() {
                       onChange={(e) => handlePitchAlgorithmChange(e.target.value as PitchAlgorithm)}
                       aria-label="Pitch detection algorithm"
                     >
-                      {Object.entries(PITCH_ALGORITHM_LABELS).map(([key, label]) => (
+                      {Object.entries(PITCH_ALGORITHM_LABELS)
+                        .filter(([key]) => !STANDALONE_PITCH_EXCLUDED.includes(key as PitchAlgorithm))
+                        .map(([key, label]) => (
                         <option key={key} value={key}>{label}</option>
                       ))}
                     </select>
