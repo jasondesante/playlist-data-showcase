@@ -32,7 +32,7 @@ Add a 4th analysis mode ("Pitch") to the existing `AudioAnalysisTab` that uses t
 ### Task 2.1: Create `src/hooks/usePitchAnalyzer.ts`
 Follows the `useMusicClassifier` hook pattern. Returns `{ analyze, isAnalyzing, progress, error, retry, options, setOptions }`.
 
-- [ ] Define `UsePitchAnalyzerOptions` interface:
+- [x] Define `UsePitchAnalyzerOptions` interface:
   ```ts
   interface UsePitchAnalyzerOptions {
     algorithm?: PitchAlgorithm;      // default 'pitch_melodia'
@@ -41,19 +41,20 @@ Follows the `useMusicClassifier` hook pattern. Returns `{ analyze, isAnalyzing, 
     includeContour?: boolean;         // default true
   }
   ```
-- [ ] Define `PitchAnalysisError` type (mirrors `ClassificationError` from `useMusicClassifier`):
+- [x] Define `PitchAnalysisError` type (mirrors `ClassificationError` from `useMusicClassifier`):
   ```ts
   type PitchAnalysisErrorType = 'network' | 'audio_decode' | 'model_load' | 'analysis' | 'unknown';
   interface PitchAnalysisError { type: PitchAnalysisErrorType; message: string; technicalMessage?: string; }
   ```
-- [ ] Implement error classification function `classifyPitchError()` — handle network, decode, Essentia WASM, and generic errors
-- [ ] Implement the hook:
+- [x] Implement error classification function `classifyPitchError()` — handle network, decode, Essentia WASM, and generic errors
+- [x] Implement the hook:
   - State: `isAnalyzing`, `progress` (0-100), `error`, `options`
   - `analyze(audioUrl, overrideOptions?)` — creates a `new PitchAnalyzer(config)` with `onProgress` callback, calls `.analyze(url)`, stores result in `playlistStore` via `setPitchAnalysisProfile`
   - `retry()` — re-runs last analysis
   - `setOptions()` — update default options
   - Progress callback maps engine `(phase, 0-1)` to UI `(0-100)` percentage
-- [ ] Reuse existing `PITCH_ALGORITHM_LABELS` from `PitchDetectionPanel.tsx` — extract to a shared location (e.g. `src/constants/pitchAlgorithms.ts`) or import from `PitchDetectionPanel` if acceptable
+- [x] Reuse existing `PITCH_ALGORITHM_LABELS` from `PitchDetectionPanel.tsx` — extract to a shared location (e.g. `src/constants/pitchAlgorithms.ts`) or import from `PitchDetectionPanel` if acceptable
+  - Note: Kept in PitchDetectionPanel.tsx for now; shared extraction deferred to Task 6.3 (Phase 6). The hook itself does not need algorithm labels — it only passes the algorithm string through to the engine.
 
 ---
 

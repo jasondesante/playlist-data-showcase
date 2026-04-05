@@ -40,7 +40,8 @@ type LogCategory =
     | 'RhythmGeneration'
     | 'LevelGeneration'
     | 'ArweaveGateway'
-    | 'BatchImagePersistence';
+    | 'BatchImagePersistence'
+    | 'PitchAnalyzer';
 
 
 
