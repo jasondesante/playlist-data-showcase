@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Waves, Music, Sparkles, Zap, Activity, Clock, Disc, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Waves, Music, Sparkles, Zap, Activity, Clock, Disc, TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react';
 import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -97,6 +97,7 @@ export function AudioAnalysisTab() {
     isAnalyzing: isPitchAnalyzing,
     progress: pitchProgress,
     error: pitchError,
+    retry: retryPitchAnalysis,
   } = usePitchAnalyzer();
   const [animateBars, setAnimateBars] = useState(false);
   const tabContext = useTabContext();
@@ -1034,6 +1035,50 @@ export function AudioAnalysisTab() {
       {/* Pitch Analysis Results */}
       {selectedTrack && analysisMode === 'pitch' && (pitchAnalysisProfile || isPitchAnalyzing || pitchError) && (
         <div className="audio-analysis-results fade-in">
+          {/* Loading State */}
+          {isPitchAnalyzing && !pitchAnalysisProfile && (
+            <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-card--pitch-loading full-width">
+              <div className="audio-analysis-pitch-loading">
+                <div className="audio-analysis-pitch-loading-icon">
+                  <Music className="audio-analysis-pitch-loading-icon-inner" size={32} />
+                </div>
+                <div className="audio-analysis-pitch-loading-content">
+                  <h4 className="audio-analysis-pitch-loading-title">Analyzing Pitch...</h4>
+                  <p className="audio-analysis-pitch-loading-desc">Detecting melody and pitch contour</p>
+                  <div className="audio-analysis-pitch-loading-progress">
+                    <div
+                      className="audio-analysis-pitch-loading-progress-bar"
+                      style={{ width: `${pitchProgress}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="audio-analysis-pitch-loading-percent">{Math.round(pitchProgress)}%</div>
+              </div>
+            </Card>
+          )}
+
+          {/* Error State */}
+          {pitchError && !pitchAnalysisProfile && (
+            <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-card--pitch-error full-width">
+              <div className="audio-analysis-pitch-error" role="alert">
+                <Activity className="audio-analysis-pitch-error-icon" size={24} />
+                <div className="audio-analysis-pitch-error-content">
+                  <h4 className="audio-analysis-pitch-error-title">Pitch Analysis Failed</h4>
+                  <p className="audio-analysis-pitch-error-message">{pitchError.message}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={retryPitchAnalysis}
+                  leftIcon={RefreshCw}
+                  className="audio-analysis-pitch-error-retry"
+                >
+                  Retry
+                </Button>
+              </div>
+            </Card>
+          )}
+
           {/* Summary Stats Card */}
           {pitchAnalysisProfile && (
             <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-card--pitch-summary full-width">

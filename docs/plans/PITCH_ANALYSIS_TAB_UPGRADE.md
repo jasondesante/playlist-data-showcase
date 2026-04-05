@@ -170,8 +170,8 @@ Show when `analysisMode === 'pitch'` and `pitchAnalysisProfile || isPitchAnalyzi
 - [x] **Raw JSON dump** — reuse `RawJsonDump` component with `data={pitchAnalysisProfile}`, title "Raw Pitch Analysis Profile JSON"
 
 ### Task 5.2: Add loading/error states
-- [ ] Loading state: show progress spinner + percentage in the results area (same pattern as genre mode)
-- [ ] Error state: show error message with retry button (same pattern as genre mode's `onRetry`)
+- [x] Loading state: show progress spinner + percentage in the results area (same pattern as genre mode)
+- [x] Error state: show error message with retry button (same pattern as genre mode's `onRetry`)
 
 ### Task 5.3: Add CSS styles
 - [ ] Add `.audio-analysis-pitch-*` CSS classes following the existing naming convention
