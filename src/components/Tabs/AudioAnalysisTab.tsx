@@ -572,6 +572,17 @@ export function AudioAnalysisTab() {
                   <span className="audio-analysis-mode-label">Genre</span>
                   <span className="audio-analysis-mode-desc">ML classification</span>
                 </button>
+                <button
+                  type="button"
+                  className={`audio-analysis-mode-btn ${analysisMode === 'pitch' ? 'audio-analysis-mode-btn-active' : ''}`}
+                  onClick={() => setAnalysisMode('pitch')}
+                  aria-checked={analysisMode === 'pitch'}
+                  role="radio"
+                >
+                  <Music className="audio-analysis-mode-icon" size={16} />
+                  <span className="audio-analysis-mode-label">Pitch</span>
+                  <span className="audio-analysis-mode-desc">Melody detection</span>
+                </button>
               </div>
 
               {/* Timeline Options Sub-component - shown when Timeline mode is selected */}

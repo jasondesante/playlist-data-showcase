@@ -113,10 +113,10 @@ The graph currently takes `pitchesByBeat: PitchAtBeat[]` and accesses `beat.beat
 - [x] Import `PitchAlgorithm` from `src/types/rhythmGeneration` (already defined locally)
 
 ### Task 4.3: Add 4th mode button
-- [ ] Add a "Pitch" button to the mode selector radiogroup (between Timeline and Genre, or at the end)
-- [ ] Use `Music` icon from lucide-react (already imported in `PitchDetectionPanel`)
-- [ ] Label: "Pitch", Description: "Melody detection"
-- [ ] Apply same active styling as other mode buttons
+- [x] Add a "Pitch" button to the mode selector radiogroup (between Timeline and Genre, or at the end) — Added after Genre button at the end of the radiogroup
+- [x] Use `Music` icon from lucide-react (already imported in `PitchDetectionPanel`) — `Music` was already imported in AudioAnalysisTab.tsx line 2
+- [x] Label: "Pitch", Description: "Melody detection"
+- [x] Apply same active styling as other mode buttons
 
 ### Task 4.4: Add pitch options sub-panel
 Shown when `analysisMode === 'pitch'`, following the same pattern as timeline/genre options.
