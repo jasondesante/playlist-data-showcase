@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useMemo, useRef } from 'react';
-import { Music, Sparkles, Drum, Download, ArrowRight, SkipForward, Upload } from 'lucide-react';
+import { Music, Sparkles, Drum, Download, ArrowRight, SkipForward, Upload, Joystick } from 'lucide-react';
 import { LevelSerializer, validateTrackMatch } from 'playlist-data-engine';
 import type { LevelPackExport, GeneratedLevel } from 'playlist-data-engine';
 import './BeatDetectionTab.css';
@@ -28,12 +28,13 @@ import { AutoLevelSettings } from '../ui/AutoLevelSettings';
 import { RhythmGenerationTab } from './BeatDetectionTab/RhythmGenerationTab';
 import { PitchLevelTab } from './PitchLevelTab';
 import { AutoReadyPanel } from '../ui/AutoReadyPanel';
-import type { AutoLevelSettings as AutoLevelSettingsType } from '../../types/rhythmGeneration';
-import { DEFAULT_AUTO_LEVEL_SETTINGS } from '../../types/rhythmGeneration';
+import type { AutoLevelSettings as AutoLevelSettingsType, ControllerMode } from '../../types/rhythmGeneration';
+import { DEFAULT_AUTO_LEVEL_SETTINGS, getControllerModeScoringDefaults, getControllerModeBalanceDefaults } from '../../types/rhythmGeneration';
 import { useRhythmGeneration } from '../../hooks/useRhythmGeneration';
 import { useLevelGeneration } from '../../hooks/useLevelGeneration';
 import { logger } from '../../utils/logger';
 import { validateGeneratedRhythm } from '../ui/DataContractValidator';
+import { cn } from '../../utils/cn';
 
 /**
  * BeatDetectionTab Component
@@ -92,6 +93,33 @@ export function BeatDetectionTab() {
     // Task 2.3: Auto level settings state for Step 1 when auto mode is on
     const [autoLevelSettings, setAutoLevelSettings] = React.useState<AutoLevelSettingsType>(
         DEFAULT_AUTO_LEVEL_SETTINGS
+    );
+
+    // Controller mode change handler (extracted from AutoLevelSettings for prominence in Step 1)
+    const handleControllerModeChange = useCallback(
+        (mode: ControllerMode) => {
+            const scoringDefaults = getControllerModeScoringDefaults(mode);
+            const balanceDefaults = getControllerModeBalanceDefaults(mode);
+            setAutoLevelSettings((prev) => ({
+                ...prev,
+                controllerMode: mode,
+                scoringConfig: {
+                    ioiVarianceWeight: scoringDefaults.ioiVarianceWeight,
+                    syncopationWeight: scoringDefaults.syncopationWeight,
+                    phraseSignificanceWeight: scoringDefaults.phraseSignificanceWeight,
+                    densityWeight: scoringDefaults.densityWeight,
+                    bandBiasWeights: prev.scoringConfig?.bandBiasWeights
+                        ?? scoringDefaults.bandBiasWeights,
+                },
+                rhythmicBalanceConfig: {
+                    strongBeatEmphasis: balanceDefaults.strongBeatEmphasis,
+                    downbeatProximityRange: balanceDefaults.downbeatProximityRange,
+                    fillEmptyMeasures: balanceDefaults.fillEmptyMeasures,
+                    addedBeatIntensity: balanceDefaults.addedBeatIntensity,
+                },
+            }));
+        },
+        []
     );
 
     // Task 2.5: Rhythm generation hook for auto mode
@@ -830,27 +858,68 @@ export function BeatDetectionTab() {
                                 </div>
                             </div>
 
-                            {/* Beat Detection Settings */}
-                            <div className="audio-analysis-mode-card">
-                                <BeatDetectionSettings disabled={isBeatGenerating} />
-                                {!beatMap && !isBeatGenerating && duration > 0 && duration < 5 && (
-                                    <div className="audio-analysis-short-track-warning">
-                                        <span className="audio-analysis-short-track-warning-icon">⚠️</span>
-                                        <span className="audio-analysis-short-track-warning-text">
-                                            This track is short ({duration.toFixed(1)}s). Beat detection works best with tracks longer than 5 seconds.
-                                        </span>
+                            {/* Beat Detection Settings (common to manual and auto) */}
+                            <div className="audio-analysis-action-integration">
+                                {/* Mode Toggle - centered at top */}
+                                <AutoLevelToggle
+                                    value={generationMode}
+                                    onChange={setGenerationMode}
+                                    disabled={isBeatGenerating}
+                                />
+
+                                {/* Controller Mode Selection - prominent when auto mode is on */}
+                                {generationMode === 'automatic' && (
+                                    <div className="audio-analysis-controller-mode-section">
+                                        <div className="audio-analysis-controller-mode-header">
+                                            <Joystick size={16} />
+                                            <span>Controller Mode</span>
+                                        </div>
+                                        <div className="audio-analysis-controller-mode-buttons">
+                                            <button
+                                                type="button"
+                                                className={cn(
+                                                    'audio-analysis-controller-mode-button',
+                                                    autoLevelSettings.controllerMode === 'ddr' && 'audio-analysis-controller-mode-button--active'
+                                                )}
+                                                onClick={() => handleControllerModeChange('ddr')}
+                                                disabled={isBeatGenerating}
+                                                title="4 directional buttons: Up, Down, Left, Right"
+                                            >
+                                                <span className="audio-analysis-controller-mode-button-text">DDR</span>
+                                                <span className="audio-analysis-controller-mode-button-desc">↑ ↓ ← →</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={cn(
+                                                    'audio-analysis-controller-mode-button',
+                                                    autoLevelSettings.controllerMode === 'guitar_hero' && 'audio-analysis-controller-mode-button--active'
+                                                )}
+                                                onClick={() => handleControllerModeChange('guitar_hero')}
+                                                disabled={isBeatGenerating}
+                                                title="5 fret buttons: 1-5"
+                                            >
+                                                <span className="audio-analysis-controller-mode-button-text">Guitar Hero</span>
+                                                <span className="audio-analysis-controller-mode-button-desc">1 2 3 4 5</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={cn(
+                                                    'audio-analysis-controller-mode-button',
+                                                    autoLevelSettings.controllerMode === 'tap' && 'audio-analysis-controller-mode-button--active'
+                                                )}
+                                                onClick={() => handleControllerModeChange('tap')}
+                                                disabled={isBeatGenerating}
+                                                title="Single tap per beat — no direction or fret assignment"
+                                            >
+                                                <span className="audio-analysis-controller-mode-button-text">Tap</span>
+                                                <span className="audio-analysis-controller-mode-button-desc">Tap</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
-                            </div>
 
-                            {/* Action Section */}
-                            <div className="audio-analysis-action-integration">
+                                {/* Action buttons row */}
                                 <div className="audio-analysis-action-row">
-                                    <AutoLevelToggle
-                                        value={generationMode}
-                                        onChange={setGenerationMode}
-                                        disabled={isBeatGenerating}
-                                    />
                                     <Button
                                         onClick={handleBeatAnalysis}
                                         disabled={isBeatGenerating}
@@ -881,13 +950,25 @@ export function BeatDetectionTab() {
                                         Import Level
                                     </Button>
                                 </div>
-                                {/* Task 2.3: Show AutoLevelSettings when auto mode is on */}
+
+                                {/* Beat Detection Settings (collapsible, below buttons) */}
+                                <BeatDetectionSettings disabled={isBeatGenerating} />
+                                {!beatMap && !isBeatGenerating && duration > 0 && duration < 5 && (
+                                    <div className="audio-analysis-short-track-warning">
+                                        <span className="audio-analysis-short-track-warning-icon">⚠️</span>
+                                        <span className="audio-analysis-short-track-warning-text">
+                                            This track is short ({duration.toFixed(1)}s). Beat detection works best with tracks longer than 5 seconds.
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Auto-level advanced settings (collapsed by default) */}
                                 {generationMode === 'automatic' && (
                                     <AutoLevelSettings
                                         settings={autoLevelSettings}
                                         onChange={setAutoLevelSettings}
                                         disabled={isBeatGenerating}
-                                        defaultCollapsed={false}
+                                        defaultCollapsed={true}
                                         autoSubMode={autoSubMode}
                                         onAutoSubModeChange={(mode) => useBeatDetectionStore.getState().actions.setAutoSubMode(mode)}
                                         densityConfig={densityConfig}

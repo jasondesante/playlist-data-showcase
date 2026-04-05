@@ -1,17 +1,14 @@
 /**
  * AutoLevelToggle Component
  *
- * Toggle switch for enabling automatic rhythm level generation mode.
- * When enabled, beat detection automatically generates rhythm patterns
- * using the playlist-data-engine RhythmGenerator.
- *
- * Task 2.1 of AUTO_LEVEL_GENERATION_UI_PLAN.md
+ * Mode selector for switching between manual and automatic
+ * rhythm generation modes. Displays as a centered pill toggle
+ * with Manual/Automatic labels.
  *
  * Features:
- * - Simple toggle switch with "Auto" label
- * - Beta badge indicating experimental feature
- * - Tooltip explaining the feature
- * - Does NOT persist preference (always starts in manual mode)
+ * - Segmented control style (Manual | Automatic)
+ * - Smooth animated highlight between modes
+ * - Info tooltip explaining the feature
  */
 
 import { useState, useRef } from 'react';
@@ -36,8 +33,8 @@ export interface AutoLevelToggleProps {
 /**
  * AutoLevelToggle Component
  *
- * A simple toggle switch that switches between manual and automatic
- * rhythm generation modes.
+ * A segmented control that switches between manual and automatic
+ * rhythm generation modes. Displayed as a centered pill toggle.
  */
 export function AutoLevelToggle({
     value,
@@ -48,11 +45,10 @@ export function AutoLevelToggle({
     const [showTooltip, setShowTooltip] = useState(false);
     const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
     const infoBtnRef = useRef<HTMLButtonElement>(null);
-    const isAuto = value === 'automatic';
 
-    const handleToggle = () => {
+    const handleSelect = (mode: GenerationMode) => {
         if (disabled) return;
-        onChange(isAuto ? 'manual' : 'automatic');
+        onChange(mode);
     };
 
     const updateTooltipPosition = () => {
@@ -60,7 +56,7 @@ export function AutoLevelToggle({
             const rect = infoBtnRef.current.getBoundingClientRect();
             setTooltipPosition({
                 top: rect.bottom + 8,
-                left: rect.left,
+                left: Math.max(8, rect.left - 150),
             });
         }
     };
@@ -77,27 +73,45 @@ export function AutoLevelToggle({
     return (
         <div className={cn('auto-level-toggle-wrapper', className)}>
             <div className="auto-level-toggle-container">
-                <label className="auto-level-toggle-label">
-                    <span className="auto-level-toggle-text">Auto</span>
-                    <span className="auto-level-toggle-beta-badge">Beta</span>
-                </label>
+                {/* Segmented control */}
+                <div className="auto-level-toggle-segmented" role="radiogroup" aria-label="Level generation mode">
+                    <button
+                        type="button"
+                        role="radio"
+                        aria-checked={value === 'manual'}
+                        className={cn(
+                            'auto-level-toggle-segment',
+                            value === 'manual' && 'auto-level-toggle-segment--active',
+                            disabled && 'auto-level-toggle-segment--disabled'
+                        )}
+                        onClick={() => handleSelect('manual')}
+                        disabled={disabled}
+                    >
+                        <span className="auto-level-toggle-segment-label">Manual</span>
+                    </button>
+                    <button
+                        type="button"
+                        role="radio"
+                        aria-checked={value === 'automatic'}
+                        className={cn(
+                            'auto-level-toggle-segment',
+                            value === 'automatic' && 'auto-level-toggle-segment--active',
+                            disabled && 'auto-level-toggle-segment--disabled'
+                        )}
+                        onClick={() => handleSelect('automatic')}
+                        disabled={disabled}
+                    >
+                        <span className="auto-level-toggle-segment-label">Automatic</span>
+                    </button>
+                    <div
+                        className={cn(
+                            'auto-level-toggle-indicator',
+                            value === 'automatic' && 'auto-level-toggle-indicator--right'
+                        )}
+                    />
+                </div>
 
-                <button
-                    type="button"
-                    role="switch"
-                    aria-checked={isAuto}
-                    aria-label="Toggle automatic level generation"
-                    className={cn(
-                        'auto-level-toggle-switch',
-                        isAuto && 'auto-level-toggle-switch--active',
-                        disabled && 'auto-level-toggle-switch--disabled'
-                    )}
-                    onClick={handleToggle}
-                    disabled={disabled}
-                >
-                    <span className="auto-level-toggle-slider" />
-                </button>
-
+                {/* Info button */}
                 <button
                     ref={infoBtnRef}
                     type="button"

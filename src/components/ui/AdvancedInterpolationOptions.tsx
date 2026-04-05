@@ -16,7 +16,7 @@
  *
  * @component
  */
-import { RotateCcw, ChevronDown, Settings2 } from 'lucide-react';
+import { RotateCcw, Settings2 } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 import type { BeatInterpolationOptions, InterpolationPresetId } from '@/types';
 import {
@@ -52,9 +52,6 @@ interface AdvancedInterpolationOptionsProps {
     /** Whether the controls should be disabled */
     disabled?: boolean;
 
-    /** Whether the section should start expanded */
-    defaultExpanded?: boolean;
-
     /** Callback when reset all to defaults is clicked (optional - component can handle internally if not provided) */
     onResetAll?: () => void;
 }
@@ -68,7 +65,6 @@ export function AdvancedInterpolationOptions({
     options,
     onOptionsChange,
     disabled = false,
-    defaultExpanded = false,
     onResetAll,
 }: AdvancedInterpolationOptionsProps) {
     // Get current values with defaults
@@ -167,11 +163,7 @@ export function AdvancedInterpolationOptions({
     };
 
     return (
-        <details className="advanced-interpolation-options" open={defaultExpanded}>
-            <summary className="advanced-interpolation-summary">
-                <span className="advanced-interpolation-summary-text">Advanced Options</span>
-                <ChevronDown className="advanced-interpolation-summary-icon" size={12} />
-            </summary>
+        <div className="advanced-interpolation-options">
             <div className="advanced-interpolation-content">
                 {/* ============================================================
                  * PRESET SELECTOR (Task 8.2)
@@ -619,7 +611,7 @@ export function AdvancedInterpolationOptions({
                     </div>
                 </div>
             </div>
-        </details>
+        </div>
     );
 }
 

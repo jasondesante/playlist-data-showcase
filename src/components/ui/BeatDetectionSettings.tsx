@@ -52,8 +52,9 @@
  * - Supports both mouse and touch interaction
  * - Responsive design for mobile, tablet, and desktop viewports
  */
-import { Info, RotateCcw, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Info, RotateCcw, AlertTriangle, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { Tooltip } from './Tooltip';
+import { CollapsibleSection } from '../Party/CollapsibleSection';
 import { BeatInterpolationSettings } from './BeatInterpolationSettings';
 import { DownbeatConfigPanel } from './DownbeatConfigPanel';
 import './BeatDetectionSettings.css';
@@ -520,6 +521,13 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
 
   return (
     <div className="beat-detection-settings">
+      <CollapsibleSection
+        title="Beat Detection Settings"
+        subtitle="Sensitivity, filter, BPM range"
+        icon={<SlidersHorizontal size={18} />}
+        defaultCollapsed={true}
+        persistKey="beat-detection-settings"
+      >
       {/* ============================================================
        * SENSITIVITY SLIDER (Task 3.2)
        *
@@ -1215,6 +1223,7 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
           Beat detection works best with rhythmic music. Ambient, classical, or non-percussive tracks may not produce reliable results.
         </span>
       </div>
+      </CollapsibleSection>
     </div>
   );
 }
