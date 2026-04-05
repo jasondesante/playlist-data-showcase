@@ -22,47 +22,63 @@ import { cn } from '../../utils/cn';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useTrackDuration } from '../../hooks/useTrackDuration';
-import type { PitchAtBeat } from '../../types/levelGeneration';
+import type { PitchAtBeat, PitchResult } from '../../types/levelGeneration';
 
 // ============================================================
 // Types
 // ============================================================
 
-export interface PitchContourGraphProps {
-    /** Array of pitch data linked to beats */
-    pitchesByBeat: PitchAtBeat[];
-    /** Callback when a beat is clicked */
-    onBeatClick?: (beat: PitchAtBeat) => void;
-    /** The index of the currently selected beat */
-    selectedBeatIndex?: number;
-    /** Whether the graph is disabled */
-    disabled?: boolean;
-    /** Show note labels at key points */
-    showNoteLabels?: boolean;
-    /** Height of the graph in pixels */
-    height?: number;
-    /** Show Y-axis labels (note names) */
-    showYAxisLabels?: boolean;
-    /** External smooth time from parent (when provided, skips internal RAF loop) */
-    smoothTime?: number;
-    /** External playing state from parent */
-    isPlaying?: boolean;
-    /** Additional CSS class names */
-    className?: string;
+/** Direction type */
+type Direction = 'up' | 'down' | 'stable' | 'none';
+
+/** Normalized internal data point — works for both beat-aligned and frame-level data */
+interface ContourDataPoint {
+    time: number;
+    midiNote: number | null;
+    isVoiced: boolean;
+    direction: Direction;
+    index: number;
 }
 
-/** Internal representation of a contour point */
+/** Common props shared by both modes */
+interface PitchContourGraphBaseProps {
+    height?: number;
+    showNoteLabels?: boolean;
+    showYAxisLabels?: boolean;
+    disabled?: boolean;
+    className?: string;
+    smoothTime?: number;
+    isPlaying?: boolean;
+}
+
+/** Beat-aligned mode: data comes from PitchBeatLinker */
+export type PitchContourGraphBeatProps = PitchContourGraphBaseProps & {
+    mode: 'beat';
+    data: PitchAtBeat[];
+    onBeatClick?: (beat: PitchAtBeat) => void;
+    selectedBeatIndex?: number;
+};
+
+/** Frame-level mode: data comes from standalone pitch analysis */
+export type PitchContourGraphFrameProps = PitchContourGraphBaseProps & {
+    mode: 'frame';
+    data: PitchResult[];
+    onFrameClick?: (result: PitchResult, index: number) => void;
+    selectedFrameIndex?: number;
+};
+
+/** Discriminated union props */
+export type PitchContourGraphProps = PitchContourGraphBeatProps | PitchContourGraphFrameProps;
+
+/** Internal representation of a rendered contour point */
 interface ContourPoint {
-    beat: PitchAtBeat;
+    dataPoint: ContourDataPoint;
     x: number;
     y: number;
     midiNote: number;
-    direction: 'up' | 'down' | 'stable' | 'none';
+    direction: Direction;
     isVoiced: boolean;
 }
-
-/** Direction type */
-type Direction = 'up' | 'down' | 'stable' | 'none';
 
 // ============================================================
 // Constants
@@ -103,11 +119,45 @@ function midiToNoteName(midi: number): string {
 }
 
 /**
- * Get the MIDI note from a pitch result
+ * Normalize PitchAtBeat[] to ContourDataPoint[] (existing beat-aligned behavior)
  */
-function getMidiNote(beat: PitchAtBeat): number | null {
-    if (!beat.pitch?.isVoiced) return null;
-    return beat.pitch.midiNote ?? null;
+function normalizePitchAtBeat(beats: PitchAtBeat[]): ContourDataPoint[] {
+    return beats.map((beat) => ({
+        time: beat.timestamp,
+        midiNote: beat.pitch?.isVoiced ? (beat.pitch.midiNote ?? null) : null,
+        isVoiced: beat.pitch?.isVoiced ?? false,
+        direction: beat.direction as Direction,
+        index: beat.beatIndex,
+    }));
+}
+
+/**
+ * Normalize PitchResult[] to ContourDataPoint[] (new frame-level mode)
+ * Computes direction between consecutive voiced frames using MIDI note comparison.
+ */
+function normalizePitchResults(results: PitchResult[]): ContourDataPoint[] {
+    return results.map((result, i) => {
+        let direction: Direction = 'none';
+        if (result.isVoiced && result.midiNote !== null) {
+            // Find previous voiced frame for direction computation
+            for (let j = i - 1; j >= 0; j--) {
+                if (results[j].isVoiced && results[j].midiNote !== null) {
+                    const diff = result.midiNote! - results[j].midiNote!;
+                    if (diff > 0.5) direction = 'up';
+                    else if (diff < -0.5) direction = 'down';
+                    else direction = 'stable';
+                    break;
+                }
+            }
+        }
+        return {
+            time: result.timestamp,
+            midiNote: result.midiNote,
+            isVoiced: result.isVoiced,
+            direction,
+            index: i,
+        };
+    });
 }
 
 /**
@@ -244,12 +294,13 @@ const ContourKeyLabel = memo(function ContourKeyLabel({
 // ============================================================
 
 interface ContourGraphStaticProps {
-    pitchesByBeat: PitchAtBeat[];
+    dataPoints: ContourDataPoint[];
+    midiRange: { min: number; max: number };
     duration: number;
     height: number;
     showYAxisLabels: boolean;
     showNoteLabels: boolean;
-    selectedBeatIndex?: number;
+    selectedIndex?: number;
     disabled: boolean;
     onSvgClick: (e: React.MouseEvent<SVGSVGElement>) => void;
     onPointClick: (e: React.MouseEvent, point: ContourPoint) => void;
@@ -258,12 +309,13 @@ interface ContourGraphStaticProps {
 }
 
 const ContourGraphStatic = memo(function ContourGraphStatic({
-    pitchesByBeat,
+    dataPoints,
+    midiRange,
     duration,
     height,
     showYAxisLabels,
     showNoteLabels,
-    selectedBeatIndex,
+    selectedIndex,
     disabled,
     onSvgClick,
     onPointClick,
@@ -272,51 +324,30 @@ const ContourGraphStatic = memo(function ContourGraphStatic({
 }: ContourGraphStaticProps) {
     const paddingLeft = showYAxisLabels ? 45 : 15;
 
-    // Calculate MIDI range from data
-    const midiRange = useMemo(() => {
-        const voicedNotes = pitchesByBeat
-            .map((b) => getMidiNote(b))
-            .filter((n): n is number => n !== null);
-
-        if (voicedNotes.length === 0) {
-            return { min: DEFAULT_MIN_MIDI, max: DEFAULT_MAX_MIDI };
-        }
-
-        const minNote = Math.min(...voicedNotes);
-        const maxNote = Math.max(...voicedNotes);
-
-        // Add padding to the range
-        return {
-            min: Math.max(0, minNote - 2),
-            max: Math.min(127, maxNote + 2),
-        };
-    }, [pitchesByBeat]);
-
-    // Convert pitch data to contour points
+    // Convert normalized data to contour points
     const contourPoints = useMemo((): ContourPoint[] => {
-        if (pitchesByBeat.length === 0 || !duration) return [];
+        if (dataPoints.length === 0 || !duration) return [];
 
         const usableWidth = GRAPH_WIDTH - paddingLeft - PADDING_RIGHT;
 
-        return pitchesByBeat.map((beat) => {
-            const midiNote = getMidiNote(beat);
-            const isVoiced = midiNote !== null;
+        return dataPoints.map((dp) => {
+            const isVoiced = dp.midiNote !== null;
 
-            const x = paddingLeft + (beat.timestamp / duration) * usableWidth;
+            const x = paddingLeft + (dp.time / duration) * usableWidth;
             const y = isVoiced
-                ? calculateYPosition(midiNote!, midiRange.min, midiRange.max, height, PADDING_TOP, PADDING_BOTTOM)
+                ? calculateYPosition(dp.midiNote!, midiRange.min, midiRange.max, height, PADDING_TOP, PADDING_BOTTOM)
                 : height / 2;
 
             return {
-                beat,
+                dataPoint: dp,
                 x,
                 y,
-                midiNote: midiNote ?? 0,
-                direction: beat.direction as Direction,
+                midiNote: dp.midiNote ?? 0,
+                direction: dp.direction,
                 isVoiced,
             };
         });
-    }, [pitchesByBeat, duration, midiRange, height, paddingLeft]);
+    }, [dataPoints, duration, midiRange, height, paddingLeft]);
 
     // Generate SVG path segments (grouped by voiced/unvoiced sections)
     const pathSegments = useMemo(() => {
@@ -467,9 +498,9 @@ const ContourGraphStatic = memo(function ContourGraphStatic({
             {/* Data points */}
             {contourPoints.filter(p => p.isVoiced).map((point) => (
                 <ContourPointMarker
-                    key={`point-${point.beat.beatIndex}`}
+                    key={`point-${point.dataPoint.index}`}
                     point={point}
-                    isSelected={point.beat.beatIndex === selectedBeatIndex}
+                    isSelected={point.dataPoint.index === selectedIndex}
                     onClick={onPointClick}
                     onHover={onPointHover}
                 />
@@ -483,13 +514,13 @@ const ContourGraphStatic = memo(function ContourGraphStatic({
                 />
             ))}
 
-            {/* Label for selected beat (always shown when a beat is selected) */}
-            {selectedBeatIndex != null && (() => {
-                const selected = contourPoints.find(p => p.beat.beatIndex === selectedBeatIndex);
+            {/* Label for selected point (always shown when a point is selected) */}
+            {selectedIndex != null && (() => {
+                const selected = contourPoints.find(p => p.dataPoint.index === selectedIndex);
                 if (!selected || !selected.isVoiced) return null;
                 return (
                     <ContourKeyLabel
-                        key={`selected-label-${selectedBeatIndex}`}
+                        key={`selected-label-${selectedIndex}`}
                         point={selected}
                     />
                 );
@@ -502,18 +533,47 @@ const ContourGraphStatic = memo(function ContourGraphStatic({
 // Main Component
 // ============================================================
 
-export function PitchContourGraph({
-    pitchesByBeat,
-    onBeatClick,
-    selectedBeatIndex,
-    disabled = false,
-    showNoteLabels = true,
-    height = 200,
-    showYAxisLabels = true,
-    className,
-    smoothTime: externalSmoothTime,
-    isPlaying: externalIsPlaying,
-}: PitchContourGraphProps) {
+export function PitchContourGraph(props: PitchContourGraphProps) {
+    const {
+        mode,
+        data,
+        disabled = false,
+        showNoteLabels = true,
+        height = 200,
+        showYAxisLabels = true,
+        className,
+        smoothTime: externalSmoothTime,
+        isPlaying: externalIsPlaying,
+    } = props;
+
+    // Normalize input data to ContourDataPoint[]
+    const normalizedData = useMemo((): ContourDataPoint[] => {
+        if (mode === 'beat') return normalizePitchAtBeat(data);
+        return normalizePitchResults(data);
+    }, [mode, data]);
+
+    // Compute MIDI range from normalized data
+    const midiRange = useMemo(() => {
+        const voicedNotes = normalizedData
+            .map((dp) => dp.midiNote)
+            .filter((n): n is number => n !== null);
+
+        if (voicedNotes.length === 0) {
+            return { min: DEFAULT_MIN_MIDI, max: DEFAULT_MAX_MIDI };
+        }
+
+        const minNote = Math.min(...voicedNotes);
+        const maxNote = Math.max(...voicedNotes);
+
+        return {
+            min: Math.max(0, minNote - 2),
+            max: Math.min(127, maxNote + 2),
+        };
+    }, [normalizedData]);
+
+    // Get selection index based on mode
+    const selectedIndex = mode === 'beat' ? props.selectedBeatIndex : props.selectedFrameIndex;
+
     // Controlled mode: parent provides smoothTime/isPlaying, skip internal RAF
     const isControlled = externalSmoothTime !== undefined;
     const [internalSmoothTime, setSmoothTime] = useState(() => useAudioPlayerStore.getState().currentTime);
@@ -628,8 +688,12 @@ export function PitchContourGraph({
     // Handle point click
     const handlePointClick = useCallback((event: React.MouseEvent, point: ContourPoint) => {
         event.stopPropagation();
-        onBeatClick?.(point.beat);
-    }, [onBeatClick]);
+        if (mode === 'beat') {
+            props.onBeatClick?.(props.data[point.dataPoint.index]);
+        } else {
+            props.onFrameClick?.(props.data[point.dataPoint.index], point.dataPoint.index);
+        }
+    }, [mode, props]);
 
     // Handle point hover
     const handlePointHover = useCallback((point: ContourPoint | null) => {
@@ -649,27 +713,8 @@ export function PitchContourGraph({
         }
     }, [isPlaying, pause, resume, play, selectedTrack, currentUrl]);
 
-    // MIDI range for display in controls (lightweight, depends only on pitchesByBeat)
-    const midiRange = useMemo(() => {
-        const voicedNotes = pitchesByBeat
-            .map((b) => getMidiNote(b))
-            .filter((n): n is number => n !== null);
-
-        if (voicedNotes.length === 0) {
-            return { min: DEFAULT_MIN_MIDI, max: DEFAULT_MAX_MIDI };
-        }
-
-        const minNote = Math.min(...voicedNotes);
-        const maxNote = Math.max(...voicedNotes);
-
-        return {
-            min: Math.max(0, minNote - 2),
-            max: Math.min(127, maxNote + 2),
-        };
-    }, [pitchesByBeat]);
-
     // Empty state
-    if (pitchesByBeat.length === 0) {
+    if (data.length === 0) {
         return (
             <div className={cn('pitch-contour-graph', 'pitch-contour-graph--empty', className)}>
                 <p className="pitch-contour-graph-empty-message">No pitch contour data available</p>
@@ -683,12 +728,13 @@ export function PitchContourGraph({
             <div className="pitch-contour-graph-canvas">
                 {/* Static SVG — memoized, only re-renders when pitch data changes */}
                 <ContourGraphStatic
-                    pitchesByBeat={pitchesByBeat}
+                    dataPoints={normalizedData}
+                    midiRange={midiRange}
                     duration={duration || 0}
                     height={height}
                     showYAxisLabels={showYAxisLabels}
                     showNoteLabels={showNoteLabels}
-                    selectedBeatIndex={selectedBeatIndex}
+                    selectedIndex={selectedIndex}
                     disabled={disabled}
                     onSvgClick={handleSvgClick}
                     onPointClick={handlePointClick}
@@ -711,7 +757,7 @@ export function PitchContourGraph({
                 </svg>
             </div>
 
-            {/* Beat info bar - always visible, updates on hover */}
+            {/* Info bar - always visible, updates on hover */}
             <div className="pitch-contour-tooltip">
                 {hoveredPoint ? (
                     <>
@@ -723,12 +769,12 @@ export function PitchContourGraph({
                                 {midiToNoteName(hoveredPoint.midiNote)}
                             </span>
                             <span className="pitch-contour-tooltip-beat">
-                                Beat {hoveredPoint.beat.beatIndex}
+                                {mode === 'beat' ? `Beat ${hoveredPoint.dataPoint.index}` : `Frame ${hoveredPoint.dataPoint.index}`}
                             </span>
                         </div>
                         <div className="pitch-contour-tooltip-details">
                             <span className="pitch-contour-tooltip-time">
-                                {hoveredPoint.beat.timestamp.toFixed(2)}s
+                                {hoveredPoint.dataPoint.time.toFixed(2)}s
                             </span>
                             <span className="pitch-contour-tooltip-separator">•</span>
                             <span
@@ -746,7 +792,9 @@ export function PitchContourGraph({
                     <>
                         <div className="pitch-contour-tooltip-header">
                             <span className="pitch-contour-tooltip-note pitch-contour-tooltip-skeleton">--</span>
-                            <span className="pitch-contour-tooltip-beat pitch-contour-tooltip-skeleton">Beat --</span>
+                            <span className="pitch-contour-tooltip-beat pitch-contour-tooltip-skeleton">
+                                {mode === 'beat' ? 'Beat --' : 'Frame --'}
+                            </span>
                         </div>
                         <div className="pitch-contour-tooltip-details">
                             <span className="pitch-contour-tooltip-time pitch-contour-tooltip-skeleton">0.00s</span>

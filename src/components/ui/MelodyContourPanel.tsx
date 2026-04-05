@@ -305,7 +305,8 @@ export function MelodyContourPanel({ className }: MelodyContourPanelProps) {
                     </p>
                     {melodyData.pitchByBeat && melodyData.pitchByBeat.length > 0 ? (
                         <PitchContourGraph
-                            pitchesByBeat={melodyData.pitchByBeat}
+                            mode="beat"
+                            data={melodyData.pitchByBeat}
                             smoothTime={smoothTime}
                             isPlaying={isPlaying}
                             onBeatClick={handleBeatClick}

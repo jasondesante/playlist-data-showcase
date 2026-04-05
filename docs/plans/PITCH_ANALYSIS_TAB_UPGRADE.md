@@ -64,7 +64,7 @@ Follows the `useMusicClassifier` hook pattern. Returns `{ analyze, isAnalyzing, 
 
 The graph currently takes `pitchesByBeat: PitchAtBeat[]` and accesses `beat.beatIndex`, `beat.timestamp`, `beat.pitch.midiNote`, `beat.pitch.isVoiced`, `beat.direction`. The `PitchResult` type has: `timestamp`, `frequency`, `probability`, `isVoiced`, `midiNote`, `noteName`.
 
-- [ ] Define a normalized internal type that both data shapes map to:
+- [x] Define a normalized internal type that both data shapes map to:
   ```ts
   // Internal only — not exported
   interface ContourDataPoint {
@@ -75,24 +75,24 @@ The graph currently takes `pitchesByBeat: PitchAtBeat[]` and accesses `beat.beat
     index: number;       // for selection/keying (beatIndex or frame index)
   }
   ```
-- [ ] Add a normalization function that converts `PitchAtBeat[]` → `ContourDataPoint[]` (existing behavior, extracts from `beat.pitch` and `beat.direction`)
-- [ ] Add a normalization function that converts `PitchResult[]` → `ContourDataPoint[]` (new: computes direction between consecutive voiced frames using MIDI note comparison)
-- [ ] Change props to a discriminated union:
+- [x] Add a normalization function that converts `PitchAtBeat[]` → `ContourDataPoint[]` (existing behavior, extracts from `beat.pitch` and `beat.direction`)
+- [x] Add a normalization function that converts `PitchResult[]` → `ContourDataPoint[]` (new: computes direction between consecutive voiced frames using MIDI note comparison)
+- [x] Change props to a discriminated union:
   ```ts
   type PitchContourGraphProps =
     | { mode: 'beat'; data: PitchAtBeat[]; onBeatClick?: ...; selectedBeatIndex?: number; }
     | { mode: 'frame'; data: PitchResult[]; onFrameClick?: ...; selectedFrameIndex?: number; }
     & { height?: number; showNoteLabels?: boolean; showYAxisLabels?: boolean; disabled?: boolean; className?: string; smoothTime?: number; isPlaying?: boolean; }
   ```
-- [ ] Update `ContourPoint` interface to use `ContourDataPoint` instead of `PitchAtBeat` for the `beat` field (rename to `dataPoint` for clarity)
-- [ ] Update `ContourGraphStatic` to accept normalized `ContourDataPoint[]` instead of `PitchAtBeat[]`
-- [ ] Update all internal references: `point.beat.beatIndex` → `point.dataPoint.index`, `beat.timestamp` → `dataPoint.time`, `getMidiNote(beat)` → `dataPoint.midiNote`
-- [ ] Update point markers: use `point.dataPoint.index` for keys and selection matching
-- [ ] Update playhead and click handling to work with both modes
+- [x] Update `ContourPoint` interface to use `ContourDataPoint` instead of `PitchAtBeat` for the `beat` field (rename to `dataPoint` for clarity)
+- [x] Update `ContourGraphStatic` to accept normalized `ContourDataPoint[]` instead of `PitchAtBeat[]`
+- [x] Update all internal references: `point.beat.beatIndex` → `point.dataPoint.index`, `beat.timestamp` → `dataPoint.time`, `getMidiNote(beat)` → `dataPoint.midiNote`
+- [x] Update point markers: use `point.dataPoint.index` for keys and selection matching
+- [x] Update playhead and click handling to work with both modes
 
 ### Task 3.2: Update existing callers
-- [ ] Update `PitchLevelTab.tsx` — pass `mode: 'beat'` explicitly (existing `pitchesByBeat` prop maps to `data: PitchAtBeat[]`)
-- [ ] Verify no regressions in the existing beat-aligned pitch contour graph
+- [x] Update `MelodyContourPanel.tsx` — pass `mode: 'beat'` explicitly (note: plan said `PitchLevelTab.tsx` but actual caller is `MelodyContourPanel.tsx`)
+- [x] Verify no regressions in the existing beat-aligned pitch contour graph — TypeScript type check passes, no new errors introduced
 
 ---
 
