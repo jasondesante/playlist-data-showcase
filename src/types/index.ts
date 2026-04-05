@@ -1523,6 +1523,13 @@ export type {
     PitchAtBeat,
     PitchDirection,
     IntervalCategory,
+    // Standalone Pitch Analysis Types
+    PitchAnalyzerConfig,
+    PitchAnalysisProfile,
+    PitchContour,
+    PitchContourSegment,
+    PitchContourSegmentDirection,
+    PitchContourDirection,
     // Button Mapping Types
     ControllerMode,
     DDRButton,
@@ -1554,5 +1561,6 @@ export type {
 
 export {
     LevelGenerator,
+    PitchAnalyzer,
     type LevelProgressCallback,
 } from './levelGeneration.js';

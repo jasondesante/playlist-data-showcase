@@ -95,6 +95,29 @@ export type {
 } from 'playlist-data-engine';
 
 // ============================================================================
+// STANDALONE PITCH ANALYSIS TYPES (from playlist-data-engine)
+// Full-track pitch detection and contour analysis (no beat map required).
+// ============================================================================
+
+export type {
+    /** Configuration for the standalone PitchAnalyzer */
+    PitchAnalyzerConfig,
+    /** Result of full-track pitch analysis */
+    PitchAnalysisProfile,
+    /** Overall melody contour from pitch analysis */
+    PitchContour,
+    /** A segment of a pitch contour with consistent direction */
+    PitchContourSegment,
+    /** Direction of a pitch contour segment */
+    PitchContourSegmentDirection,
+    /** Overall direction of a pitch contour */
+    PitchContourDirection,
+} from 'playlist-data-engine';
+
+/** Standalone full-track pitch analyzer class */
+export { PitchAnalyzer } from 'playlist-data-engine';
+
+// ============================================================================
 // MELODY CONTOUR TYPES (local definitions)
 // These types exist in the engine but are not exported from the main index.
 // ============================================================================

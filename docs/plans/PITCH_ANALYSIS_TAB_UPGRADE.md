@@ -15,9 +15,9 @@ Add a 4th analysis mode ("Pitch") to the existing `AudioAnalysisTab` that uses t
 ## Phase 1: Types & Store
 
 ### Task 1.1: Add pitch analysis types to `src/types/index.ts`
-- [ ] Re-export `PitchAnalysisProfile`, `PitchContour`, `PitchContourSegment`, `PitchContourSegmentDirection`, `PitchContourDirection`, `PitchAnalyzerConfig` from `playlist-data-engine`
-- [ ] Re-export `DirectionStats`, `IntervalStats` from `playlist-data-engine`
-- [ ] Add these to the barrel export (currently only `PitchResult` is exported at line 1520)
+- [x] Re-export `PitchAnalysisProfile`, `PitchContour`, `PitchContourSegment`, `PitchContourSegmentDirection`, `PitchContourDirection`, `PitchAnalyzerConfig` from `playlist-data-engine`
+- [x] Re-export `DirectionStats`, `IntervalStats` from `playlist-data-engine` — Already available: these are locally defined in `levelGeneration.ts` and already in the barrel export
+- [x] Add these to the barrel export (currently only `PitchResult` is exported at line 1520) — Also added `PitchAnalyzer` class export for use in Task 2.1 hook
 
 ### Task 1.2: Add pitch analysis state to `src/store/playlistStore.ts`
 - [ ] Add `pitchAnalysisProfile: PitchAnalysisProfile | null` to `PlaylistState` interface
