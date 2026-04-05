@@ -103,14 +103,14 @@ The graph currently takes `pitchesByBeat: PitchAtBeat[]` and accesses `beat.beat
 - [x] Initialize to `'normal'` (unchanged)
 
 ### Task 4.2: Add pitch mode state
-- [ ] Add pitch-specific option state:
+- [x] Add pitch-specific option state:
   ```ts
   const [pitchAlgorithm, setPitchAlgorithm] = useState<PitchAlgorithm>('pitch_melodia');
   const [pitchMinFreq, setPitchMinFreq] = useState(80);
   const [pitchMaxFreq, setPitchMaxFreq] = useState(20000);
   const [pitchIncludeContour, setPitchIncludeContour] = useState(true);
   ```
-- [ ] Import `PitchAlgorithm` from `src/types/rhythmGeneration` (already defined locally)
+- [x] Import `PitchAlgorithm` from `src/types/rhythmGeneration` (already defined locally)
 
 ### Task 4.3: Add 4th mode button
 - [ ] Add a "Pitch" button to the mode selector radiogroup (between Timeline and Genre, or at the end)

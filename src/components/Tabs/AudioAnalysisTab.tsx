@@ -19,6 +19,7 @@ import { ArweaveImage } from '../shared/ArweaveImage';
 import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { ColorExtractor } from 'playlist-data-engine';
+import type { PitchAlgorithm } from '../../types/rhythmGeneration';
 
 /**
  * AudioAnalysisTab Component
@@ -82,6 +83,12 @@ export function AudioAnalysisTab() {
   const [selectedGenreModel, setSelectedGenreModel] = useState<GenrePreset | null>(null);
   const [selectedMoodModel, setSelectedMoodModel] = useState<MoodPreset | null>(null);
   const [showModelSelector, setShowModelSelector] = useState(false);
+
+  // Pitch mode options
+  const [pitchAlgorithm, setPitchAlgorithm] = useState<PitchAlgorithm>('pitch_melodia');
+  const [pitchMinFreq, setPitchMinFreq] = useState(80);
+  const [pitchMaxFreq, setPitchMaxFreq] = useState(20000);
+  const [pitchIncludeContour, setPitchIncludeContour] = useState(true);
 
   // When opening model selector, initialize with defaults
   const handleToggleModelSelector = (show: boolean) => {
