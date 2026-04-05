@@ -67,7 +67,7 @@ export function AudioAnalysisTab() {
   const [midSliderPos, setMidSliderPos] = useState(50);       // 1.0
 
   // Analysis mode state for Phase 3: Normal vs Timeline vs Genre analysis
-  const [analysisMode, setAnalysisMode] = useState<'normal' | 'timeline' | 'genre'>('normal');
+  const [analysisMode, setAnalysisMode] = useState<'normal' | 'timeline' | 'genre' | 'pitch'>('normal');
   // Timeline mode options - count vs interval toggle
   const [timelineMode, setTimelineMode] = useState<'count' | 'interval'>('count');
   // Timeline slider values

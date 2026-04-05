@@ -99,8 +99,8 @@ The graph currently takes `pitchesByBeat: PitchAtBeat[]` and accesses `beat.beat
 ## Phase 4: AudioAnalysisTab UI — Options Panel
 
 ### Task 4.1: Extend `analysisMode` type
-- [ ] Change from `'normal' | 'timeline' | 'genre'` to `'normal' | 'timeline' | 'genre' | 'pitch'`
-- [ ] Initialize to `'normal'` (unchanged)
+- [x] Change from `'normal' | 'timeline' | 'genre'` to `'normal' | 'timeline' | 'genre' | 'pitch'`
+- [x] Initialize to `'normal'` (unchanged)
 
 ### Task 4.2: Add pitch mode state
 - [ ] Add pitch-specific option state:
