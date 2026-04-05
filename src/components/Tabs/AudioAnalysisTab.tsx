@@ -21,6 +21,26 @@ import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { ColorExtractor } from 'playlist-data-engine';
 import type { PitchAlgorithm } from '../../types/rhythmGeneration';
 
+/** Human-readable labels for pitch algorithms (excludes multipitch_klapuri for standalone analysis). */
+const PITCH_ALGORITHM_LABELS: Partial<Record<PitchAlgorithm, string>> = {
+  pyin_legacy: 'pYIN (Legacy)',
+  pitch_melodia: 'Pitch Melodia',
+  predominant_melodia: 'Predominant Melodia',
+  pitch_yin_probabilistic: 'Pitch YIN (Probabilistic)',
+  multipitch_melodia: 'MultiPitch Melodia',
+  pitch_crepe: 'CREPE (Neural Net)',
+};
+
+/** Default max frequency per algorithm for standalone pitch analysis. */
+const PITCH_ALGORITHM_DEFAULT_MAX_FREQ: Partial<Record<PitchAlgorithm, number>> = {
+  pyin_legacy: 1000,
+  pitch_melodia: 20000,
+  predominant_melodia: 20000,
+  pitch_yin_probabilistic: 20000,
+  multipitch_melodia: 20000,
+  pitch_crepe: 20000,
+};
+
 /**
  * AudioAnalysisTab Component
  *
@@ -89,6 +109,13 @@ export function AudioAnalysisTab() {
   const [pitchMinFreq, setPitchMinFreq] = useState(80);
   const [pitchMaxFreq, setPitchMaxFreq] = useState(20000);
   const [pitchIncludeContour, setPitchIncludeContour] = useState(true);
+
+  // When pitch algorithm changes, reset max freq to algorithm-appropriate default
+  const handlePitchAlgorithmChange = (algo: PitchAlgorithm) => {
+    setPitchAlgorithm(algo);
+    const defaultMax = PITCH_ALGORITHM_DEFAULT_MAX_FREQ[algo] ?? 20000;
+    setPitchMaxFreq(defaultMax);
+  };
 
   // When opening model selector, initialize with defaults
   const handleToggleModelSelector = (show: boolean) => {
@@ -781,6 +808,90 @@ export function AudioAnalysisTab() {
                       </div>
                     )}
                   </div>
+                </div>
+              )}
+
+              {/* Pitch Options Sub-component - shown when Pitch mode is selected */}
+              {analysisMode === 'pitch' && (
+                <div className="audio-analysis-pitch-options">
+                  {/* Algorithm selector dropdown */}
+                  <div className="audio-analysis-pitch-select-container">
+                    <div className="audio-analysis-pitch-slider-header">
+                      <span className="audio-analysis-pitch-slider-label">Algorithm</span>
+                    </div>
+                    <select
+                      className="audio-analysis-pitch-select"
+                      value={pitchAlgorithm}
+                      onChange={(e) => handlePitchAlgorithmChange(e.target.value as PitchAlgorithm)}
+                      aria-label="Pitch detection algorithm"
+                    >
+                      {Object.entries(PITCH_ALGORITHM_LABELS).map(([key, label]) => (
+                        <option key={key} value={key}>{label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Min frequency slider */}
+                  <div className="audio-analysis-pitch-slider-container">
+                    <div className="audio-analysis-pitch-slider-header">
+                      <span className="audio-analysis-pitch-slider-label">Min Frequency</span>
+                      <span className="audio-analysis-pitch-slider-value">{pitchMinFreq} Hz</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="20"
+                      max="500"
+                      step="10"
+                      value={pitchMinFreq}
+                      onChange={(e) => setPitchMinFreq(parseInt(e.target.value, 10))}
+                      className="audio-analysis-pitch-slider"
+                      style={{ '--slider-value': `${((pitchMinFreq - 20) / 480) * 100}%` } as React.CSSProperties}
+                      aria-label="Minimum frequency in Hz"
+                    />
+                    <div className="audio-analysis-pitch-slider-marks">
+                      <span className="audio-analysis-pitch-slider-mark">20 Hz</span>
+                      <span className="audio-analysis-pitch-slider-mark">500 Hz</span>
+                    </div>
+                  </div>
+
+                  {/* Max frequency slider */}
+                  <div className="audio-analysis-pitch-slider-container">
+                    <div className="audio-analysis-pitch-slider-header">
+                      <span className="audio-analysis-pitch-slider-label">Max Frequency</span>
+                      <span className="audio-analysis-pitch-slider-value">
+                        {pitchMaxFreq >= 1000 ? `${(pitchMaxFreq / 1000).toFixed(pitchMaxFreq % 1000 === 0 ? 0 : 1)}k` : pitchMaxFreq} Hz
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="500"
+                      max="20000"
+                      step="100"
+                      value={pitchMaxFreq}
+                      onChange={(e) => setPitchMaxFreq(parseInt(e.target.value, 10))}
+                      className="audio-analysis-pitch-slider"
+                      style={{ '--slider-value': `${((pitchMaxFreq - 500) / 19500) * 100}%` } as React.CSSProperties}
+                      aria-label="Maximum frequency in Hz"
+                    />
+                    <div className="audio-analysis-pitch-slider-marks">
+                      <span className="audio-analysis-pitch-slider-mark">500 Hz</span>
+                      <span className="audio-analysis-pitch-slider-mark">20k Hz</span>
+                    </div>
+                  </div>
+
+                  {/* Include contour toggle */}
+                  <label className="audio-analysis-pitch-toggle">
+                    <input
+                      type="checkbox"
+                      checked={pitchIncludeContour}
+                      onChange={(e) => setPitchIncludeContour(e.target.checked)}
+                      className="audio-analysis-pitch-toggle-input"
+                    />
+                    <span className="audio-analysis-pitch-toggle-track">
+                      <span className="audio-analysis-pitch-toggle-thumb" />
+                    </span>
+                    <span className="audio-analysis-pitch-toggle-label">Include Contour Analysis</span>
+                  </label>
                 </div>
               )}
             </div>

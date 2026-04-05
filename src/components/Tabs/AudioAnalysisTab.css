@@ -1988,3 +1988,242 @@
   font-size: 0.5rem;
   color: hsl(var(--muted-foreground) / 0.7);
 }
+
+/* ============================================
+   PITCH OPTIONS SUB-COMPONENT
+   ============================================ */
+
+/* Pitch options container */
+.audio-analysis-pitch-options {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed hsl(var(--border) / 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+/* Algorithm dropdown */
+.audio-analysis-pitch-select-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.audio-analysis-pitch-select {
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: hsl(var(--foreground));
+  background: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.375rem;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  padding-right: 2rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.audio-analysis-pitch-select:hover {
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+.audio-analysis-pitch-select:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.15);
+}
+
+.audio-analysis-pitch-select option {
+  background: hsl(var(--surface-2));
+  color: hsl(var(--foreground));
+}
+
+/* Pitch slider options - EQ fader style (matches timeline slider pattern) */
+.audio-analysis-pitch-slider-container {
+  margin-top: 0;
+}
+
+.audio-analysis-pitch-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.375rem;
+}
+
+.audio-analysis-pitch-slider-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.audio-analysis-pitch-slider-value {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.2);
+}
+
+.audio-analysis-pitch-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to right,
+    hsl(var(--primary) / 0.5) 0%,
+    hsl(var(--primary) / 0.5) var(--slider-value),
+    hsl(var(--border) / 0.5) var(--slider-value),
+    hsl(var(--border) / 0.5) 100%
+  );
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  position: relative;
+}
+
+/* EQ-style slider track with slot markers */
+.audio-analysis-pitch-slider::before {
+  content: '';
+  position: absolute;
+  inset: -2px 0;
+  background: repeating-linear-gradient(
+    to right,
+    hsl(var(--border) / 0.2) 0px,
+    hsl(var(--border) / 0.2) 1px,
+    transparent 1px,
+    transparent 8px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.audio-analysis-pitch-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+}
+
+.audio-analysis-pitch-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 10px;
+  background: hsl(var(--primary));
+  border-radius: 2px;
+  cursor: grab;
+  margin-top: -3px;
+  box-shadow:
+    0 0 10px hsl(var(--primary) / 0.5),
+    inset 0 0 0 1px hsl(var(--background) / 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.audio-analysis-pitch-slider::-webkit-slider-thumb:hover {
+  transform: scaleY(1.2);
+  box-shadow: 0 0 15px hsl(var(--primary) / 0.7);
+}
+
+.audio-analysis-pitch-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scaleY(1.1);
+}
+
+.audio-analysis-pitch-slider::-moz-range-thumb {
+  width: 16px;
+  height: 10px;
+  background: hsl(var(--primary));
+  border-radius: 2px;
+  cursor: grab;
+  box-shadow:
+    0 0 10px hsl(var(--primary) / 0.5),
+    inset 0 0 0 1px hsl(var(--background) / 0.4);
+}
+
+.audio-analysis-pitch-slider::-moz-range-track {
+  height: 4px;
+  background: hsl(var(--border) / 0.5);
+  border-radius: 2px;
+}
+
+.audio-analysis-pitch-slider-marks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+.audio-analysis-pitch-slider-mark {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground) / 0.6);
+  font-family: ui-monospace, monospace;
+}
+
+/* Contour toggle switch */
+.audio-analysis-pitch-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.25rem 0;
+}
+
+.audio-analysis-pitch-toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.audio-analysis-pitch-toggle-track {
+  position: relative;
+  width: 2rem;
+  height: 1rem;
+  background: hsl(var(--border));
+  border-radius: 1rem;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.audio-analysis-pitch-toggle-input:checked + .audio-analysis-pitch-toggle-track {
+  background: hsl(var(--primary));
+}
+
+.audio-analysis-pitch-toggle-thumb {
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 2px hsl(var(--shadow) / 0.3);
+}
+
+.audio-analysis-pitch-toggle-input:checked + .audio-analysis-pitch-toggle-track .audio-analysis-pitch-toggle-thumb {
+  transform: translateX(1rem);
+}
+
+.audio-analysis-pitch-toggle-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease;
+}
+
+.audio-analysis-pitch-toggle-input:checked ~ .audio-analysis-pitch-toggle-label {
+  color: hsl(var(--foreground));
+}

@@ -121,13 +121,13 @@ The graph currently takes `pitchesByBeat: PitchAtBeat[]` and accesses `beat.beat
 ### Task 4.4: Add pitch options sub-panel
 Shown when `analysisMode === 'pitch'`, following the same pattern as timeline/genre options.
 
-- [ ] **Algorithm selector** — dropdown (`<select>`) with `PITCH_ALGORITHM_LABELS` entries
+- [x] **Algorithm selector** — dropdown (`<select>`) with `PITCH_ALGORITHM_LABELS` entries
   - Exclude `multipitch_klapuri` (multi-pitch) — standalone pitch analysis is monophonic
   - When algorithm changes, reset `pitchMaxFreq` to algorithm-appropriate default (1000 for `pyin_legacy`, 20000 for others)
-- [ ] **Min frequency slider** — range 20-500 Hz, step 10, default 80
-- [ ] **Max frequency slider** — range 500-20000 Hz, step 100, default depends on algorithm
-- [ ] **Include contour toggle** — checkbox/toggle, default true
-- [ ] Follow existing CSS pattern for options sub-panels (`.audio-analysis-timeline-options`, `.audio-analysis-genre-model-selector`)
+- [x] **Min frequency slider** — range 20-500 Hz, step 10, default 80
+- [x] **Max frequency slider** — range 500-20000 Hz, step 100, default depends on algorithm
+- [x] **Include contour toggle** — checkbox/toggle, default true
+- [x] Follow existing CSS pattern for options sub-panels (`.audio-analysis-timeline-options`, `.audio-analysis-genre-model-selector`)
 
 ### Task 4.5: Update analyze button logic
 - [ ] In `handleAnalyze()`, add `analysisMode === 'pitch'` branch:
