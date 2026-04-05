@@ -105,6 +105,10 @@ const PADDING_RIGHT = 15;
 const PADDING_TOP = 20;
 const PADDING_BOTTOM = 25;
 
+/** Maximum number of individual point markers to render.
+ *  Beyond this, markers are skipped — contour lines still show full data at full resolution. */
+const MAX_DISPLAY_MARKERS = 500;
+
 // ============================================================
 // Helper Functions
 // ============================================================
@@ -134,30 +138,36 @@ function normalizePitchAtBeat(beats: PitchAtBeat[]): ContourDataPoint[] {
 /**
  * Normalize PitchResult[] to ContourDataPoint[] (new frame-level mode)
  * Computes direction between consecutive voiced frames using MIDI note comparison.
+ * O(n) single pass — tracks the last voiced frame instead of searching backwards.
  */
 function normalizePitchResults(results: PitchResult[]): ContourDataPoint[] {
-    return results.map((result, i) => {
+    const points: ContourDataPoint[] = new Array(results.length);
+    let lastVoicedMidi: number | null = null;
+
+    for (let i = 0; i < results.length; i++) {
+        const result = results[i];
         let direction: Direction = 'none';
+
         if (result.isVoiced && result.midiNote !== null) {
-            // Find previous voiced frame for direction computation
-            for (let j = i - 1; j >= 0; j--) {
-                if (results[j].isVoiced && results[j].midiNote !== null) {
-                    const diff = result.midiNote! - results[j].midiNote!;
-                    if (diff > 0.5) direction = 'up';
-                    else if (diff < -0.5) direction = 'down';
-                    else direction = 'stable';
-                    break;
-                }
+            if (lastVoicedMidi !== null) {
+                const diff = result.midiNote - lastVoicedMidi;
+                if (diff > 0.5) direction = 'up';
+                else if (diff < -0.5) direction = 'down';
+                else direction = 'stable';
             }
+            lastVoicedMidi = result.midiNote;
         }
-        return {
+
+        points[i] = {
             time: result.timestamp,
             midiNote: result.midiNote,
             isVoiced: result.isVoiced,
             direction,
             index: i,
         };
-    });
+    }
+
+    return points;
 }
 
 /**
@@ -495,8 +505,8 @@ const ContourGraphStatic = memo(function ContourGraphStatic({
                 />
             ))}
 
-            {/* Data points */}
-            {contourPoints.filter(p => p.isVoiced).map((point) => (
+            {/* Data points — skip markers when too many; contour lines already show full data */}
+            {contourPoints.length <= MAX_DISPLAY_MARKERS && contourPoints.filter(p => p.isVoiced).map((point) => (
                 <ContourPointMarker
                     key={`point-${point.dataPoint.index}`}
                     point={point}
@@ -573,6 +583,10 @@ export function PitchContourGraph(props: PitchContourGraphProps) {
 
     // Get selection index based on mode
     const selectedIndex = mode === 'beat' ? props.selectedBeatIndex : props.selectedFrameIndex;
+
+    // Extract callback props for stable useCallback dependencies (avoid depending on `props` object)
+    const onBeatClick = mode === 'beat' ? (props as PitchContourGraphBeatProps).onBeatClick : undefined;
+    const onFrameClick = mode === 'frame' ? (props as PitchContourGraphFrameProps).onFrameClick : undefined;
 
     // Controlled mode: parent provides smoothTime/isPlaying, skip internal RAF
     const isControlled = externalSmoothTime !== undefined;
@@ -689,11 +703,11 @@ export function PitchContourGraph(props: PitchContourGraphProps) {
     const handlePointClick = useCallback((event: React.MouseEvent, point: ContourPoint) => {
         event.stopPropagation();
         if (mode === 'beat') {
-            props.onBeatClick?.(props.data[point.dataPoint.index]);
+            onBeatClick?.((data as PitchAtBeat[])[point.dataPoint.index]);
         } else {
-            props.onFrameClick?.(props.data[point.dataPoint.index], point.dataPoint.index);
+            onFrameClick?.((data as PitchResult[])[point.dataPoint.index], point.dataPoint.index);
         }
-    }, [mode, props]);
+    }, [mode, onBeatClick, onFrameClick, data]);
 
     // Handle point hover
     const handlePointHover = useCallback((point: ContourPoint | null) => {

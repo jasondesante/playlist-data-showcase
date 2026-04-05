@@ -1402,7 +1402,7 @@ interface BeatDetectionActions {
      * When switching from 'automatic' to 'manual':
      * - Keeps beatMap (if any)
      * - Clears generatedRhythm
-     * - Navigates to Step 2 (Subdivide)
+     * - Navigates to Step 2 (Subdivide) only if currently on Step 3 or 4
      * @param mode - The generation mode ('manual' or 'automatic')
      */
     setGenerationMode: (mode: 'manual' | 'automatic') => void;
@@ -4477,7 +4477,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         // When switching from auto to manual:
                         // - Keep beatMap
                         // - Clear generated rhythm and level
-                        // - Navigate to Step 2 (Subdivide)
+                        // - Navigate to Step 2 (Subdivide) only if on Step 3+
                         if (previousMode === 'automatic' && mode === 'manual') {
                             set({
                                 generationMode: mode,
@@ -4490,8 +4490,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 pitchAnalysis: null,
                                 selectedDifficulty: 'medium',
                             });
-                            // Navigate to Step 2 (Subdivide) if we have a beat map
-                            if (state.beatMap) {
+                            // Navigate to Step 2 (Subdivide) only if currently on a later step
+                            // (e.g., Step 3/4) and we have a beat map.
+                            // If already on Step 1 or 2, stay put so the user isn't
+                            // unexpectedly pushed forward.
+                            if (state.beatMap && state.currentStep > 2) {
                                 state.actions.setCurrentStep(2);
                             }
                         } else {

@@ -507,79 +507,7 @@ export function AudioAnalysisTab() {
               </div>
             </div>
 
-            {/* 2. Integrated EQ Section - Hidden in Genre mode (not applicable to ML classification) */}
-            {analysisMode !== 'genre' && (
-            <div className="audio-analysis-eq-integration">
-                <div className="audio-analysis-eq-header-row">
-                  <div className="audio-analysis-eq-title-main">EQ</div>
-                  <div className="audio-analysis-eq-subtitle-main">Adjust for analysis</div>
-                </div>
-
-                <div className="audio-analysis-eq-grid">
-                  {/* Bass Slider */}
-                  <div className="audio-analysis-eq-band-compact">
-                    <div className="audio-analysis-eq-slider-vertical">
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value={bassSliderPos}
-                        onChange={(e) => handleBassChange(parseFloat(e.target.value))}
-                        className="audio-analysis-eq-slider"
-                        style={{ '--slider-value': `${bassSliderPos}%` } as React.CSSProperties}
-                      />
-                    </div>
-                    <div className="audio-analysis-eq-metadata">
-                      <span className="audio-analysis-eq-name">Bass</span>
-                      <span className="audio-analysis-eq-multiplier">{bassBoost.toFixed(1)}x</span>
-                    </div>
-                  </div>
-
-                  {/* Mid Slider */}
-                  <div className="audio-analysis-eq-band-compact">
-                    <div className="audio-analysis-eq-slider-vertical">
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value={midSliderPos}
-                        onChange={(e) => handleMidChange(parseFloat(e.target.value))}
-                        className="audio-analysis-eq-slider"
-                        style={{ '--slider-value': `${midSliderPos}%` } as React.CSSProperties}
-                      />
-                    </div>
-                    <div className="audio-analysis-eq-metadata">
-                      <span className="audio-analysis-eq-name">Mid</span>
-                      <span className="audio-analysis-eq-multiplier">{midBoost.toFixed(1)}x</span>
-                    </div>
-                  </div>
-
-                  {/* Treble Slider */}
-                  <div className="audio-analysis-eq-band-compact">
-                    <div className="audio-analysis-eq-slider-vertical">
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value={trebleSliderPos}
-                        onChange={(e) => handleTrebleChange(parseFloat(e.target.value))}
-                        className="audio-analysis-eq-slider"
-                        style={{ '--slider-value': `${trebleSliderPos}%` } as React.CSSProperties}
-                      />
-                    </div>
-                    <div className="audio-analysis-eq-metadata">
-                      <span className="audio-analysis-eq-name">Treble</span>
-                      <span className="audio-analysis-eq-multiplier">{trebleBoost.toFixed(1)}x</span>
-                    </div>
-                  </div>
-                </div>
-            </div>
-            )}
-
-            {/* 3. Analysis Mode Selector */}
+            {/* 2. Analysis Mode Selector */}
             <div className={`audio-analysis-mode-card${analysisMode === 'genre' ? ' audio-analysis-mode-card--genre' : ''}`}>
               <div className="audio-analysis-mode-header">
                 <span className="audio-analysis-mode-title">Mode</span>
@@ -918,6 +846,78 @@ export function AudioAnalysisTab() {
               )}
             </div>
 
+            {/* 3. Integrated EQ Section - Hidden in Genre and Pitch modes */}
+            {analysisMode !== 'genre' && analysisMode !== 'pitch' && (
+            <div className="audio-analysis-eq-integration">
+                <div className="audio-analysis-eq-header-row">
+                  <div className="audio-analysis-eq-title-main">EQ</div>
+                  <div className="audio-analysis-eq-subtitle-main">Adjust for analysis</div>
+                </div>
+
+                <div className="audio-analysis-eq-grid">
+                  {/* Bass Slider */}
+                  <div className="audio-analysis-eq-band-compact">
+                    <div className="audio-analysis-eq-slider-vertical">
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={bassSliderPos}
+                        onChange={(e) => handleBassChange(parseFloat(e.target.value))}
+                        className="audio-analysis-eq-slider"
+                        style={{ '--slider-value': `${bassSliderPos}%` } as React.CSSProperties}
+                      />
+                    </div>
+                    <div className="audio-analysis-eq-metadata">
+                      <span className="audio-analysis-eq-name">Bass</span>
+                      <span className="audio-analysis-eq-multiplier">{bassBoost.toFixed(1)}x</span>
+                    </div>
+                  </div>
+
+                  {/* Mid Slider */}
+                  <div className="audio-analysis-eq-band-compact">
+                    <div className="audio-analysis-eq-slider-vertical">
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={midSliderPos}
+                        onChange={(e) => handleMidChange(parseFloat(e.target.value))}
+                        className="audio-analysis-eq-slider"
+                        style={{ '--slider-value': `${midSliderPos}%` } as React.CSSProperties}
+                      />
+                    </div>
+                    <div className="audio-analysis-eq-metadata">
+                      <span className="audio-analysis-eq-name">Mid</span>
+                      <span className="audio-analysis-eq-multiplier">{midBoost.toFixed(1)}x</span>
+                    </div>
+                  </div>
+
+                  {/* Treble Slider */}
+                  <div className="audio-analysis-eq-band-compact">
+                    <div className="audio-analysis-eq-slider-vertical">
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={trebleSliderPos}
+                        onChange={(e) => handleTrebleChange(parseFloat(e.target.value))}
+                        className="audio-analysis-eq-slider"
+                        style={{ '--slider-value': `${trebleSliderPos}%` } as React.CSSProperties}
+                      />
+                    </div>
+                    <div className="audio-analysis-eq-metadata">
+                      <span className="audio-analysis-eq-name">Treble</span>
+                      <span className="audio-analysis-eq-multiplier">{trebleBoost.toFixed(1)}x</span>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            )}
+
             {/* 4. Action Section */}
             <div className="audio-analysis-action-integration">
               <Button
@@ -1206,7 +1206,7 @@ export function AudioAnalysisTab() {
                 mode="frame"
                 data={pitchAnalysisProfile.pitchResults}
                 height={250}
-                showNoteLabels={true}
+                showNoteLabels={false}
                 showYAxisLabels={true}
                 smoothTime={playbackState === 'playing' ? currentTime : undefined}
                 isPlaying={playbackState === 'playing'}
