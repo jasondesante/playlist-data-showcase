@@ -174,11 +174,11 @@ Show when `analysisMode === 'pitch'` and `pitchAnalysisProfile || isPitchAnalyzi
 - [x] Error state: show error message with retry button (same pattern as genre mode's `onRetry`)
 
 ### Task 5.3: Add CSS styles
-- [ ] Add `.audio-analysis-pitch-*` CSS classes following the existing naming convention
-- [ ] Style the pitch options sub-panel (sliders, dropdown, toggle)
-- [ ] Style the note distribution bars
-- [ ] Style the contour overview direction badges
-- [ ] Style the summary stats grid
+- [x] Add `.audio-analysis-pitch-*` CSS classes following the existing naming convention — All classes already implemented in `AudioAnalysisTab.css` (lines 1992-2527)
+- [x] Style the pitch options sub-panel (sliders, dropdown, toggle) — Algorithm select, frequency sliders (EQ fader style), contour toggle switch
+- [x] Style the note distribution bars — Horizontal bar chart with note name, bar, count, percentage
+- [x] Style the contour overview direction badges — Color-coded badges with icons (ascending/descending/stable/mixed)
+- [x] Style the summary stats grid — Auto-fill grid with voicing ratio bar, stat labels/values
 
 ---
 
