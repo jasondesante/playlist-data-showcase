@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Waves, Music, Sparkles, Zap, Activity, Clock, Disc } from 'lucide-react';
+import { Waves, Music, Sparkles, Zap, Activity, Clock, Disc, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -19,8 +19,10 @@ import { useTabContext } from '../../App';
 import { ArweaveImage } from '../shared/ArweaveImage';
 import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
+import { PitchContourGraph } from '../ui/PitchContourGraph';
 import { ColorExtractor } from 'playlist-data-engine';
 import type { PitchAlgorithm } from '../../types/rhythmGeneration';
+import type { PitchContourDirection } from '../../types';
 
 /** Human-readable labels for pitch algorithms (excludes multipitch_klapuri for standalone analysis). */
 const PITCH_ALGORITHM_LABELS: Partial<Record<PitchAlgorithm, string>> = {
@@ -41,6 +43,26 @@ const PITCH_ALGORITHM_DEFAULT_MAX_FREQ: Partial<Record<PitchAlgorithm, number>> 
   multipitch_melodia: 20000,
   pitch_crepe: 20000,
 };
+
+/** Small badge showing a PitchContourDirection with color and icon. */
+function DirectionBadge({ direction }: { direction: PitchContourDirection }) {
+  const config: Record<PitchContourDirection, { color: string; icon: typeof TrendingUp; label: string }> = {
+    ascending:  { color: '#22c55e', icon: TrendingUp,   label: 'Ascending' },
+    descending: { color: '#ef4444', icon: TrendingDown,  label: 'Descending' },
+    stable:     { color: '#3b82f6', icon: Minus,         label: 'Stable' },
+    mixed:      { color: '#a855f7', icon: Activity,      label: 'Mixed' },
+  };
+  const { color, icon: Icon, label } = config[direction];
+  return (
+    <span
+      className="audio-analysis-pitch-direction-badge"
+      style={{ '--badge-color': color, color } as React.CSSProperties}
+    >
+      <Icon size={12} />
+      {label}
+    </span>
+  );
+}
 
 /**
  * AudioAnalysisTab Component
@@ -74,6 +96,7 @@ export function AudioAnalysisTab() {
     analyze: analyzePitch,
     isAnalyzing: isPitchAnalyzing,
     progress: pitchProgress,
+    error: pitchError,
   } = usePitchAnalyzer();
   const [animateBars, setAnimateBars] = useState(false);
   const tabContext = useTabContext();
@@ -1008,8 +1031,175 @@ export function AudioAnalysisTab() {
         </div>
       )}
 
-      {/* Audio Analysis Results - Only show when NOT in genre mode */}
-      {selectedTrack && audioProfile && analysisMode !== 'genre' && (
+      {/* Pitch Analysis Results */}
+      {selectedTrack && analysisMode === 'pitch' && (pitchAnalysisProfile || isPitchAnalyzing || pitchError) && (
+        <div className="audio-analysis-results fade-in">
+          {/* Summary Stats Card */}
+          {pitchAnalysisProfile && (
+            <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-card--pitch-summary full-width">
+              <div className="audio-analysis-card-title">
+                <Music className="audio-analysis-card-title-icon" />
+                Pitch Summary
+                <span className="audio-analysis-card-subtitle">(Key metrics from pitch detection)</span>
+              </div>
+              <div className="audio-analysis-pitch-stats-grid">
+                {/* Voicing ratio */}
+                <div className="audio-analysis-pitch-stat">
+                  <span className="audio-analysis-pitch-stat-label">Voicing Ratio</span>
+                  <div className="audio-analysis-pitch-stat-bar-container">
+                    <div
+                      className="audio-analysis-pitch-stat-bar"
+                      style={{ width: `${(pitchAnalysisProfile.voicingRatio * 100).toFixed(1)}%` }}
+                    />
+                  </div>
+                  <span className="audio-analysis-pitch-stat-value">{(pitchAnalysisProfile.voicingRatio * 100).toFixed(1)}%</span>
+                </div>
+                {/* Average frequency */}
+                <div className="audio-analysis-pitch-stat">
+                  <span className="audio-analysis-pitch-stat-label">Avg Frequency</span>
+                  <span className="audio-analysis-pitch-stat-value">{pitchAnalysisProfile.averageFrequency.toFixed(1)} Hz</span>
+                </div>
+                {/* Median frequency */}
+                <div className="audio-analysis-pitch-stat">
+                  <span className="audio-analysis-pitch-stat-label">Median Frequency</span>
+                  <span className="audio-analysis-pitch-stat-value">{pitchAnalysisProfile.medianFrequency.toFixed(1)} Hz</span>
+                </div>
+                {/* Pitch range */}
+                <div className="audio-analysis-pitch-stat">
+                  <span className="audio-analysis-pitch-stat-label">Pitch Range</span>
+                  <span className="audio-analysis-pitch-stat-value">{pitchAnalysisProfile.pitchRangeSemitones.toFixed(1)} st</span>
+                </div>
+                {/* Note range */}
+                <div className="audio-analysis-pitch-stat">
+                  <span className="audio-analysis-pitch-stat-label">Note Range</span>
+                  <span className="audio-analysis-pitch-stat-value">
+                    {pitchAnalysisProfile.lowestNote || '—'} → {pitchAnalysisProfile.highestNote || '—'}
+                  </span>
+                </div>
+                {/* Frames */}
+                <div className="audio-analysis-pitch-stat">
+                  <span className="audio-analysis-pitch-stat-label">Frames</span>
+                  <span className="audio-analysis-pitch-stat-value">
+                    {pitchAnalysisProfile.voicedFrames} / {pitchAnalysisProfile.totalFrames} voiced
+                  </span>
+                </div>
+                {/* Analysis metadata */}
+                <div className="audio-analysis-pitch-stat">
+                  <span className="audio-analysis-pitch-stat-label">Algorithm</span>
+                  <span className="audio-analysis-pitch-stat-value">{pitchAnalysisProfile.analysis_metadata.algorithm_used}</span>
+                </div>
+                <div className="audio-analysis-pitch-stat">
+                  <span className="audio-analysis-pitch-stat-label">Duration</span>
+                  <span className="audio-analysis-pitch-stat-value">{pitchAnalysisProfile.analysis_metadata.duration_analyzed.toFixed(2)}s</span>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Contour Overview Card */}
+          {pitchAnalysisProfile?.contour && (
+            <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-card--pitch-contour">
+              <div className="audio-analysis-card-title">
+                <Activity className="audio-analysis-card-title-icon" />
+                Contour Overview
+              </div>
+              <div className="audio-analysis-pitch-contour-content">
+                {/* Overall direction */}
+                <div className="audio-analysis-pitch-contour-direction-row">
+                  <span className="audio-analysis-pitch-contour-label">Overall</span>
+                  <DirectionBadge direction={pitchAnalysisProfile.contour.direction} />
+                </div>
+                {/* Time-window directions */}
+                <div className="audio-analysis-pitch-contour-directions">
+                  <div className="audio-analysis-pitch-contour-direction-row">
+                    <span className="audio-analysis-pitch-contour-label">Short-term</span>
+                    <DirectionBadge direction={pitchAnalysisProfile.contour.shortTermDirection} />
+                  </div>
+                  <div className="audio-analysis-pitch-contour-direction-row">
+                    <span className="audio-analysis-pitch-contour-label">Medium-term</span>
+                    <DirectionBadge direction={pitchAnalysisProfile.contour.mediumTermDirection} />
+                  </div>
+                  <div className="audio-analysis-pitch-contour-direction-row">
+                    <span className="audio-analysis-pitch-contour-label">Long-term</span>
+                    <DirectionBadge direction={pitchAnalysisProfile.contour.longTermDirection} />
+                  </div>
+                </div>
+                {/* Range info */}
+                <div className="audio-analysis-pitch-contour-range">
+                  <span className="audio-analysis-pitch-contour-label">Range</span>
+                  <span className="audio-analysis-pitch-contour-range-value">
+                    {pitchAnalysisProfile.contour.range.minNote} → {pitchAnalysisProfile.contour.range.maxNote}
+                    <span className="audio-analysis-pitch-contour-range-semitones">({pitchAnalysisProfile.contour.range.semitones} st)</span>
+                  </span>
+                </div>
+                <div className="audio-analysis-pitch-contour-segments">
+                  <span className="audio-analysis-pitch-contour-label">Segments</span>
+                  <span className="audio-analysis-pitch-contour-segments-value">{pitchAnalysisProfile.contour.segments.length}</span>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Note Distribution Card */}
+          {pitchAnalysisProfile && pitchAnalysisProfile.noteDistribution.length > 0 && (
+            <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-card--pitch-notes full-width">
+              <div className="audio-analysis-card-title">
+                <Disc className="audio-analysis-card-title-icon" />
+                Note Distribution
+                <span className="audio-analysis-card-subtitle">(Top notes by frequency)</span>
+              </div>
+              <div className="audio-analysis-pitch-note-dist">
+                {pitchAnalysisProfile.noteDistribution.slice(0, 10).map((entry) => (
+                  <div key={entry.note} className="audio-analysis-pitch-note-row">
+                    <span className="audio-analysis-pitch-note-name">{entry.note}</span>
+                    <div className="audio-analysis-pitch-note-bar-container">
+                      <div
+                        className="audio-analysis-pitch-note-bar"
+                        style={{ width: `${entry.percentage}%` }}
+                      />
+                    </div>
+                    <span className="audio-analysis-pitch-note-count">{entry.count}</span>
+                    <span className="audio-analysis-pitch-note-pct">{entry.percentage.toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Pitch Contour Graph */}
+          {pitchAnalysisProfile && pitchAnalysisProfile.pitchResults.length > 0 && (
+            <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-card--pitch-graph full-width">
+              <div className="audio-analysis-card-title">
+                <Waves className="audio-analysis-card-title-icon" />
+                Pitch Contour
+                <span className="audio-analysis-card-subtitle">(Per-frame melody detection)</span>
+              </div>
+              <PitchContourGraph
+                mode="frame"
+                data={pitchAnalysisProfile.pitchResults}
+                height={250}
+                showNoteLabels={true}
+                showYAxisLabels={true}
+                smoothTime={playbackState === 'playing' ? currentTime : undefined}
+                isPlaying={playbackState === 'playing'}
+              />
+            </Card>
+          )}
+
+          {/* Raw JSON Dump */}
+          {pitchAnalysisProfile && (
+            <RawJsonDump
+              data={pitchAnalysisProfile}
+              title="Raw Pitch Analysis Profile JSON"
+              defaultOpen={false}
+              status="healthy"
+            />
+          )}
+        </div>
+      )}
+
+      {/* Audio Analysis Results - Only show when NOT in genre or pitch mode */}
+      {selectedTrack && audioProfile && analysisMode !== 'genre' && analysisMode !== 'pitch' && (
         <div className="audio-analysis-results fade-in">
           {/* Frequency Band Bar Chart Visualization */}
           <Card variant="elevated" padding="md" className="audio-analysis-card">

@@ -145,7 +145,7 @@ Shown when `analysisMode === 'pitch'`, following the same pattern as timeline/ge
 ### Task 5.1: Add pitch results section
 Show when `analysisMode === 'pitch'` and `pitchAnalysisProfile || isPitchAnalyzing || pitchError` exists. Follows the genre results pattern (own section, separate from normal/timeline results).
 
-- [ ] **Summary stats card** — grid of key metrics from `PitchAnalysisProfile`:
+- [x] **Summary stats card** — grid of key metrics from `PitchAnalysisProfile`:
   - Voicing ratio (percentage bar)
   - Average frequency (Hz)
   - Median frequency (Hz)
@@ -153,21 +153,21 @@ Show when `analysisMode === 'pitch'` and `pitchAnalysisProfile || isPitchAnalyzi
   - Lowest note → Highest note
   - Total frames / Voiced frames
   - Analysis metadata: algorithm used, duration analyzed
-- [ ] **Contour overview card** (shown when `includeContour: true` and contour exists):
+- [x] **Contour overview card** (shown when `includeContour: true` and contour exists):
   - Overall direction badge (ascending/descending/stable/mixed)
   - Short/medium/long-term direction indicators (small badges or colored dots)
   - Range: minNote → maxNote (X semitones)
   - Number of contour segments
-- [ ] **Note distribution card** — horizontal bar chart from `noteDistribution[]`:
+- [x] **Note distribution card** — horizontal bar chart from `noteDistribution[]`:
   - Show top 10 notes sorted by count
   - Bar width proportional to percentage
   - Note name label + count + percentage
   - Use existing card/progress bar CSS patterns
-- [ ] **Pitch contour graph** — use the adapted `PitchContourGraph` with `mode: 'frame'`:
+- [x] **Pitch contour graph** — use the adapted `PitchContourGraph` with `mode: 'frame'`:
   - Pass `pitchAnalysisProfile.pitchResults` as `data`
   - Enable audio sync (playhead) using `smoothTime` / `isPlaying` controlled mode
   - Height ~250px for good visibility
-- [ ] **Raw JSON dump** — reuse `RawJsonDump` component with `data={pitchAnalysisProfile}`, title "Raw Pitch Analysis Profile JSON"
+- [x] **Raw JSON dump** — reuse `RawJsonDump` component with `data={pitchAnalysisProfile}`, title "Raw Pitch Analysis Profile JSON"
 
 ### Task 5.2: Add loading/error states
 - [ ] Loading state: show progress spinner + percentage in the results area (same pattern as genre mode)

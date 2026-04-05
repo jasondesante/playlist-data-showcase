@@ -2227,3 +2227,185 @@
 .audio-analysis-pitch-toggle-input:checked ~ .audio-analysis-pitch-toggle-label {
   color: hsl(var(--foreground));
 }
+
+/* ============================================
+   PITCH RESULTS SECTION
+   ============================================ */
+
+/* Summary stats grid */
+.audio-analysis-pitch-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.audio-analysis-pitch-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.audio-analysis-pitch-stat-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.audio-analysis-pitch-stat-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+/* Voicing ratio bar */
+.audio-analysis-pitch-stat-bar-container {
+  width: 100%;
+  height: 0.375rem;
+  background: hsl(var(--surface-2));
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.audio-analysis-pitch-stat-bar {
+  height: 100%;
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--cute-purple)));
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+/* ============================================
+   PITCH CONTOUR OVERVIEW
+   ============================================ */
+
+.audio-analysis-pitch-contour-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.audio-analysis-pitch-contour-directions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding-left: 0.5rem;
+  border-left: 2px solid hsl(var(--border));
+}
+
+.audio-analysis-pitch-contour-direction-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.audio-analysis-pitch-contour-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+.audio-analysis-pitch-direction-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border));
+  white-space: nowrap;
+}
+
+.audio-analysis-pitch-contour-range,
+.audio-analysis-pitch-contour-segments {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.audio-analysis-pitch-contour-range-value {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.audio-analysis-pitch-contour-range-semitones {
+  margin-left: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: hsl(var(--muted-foreground));
+}
+
+.audio-analysis-pitch-contour-segments-value {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+/* ============================================
+   PITCH NOTE DISTRIBUTION
+   ============================================ */
+
+.audio-analysis-pitch-note-dist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.audio-analysis-pitch-note-row {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr 2.5rem 3.5rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.audio-analysis-pitch-note-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  font-variant-numeric: tabular-nums;
+}
+
+.audio-analysis-pitch-note-bar-container {
+  width: 100%;
+  height: 0.5rem;
+  background: hsl(var(--surface-2));
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.audio-analysis-pitch-note-bar {
+  height: 100%;
+  background: linear-gradient(90deg, hsl(var(--primary) / 0.8), hsl(var(--cute-purple) / 0.8));
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+  min-width: 2px;
+}
+
+.audio-analysis-pitch-note-count {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.audio-analysis-pitch-note-pct {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+   PITCH CONTOUR GRAPH CARD
+   ============================================ */
+
+.audio-analysis-card--pitch-graph {
+  overflow: hidden;
+}
