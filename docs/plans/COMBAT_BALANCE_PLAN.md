@@ -462,17 +462,12 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 **Key insight for simulation:** The AI and simulator don't need to know about stat levels. They read the final `CharacterSheet` stats (HP, AC, damage dice, attack bonus) and simulate normally. This is purely a generation-layer concern.
 
-- [ ] **1.7.1** Define `StatLevelOverrides` interface
-  ```typescript
-  interface StatLevelOverrides {
-    /** Override HP to this effective level (default: CR-derived level) */
-    hpLevel?: number;
-    /** Override attack scaling to this effective level (damage die + modifier + attack bonus) */
-    attackLevel?: number;
-    /** Override defense scaling to this effective level (AC) */
-    defenseLevel?: number;
-  }
-  ```
+- [x] **1.7.1** Define `StatLevelOverrides` interface
+  - Added `StatLevelOverrides` interface to `src/core/types/Enemy.ts` with `hpLevel?`, `attackLevel?`, `defenseLevel?: number` fields
+  - Includes JSDoc documenting the design: Tank, Glass Cannon, Brute, Standard presets
+  - Notes backward compatibility: when all levels match CR, output is identical to current generation
+  - Exported from `Enemy.ts` for use by `EnemyGenerationOptions` (1.7.4) and `StatScaling.ts` (1.7.2)
+  - Engine builds clean (tsc --noEmit + vite build pass)
 - [ ] **1.7.2** Create `src/constants/StatScaling.ts` — level-based stat scaling functions
   - Define `getLevelScalingFactor(level: number): number` — returns a multiplier for how much a stat increases at a given level vs level 1. The formula should feel natural: a level 10 enemy is noticeably tougher than level 1, but not exponentially so. Tunable via constants.
   - Define `getHPAtLevel(baseHP: number, level: number, rarity: EnemyRarity): number` — scales HP using the level scaling factor + rarity adjustments
