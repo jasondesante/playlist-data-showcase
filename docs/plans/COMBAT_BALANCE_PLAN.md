@@ -364,9 +364,14 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - 6 new tests in `combatEngine.test.ts`: winnerSide=player on enemy defeat, winnerSide=enemy on player defeat, winnerSide=draw on mutual kill, winnerSide=draw on max turns, winnerSide=draw on max turns with partial kills, consistency between CombatInstance and CombatResult
   - 4 existing tests updated with winnerSide assertions
   - All 449 combat tests pass, engine builds clean
-- [ ] **1.5.2** Fix XP calculation in `getCombatResult()`
+- [x] **1.5.2** Fix XP calculation in `getCombatResult()`
   - Currently hardcoded: `enemies.filter(e => e.isDefeated).length * 50`
   - Use `getXPForCR()` from `EncounterBalance.ts` to calculate proper XP from defeated enemy CRs
+  - Imported `getXPForCR` from `EncounterBalance.ts` into `CombatEngine.ts`
+  - Replaced hardcoded `* 50` with per-enemy CR-based calculation: `getXPForCR(cr)` where `cr = character.cr ?? character.level`
+  - Falls back to `character.level` when `cr` is undefined (e.g., mock/test characters without CR set) — since CR ≈ level in D&D 5e
+  - Updated existing XP test to set explicit `cr: 0.25` on mock enemies (getXPForCR(0.25) = 50, matching previous behavior)
+  - All 449 combat tests pass, no new TypeScript errors
 - [ ] **1.5.3** Add tests for winner side logic and XP calculation
 
 ### 1.6 Enemy Spell Data Pipeline
