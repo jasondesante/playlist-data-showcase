@@ -147,17 +147,39 @@ The combat subsystem has zero test coverage. The existing `tests/unit/combat.tes
   - `createTestCombat(playerLevel, playerCount, enemyCR, enemyRarity, seed)` — full CombatInstance with both sides
   - Added 22 smoke tests in `tests/unit/combat/combatTestHelpers.test.ts` verifying all helpers
   - All 72 combat tests pass (50 existing + 22 new), build verified clean
-- [ ] **1.2.3** Add core CombatEngine tests
-  - Test `startCombat()` — initiative rolling, turn order, combatant creation
-  - Test `executeWeaponAttack()` — hit/miss, damage, critical hit/miss
-  - Test `nextTurn()` — turn advancement, round counting, action reset
-  - Test `checkCombatStatus()` — win/loss/draw conditions
-  - Test `executeDodge()`, `executeDash()`, `executeDisengage()`
-  - Test `getCombatResult()` — XP and treasure calculation
-- [ ] **1.2.4** Add AttackResolver tests (statistical sampling where appropriate)
+- [x] **1.2.3** Add core CombatEngine tests
+  - Created `tests/unit/combat/combatEngine.test.ts` with 71 tests covering:
+  - `startCombat()` — initial state, player/enemy ID assignment, sequential IDs, HP initialization, action flags, initiative rolling & sorting, determinism, empty arrays, mixed sides (10 tests)
+  - `executeWeaponAttack()` — unarmed strike damage, hit/miss, critical hit (nat 20 doubled dice), critical miss (nat 1 auto-miss), defeat at 0 HP, HP floor at 0, history recording, weapon-not-equipped throw, unarmed fallback, explicit unarmed (11 tests)
+  - `executeAttack()` — custom Attack objects, melee STR modifier, ranged DEX modifier, finesse max(STR,DEX) (4 tests)
+  - `nextTurn()` — turn advancement, wrap-around, round increment, action flag reset, return value, timestamp update (6 tests)
+  - `checkCombatStatus()` — all enemies defeated, all players defeated, both sides defeated (draw), max turns draw, partial enemy/player defeat (6 tests)
+  - `executeDodge()`, `executeDash()`, `executeDisengage()` — action recording, description content, history accumulation (4 tests)
+  - `executeFlee()` — throw when disabled, combatant removal, defeated flag, history recording, canFlee() config, combat end on all-enemy flee (6 tests)
+  - `getCombatResult()` — null when active, winner determination, XP (50/enemy), 0 XP on draw, default treasure, fixed gold, gold range, roundsElapsed, draw/winner descriptions (10 tests)
+  - `applyDamage()`, `healCombatant()`, `applyTemporaryHP()` — HP reduction, defeat at 0, temp HP absorption, full absorption, HP floor, healing to max, healing cap, temp HP max (8 tests)
+  - `getLivingCombatants()`, `getDefeatedCombatants()`, `getCombatSummary()` — filtering, HP display (4 tests)
+  - Full combat flow — complete combat cycle, deterministic reproducibility (2 tests)
+  - All 143 combat tests pass (71 new + 72 existing), build verified clean (tsc + vite)
+- [x] **1.2.4** Add AttackResolver tests (statistical sampling where appropriate)
   - Test hit probability at various attack bonus vs AC differentials
   - Test damage modifier selection (STR melee, DEX ranged, finesse = max)
   - Test advantage/disadvantage mechanics
+  - Created `tests/unit/combat/attackResolver.test.ts` with 58 tests covering:
+  - **Basic hit/miss** (9 tests): hit when total >= AC, miss when below, exact match, critical hit always hits, critical miss always misses, defeat at 0 HP, HP floor at 0, attack_bonus usage, default attack_bonus=0, target AC recording
+  - **Damage modifier selection** (7 tests): melee uses STR, ranged uses DEX, finesse uses max(STR,DEX), finesse uses STR when STR>DEX, non-finesse melee uses STR even when DEX higher, spell attacks use 0 modifier, undefined type defaults to melee (STR)
+  - **Advantage mechanics** (6 tests): takes higher roll, crit if either die is 20 (both positions), miss when chosen roll still below AC, no fumble on unchosen 1, description includes both rolls
+  - **Disadvantage mechanics** (6 tests): takes lower roll, fumble if either die is 1, no crit on unchosen 20, can still hit when both rolls high enough, description includes both rolls
+  - **Damage rolling** (3 tests): HP reduction on hit, critical hit doubles dice not modifier, dice formula captured
+  - **Range checking** (5 tests): true without positions, melee in/out of range at distance 5, ranged in/out of range
+  - **calculateAttackBonus** (3 tests): without proficiency, with proficiency, negative mod + proficiency
+  - **Seeded roller determinism** (4 tests): same seed = identical results, different seeds = different results, advantage/disadvantage deterministic
+  - **Hit probability statistical sampling** (6 tests): 50% at AC 11, 95% when bonus >> AC, 5% when AC >> bonus, 55% at bonus+2 vs AC 12, hit rate improves with bonus, decreases with AC (2000 samples each, ±5% tolerance)
+  - **Advantage/disadvantage statistical impact** (3 tests): advantage > normal, disadvantage < normal, advantage > disadvantage (2000 samples each)
+  - **Result structure** (4 tests): correct references, names in description, advantage/disadvantage result structure
+  - **No roller provided** (1 test): works with default static DiceRoller
+  - Uses mock DiceRollerAPI for deterministic unit tests and SeededDiceRoller for statistical sampling
+  - All 201 combat tests pass (58 new + 143 existing), build verified clean (tsc --noEmit)
 - [ ] **1.2.5** Add SpellCaster tests
   - Test spell slot consumption and restoration
   - Test save DC calculation
