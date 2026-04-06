@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Gamepad2, Waves, Disc, CheckCircle2, AlertCircle, Info, ServerOff, ChevronDown, ChevronRight, Settings, Gamepad, Zap, Database, Activity, Trophy, BarChart3, Loader2 } from 'lucide-react';
+import { Gamepad2, CheckCircle2, AlertCircle, Info, ServerOff, ChevronDown, ChevronRight, Settings, Gamepad, Zap, Database, Activity, Trophy, BarChart3, Loader2, Wifi, WifiOff } from 'lucide-react';
 import './GamingPlatformsTab.css';
 import { useGamingPlatforms } from '../../hooks/useGamingPlatforms';
-import { useAppStore } from '@/store/appStore';
-import { usePlaylistStore } from '@/store/playlistStore';
 import { logger } from '@/utils/logger';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
@@ -14,7 +12,6 @@ import { StatusIndicator } from '../ui/StatusIndicator';
  * Gaming platform connection and monitoring dashboard with clean, professional styling.
  * Features:
  * - Steam integration for game activity tracking
- * Discord RPC for music status display
  * Real-time gaming context and XP bonus calculation
  * Platform cards with status indicators
  * Clean card-based layout with smooth animations
@@ -25,12 +22,9 @@ import { StatusIndicator } from '../ui/StatusIndicator';
  * ```
  */
 export function GamingPlatformsTab() {
-  const { connectSteam, connectDiscord, disconnectDiscord, setMusicStatus, clearMusicStatus, calculateGamingBonus, gamingContext, discordConnectionStatus, discordConnectionError, checkActivity, isServerMode, diagnostics, gameSchema, fetchGameSchema } = useGamingPlatforms();
-  const { settings, updateSettings } = useAppStore();
-  const { selectedTrack } = usePlaylistStore();
+  const { connectSteam, calculateGamingBonus, gamingContext, checkActivity, isServerMode, diagnostics, gameSchema, fetchGameSchema } = useGamingPlatforms();
   const [steamId, setSteamId] = useState('');
   const [steamConnected, setSteamConnected] = useState(false);
-  const [musicStatusActive, setMusicStatusActive] = useState(false);
   const [isDiagnosticsExpanded, setIsDiagnosticsExpanded] = useState(false);
   const [isGameSchemaExpanded, setIsGameSchemaExpanded] = useState(false);
 
@@ -71,17 +65,6 @@ export function GamingPlatformsTab() {
     }
   };
 
-  const handleConnectDiscord = async () => {
-    if (discordConnectionStatus === 'connected') {
-      await disconnectDiscord();
-    } else {
-      await connectDiscord();
-    }
-  };
-
-  const isDiscordConnected = discordConnectionStatus === 'connected';
-  const isDiscordConnecting = discordConnectionStatus === 'connecting';
-
   // Helper function to format time ago
   const formatTimeAgo = (timestamp: number | undefined): string => {
     if (!timestamp) return 'Never';
@@ -97,7 +80,7 @@ export function GamingPlatformsTab() {
     const statusMap: Record<string, { type: 'healthy' | 'degraded' | 'error'; label: string }> = {
       connected: { type: 'healthy', label: 'Connected' },
       connecting: { type: 'degraded', label: 'Connecting...' },
-      unavailable: { type: 'degraded', label: 'Discord not running' },
+      unavailable: { type: 'degraded', label: 'Unavailable' },
       error: { type: 'error', label: 'Connection error' },
       disconnected: { type: 'error', label: 'Disconnected' },
     };
@@ -129,8 +112,21 @@ export function GamingPlatformsTab() {
     <div className="gaming-tab-container">
       {/* Header */}
       <div className="gaming-tab-header">
-        <h2 className="gaming-tab-title">Gaming Platforms</h2>
-        <span className="gaming-tab-subtitle">Connect Steam and Discord for enhanced XP bonuses</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <h2 className="gaming-tab-title">Gaming Platforms</h2>
+          {isServerMode ? (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem', color: 'hsl(var(--cute-teal))' }}>
+              <Wifi size={14} />
+              Server Connected
+            </span>
+          ) : (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem', color: 'hsl(var(--destructive))' }}>
+              <WifiOff size={14} />
+              Server Offline
+            </span>
+          )}
+        </div>
+        <span className="gaming-tab-subtitle">Connect Steam for enhanced XP bonuses</span>
       </div>
 
       {/* Steam Section */}
@@ -143,18 +139,10 @@ export function GamingPlatformsTab() {
               <span>Server Mode Required</span>
             </div>
             <div className="discord-server-mode-message">
-              <p><strong>Steam API requires a server environment.</strong></p>
-              <p>Browsers block Steam API requests due to CORS restrictions. Steam&apos;s servers don&apos;t allow cross-origin requests from web apps.</p>
+              <p><strong>Steam API requires the gaming server.</strong></p>
+              <p>Start the playlist-data-server to enable Steam integration.</p>
               <p>
-                To use Steam integration, run this app in{' '}
-                <a
-                  href="https://electronjs.org/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Electron
-                </a>{' '}
-                or with a backend proxy server.
+                <code>cd playlist-data-server && npm run dev</code>
               </p>
             </div>
           </div>
@@ -175,193 +163,30 @@ export function GamingPlatformsTab() {
             onChange={(e) => setSteamId(e.target.value)}
             className="gaming-input"
             placeholder="Enter Steam ID..."
-            disabled={steamConnected || !isServerMode}
+            disabled={!isServerMode}
             readOnly={!isServerMode}
           />
         </div>
 
         <div className="gaming-button-row">
-          <button
-            onClick={handleConnectSteam}
-            disabled={steamConnected || !steamId.trim() || !isServerMode}
-            className="gaming-connect-btn"
-          >
-            {steamConnected ? 'Connected' : 'Connect Steam'}
-          </button>
+          {!steamConnected ? (
+            <button
+              onClick={handleConnectSteam}
+              disabled={!steamId.trim() || !isServerMode}
+              className="gaming-connect-btn"
+            >
+              Connect Steam
+            </button>
+          ) : (
+            <button
+              onClick={() => setSteamConnected(false)}
+              className="gaming-connect-btn gaming-disconnect-btn"
+            >
+              Disconnect
+            </button>
+          )}
           {steamConnected && getStatusBadge('connected')}
         </div>
-      </div>
-
-      {/* Discord Section */}
-      <div className={`gaming-platform-card discord${!isServerMode ? ' discord-disabled' : ''}`}>
-        {/* Server Mode Required Overlay - shown when running in browser */}
-        {!isServerMode && (
-          <div className="discord-server-mode-overlay">
-            <div className="discord-server-mode-badge">
-              <ServerOff size={16} />
-              <span>Server Mode Required</span>
-            </div>
-            <div className="discord-server-mode-message">
-              <p><strong>Discord Rich Presence requires server-side execution.</strong></p>
-              <p>Client-side browser apps cannot communicate with Discord&apos;s local IPC (Inter-Process Communication).</p>
-              <p>
-                To use Discord features, run this app in{' '}
-                <a
-                  href="https://electronjs.org/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Electron
-                </a>{' '}
-                or a Node.js server environment.
-              </p>
-            </div>
-          </div>
-        )}
-
-        <div className="gaming-platform-header">
-          <div className="gaming-platform-icon">
-            <Disc size={24} />
-          </div>
-          <h3 className="gaming-platform-name">Discord Music Status</h3>
-        </div>
-
-        <span className="gaming-input-hint">
-          Connect Discord to set your music status. Discord RPC can show what music you&apos;re listening to.
-          Get your Client ID from the{' '}
-          <a
-            href="https://discord.com/developers/applications"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Discord Developer Portal
-          </a>
-          .
-        </span>
-
-        <div className="gaming-input-group">
-          <label className="gaming-input-label" htmlFor="discord-id">Discord Client ID</label>
-          <input
-            id="discord-id"
-            type="text"
-            value={settings.discordClientId || ''}
-            onChange={(e) => updateSettings({ discordClientId: e.target.value })}
-            className="gaming-input"
-            placeholder="Enter Discord Client ID..."
-            disabled={isDiscordConnected || isDiscordConnecting || !isServerMode}
-            readOnly={!isServerMode}
-          />
-        </div>
-
-        <div className="gaming-button-row">
-          <button
-            onClick={handleConnectDiscord}
-            disabled={isDiscordConnecting || !settings.discordClientId?.trim() || !isServerMode}
-            className="gaming-connect-btn gaming-discord-btn"
-          >
-            {isDiscordConnecting ? 'Connecting...' : isDiscordConnected ? 'Disconnect Discord' : 'Connect Discord'}
-          </button>
-          <span>{getStatusBadge(discordConnectionStatus)}</span>
-        </div>
-
-        {discordConnectionError && (
-          <div className="gaming-info-card" style={{ backgroundColor: 'hsl(var(--destructive) / 0.1)', borderColor: 'hsl(var(--destructive) / 0.3)' }}>
-            <span className="gaming-info-text" style={{ color: 'hsl(var(--destructive))' }}>
-              <AlertCircle size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.5rem' }} />
-              {discordConnectionError}
-            </span>
-          </div>
-        )}
-
-        {isDiscordConnected && (
-          <div className="gaming-info-card">
-            <span className="gaming-info-text">
-              <CheckCircle2 size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.5rem' }} />
-              Discord is connected! Your music status will update when you play tracks.
-            </span>
-          </div>
-        )}
-
-        {isDiscordConnected && (
-          <div className="gaming-music-section">
-            <h4 className="gaming-music-title">Set Music Status</h4>
-            <span className="gaming-music-description">
-              Select a track from the Playlist tab to set your Discord status.
-            </span>
-
-            {selectedTrack ? (
-              <div>
-                <div className="gaming-track-preview">
-                  <div className="gaming-track-info">
-                    <div className="gaming-track-name">{selectedTrack.title}</div>
-                    <div className="gaming-track-artist">{selectedTrack.artist || 'Unknown Artist'}</div>
-                  </div>
-                  <span className="gaming-track-duration">
-                    {selectedTrack.duration
-                      ? `${Math.floor(selectedTrack.duration / 60)}:${(selectedTrack.duration % 60).toString().padStart(2, '0')}`
-                      : '--:--'}
-                  </span>
-                </div>
-
-                <div className="gaming-button-row">
-                  {!musicStatusActive ? (
-                    <button
-                      onClick={async () => {
-                        const success = await setMusicStatus({
-                          songName: selectedTrack.title,
-                          artistName: selectedTrack.artist,
-                          startTime: Math.floor(Date.now() / 1000),
-                          durationSeconds: selectedTrack.duration
-                        });
-                        if (success) {
-                          setMusicStatusActive(true);
-                        }
-                      }}
-                      className="gaming-connect-btn gaming-discord-btn"
-                    >
-                      <Waves size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                      Set Music Status
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        onClick={async () => {
-                          const success = await clearMusicStatus();
-                          if (success) {
-                            setMusicStatusActive(false);
-                          }
-                        }}
-                        className="gaming-connect-btn gaming-disconnect-btn"
-                      >
-                        Clear Music Status
-                      </button>
-                      <span className="gaming-info-text" style={{ color: 'hsl(var(--cute-teal))', fontSize: '0.875rem' }}>
-                        <CheckCircle2 size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.25rem' }} />
-                        Status Active
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="gaming-info-card" style={{ backgroundColor: 'hsl(var(--cute-yellow) / 0.1)', borderColor: 'hsl(var(--cute-yellow) / 0.3)' }}>
-                <span className="gaming-info-text" style={{ color: 'hsl(var(--cute-yellow))' }}>
-                  <Info size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                  No track selected. Go to the Playlist tab to select a track.
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {discordConnectionStatus === 'unavailable' && (
-          <div className="gaming-info-card" style={{ backgroundColor: 'hsl(var(--cute-orange) / 0.1)', borderColor: 'hsl(var(--cute-orange) / 0.3)' }}>
-            <span className="gaming-info-text" style={{ color: 'hsl(var(--cute-orange))' }}>
-              <Info size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.5rem' }} />
-              Discord is not running or no user is logged in. Please open Discord and try again.
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Gaming Status Display */}
@@ -895,33 +720,17 @@ export function GamingPlatformsTab() {
         {gamingContext ? (
           <RawJsonDump
             data={gamingContext}
-            title="Gaming Context (Steam + Discord)"
+            title="Gaming Context"
             timestamp={new Date().toISOString()}
             status={gamingContext.isActivelyGaming ? 'healthy' : 'degraded'}
           />
         ) : (
           <div className="gaming-no-data">
             <span className="gaming-no-data-text">
-              No gaming data available. Connect to Steam or Discord to see gaming context data.
+              No gaming data available. Connect to Steam to see gaming context data.
             </span>
           </div>
         )}
-
-        <div className="gaming-raw-header">
-          <h4 className="gaming-raw-title" style={{ fontSize: '0.875rem' }}>Discord Connection Status</h4>
-        </div>
-        <RawJsonDump
-          data={{
-            status: discordConnectionStatus,
-            error: discordConnectionError || null,
-            isConnected: isDiscordConnected,
-            isConnecting: isDiscordConnecting,
-            clientId: settings.discordClientId || null
-          }}
-          title="Discord Connection Details"
-          timestamp={new Date().toISOString()}
-          status={isDiscordConnected ? 'healthy' : discordConnectionStatus === 'error' ? 'error' : 'degraded'}
-        />
 
         {steamId && (
           <>
@@ -989,34 +798,6 @@ export function GamingPlatformsTab() {
                       <span className="gaming-diagnostics-info-label">Authenticated</span>
                       <span className={`gaming-diagnostics-info-value gaming-diagnostics-status--${diagnostics.steam?.isAuthenticated ? 'success' : 'error'}`}>
                         {diagnostics.steam?.isAuthenticated ? 'Yes' : 'No'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Discord Connection Status */}
-                <div className="gaming-diagnostics-section">
-                  <h4 className="gaming-diagnostics-section-title">
-                    <Disc size={14} />
-                    Discord Connection
-                  </h4>
-                  <div className="gaming-diagnostics-info-grid">
-                    <div className="gaming-diagnostics-info-item">
-                      <span className="gaming-diagnostics-info-label">Client ID</span>
-                      <span className="gaming-diagnostics-info-value">
-                        {diagnostics.discord?.clientId ? 'Configured' : 'Not set'}
-                      </span>
-                    </div>
-                    <div className="gaming-diagnostics-info-item">
-                      <span className="gaming-diagnostics-info-label">Connection State</span>
-                      <span className={`gaming-diagnostics-info-value gaming-diagnostics-status--${diagnostics.discord?.isConnected ? 'success' : diagnostics.discord?.connectionState === 'error' ? 'error' : 'degraded'}`}>
-                        {diagnostics.discord?.connectionState || 'disconnected'}
-                      </span>
-                    </div>
-                    <div className="gaming-diagnostics-info-item">
-                      <span className="gaming-diagnostics-info-label">Connected</span>
-                      <span className={`gaming-diagnostics-info-value gaming-diagnostics-status--${diagnostics.discord?.isConnected ? 'success' : 'error'}`}>
-                        {diagnostics.discord?.isConnected ? 'Yes' : 'No'}
                       </span>
                     </div>
                   </div>

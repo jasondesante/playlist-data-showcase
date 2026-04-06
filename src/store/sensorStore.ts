@@ -13,7 +13,7 @@ interface SensorState {
     };
     /** Current environmental sensor data (GPS, motion, weather, light) */
     environmentalContext: EnvironmentalContext | null;
-    /** Current gaming platform data (Steam activity, Discord status) */
+    /** Current gaming platform data (Steam activity) */
     gamingContext: GamingContext | null;
 
     /** Set permission status for a specific sensor */

@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { Settings, Key, Cloud, Gamepad2, Volume2, Bug, Database, AlertTriangle, Check, X, Download, Upload, ServerOff, ExternalLink, Info, EyeOff } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Settings, Key, Cloud, Gamepad2, Volume2, Bug, Database, AlertTriangle, Check, X, Download, Upload, ServerOff, ExternalLink, Info, EyeOff, Wifi, WifiOff } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { useCharacterStore } from '@/store/characterStore';
@@ -7,7 +7,7 @@ import { useSensorStore } from '@/store/sensorStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { logger } from '@/utils/logger';
 import { storage } from '@/utils/storage';
-import { isServerMode } from '@/utils/env';
+import { config } from '@/utils/env';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -93,11 +93,8 @@ function isValidSteamApiKeyFormat(apiKey: string): boolean {
 }
 
 /**
- * Validates Steam API key by making a test API call
- *
- * NOTE: Steam's API does NOT support CORS requests from browsers.
- * This function will fail with a CORS error when running in a browser.
- * In development, we validate format only. For full validation, use a backend proxy.
+ * Validates Steam API key by sending it to the gaming server for verification.
+ * Falls back to format-only validation if the server is not reachable.
  */
 async function validateSteamApiKey(apiKey: string): Promise<ApiKeyValidationResult> {
   if (!apiKey || apiKey.trim().length === 0) {
@@ -114,63 +111,26 @@ async function validateSteamApiKey(apiKey: string): Promise<ApiKeyValidationResu
     };
   }
 
-  // Try to validate via direct API call
-  // Note: This WILL fail in browsers due to CORS - Steam doesn't allow browser requests
+  // Try to validate via the gaming server (no CORS issues server-side)
   try {
-    const url = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${trimmedKey}&steamids=76561197960287930`;
-    const response = await fetch(url);
+    const response = await fetch(`${config.gamingServerUrl}/api/steam/validate-key`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey: trimmedKey }),
+    });
 
     const data = await response.json();
 
-    if (response.status === 403 || (data.error && data.error === 'Forbidden')) {
-      return {
-        status: 'invalid',
-        message: 'Invalid API key. Please check your Steam API key and try again.'
-      };
+    if (data.valid) {
+      return { status: 'valid', message: 'API key validated successfully!' };
     }
 
-    if (data.error) {
-      return {
-        status: 'invalid',
-        message: `Steam API error: ${data.error}`
-      };
-    }
-
-    if (data.response && data.response.players) {
-      return {
-        status: 'valid',
-        message: 'API key validated successfully!'
-      };
-    }
-
+    return { status: 'invalid', message: data.error || 'Invalid API key.' };
+  } catch {
+    // Server not reachable — fall back to format validation
     return {
-      status: 'invalid',
-      message: 'Unexpected response from Steam API. Please check your API key.'
-    };
-  } catch (error) {
-    // Check if this is a CORS error (browser blocking the request)
-    // CORS errors typically manifest as TypeError with no specific message
-    // or "Failed to fetch" / "NetworkError" messages
-    const errorMessage = error instanceof Error ? error.message.toLowerCase() : '';
-    const isCorsError =
-      error instanceof TypeError &&
-      (errorMessage.includes('failed to fetch') ||
-        errorMessage.includes('networkerror') ||
-        errorMessage === 'typeerror: failed to fetch' ||
-        errorMessage === '');
-
-    if (isCorsError) {
-      // CORS error - Steam API doesn't allow browser requests
-      // Key format is valid, but we can't verify it actually works
-      return {
-        status: 'valid',
-        message: 'Key format valid. (Browser cannot verify Steam API - use in Electron/server for full validation)'
-      };
-    }
-
-    return {
-      status: 'invalid',
-      message: 'Network error. Please check your internet connection and try again.'
+      status: 'valid',
+      message: 'Key format valid. (Start the gaming server for full API verification)'
     };
   }
 }
@@ -205,7 +165,6 @@ interface ExportedData {
     settings: {
       openWeatherApiKey: string;
       steamApiKey: string;
-      discordClientId: string;
       audioSampleRate: number;
       audioFftSize: number;
       verboseLogging: boolean;
@@ -221,7 +180,6 @@ export function SettingsTab() {
   const sessionStore = useSessionStore();
   const [openWeatherKey, setOpenWeatherKey] = useState(settings.openWeatherApiKey);
   const [steamKey, setSteamKey] = useState(settings.steamApiKey);
-  const [discordClientId, setDiscordClientId] = useState(settings.discordClientId);
   const [audioFftSize, setAudioFftSize] = useState(settings.audioFftSize);
   const [verboseLogging, setVerboseLogging] = useState(settings.verboseLogging);
   const [hideRealLocation, setHideRealLocation] = useState(settings.hideRealLocation);
@@ -232,9 +190,23 @@ export function SettingsTab() {
   const [resetStatus, setResetStatus] = useState<'idle' | 'confirming' | 'resetting' | 'success' | 'error'>('idle');
   const [resetMessage, setResetMessage] = useState<string>('');
 
-  // Detect server mode (Node.js/Electron) vs client mode (browser)
-  // Discord RPC requires server mode to communicate with Discord's IPC
-  const isRunningInServerMode = useMemo(() => isServerMode(), []);
+  // Detect if the gaming server is reachable (replaces static isServerMode check)
+  // Steam input is only enabled when the server is connected
+  const [isGamingServerConnected, setIsGamingServerConnected] = useState(false);
+
+  useEffect(() => {
+    const checkServer = async () => {
+      try {
+        const res = await fetch(`${config.gamingServerUrl}/api/health`);
+        setIsGamingServerConnected(res.ok);
+      } catch {
+        setIsGamingServerConnected(false);
+      }
+    };
+    checkServer();
+    const interval = setInterval(checkServer, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   // API key validation states
   const [openWeatherValidation, setOpenWeatherValidation] = useState<ApiKeyValidationResult>({ status: 'idle' });
@@ -250,13 +222,12 @@ export function SettingsTab() {
     if (!isInitialized.current) {
       setOpenWeatherKey(settings.openWeatherApiKey);
       setSteamKey(settings.steamApiKey);
-      setDiscordClientId(settings.discordClientId);
       setAudioFftSize(settings.audioFftSize);
       setVerboseLogging(settings.verboseLogging);
       setHideRealLocation(settings.hideRealLocation);
       isInitialized.current = true;
     }
-  }, [settings.openWeatherApiKey, settings.steamApiKey, settings.discordClientId, settings.audioFftSize, settings.verboseLogging, settings.hideRealLocation]);
+  }, [settings.openWeatherApiKey, settings.steamApiKey, settings.audioFftSize, settings.verboseLogging, settings.hideRealLocation]);
 
   // Sync verbose logging with logger utility
   useEffect(() => {
@@ -284,13 +255,14 @@ export function SettingsTab() {
     updateSettings({ steamApiKey: value });
     setSaveIndicator('saved');
     setTimeout(() => setSaveIndicator(null), 2000);
-  };
-
-  const handleDiscordClientIdChange = (value: string) => {
-    setDiscordClientId(value);
-    updateSettings({ discordClientId: value });
-    setSaveIndicator('saved');
-    setTimeout(() => setSaveIndicator(null), 2000);
+    // Push to gaming server so it can use the new key
+    if (value.trim()) {
+      fetch(`${config.gamingServerUrl}/api/config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ steamApiKey: value.trim() }),
+      }).catch(() => { /* server might not be running */ });
+    }
   };
 
   const handleAudioFftSizeChange = (value: string) => {
@@ -681,6 +653,17 @@ export function SettingsTab() {
         <div className="settings-section-header">
           <Key className="settings-section-icon" />
           <h2 className="settings-section-title">API Keys</h2>
+          {isGamingServerConnected ? (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem', color: 'hsl(var(--cute-teal))' }}>
+              <Wifi size={14} />
+              Gaming Server Connected
+            </span>
+          ) : (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem', color: 'hsl(var(--destructive))' }}>
+              <WifiOff size={14} />
+              Gaming Server Offline
+            </span>
+          )}
         </div>
         <div className="settings-cards-grid">
           {/* OpenWeather API Key */}
@@ -706,27 +689,19 @@ export function SettingsTab() {
           </Card>
 
           {/* Steam API Key */}
-          <Card variant="elevated" padding="md" className={`settings-card${!isRunningInServerMode ? ' settings-card-disabled' : ''}`}>
+          <Card variant="elevated" padding="md" className={`settings-card${!isGamingServerConnected ? ' settings-card-disabled' : ''}`}>
             {/* Server Mode Required Overlay - shown when running in browser */}
-            {!isRunningInServerMode && (
+            {!isGamingServerConnected && (
               <div className="settings-discord-overlay">
                 <div className="settings-discord-badge">
                   <ServerOff size={14} />
-                  <span>Browser Not Supported</span>
+                  <span>Gaming Server Required</span>
                 </div>
                 <div className="settings-discord-message">
-                  <p><strong>Steam API requires a server environment.</strong></p>
-                  <p>Browsers block Steam API requests due to CORS restrictions. Steam&apos;s servers don&apos;t allow cross-origin requests from web apps.</p>
+                  <p><strong>Steam API requires the gaming server.</strong></p>
+                  <p>Start the playlist-data-server to enable Steam integration.</p>
                   <p>
-                    To use Steam integration, run this app as a desktop application (via{' '}
-                    <a
-                      href="https://electronjs.org/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Electron
-                    </a>
-                    ) or with a backend proxy server.
+                    <code>cd playlist-data-server && npm run dev</code>
                   </p>
                 </div>
               </div>
@@ -740,11 +715,11 @@ export function SettingsTab() {
               value={steamKey}
               onChange={(e) => handleSteamKeyChange(e.target.value)}
               placeholder="Enter your Steam API key..."
-              helperText="Required for Steam integration. Get your key at steamcommunity.com/dev/apikey (32-char hex key)"
+              helperText={<>Required for Steam integration. Get your key at <a href="https://steamcommunity.com/dev/apikey" target="_blank" rel="noopener noreferrer">steamcommunity.com/dev/apikey</a> (32-char hex key)</>}
               containerClassName="settings-input-wrapper"
-              disabled={!isRunningInServerMode}
+              disabled={!isGamingServerConnected}
             />
-            {isRunningInServerMode && (
+            {isGamingServerConnected && (
               <div className={`settings-validation-status ${getValidationStatusClass(steamValidation.status)}`}>
                 {getValidationIcon(steamValidation.status)}
                 {steamValidation.message && (
@@ -754,46 +729,6 @@ export function SettingsTab() {
             )}
           </Card>
 
-          {/* Discord Client ID */}
-          <Card variant="elevated" padding="md" className={`settings-card${!isRunningInServerMode ? ' settings-card-disabled' : ''}`}>
-            {/* Server Mode Required Overlay - shown when running in browser */}
-            {!isRunningInServerMode && (
-              <div className="settings-discord-overlay">
-                <div className="settings-discord-badge">
-                  <ServerOff size={14} />
-                  <span>Browser Not Supported</span>
-                </div>
-                <div className="settings-discord-message">
-                  <p><strong>Discord Rich Presence requires a desktop app.</strong></p>
-                  <p>This feature isn&apos;t available in web browsers because Discord requires direct system access that browsers don&apos;t provide.</p>
-                  <p>
-                    To use Discord integration, run this app as a desktop application (via{' '}
-                    <a
-                      href="https://electronjs.org/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Electron
-                    </a>
-                    ).
-                  </p>
-                </div>
-              </div>
-            )}
-            <div className="settings-api-key-header">
-              <Gamepad2 className="settings-api-key-icon settings-api-key-icon-discord" />
-              <div className="settings-api-key-title">Discord Integration</div>
-            </div>
-            <Input
-              label="Client ID"
-              value={discordClientId}
-              onChange={(e) => handleDiscordClientIdChange(e.target.value)}
-              placeholder="Enter your Discord Client ID..."
-              helperText="For Discord music status integration. Create an app at discord.com/developers/applications"
-              containerClassName="settings-input-wrapper"
-              disabled={!isRunningInServerMode}
-            />
-          </Card>
         </div>
       </section>
 

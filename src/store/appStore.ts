@@ -9,8 +9,6 @@ interface AppSettings {
     openWeatherApiKey: string;
     /** Steam Web API key for game activity (optional) */
     steamApiKey: string;
-    /** Discord Client ID for music status RPC (optional) */
-    discordClientId: string;
     /** Audio sample rate in Hz (default: 44100) */
     audioSampleRate: number;
     /** FFT size for audio analysis (1024, 2048, 4096, or 8192) */
@@ -37,7 +35,6 @@ interface AppState {
 const DEFAULT_SETTINGS: AppSettings = {
     openWeatherApiKey: config.openWeatherApiKey,
     steamApiKey: config.steamApiKey,
-    discordClientId: config.discordClientId,
     audioSampleRate: 44100,
     audioFftSize: 2048,
     verboseLogging: false,
