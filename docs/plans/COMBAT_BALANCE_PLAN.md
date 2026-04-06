@@ -435,11 +435,17 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Added 10 static helper methods for AI decision-making: `hasSpellTag()`, `getSpellTags()`, `isDamageSpell()`, `requiresConcentration()`, `isAOESpell()`, `isMultiTargetSpell()`, `isBonusActionSpell()`, `isAllySpell()`, `isSelfSpell()`, `getStatusEffectTags()`
   - 35 new tests in `spellCaster.test.ts` covering: tag-based charm/frighten/stun/paralyze/restrain/poison/blind/burn detection, mechanicalEffects inclusion, tag priority over description text, no-duplicate prevention, multi-target application, fallback to string matching, empty/missing tags, multiple status effect tags, all 10 static helpers
   - All 554 combat tests pass, engine builds clean (tsc + vite)
-- [ ] **1.6.5** Add tests for enemy spell data pipeline
+- [x] **1.6.5** Add tests for enemy spell data pipeline
   - Test that generated enemy `CharacterSheet` has populated `spells.spell_slots`
   - Test that `combat_spells` array is populated and each spell has correct fields
   - Test that `CombatEngine.createCombatant()` reads enemy spell slots correctly
   - Test that `SpellCaster` can cast an enemy spell using the unified type
+  - Created `tests/unit/combat/enemySpellDataPipeline.test.ts` with 41 tests covering:
+  - **spells.spell_slots population** (11 tests): support/elite/boss enemies have populated slots, common/uncommon brutes/archers have empty slots, known_spells/cantrips arrays, seed determinism, different seeds
+  - **combat_spells population** (12 tests): spellcasting enemies have array, non-spellcasting don't, InnateSpell fields (id/name/level/school/effect), cantrips-before-leveled ordering, tags, rangeFeet, damage/damageType, Spell interface compatibility, count matches cantrips+leveled, determinism, concentration, save field
+  - **CombatEngine.createCombatant() slot reading** (8 tests): support/elite enemies get slots, common brute/archer don't, slot values match source (total-used), combat_spells retained, seed determinism, different seeds
+  - **SpellCaster casting with enemy spells** (10 tests): cantrip casting, leveled spell casting, slot consumption, no-slots failure, enemy-style damage field (damage not damage_dice), enemy-style save field (save not saving_throw), tag-based status effects, full pipeline (generate→combat→cast), static helpers
+  - All 595 combat tests pass (554 existing + 41 new), engine builds clean (tsc + vite)
 
 ### 1.7 Stat Level Separation & Damage Modifier Fix
 
