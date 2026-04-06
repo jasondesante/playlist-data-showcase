@@ -1886,7 +1886,7 @@ export function CombatSimulatorTab() {
     const updated = nextTurn();
     if (updated && !updated.isActive) {
       const result = getCombatResult();
-      console.log('[Combat]', `Combat ended! Winner: ${result?.winner.character.name}`);
+      console.log('[Combat]', `Combat ended! Winner: ${result?.winner?.character?.name ?? 'draw'}`);
     }
   };
 
@@ -1905,7 +1905,7 @@ export function CombatSimulatorTab() {
     const updated = nextTurn();
     if (updated && !updated.isActive) {
       const result = getCombatResult();
-      console.log('[Combat]', `Combat ended! Winner: ${result?.winner.character.name}`);
+      console.log('[Combat]', `Combat ended! Winner: ${result?.winner?.character?.name ?? 'draw'}`);
     }
 
     setSelectedTargetId(null);
@@ -1965,7 +1965,7 @@ export function CombatSimulatorTab() {
 
       logger.info('CombatEngine', 'Combat ended - Performance metrics', {
         combatId: combat.id,
-        winner: result?.winner.character.name,
+        winner: result?.winner?.character?.name ?? 'draw',
         roundsElapsed,
         totalTurns,
         combatTimeSeconds: elapsedSeconds,
@@ -1973,7 +1973,7 @@ export function CombatSimulatorTab() {
         expectedTarget: `${expectedSeconds.toFixed(2)}s for ${roundsElapsed} rounds`
       });
 
-      console.log('[Combat Auto-Play]', `Combat ended! Winner: ${result?.winner.character.name}`);
+      console.log('[Combat Auto-Play]', `Combat ended! Winner: ${result?.winner?.character?.name ?? 'draw'}`);
       // Stop auto-play when combat ends
       setIsAutoPlaying(false);
       // Reset start time ref
@@ -2029,7 +2029,7 @@ export function CombatSimulatorTab() {
     const updated = nextTurn();
     if (updated && !updated.isActive) {
       const result = getCombatResult();
-      console.log('[Combat]', `Combat ended! Winner: ${result?.winner.character.name}`);
+      console.log('[Combat]', `Combat ended! Winner: ${result?.winner?.character?.name ?? 'draw'}`);
     }
   };
 
@@ -2138,7 +2138,7 @@ export function CombatSimulatorTab() {
       // The engine handles removing the combatant and may end combat
       const result = getCombatResult();
       if (result) {
-        logger.info('CombatSimulator', 'Combat ended after flee', { winner: result.winner.character.name });
+        logger.info('CombatSimulator', 'Combat ended after flee', { winner: result.winner?.character?.name ?? 'draw' });
       }
     }
   };
@@ -2181,12 +2181,10 @@ export function CombatSimulatorTab() {
     const result = combat && !combat.isActive ? getCombatResult() : null;
     if (!result) return;
 
-    // Check if the winner is a party member (not an enemy)
-    const winnerIsPartyMember = !isEnemy(result.winner.character);
-
-    if (!winnerIsPartyMember) {
-      // Enemies won - no XP to award
-      logger.info('CombatSimulator', 'Enemies won the combat, no XP awarded');
+    // Check if the winner is a party member using winnerSide
+    if (result.winnerSide === 'draw' || result.winnerSide === 'enemy') {
+      // Draw or enemies won - no XP to award
+      logger.info('CombatSimulator', result.winnerSide === 'draw' ? 'Combat ended in a draw, no XP awarded' : 'Enemies won the combat, no XP awarded');
       return;
     }
 
@@ -2242,7 +2240,7 @@ export function CombatSimulatorTab() {
     } else {
       // Solo mode: Award XP to the single party member (winner)
       const activeChar = getActiveCharacter();
-      if (activeChar && result.winner.character.name === activeChar.name) {
+      if (activeChar && result.winner?.character?.name === activeChar.name) {
         const xpResult = addXPFromSource(activeChar, result.xpAwarded, 'combat');
 
         console.log(`[Combat] ${activeChar.name} received ${result.xpAwarded} XP from combat!`);
@@ -4540,7 +4538,7 @@ export function CombatSimulatorTab() {
                 <div className="combat-victory-stats">
                   <div className="combat-victory-stat">
                     <span className="combat-victory-stat-label">Winner</span>
-                    <span className="combat-victory-stat-value">{combatResult.winner.character.name}</span>
+                    <span className="combat-victory-stat-value">{combatResult.winner?.character?.name ?? 'Draw'}</span>
                   </div>
 
                   <div className="combat-victory-stat">

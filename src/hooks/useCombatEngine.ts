@@ -38,6 +38,7 @@ export interface CombatInstance {
   history: any[];
   isActive: boolean;
   winner?: Combatant;
+  winnerSide?: 'player' | 'enemy' | 'draw';
   startTime: number;
   lastUpdated: number;
 }

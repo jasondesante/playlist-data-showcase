@@ -351,9 +351,19 @@ Legendary actions are generated and stored on `CharacterSheet.legendary_config` 
 
 Current `CombatResult.winner` returns the first surviving combatant (misleading for party vs group combat). This needs to be fixed before the AI runner uses it.
 
-- [ ] **1.5.1** Add `winnerSide: 'player' | 'enemy' | 'draw'` to `CombatResult`
+- [x] **1.5.1** Add `winnerSide: 'player' | 'enemy' | 'draw'` to `CombatResult`
   - Keep `winner` for backward compatibility but add the side-level field
   - `checkCombatStatus()` sets `winnerSide` based on which side has survivors
+  - Added `winnerSide?: 'player' | 'enemy' | 'draw'` to both `CombatInstance` and `CombatResult` interfaces in `src/core/types/Combat.ts`
+  - Made `CombatResult.winner` optional (was required) since draws have no winner — fixes latent bug where `combat.winner!` non-null assertion could fail
+  - Updated `checkCombatStatus()` in `CombatEngine` to set `combat.winnerSide` alongside `combat.winner`: 'player' when all enemies defeated, 'enemy' when all players defeated, 'draw' for both-sides-defeated or max-turns-reached
+  - Updated `getCombatResult()` to include `winnerSide` in result (reads from `combat.winnerSide`, defaults to 'draw')
+  - Updated showcase mirror type `CombatInstance` in `useCombatEngine.ts` with `winnerSide` field
+  - Fixed all `result.winner.character.name` usages in `CombatSimulatorTab.tsx` to use optional chaining (`result.winner?.character?.name ?? 'draw'`) — 7 call sites fixed
+  - Refactored XP awarding logic to use `result.winnerSide` instead of `isEnemy(result.winner.character)` — handles draw scenario correctly
+  - 6 new tests in `combatEngine.test.ts`: winnerSide=player on enemy defeat, winnerSide=enemy on player defeat, winnerSide=draw on mutual kill, winnerSide=draw on max turns, winnerSide=draw on max turns with partial kills, consistency between CombatInstance and CombatResult
+  - 4 existing tests updated with winnerSide assertions
+  - All 449 combat tests pass, engine builds clean
 - [ ] **1.5.2** Fix XP calculation in `getCombatResult()`
   - Currently hardcoded: `enemies.filter(e => e.isDefeated).length * 50`
   - Use `getXPForCR()` from `EncounterBalance.ts` to calculate proper XP from defeated enemy CRs
