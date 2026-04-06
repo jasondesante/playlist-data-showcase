@@ -479,11 +479,21 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - **Backward compatibility verified**: level 1 common matches current system for HP, AC; damage modifier now uses actual ability scores (fixing the bug described in 1.7.3)
   - 58 tests in `tests/unit/combat/statScaling.test.ts` covering: level scaling factor (8), HP at level (11), attack damage die (6), damage modifier (6), attack bonus (6), defense (9), damage modifier for stats (6), stat level separation scenarios (4), independence from rarity (1), integration with current system (1)
   - All 653 combat tests pass, engine builds clean (tsc --noEmit + vite build)
-- [ ] **1.7.3** Fix `getAbilityModifierForRarity()` — use actual ability scores
+- [x] **1.7.3** Fix `getAbilityModifierForRarity()` — use actual ability scores
   - Currently returns hardcoded +2/+3/+4/+6 based on rarity, ignoring scaled STR/DEX scores
   - Replace with computing the modifier from actual scaled ability scores + archetype primary stat (STR for brute, DEX for archer, WIS/CHA for support)
   - This fix is critical — the attack stat must reflect the enemy's actual power level, not its rarity label
   - Update weapon damage strings (currently built with hardcoded modifier) to use the computed value
+  - Removed `getAbilityModifierForRarity()` method entirely — all 3 call sites now use `getDamageModifierForStats(scaledStats, level, archetype)` from `StatScaling.ts`
+  - Updated `scaleSignatureAbility()` to accept `scaledStats`, `level`, and `archetype` params
+  - Updated `generateAbilities()` to accept and forward `scaledStats` and `level` to `scaleSignatureAbility()`
+  - Updated `generate()` call site to pass `scaledStats` and `level` to `generateAbilities()`
+  - Updated weapon building (both equipment weapon and natural weapon fallback) to compute modifier once via `getDamageModifierForStats()` and reuse
+  - Damage modifier now correctly reflects: primary stat modifier (STR/DEX/CHA by archetype) + base level bonus (floor(0.2 * (level-1)))
+  - Example: Boss orc went from hardcoded +6 to computed +4 (STR 18 → +4, level 2 → +0 base)
+  - Example: Elite orc went from hardcoded +4 to computed +3 (STR 17 → +3, level 1 → +0 base)
+  - 11 new tests in `tests/unit/combat/damageModifierFix.test.ts` covering: brute STR modifier, all rarity modifiers match StatScaling, boss no longer hardcoded +6, archer DEX modifier, support CHA modifier, CR-based scaling, explicit CR consistency, signature ability, determinism, natural weapon fallback, template stat differences
+  - All 1223 combat/enemy tests pass, engine builds clean (tsc + vite)
 - [ ] **1.7.4** Update `EnemyGenerator.generate()` to apply `StatLevelOverrides`
   - Add `statLevels?: StatLevelOverrides` to `EnemyGenerationOptions`
   - If `statLevels.hpLevel` is set, use `getHPAtLevel(baseHP, hpLevel, rarity)` instead of default HP calculation
