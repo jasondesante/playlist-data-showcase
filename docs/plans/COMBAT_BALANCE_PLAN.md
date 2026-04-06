@@ -289,12 +289,20 @@ Status effects exist as data (`StatusEffect` has a `duration` field) but are nev
   - Removed the complex manual concentration post-processing block from `executeCastSpell()` since `applyStatusEffect()` already handles concentration dropping, tracking, and one-concentration-per-target
   - Updated 11 SpellCaster tests to check `result.effectsApplied` instead of `target.statusEffects` (SpellCaster no longer mutates targets directly)
   - All 360 combat tests pass, build verified clean (tsc --noEmit + vite build)
-- [ ] **1.3.8** Add status effect tests in `tests/unit/combat/`
+- [x] **1.3.8** Add status effect tests in `tests/unit/combat/`
   - Test duration decrement per round
   - Test expiration and removal
   - Test mechanical enforcement (charmed → disadvantage, frightened → disadvantage, burning → damage, stunned → skip turn)
   - Test stacking (refresh vs new effect)
   - Test concentration (new concentration drops old, damage breaks concentration)
+  - Created `tests/unit/combat/statusEffectApplyRemove.test.ts` with 35 tests covering:
+    - **applyStatusEffect basic**: adds new effect, multiple different-named effects, concentration tracking, field preservation (5 tests)
+    - **applyStatusEffect stacking**: duration refresh (higher/lower/equal), damage merge (higher/lower/missing/preserve), source carry-over, mechanicalEffects merge + key overwrite, damageType carry-over, hasConcentration flag, return value reference (16 tests)
+    - **applyStatusEffect concentration**: drops old concentration, preserves non-concentration effects, same-name refresh without dropping (3 tests)
+    - **removeExpiredStatusEffects**: removes duration <= 0, no-op when nothing expired, empty combatant, clears concentratingOn on concentrated effect expiry, preserves concentratingOn on non-concentrated expiry, all expired at once, returned array isolation (9 tests)
+    - **Integration**: full lifecycle (apply → stack → expire → remove), concentration + natural expiration, mixed expire/stack/stay (3 tests)
+  - Existing coverage from prior tasks: `statusEffectTickDown.test.ts` (15), `statusEffectMechanics.test.ts` (36), `concentration.test.ts` (32)
+  - All 395 combat tests pass, TypeScript check clean
 
 ### 1.4 Legendary Action Execution
 
