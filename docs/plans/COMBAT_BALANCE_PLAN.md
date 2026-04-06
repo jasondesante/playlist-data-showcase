@@ -112,7 +112,13 @@ Currently `createCombatant()` ignores `character.spells.spell_slots` entirely an
   - Updated `initializeSpellSlots()` with 3-tier priority: (1) read from `character.spells.spell_slots` if populated, (2) fall back to full-caster table for known spellcasting classes, (3) return undefined for non-spellcasters
   - Handles edge cases: empty spell_slots object, all-used slots (returns undefined), partial usage (total - used)
   - Build verified clean (tsc --noEmit passes, vite build succeeds)
-- [ ] **1.1.3** Add validation that spell slots are consistent between source character and combatant
+- [x] **1.1.3** Add validation that spell slots are consistent between source character and combatant
+  - Added `SpellSlotValidationIssue` interface (severity: 'error' | 'warn', with message and level)
+  - Added `validateSpellSlots(character)` public method — checks for negative total/used, used > total, invalid level keys, non-numeric values
+  - Added `validateCombatantSpellSlots(combatant)` public method — verifies combatant slots match source character's expected remaining slots after conversion
+  - Integrated validation into `initializeSpellSlots()` — errors cause fallback to class table with console.warn, warnings are tolerated
+  - 27 tests in `tests/unit/combat/spellSlotValidation.test.ts` covering all validation paths
+  - Build verified clean (tsc --noEmit passes, vite build succeeds)
 - [ ] **1.1.4** Add test verifying spell slot initialization from various character configurations
   - Character with `spells.spell_slots` (generated enemy)
   - Character without `spells.spell_slots` (fallback to table)
