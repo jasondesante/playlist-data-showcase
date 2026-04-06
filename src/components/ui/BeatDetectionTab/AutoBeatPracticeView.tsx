@@ -171,12 +171,18 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     );
 
     // Determine chart style from the generated level's controller mode
-    const chartStyle: KeyLaneViewMode = useMemo(() => {
+    const chartStyle = useMemo((): 'ddr' | 'guitar-hero' | null => {
         const mode = currentBeatMap?.metadata?.controllerMode;
         if (mode === 'ddr') return 'ddr';
         if (mode === 'guitar_hero') return 'guitar-hero';
-        return 'off'; // Tap mode (no lanes)
+        return null; // Tap mode — no chart style
     }, [currentBeatMap]);
+
+    // Determine initial view mode from the generated level's controller mode
+    const initialViewMode: KeyLaneViewMode = useMemo(() => {
+        if (chartStyle) return chartStyle;
+        return 'off'; // Tap mode (no lanes)
+    }, [chartStyle]);
 
     // Map selected difficulty to DifficultyPreset for PracticeHeader
     const difficultyPreset: DifficultyPreset = useMemo(() => {
@@ -203,7 +209,7 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
     // Set default view mode on mount based on controller mode
     useEffect(() => {
         if (subdividedBeatMap) {
-            setKeyLaneViewMode(chartStyle);
+            setKeyLaneViewMode(initialViewMode);
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -440,7 +446,7 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
                 mode={keyLaneViewMode}
                 onModeChange={setKeyLaneViewMode}
                 hasRequiredKeys={true}
-                chartStyle={chartStyle}
+                chartStyle={chartStyle ?? 'ddr'}
             />
 
             {/* Stats bar - BPM, position, XP, combo */}
