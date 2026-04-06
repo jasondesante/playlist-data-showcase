@@ -151,9 +151,9 @@ A concise overview of all main exports from the library, organized by category.
 | Export | Description | Section |
 |--------|-------------|---------|
 | `EnvironmentalSensors` | GPS, motion, weather, light integration | [Environmental Sensors](#environmental-sensors) |
-| `GamingPlatformSensors` | Steam and Discord integration | [Gaming Integration](#gaming-integration) |
+| `GamingPlatformSensors` | Steam integration | [Gaming Integration](#gaming-integration) |
 
-> **Note:** `SteamAPIClient` and `DiscordRPCClient` are internal implementation classes. Not exported as part of the public API.
+> **Note:** `SteamAPIClient` is an internal implementation class. Not exported as part of the public API.
 
 ### Combat System
 
@@ -312,7 +312,7 @@ Type definitions for all core data structures.
 | Type | Description | Key Properties |
 |------|-------------|----------------|
 | `ServerlessPlaylist` | Main container object returned by `PlaylistParser` | `name`, `tracks`, `image`, `creator`, `genre?`, `tags?` |
-| `PlaylistTrack` | Flattened track object containing audio_url | `audio_url` (critical), `title`, `artist`, `image_url`, `image_thumb_url?`, chain data |
+| `PlaylistTrack` | Flattened track object containing audio_url | `audio_url` (critical), `audio_url_lossless?`, `title`, `artist`, `image_url`, `image_thumb_url?`, chain data |
 | `RawArweavePlaylist` | Raw input schema received from Arweave before parsing | `tracks[].metadata` (stringified JSON), blockchain shell data |
 
 ### AudioProfile
@@ -737,7 +737,6 @@ Aggregated environmental sensor data that provides XP modifiers based on real-wo
 | geolocation | GeolocationData? | GPS position data |
 | motion | MotionData? | Device motion/acceleration |
 | weather | WeatherData? | Current weather conditions |
-| light | LightData? | Ambient light level |
 | biome | BiomeType? | Derived biome (12 types) |
 | environmental_xp_modifier | number? | Composite XP multiplier (0.5-3.0) |
 | timestamp | number | Unix timestamp |
@@ -790,17 +789,6 @@ Current weather conditions from OpenWeatherMap API.
 | windDirection | number | Wind direction (degrees) |
 | isNight | boolean | Based on sunrise/sunset |
 | moonPhase | number | Moon phase 0.0-1.0 (new to full) |
-| timestamp | number | Unix timestamp |
-
-### LightData
-
-*Location:* *[src/core/types/Environmental.ts](src/core/types/Environmental.ts)*
-
-Ambient light sensor data.
-
-| Property | Type | Description |
-|----------|------|-------------|
-| illuminance | number | Light intensity in lux |
 | timestamp | number | Unix timestamp |
 
 ### ForecastData
@@ -872,7 +860,7 @@ Severe weather event that provides XP bonus.
 
 *Location:* *[src/core/types/Progression.ts](src/core/types/Progression.ts)*
 
-Steam gaming activity data. **Note:** Discord RPC CANNOT read game activity due to platform limitations. Discord RPC is only used for SETTING music presence ("Listening to" status).
+Steam gaming activity data.
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -1169,8 +1157,8 @@ Diagnostic tool for visual console output during development and debugging. Disp
 
 | Function | Description |
 |----------|-------------|
-| `displayEnvironmentalDiagnostics(diagnostics, config?)` | Displays environmental sensor dashboard (GPS, motion, weather, light sensors) |
-| `displayGamingDiagnostics(diagnostics, config?)` | Displays gaming platform sensor dashboard (Steam, Discord) |
+| `displayEnvironmentalDiagnostics(diagnostics, config?)` | Displays environmental sensor dashboard (GPS, motion, weather sensors) |
+| `displayGamingDiagnostics(diagnostics, config?)` | Displays gaming platform sensor dashboard (Steam) |
 | `displaySystemDashboard(data, config?)` | Displays combined system dashboard with health summary |
 
 **Types**
@@ -1334,6 +1322,7 @@ Extracts metadata fields from playlist track data. All methods are static.
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `static extractAudioUrl(data)` | `string \| null` | Extracts audio URL with priority: mp3_url > lossy_audio > audio_url > lossless_audio > animation_url |
+| `static extractAudioUrlLossless(data)` | `string \| null` | Extracts lossless audio URL with priority: lossless_audio > wav_url > flac_url |
 | `static extractImageUrl(data)` | `string \| null` | Extracts image URL with priority: image_small > image > image_large > image_thumb |
 | `static extractImageThumbUrl(data)` | `string \| null` | Extracts thumbnail URL with priority: image_thumb_url > image_thumb |
 | `static extractTitle(data)` | `string \| null` | Extracts name/title with priority: name > title |
@@ -1364,7 +1353,7 @@ Simple functions that return arrays of basic data from playlists. Works with bot
 
 | Function | Returns | Description |
 |----------|---------|-------------|
-| `getTracks(playlist)` | `SimpleTrack[]` | Simplified objects: `{ title, artist, audio_url, image_url, image_thumb_url? }` |
+| `getTracks(playlist)` | `SimpleTrack[]` | Simplified objects: `{ title, artist, audio_url, audio_url_lossless?, image_url, image_thumb_url? }` |
 | `getFullTracks(playlist)` | `object[]` | All available track data as plain objects |
 
 #### VRM Extraction Functions
@@ -1372,7 +1361,7 @@ Simple functions that return arrays of basic data from playlists. Works with bot
 | Function | Returns | Description |
 |----------|---------|-------------|
 | `getVRMs(playlist)` | `string[]` | VRM URLs from tracks that have the optional `vrm` field |
-| `getVRMTracks(playlist)` | `VRMTrack[]` | Track objects with VRM data: `{ title, artist, audio_url, image_url, image_thumb_url?, vrm }` |
+| `getVRMTracks(playlist)` | `VRMTrack[]` | Track objects with VRM data: `{ title, artist, audio_url, audio_url_lossless?, image_url, image_thumb_url?, vrm }` |
 
 #### Types
 
@@ -1381,8 +1370,8 @@ Simple functions that return arrays of basic data from playlists. Works with bot
 | Type | Description |
 |------|-------------|
 | `PlaylistInput` | Union of `ServerlessPlaylist` or `RawArweavePlaylist` |
-| `SimpleTrack` | Simplified track: `{ title, artist, audio_url, image_url, image_thumb_url? }` |
-| `VRMTrack` | Track with VRM: `{ title, artist, audio_url, image_url, image_thumb_url?, vrm }` |
+| `SimpleTrack` | Simplified track: `{ title, artist, audio_url, audio_url_lossless?, image_url, image_thumb_url? }` |
+| `VRMTrack` | Track with VRM: `{ title, artist, audio_url, audio_url_lossless?, image_url, image_thumb_url?, vrm }` |
 
 *For usage examples, see [USAGE_IN_OTHER_PROJECTS.md](USAGE_IN_OTHER_PROJECTS.md#playlist-utilities).*
 
@@ -4450,7 +4439,7 @@ Centralized configuration for sensors, XP modifiers, and retry logic.
 | `SensorConfig` | Complete sensor configuration (geolocation, weather, gaming, xpModifier, retry) |
 | `GeolocationSensorConfig` | GPS sensor settings (cacheTTL, useLocalStorage, enableHighAccuracy, timeout) |
 | `WeatherSensorConfig` | Weather API settings (apiKey, cacheTTL, forecastCacheTTL, useLocalStorage) |
-| `GamingSensorConfig` | Steam/Discord settings (steam, discord, metadataCacheExpiry, maxBackoffMs, xpModifier) |
+| `GamingSensorConfig` | Steam settings (steam, metadataCacheExpiry, maxBackoffMs, xpModifier) |
 | `XPModifierConfig` | XP multiplier settings (maxModifier, gaming bonuses, environmental bonuses) |
 | `RetryConfig` | Retry policy (enabled, maxRetries, delays, backoffMultiplier) |
 
@@ -4474,7 +4463,6 @@ Centralized configuration for sensors, XP modifiers, and retry logic.
 | `WEATHER_API_KEY` | OpenWeatherMap API key for weather-based XP modifiers |
 | `STEAM_API_KEY` | Steam Web API key for gaming-based XP modifiers |
 | `STEAM_USER_ID` | 64-bit Steam ID for game detection |
-| `DISCORD_CLIENT_ID` | Discord application ID for Rich Presence music status |
 | `XP_MAX_MODIFIER` | Maximum XP multiplier cap (default: 3.0) |
 
 **For complete environment variable documentation and examples, see [.env.example](.env.example).**
@@ -4657,44 +4645,28 @@ Astronomical calculations for sunrise, sunset, and day stage. **Works without an
 
 *For usage examples, see [IRL_SENSORS.md](docs/IRL_SENSORS.md#solar-information-no-api-key-required).*
 
-#### Helper: `LightSensor`
-
-*Location:* *[src/core/sensors/LightSensor.ts](src/core/sensors/LightSensor.ts)*
-
-Uses the experimental AmbientLightSensor API for illuminance detection.
-
-**Methods:**
-
-| Method | Parameters | Returns | Description |
-|--------|-----------|---------|-------------|
-| `startMonitoring()` | `callback: (data: LightData) => void` | `void` | Starts monitoring ambient light levels |
-| `stopMonitoring()` | - | `void` | Stops monitoring light |
-| `getLastReading()` | - | `LightData \| null` | Returns the last light sensor reading |
-
-**Note:** The AmbientLightSensor API is experimental and may not be available in all browsers. The class gracefully handles unavailability.
-
 ---
 
 ## Gaming Integration
-*Also known as: Gaming sensors, platform detection, game activity monitoring, Steam integration, Discord Rich Presence*
+*Also known as: Gaming sensors, platform detection, game activity monitoring, Steam integration*
 
 *Location:* *[src/core/sensors/GamingPlatformSensors.ts](src/core/sensors/GamingPlatformSensors.ts)*
 
-Monitors Steam and Discord activity to award gaming bonuses. **Note:** Discord RPC cannot read game activity (platform limitation) - only displays music status.
+Monitors Steam activity to award gaming bonuses.
 
 ### GamingPlatformSensors
 
 | Method | Description |
 |--------|-------------|
-| `constructor(config?: { steam?, discord? })` | Initializes with optional Steam API key/ID and Discord client ID |
-| `authenticate(steamUserId?, discordUserId?)` | Authenticates with Steam (by ID) and Discord (connects RPC) |
+| `constructor(config?: { steam? })` | Initializes with optional Steam API key/ID |
+| `authenticate(steamUserId?)` | Authenticates with Steam (by ID) |
 | `startMonitoring(callback?)` | Starts polling for gaming activity with optional context callback |
 | `stopMonitoring()` | Stops monitoring gaming activity |
 | `isPlayingGame(gameName)` | Checks if currently playing a specific game (case-insensitive) |
 | `calculateGamingBonus()` | Calculates gaming XP bonus multiplier (1.0 to 1.75, configurable) |
 | `getContext()` | Returns current `GamingContext` snapshot |
 | `recordGameSession(name, durationMinutes)` | Records a game session in gaming history |
-| `getDiagnostics()` | Returns comprehensive diagnostic report (Steam, Discord, cache, performance) |
+| `getDiagnostics()` | Returns comprehensive diagnostic report (Steam, cache, performance) |
 | `printDashboard(config?)` | Prints formatted gaming sensor dashboard to console |
 
 ### SteamAPIClient
@@ -4708,45 +4680,6 @@ Monitors Steam and Discord activity to award gaming bonuses. **Note:** Discord R
 | `getCurrentGameApiStatistics()` | Returns performance metrics (avg, min, max, success rate, p95, p99) |
 | `getMetadataApiStatistics()` | Returns metadata API performance metrics |
 | `resetPerformanceMetrics()` | Resets all performance tracking counters |
-
-### DiscordRPCClient
-*Location:* *[src/core/sensors/DiscordRPCClient.ts](src/core/sensors/DiscordRPCClient.ts)*
-
-**⚠️ Important:** Discord RPC CANNOT read game activity. Use Steam API for game detection. Discord RPC is ONLY for displaying music status ("Listening to") on user's Discord profile.
-
-| Method | Description |
-|--------|-------------|
-| `constructor(clientId)` | Initializes with Discord application client ID (auto-detects environment) |
-| `connect()` | Connects to Discord RPC (server mode only; returns `false` in browser) |
-| `disconnect()` | Disconnects from Discord RPC |
-| `isConnectedToDiscord()` | Returns connection status (`false` in browser mode) |
-| `getConnectionState()` | Returns current `DiscordConnectionState` |
-| `getLastError()` | Returns last error message or `null` |
-| `setMusicActivity(musicDetails)` | Displays "Listening to {song}" on Discord profile (server only) |
-| `clearMusicActivity()` | Clears music activity from Discord (server only) |
-| `getUserInfo()` | Retrieves Discord user information (server only) |
-
-**Environment Modes:**
-- **Server (Node.js)**: Full Discord Rich Presence using `@ryuziii/discord-rpc`
-- **Browser**: Graceful degradation - methods return `false`/`null` with console warnings
-- **Detection**: Automatic - no configuration required
-
-### Discord Types
-
-| Type | Description |
-|------|-------------|
-| `DiscordUserInfo` | User information from Discord READY event (id, username, discriminator, avatar, globalName) |
-| `MusicActivityDetails` | Music presence details (songName, artistName, albumArtKey, albumName, startTime, endTime) |
-| `DiscordActivity` | Rich Presence activity structure (type, details, state, timestamps, images, buttons) |
-| `DiscordConnectionState` | Connection states: `Disconnected`, `Connecting`, `Connected`, `DiscordUnavailable`, `Error` |
-| `ActivityType` | Activity types: `Playing` (0), `Streaming` (1), `Listening` (2), `Watching` (3), `Competing` (5) |
-| `DiscordActivityButton` | Button with label and URL for activity |
-| `DiscordActivityAssets` | Image assets (largeImageKey, largeImageText, smallImageKey, smallImageText) |
-| `DiscordActivityTimestamps` | Progress bar timestamps (startTimestamp, endTimestamp) |
-| `DiscordActivityParty` | Party information for multiplayer (id, size) |
-| `DiscordRPCErrorCode` | RPC error codes (4000-4007): InvalidOpcode, InvalidPayload, NotConnected, etc. |
-| `DiscordRPCErrorResponse` | Error response structure (code, message, evt) |
-| `DiscordRPCRawEvent` | Raw event data from Discord IPC |
 
 ---
 
