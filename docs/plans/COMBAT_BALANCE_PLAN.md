@@ -219,7 +219,18 @@ Status effects exist as data (`StatusEffect` has a `duration` field) but are nev
   - Added `legendaryAction?: LegendaryAction` field (imported from `./Enemy`)
   - Updated showcase mirror types: `ActionLogEntry.actionType` in `combatDataExporter.ts` and `CombatAction` in `useCombatEngine.ts`
   - Engine type-check and build verified clean, all 277 combat tests pass
-- [ ] **1.3.2** Extend `StatusEffect` interface with optional fields: `damage?: number`, `damageType?: DamageType`, `mechanicalEffects?: StatusEffectMechanics` (advantage/disadvantage/immunity flags)
+- [x] **1.3.2** Extend `StatusEffect` interface with optional fields: `damage?: number`, `damageType?: DamageType`, `mechanicalEffects?: StatusEffectMechanics` (advantage/disadvantage/immunity flags)
+  - Created `StatusEffectMechanics` interface in `src/core/types/Combat.ts` with 13 optional boolean/type fields covering all D&D 5e conditions needed:
+    - Attack disadvantage: `disadvantageOnAttackNonSource` (Charmed), `disadvantageOnAttack` (Frightened, general), `disadvantageOnAbilityChecks` (Frightened)
+    - Target advantage: `advantageOnMeleeAttackAgainst` (Prone), `advantageOnRangedAttackAgainst` (Prone)
+    - Saving throw disadvantage: `disadvantageOnDexSaves` (Stunned, Restrained)
+    - Movement/turn: `speedZero` (Paralyzed, Restrained), `skipTurn` (Stunned, Unconscious)
+    - Damage modifiers: `damageImmunity`, `damageResistance`, `damageVulnerability` (typed)
+  - Added `damage?: number` field to `StatusEffect` for per-turn damage (Burning, Poison, etc.)
+  - Added `damageType?: DamageType` field to `StatusEffect` for typed damage
+  - Added `mechanicalEffects?: StatusEffectMechanics` field to `StatusEffect`
+  - Exported `StatusEffectMechanics` from engine `index.ts`
+  - All 277 combat tests pass, no new TypeScript errors
 - [ ] **1.3.3** Add `applyStatusEffect()` and `removeExpiredStatusEffects()` methods to `CombatEngine`
   - `applyStatusEffect(combatant, effect)` — pushes effect, checks for stacking rules (same name = refresh duration, take higher)
   - `removeExpiredStatusEffects(combatant)` — filters out effects where `duration <= 0`
