@@ -9,15 +9,14 @@ interface SensorState {
     permissions: {
         geolocation: PermissionState;
         motion: PermissionState;
-        light: PermissionState;
     };
-    /** Current environmental sensor data (GPS, motion, weather, light) */
+    /** Current environmental sensor data (GPS, motion, weather) */
     environmentalContext: EnvironmentalContext | null;
     /** Current gaming platform data (Steam activity) */
     gamingContext: GamingContext | null;
 
     /** Set permission status for a specific sensor */
-    setPermission: (sensor: 'geolocation' | 'motion' | 'light', status: PermissionState) => void;
+    setPermission: (sensor: 'geolocation' | 'motion', status: PermissionState) => void;
     /** Update the environmental context with new sensor data */
     updateEnvironmentalContext: (context: EnvironmentalContext) => void;
     /** Update the gaming context with new platform activity */
@@ -34,14 +33,13 @@ export const useSensorStore = create<SensorState>()(
             permissions: {
                 geolocation: 'prompt',
                 motion: 'prompt',
-                light: 'prompt',
             },
             environmentalContext: null,
             gamingContext: null,
 
             /**
              * Set permission status for a specific sensor type
-             * @param sensor - The sensor type ('geolocation' | 'motion' | 'light')
+             * @param sensor - The sensor type ('geolocation' | 'motion')
              * @param status - The permission state ('granted' | 'denied' | 'prompt')
              * @example
              * ```ts
@@ -98,7 +96,6 @@ export const useSensorStore = create<SensorState>()(
                     permissions: {
                         geolocation: 'prompt',
                         motion: 'prompt',
-                        light: 'prompt',
                     }
                 });
             },
@@ -113,7 +110,6 @@ export const useSensorStore = create<SensorState>()(
                     permissions: {
                         geolocation: 'prompt',
                         motion: 'prompt',
-                        light: 'prompt',
                     },
                     environmentalContext: null,
                     gamingContext: null

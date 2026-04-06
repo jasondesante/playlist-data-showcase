@@ -49,14 +49,6 @@ export const getSimulatedMotion = () => {
     };
 };
 
-export const getSimulatedLight = () => {
-    // Simulate varying light conditions
-    const lux = Math.random() > 0.5 ? 500 + Math.random() * 500 : 50 + Math.random() * 100;
-    return {
-        illuminance: lux,
-    };
-};
-
 export const getSimulatedWeather = () => {
     const conditions = ['Clear', 'Clouds', 'Rain', 'Snow', 'Thunderstorm', 'Drizzle', 'Mist'];
     const condition = conditions[Math.floor(Math.random() * conditions.length)];

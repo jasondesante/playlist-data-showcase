@@ -36,7 +36,7 @@ export interface SevereWeatherAlert {
  * ```
  *
  * @returns {Object} Hook return object
- * @returns {Function} requestPermission - Requests permission for a sensor type ('geolocation' | 'motion' | 'light')
+ * @returns {Function} requestPermission - Requests permission for a sensor type ('geolocation' | 'motion')
  * @returns {Function} startMonitoring - Starts monitoring all sensors (returns cleanup function)
  * @returns {boolean} isMonitoring - Whether monitoring is currently active
  * @returns {Object} environmentalContext - Current environmental context data
@@ -238,7 +238,7 @@ export const useEnvironmentalSensors = () => {
             // before restarting to prevent duplicate event listeners
             sensors.stopMonitoring();
 
-            // Start push-based sensors (motion + light) with live callback
+            // Start push-based sensors (motion) with live callback
             sensors.startMonitoring((context) => {
                 // This fires instantly on every shake/tilt
                 // updateEnvironmentalContext({ ...context } as any);
@@ -316,7 +316,7 @@ export const useEnvironmentalSensors = () => {
         if (!sensors) return;
 
         const syncPermissionsWithBrowser = async () => {
-            const typesToRequest: ('geolocation' | 'motion' | 'weather' | 'light')[] = [];
+            const typesToRequest: ('geolocation' | 'motion' | 'weather')[] = [];
 
             // Check geolocation permission
             if ('permissions' in navigator) {
@@ -351,7 +351,7 @@ export const useEnvironmentalSensors = () => {
                     }
                 });
 
-                // Start push-based sensors (motion + light) so live data streams immediately,
+                // Start push-based sensors (motion) so live data streams immediately,
                 // and pull fresh geo/weather to replace the persisted stale data.
                 // This does NOT set isMonitoring — the button stays clickable so the user
                 // can do a full start (which adds the geo/weather refresh interval).
@@ -366,7 +366,7 @@ export const useEnvironmentalSensors = () => {
         syncPermissionsWithBrowser();
     }, [sensors, setPermission]);
 
-    const requestPermission = useCallback(async (sensorType: 'geolocation' | 'motion' | 'light') => {
+    const requestPermission = useCallback(async (sensorType: 'geolocation' | 'motion') => {
         logger.info('EnvironmentalSensors', `Requesting permission: ${sensorType}`);
 
         try {
@@ -374,7 +374,7 @@ export const useEnvironmentalSensors = () => {
             // This is critical - the engine's startMonitoring() checks its own permission state
             if (sensors) {
                 // For geolocation, also request weather permission (weather needs GPS coordinates)
-                const typesToRequest: ('geolocation' | 'motion' | 'weather' | 'light')[] = [sensorType];
+                const typesToRequest: ('geolocation' | 'motion' | 'weather')[] = [sensorType];
                 if (sensorType === 'geolocation') {
                     typesToRequest.push('weather'); // Weather doesn't need browser permission, but engine needs it set
                 }
@@ -415,8 +415,6 @@ export const useEnvironmentalSensors = () => {
                         }
                     );
                 });
-                granted = true;
-            } else if (sensorType === 'light') {
                 granted = true;
             }
 

@@ -156,7 +156,6 @@ interface ExportedData {
     permissions: {
       geolocation: PermissionState;
       motion: PermissionState;
-      light: PermissionState;
     };
     environmentalContext: EnvironmentalContext | null;
     gamingContext: GamingContext | null;
@@ -441,7 +440,7 @@ export function SettingsTab() {
 
           if (importedData.sensorStore.permissions) {
             Object.entries(importedData.sensorStore.permissions).forEach(([sensor, status]) => {
-              sensorStore.setPermission(sensor as 'geolocation' | 'motion' | 'light', status as PermissionState);
+              sensorStore.setPermission(sensor as 'geolocation' | 'motion', status as PermissionState);
             });
           }
           if (importedData.sensorStore.environmentalContext) {

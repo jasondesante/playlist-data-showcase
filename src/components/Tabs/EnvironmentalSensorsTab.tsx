@@ -11,7 +11,7 @@ import './EnvironmentalSensorsTab.css';
  * EnvironmentalSensorsTab Component
  *
  * Demonstrates the EnvironmentalSensors engine module with:
- * - Permission requests for geolocation, motion, and light sensors
+ * - Permission requests for geolocation and motion sensors
  * - Sensor monitoring with real-time data visualization
  * - GPS location with coordinates, altitude, speed, and heading
  * - Live motion data with real-time graphs
@@ -423,23 +423,6 @@ export function EnvironmentalSensorsTab() {
             </Button>
           </Card>
 
-          {/* Light card */}
-          <Card variant="elevated" padding="md" className="sensor-permission-card">
-            <div className="sensor-permission-header">
-              <span className="sensor-permission-title">Light</span>
-              <StatusIndicator status={permissionToStatus(permissions.light)} />
-            </div>
-            <span className="sensor-permission-state">{permissions.light}</span>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => requestPermission('light')}
-              leftIcon={Sun}
-              className="sensor-permission-button"
-            >
-              Request
-            </Button>
-          </Card>
         </div>
 
         {/* Start monitoring button */}
