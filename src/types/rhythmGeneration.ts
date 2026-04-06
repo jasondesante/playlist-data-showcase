@@ -303,7 +303,7 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     rhythmicBalanceConfig: undefined, // Uses engine defaults when undefined
     // Level Settings (Task 1.5)
     seed: undefined,            // No seed by default — non-deterministic
-    controllerMode: 'ddr',      // DDR mode by default
+    controllerMode: 'tap',      // Tap mode by default
     pitchInfluenceWeight: 0.8,  // Strong pitch influence
     voicingThreshold: 0.2,      // Default voicing threshold
     // Pitch Detection

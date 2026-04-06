@@ -666,7 +666,7 @@ interface BeatDetectionState {
      * Generation mode for the beat detection wizard.
      * - 'manual': 4-step wizard (Analyze → Subdivide → Chart → Ready)
      * - 'automatic': 3-step wizard (Analyze → Rhythm Generation → Ready)
-     * Default: 'manual' (NOT persisted - always start in manual mode)
+     * Default: 'automatic' (NOT persisted - always start in automatic mode)
      */
     generationMode: 'manual' | 'automatic';
 
@@ -1686,7 +1686,7 @@ const createInitialState = (): BeatDetectionState => ({
     previousStep: null, // No navigation has occurred yet
 
     // Rhythm Generation state (Task 1.1)
-    generationMode: 'manual', // Always start in manual mode
+    generationMode: 'automatic', // Default to automatic mode
     generatedRhythm: null, // Session-only
     rhythmGenerationProgress: null, // Session-only
 

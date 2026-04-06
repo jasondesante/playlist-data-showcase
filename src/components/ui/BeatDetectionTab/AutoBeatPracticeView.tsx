@@ -175,7 +175,7 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
         const mode = currentBeatMap?.metadata?.controllerMode;
         if (mode === 'ddr') return 'ddr';
         if (mode === 'guitar_hero') return 'guitar-hero';
-        return 'ddr'; // Default to DDR
+        return 'off'; // Tap mode (no lanes)
     }, [currentBeatMap]);
 
     // Map selected difficulty to DifficultyPreset for PracticeHeader
