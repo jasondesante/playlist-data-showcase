@@ -76,7 +76,7 @@ The current `DiceRoller` class uses `Math.random()` for all rolls. It has a `see
   - Already implemented: `AttackResolver` (line 29-33), `InitiativeRoller` (line 23-27), and `SpellCaster` (line 14-17) all accept `DiceRollerAPI` in constructors
   - `CombatEngine` passes its roller to all three (lines 61-63)
   - Build verified clean
-- [ ] **0.1.5** Add tests
+- [x] **0.1.5** Add tests
   - Same seed + same calls = identical results
   - Different seeds = different results
   - Statistical distribution over many seeds matches expected D&D probabilities (d20 uniform, advantage bias, etc.)
