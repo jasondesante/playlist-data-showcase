@@ -231,9 +231,12 @@ Status effects exist as data (`StatusEffect` has a `duration` field) but are nev
   - Added `mechanicalEffects?: StatusEffectMechanics` field to `StatusEffect`
   - Exported `StatusEffectMechanics` from engine `index.ts`
   - All 277 combat tests pass, no new TypeScript errors
-- [ ] **1.3.3** Add `applyStatusEffect()` and `removeExpiredStatusEffects()` methods to `CombatEngine`
+- [x] **1.3.3** Add `applyStatusEffect()` and `removeExpiredStatusEffects()` methods to `CombatEngine`
   - `applyStatusEffect(combatant, effect)` — pushes effect, checks for stacking rules (same name = refresh duration, take higher)
   - `removeExpiredStatusEffects(combatant)` — filters out effects where `duration <= 0`
+  - Implemented `applyStatusEffect()` in `CombatEngine` — stacking rules: same-name effect refreshes duration (take max), damage (take max), merges mechanicalEffects, carries over source/concentration/damageType
+  - Implemented `removeExpiredStatusEffects()` — filters out effects with duration <= 0, returns array of removed effects for logging
+  - All 277 combat tests pass, build verified clean (tsc --noEmit + vite build)
 - [ ] **1.3.4** Integrate status effect tick-down into `nextTurn()` lifecycle
   - At the START of each combatant's turn: decrement duration by 1 for all their effects
   - Remove expired effects (duration <= 0)
