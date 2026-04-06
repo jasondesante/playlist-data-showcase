@@ -531,7 +531,11 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Added `isValidAIPlayStyle()` type guard function
   - Exported `AIPlayStyle` and `isValidAIPlayStyle` from engine `src/index.ts`
   - Engine builds clean (vite build), all 769 combat tests pass
-- [ ] **2.1.2** Define `AIConfig` interface
+- [x] **2.1.2** Define `AIConfig` interface
+  - Already implemented in `src/core/types/CombatAI.ts` (lines 26-42)
+  - Matches spec exactly: `playerStyle`, `enemyStyle`, `overrides?: Map<string, AIPlayStyle>`, `enableClassFeatures?: boolean`
+  - Full JSDoc documentation with field descriptions
+  - Exported from engine `src/index.ts` (lines 329-336)
   ```typescript
   interface AIConfig {
     playerStyle: AIPlayStyle;      // How player characters play
