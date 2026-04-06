@@ -306,7 +306,7 @@ export const useSessionTracker = () => {
             shouldEnd: (playbackState === 'paused' || playbackState === 'ended') && !!activeSession
         });
 
-        if ((playbackState === 'paused' || playbackState === 'ended') && activeSession) {
+        if ((playbackState === 'paused' || playbackState === 'ended' || playbackState === 'error') && activeSession) {
             logger.debug('SessionTracker', '✓ Auto-ending session on pause/end', {
                 playbackState,
                 sessionTrackId: activeSession.trackId,

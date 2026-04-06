@@ -211,6 +211,16 @@
   border-color: hsl(var(--primary) / 0.8);
 }
 
+.mini-player-play-btn--error {
+  background-color: hsl(var(--destructive) / 0.15);
+  border-color: hsl(var(--destructive));
+  color: hsl(var(--destructive));
+}
+
+.mini-player-play-btn--error:hover {
+  background-color: hsl(var(--destructive) / 0.25);
+}
+
 .mini-player-stop-btn {
   color: hsl(var(--destructive));
 }
@@ -387,6 +397,28 @@
 
 .mini-player-placeholder-text {
   white-space: nowrap;
+}
+
+/* Loading state */
+.mini-player--loading {
+  border-color: hsl(var(--primary) / 0.4);
+}
+
+.mini-player-status {
+  font-size: 0.625rem;
+  color: hsl(var(--primary));
+  font-weight: 500;
+  animation: miniPlayerStatusPulse 1.5s ease-in-out infinite;
+}
+
+.mini-player-status--error {
+  color: hsl(var(--destructive));
+  animation: none;
+}
+
+@keyframes miniPlayerStatusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 /* ========================================

@@ -164,10 +164,16 @@ export function ArweaveImage({
   const handleError = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
       setImageLoadError(true);
+
+      // Report gateway failure so the engine tries a different gateway next time
+      if (isArweave && resolvedUrl) {
+        arweaveGatewayManager.reportGatewayFailure(resolvedUrl).catch(() => {});
+      }
+
       logger.warn('ArweaveGateway', 'Image failed to load', { src: resolvedUrl });
       onError?.(e);
     },
-    [resolvedUrl, onError]
+    [resolvedUrl, onError, isArweave]
   );
 
   // Determine what to render

@@ -29,6 +29,8 @@ interface AudioPlayerState {
     isMuted: boolean;
     /** Error message if playback failed */
     error: string | null;
+    /** Human-readable loading phase detail (null when not loading) */
+    loadingDetail: string | null;
 
     /** Actions */
     play: (url: string) => Promise<void>;
@@ -53,6 +55,10 @@ let audioElement: HTMLAudioElement | null = null;
 // Track pending seek to prevent timeupdate from overwriting target position
 let pendingSeekTarget: number | null = null;
 
+// Gateway retry tracking — prevents infinite retry loops on load failures
+let gatewayRetryCount = 0;
+const MAX_GATEWAY_RETRIES = 2;
+
 const setupAudioEventListeners = (audio: HTMLAudioElement) => {
     audio.addEventListener('loadstart', () => {
         useAudioPlayerStore.getState().setPlaybackState('loading');
@@ -66,31 +72,26 @@ const setupAudioEventListeners = (audio: HTMLAudioElement) => {
             return;
         }
 
-        // CRITICAL: Check the actual audio element state, not the store state
-        const isActuallyPlaying = !audio.paused && audio.readyState >= 2;
-
-        // If audio is actually playing, keep it as 'playing' - don't override to 'paused'
-        if (isActuallyPlaying) {
-            if (store.playbackState !== 'playing') {
-                useAudioPlayerStore.getState().setPlaybackState('playing');
-            }
-            return;
-        }
-
-        // Only set to 'paused' if currently 'loading' AND not actually playing
-        if (store.playbackState === 'loading' && !isActuallyPlaying) {
+        // Only handle the preload case: audio loaded but play() not called yet.
+        // The transition to 'playing' is handled exclusively by the 'playing' event,
+        // which fires only when audio is actually producing output (not just buffered).
+        if (store.playbackState === 'loading' && audio.paused) {
             useAudioPlayerStore.getState().setPlaybackState('paused');
         }
     });
 
-    audio.addEventListener('play', () => {
-        useAudioPlayerStore.getState().setPlaybackState('playing');
+    audio.addEventListener('playing', () => {
+        const store = useAudioPlayerStore.getState();
+        store.setPlaybackState('playing');
+        useAudioPlayerStore.setState({ loadingDetail: null });
+        gatewayRetryCount = 0;
     });
 
     audio.addEventListener('pause', () => {
         const store = useAudioPlayerStore.getState();
         if (store.playbackState === 'playing') {
-            useAudioPlayerStore.getState().setPlaybackState('paused');
+            store.setPlaybackState('paused');
+            useAudioPlayerStore.setState({ loadingDetail: null });
         }
     });
 
@@ -102,11 +103,46 @@ const setupAudioEventListeners = (audio: HTMLAudioElement) => {
         const store = useAudioPlayerStore.getState();
         store.setPlaybackState('ended');
         store.updateTime(0);
+        useAudioPlayerStore.setState({ loadingDetail: null });
     });
 
-    audio.addEventListener('error', () => {
-        useAudioPlayerStore.getState().setError('Failed to load audio');
-        useAudioPlayerStore.getState().setPlaybackState('error');
+    audio.addEventListener('error', async () => {
+        const store = useAudioPlayerStore.getState();
+        const currentUrl = store.currentUrl;
+
+        // For Arweave URLs, report gateway failure and auto-retry with a new gateway
+        if (currentUrl && isArweaveUrl(currentUrl) && gatewayRetryCount < MAX_GATEWAY_RETRIES) {
+            gatewayRetryCount++;
+            logger.info('Store', `Gateway load failed, retrying with new gateway (attempt ${gatewayRetryCount}/${MAX_GATEWAY_RETRIES})`, {
+                url: currentUrl,
+                audioError: audio.error?.message,
+                audioSrc: audio.src,
+            });
+
+            useAudioPlayerStore.setState({
+                loadingDetail: `Gateway failed, trying another... (${gatewayRetryCount}/${MAX_GATEWAY_RETRIES})`,
+            });
+
+            try {
+                const newUrl = await arweaveGatewayManager.reportGatewayFailure(currentUrl);
+                if (newUrl !== audio.src) {
+                    logger.info('Store', 'Retrying with new gateway', { newUrl, oldSrc: audio.src });
+                    audio.src = newUrl;
+                    audio.play().catch(() => {
+                        // If play itself rejects after gateway switch, let the next error event handle it
+                    });
+                    return; // Don't set error state — wait for play to succeed or fail
+                }
+            } catch (err) {
+                logger.error('Store', 'Gateway retry failed', { error: err });
+            }
+        }
+
+        // Exhausted retries or non-Arweave URL — show error
+        gatewayRetryCount = 0;
+        store.setError('Failed to load audio');
+        store.setPlaybackState('error');
+        useAudioPlayerStore.setState({ loadingDetail: null });
     });
 
     audio.addEventListener('timeupdate', () => {
@@ -139,15 +175,17 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     volume: 0.8,
     isMuted: false,
     error: null,
+    loadingDetail: null,
 
     play: async (url: string) => {
         const audio = getAudioElement();
         const currentUrl = get().currentUrl;
+        gatewayRetryCount = 0;
 
         // Resolve Arweave URLs through gateway manager (handles non-Arweave URLs too)
         let resolvedUrl = url;
         if (isArweaveUrl(url)) {
-            set({ playbackState: 'loading' });
+            set({ playbackState: 'loading', loadingDetail: 'Resolving gateway...' });
             try {
                 resolvedUrl = await arweaveGatewayManager.resolveUrl(url);
                 if (resolvedUrl !== url) {
@@ -166,10 +204,10 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
         if (currentUrl !== url) {
             // New track - load and play
             audio.src = resolvedUrl;
-            set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading' });
+            set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading', loadingDetail: 'Loading audio...' });
             audio.play().catch((err) => {
                 console.error('Playback failed:', err);
-                set({ error: err.message, playbackState: 'error' });
+                set({ error: err.message, playbackState: 'error', loadingDetail: null });
             });
         } else {
             // Same track
@@ -246,7 +284,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
             // Different track - resolve URL and play
             let resolvedUrl = url;
             if (isArweaveUrl(url)) {
-                set({ playbackState: 'loading' });
+                set({ playbackState: 'loading', loadingDetail: 'Resolving gateway...' });
                 try {
                     resolvedUrl = await arweaveGatewayManager.resolveUrl(url);
                     if (resolvedUrl !== url) {
@@ -263,10 +301,10 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
             }
 
             audio.src = resolvedUrl;
-            set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading' });
+            set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading', loadingDetail: 'Loading audio...' });
             audio.play().catch((err) => {
                 console.error('Playback failed:', err);
-                set({ error: err.message, playbackState: 'error' });
+                set({ error: err.message, playbackState: 'error', loadingDetail: null });
             });
         }
     },
@@ -275,7 +313,8 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
         const audio = getAudioElement();
         audio.pause();
         audio.currentTime = 0;
-        set({ currentUrl: null, playbackState: 'idle', currentTime: 0, duration: 0, error: null });
+        gatewayRetryCount = 0;
+        set({ currentUrl: null, playbackState: 'idle', currentTime: 0, duration: 0, error: null, loadingDetail: null });
     },
 
     load: async (url: string) => {
@@ -287,7 +326,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
             // Resolve Arweave URLs through gateway manager
             let resolvedUrl = url;
             if (isArweaveUrl(url)) {
-                set({ playbackState: 'loading' });
+                set({ playbackState: 'loading', loadingDetail: 'Resolving gateway...' });
                 try {
                     resolvedUrl = await arweaveGatewayManager.resolveUrl(url);
                     if (resolvedUrl !== url) {
@@ -306,7 +345,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
             audio.src = resolvedUrl;
             // Set to paused state (ready to play) rather than loading
             // The canplay event will transition to 'paused' when ready
-            set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading' });
+            set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading', loadingDetail: 'Loading audio...' });
         }
     },
 

@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Play, Pause, Square, Music, Volume2, Volume1, VolumeX } from 'lucide-react';
+import { Play, Pause, Square, Music, Volume2, Volume1, VolumeX, X } from 'lucide-react';
 import { useSessionStore } from '@/store/sessionStore';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
 import { useSessionTracker } from '@/hooks/useSessionTracker';
@@ -44,8 +44,9 @@ export function AppHeader({
 }: AppHeaderProps) {
   const [hasStopped, setHasStopped] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const [loadingSeconds, setLoadingSeconds] = useState(0);
   const { activeSession, pauseSession, resumeSession } = useSessionStore();
-  const { playbackState, currentTime, duration, pause, resume, seek, play, currentUrl, volume, isMuted, setVolume, toggleMute } = useAudioPlayerStore();
+  const { playbackState, currentTime, duration, pause, resume, seek, play, currentUrl, volume, isMuted, setVolume, toggleMute, loadingDetail } = useAudioPlayerStore();
   const { isActive: isSessionActive } = useSessionTracker();
   const { selectedTrack } = usePlaylistStore();
 
@@ -61,6 +62,19 @@ export function AppHeader({
     });
   }, [activeSession, selectedTrack, currentUrl]);
 
+  // Track how long loading has been taking
+  useEffect(() => {
+    if (playbackState === 'loading') {
+      setLoadingSeconds(0);
+      const id = window.setInterval(() => {
+        setLoadingSeconds(s => s + 1);
+      }, 1000);
+      return () => window.clearInterval(id);
+    } else {
+      setLoadingSeconds(0);
+    }
+  }, [playbackState]);
+
   // Always show mini player (with placeholder state when no audio is loaded)
   const showMiniPlayer = true;
 
@@ -72,6 +86,17 @@ export function AppHeader({
       // Pause both audio and session
       pause();
       pauseSession();
+    } else if (playbackState === 'loading') {
+      // Cancel loading - stop the audio element to abort pending fetches
+      const { stop } = useAudioPlayerStore.getState();
+      stop();
+      setHasStopped(true);
+    } else if (playbackState === 'error') {
+      // Retry: clear error and attempt play again
+      if (selectedTrack) {
+        useAudioPlayerStore.setState({ error: null });
+        play(selectedTrack.audio_url);
+      }
     } else {
       // If was stopped, seek to beginning first
       if (hasStopped) {
@@ -104,6 +129,15 @@ export function AppHeader({
   };
 
   const isPlaying = playbackState === 'playing';
+  const isLoading = playbackState === 'loading';
+  const isError = playbackState === 'error';
+
+  // Build the loading status message with elapsed time
+  const loadingStatus = loadingDetail
+    ? `${loadingDetail} ${loadingSeconds > 0 ? `${loadingSeconds}s` : ''}`
+    : loadingSeconds > 0
+      ? `Loading... ${loadingSeconds}s`
+      : 'Loading...';
 
   // Helper to determine which volume icon to show
   const getVolumeIcon = () => {
@@ -129,7 +163,7 @@ export function AppHeader({
 
             {/* Mini Audio Player - always shown, with placeholder when no track */}
             {showMiniPlayer && (
-              <div className="app-header-mini-player">
+              <div className={`app-header-mini-player${isLoading ? ' mini-player--loading' : ''}`}>
                 {track ? (
                   <>
                     <div className="mini-player-track-info">
@@ -154,17 +188,19 @@ export function AppHeader({
                       <div className="mini-player-text">
                         <div className="mini-player-title">{track.title}</div>
                         <div className="mini-player-artist">{track.artist}</div>
+                        {isLoading && <div className="mini-player-status">{loadingStatus}</div>}
+                        {isError && <div className="mini-player-status mini-player-status--error">Failed to load — tap play to retry</div>}
                       </div>
                     </div>
 
                     <div className="mini-player-controls">
                       <button
-                        className="mini-player-btn mini-player-play-btn"
+                        className={`mini-player-btn mini-player-play-btn${isError ? ' mini-player-play-btn--error' : ''}`}
                         onClick={handlePlayPause}
-                        aria-label={isPlaying ? 'Pause' : 'Play'}
-                        title={isPlaying ? 'Pause' : 'Play'}
+                        aria-label={isLoading ? 'Cancel loading' : (isError ? 'Retry' : (isPlaying ? 'Pause' : 'Play'))}
+                        title={isLoading ? 'Cancel' : (isError ? 'Retry' : (isPlaying ? 'Pause' : 'Play'))}
                       >
-                        {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+                        {isLoading ? <X size={18} /> : (isPlaying ? <Pause size={18} /> : <Play size={18} />)}
                       </button>
                       <button
                         className="mini-player-btn mini-player-stop-btn"

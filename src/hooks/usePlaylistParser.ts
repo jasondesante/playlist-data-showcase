@@ -80,6 +80,8 @@ export const usePlaylistParser = () => {
                     json = await response.json();
                 } catch (error) {
                     if (error instanceof TypeError) {
+                        // Network error (no response) — gateway is likely dead, report failure
+                        arweaveGatewayManager.reportGatewayFailure(url).catch(() => {});
                         throw new Error('Network error: Unable to connect to Arweave. This could be due to CORS restrictions or network connectivity issues. Please try again or check your connection.');
                     }
                     if (error instanceof SyntaxError) {

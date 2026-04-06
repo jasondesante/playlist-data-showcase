@@ -998,8 +998,16 @@ export function CombatSimulatorTab() {
         playlist = await playlistParser.parse(json);
       } else {
         // Resolve Arweave URL through gateway manager (with automatic fallback)
-        const resolvedUrl = await arweaveGatewayManager.resolveUrl(`https://arweave.net/${trimmedInput}`);
-        const response = await fetch(resolvedUrl);
+        const arweaveUrl = `https://arweave.net/${trimmedInput}`;
+        const resolvedUrl = await arweaveGatewayManager.resolveUrl(arweaveUrl);
+        let response: Response;
+        try {
+          response = await fetch(resolvedUrl);
+        } catch (networkError) {
+          // Network error (no response) — gateway is likely dead, report failure
+          arweaveGatewayManager.reportGatewayFailure(arweaveUrl).catch(() => {});
+          throw new Error('Network error: Unable to connect to Arweave. Please check your connection.');
+        }
         if (!response.ok) {
           throw new Error(`Failed to fetch playlist: ${response.status}`);
         }
