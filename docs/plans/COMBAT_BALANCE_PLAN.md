@@ -119,10 +119,14 @@ Currently `createCombatant()` ignores `character.spells.spell_slots` entirely an
   - Integrated validation into `initializeSpellSlots()` — errors cause fallback to class table with console.warn, warnings are tolerated
   - 27 tests in `tests/unit/combat/spellSlotValidation.test.ts` covering all validation paths
   - Build verified clean (tsc --noEmit passes, vite build succeeds)
-- [ ] **1.1.4** Add test verifying spell slot initialization from various character configurations
+- [x] **1.1.4** Add test verifying spell slot initialization from various character configurations
   - Character with `spells.spell_slots` (generated enemy)
   - Character without `spells.spell_slots` (fallback to table)
   - Character with partially used slots
+  - Created `tests/unit/combat/spellSlotInitialization.test.ts` with 23 tests
+  - Tests cover: source spell_slots conversion, realistic generated enemy configs, fallback to full-caster table for all 8 spellcasting classes, level 1 and level 20 edge cases, levels outside table range (0, 21), mixed partial usage across many levels, custom slot totals differing from table, non-spellcaster classes (Fighter, Rogue, Barbarian), missing/undefined spell_slots field, player+enemy in same combat
+  - All 50 combat tests pass (27 validation + 23 initialization)
+  - Build verified clean (tsc --noEmit passes on engine)
 
 ### 1.2 Combat Engine Test Foundation
 
