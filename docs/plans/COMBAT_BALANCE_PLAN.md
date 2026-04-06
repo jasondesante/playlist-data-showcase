@@ -136,10 +136,17 @@ The combat subsystem has zero test coverage. The existing `tests/unit/combat.tes
   - Directory already existed from Phase 1.1 work (contains `spellSlotInitialization.test.ts` and `spellSlotValidation.test.ts`)
   - Structure matches existing test organization (`tests/unit/<category>/`)
   - Build verified clean
-- [ ] **1.2.2** Add test helpers for creating mock combatants (leverage existing `tests/helpers/enemyTestHelpers.ts` patterns)
+- [x] **1.2.2** Add test helpers for creating mock combatants (leverage existing `tests/helpers/enemyTestHelpers.ts` patterns)
   - `createTestCombatant(overrides?)` — returns a `Combatant` with configurable stats
   - `createTestParty(level, count?)` — returns array of `Combatant`s
   - `createTestEnemy(cr, rarity?)` — returns a `Combatant` from generated enemy
+  - Created `tests/helpers/combatTestHelpers.ts` with all three helpers plus `createTestCombat()` bonus helper
+  - `createTestCombatant(characterOverrides?, combatantOverrides?)` — lightweight mock Combatant without needing CombatEngine; auto-derives ability modifiers when scores change; supports all Combatant fields (statusEffects, spellSlots, position, etc.)
+  - `createTestParty(level, count, baseName)` — uses CombatEngine.startCombat() for fully-initialized combatants via existing `createMockPartyCharacter` helper
+  - `createTestEnemy(cr, rarity, seed)` — uses EnemyGenerator.generate() + CombatEngine for real generated enemies
+  - `createTestCombat(playerLevel, playerCount, enemyCR, enemyRarity, seed)` — full CombatInstance with both sides
+  - Added 22 smoke tests in `tests/unit/combat/combatTestHelpers.test.ts` verifying all helpers
+  - All 72 combat tests pass (50 existing + 22 new), build verified clean
 - [ ] **1.2.3** Add core CombatEngine tests
   - Test `startCombat()` — initiative rolling, turn order, combatant creation
   - Test `executeWeaponAttack()` — hit/miss, damage, critical hit/miss
