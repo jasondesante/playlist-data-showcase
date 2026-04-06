@@ -282,7 +282,13 @@ Status effects exist as data (`StatusEffect` has a `duration` field) but are nev
   - Updated test helper `createTestCombatant` in `combatTestHelpers.ts` with `concentratingOn` override support
   - 32 tests in `tests/unit/combat/concentration.test.ts` covering: tracking via applyStatusEffect, one-concentration-at-a-time rule, dropConcentration, CON save DC scaling, high CON modifier, CON save proficiency, concentration breaks on attack hit, concentration not checked on miss, defeated combatants lose concentration, concentration via SpellCaster spells, new spell drops old concentration, spell damage breaks concentration, burning damage breaks concentration, death from start-of-turn damage clears concentration, stunned/incapacitated breaks concentration, concentration history logging, effect expiration clears concentratingOn, non-concentration effect expiration preserves concentratingOn, seeded roller determinism, different seeds produce different outcomes, full combat integration
   - All 360 combat tests pass (328 existing + 32 new), engine builds clean (tsc + vite)
-- [ ] **1.3.7** Refactor `SpellCaster` to use the new `applyStatusEffect()` method instead of directly pushing to arrays
+- [x] **1.3.7** Refactor `SpellCaster` to use the new `applyStatusEffect()` method instead of directly pushing to arrays
+  - Removed direct `target.statusEffects.push()` calls from `SpellCaster.castSpell()` — effects are now only returned in `effectsApplied`
+  - Each target gets a fresh copy of the effect object (via spread) instead of sharing references
+  - Updated `CombatEngine.executeCastSpell()` to iterate over `result.effectsApplied` and call `this.applyStatusEffect(target, effect)` for each target
+  - Removed the complex manual concentration post-processing block from `executeCastSpell()` since `applyStatusEffect()` already handles concentration dropping, tracking, and one-concentration-per-target
+  - Updated 11 SpellCaster tests to check `result.effectsApplied` instead of `target.statusEffects` (SpellCaster no longer mutates targets directly)
+  - All 360 combat tests pass, build verified clean (tsc --noEmit + vite build)
 - [ ] **1.3.8** Add status effect tests in `tests/unit/combat/`
   - Test duration decrement per round
   - Test expiration and removal
