@@ -494,13 +494,16 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Example: Elite orc went from hardcoded +4 to computed +3 (STR 17 → +3, level 1 → +0 base)
   - 11 new tests in `tests/unit/combat/damageModifierFix.test.ts` covering: brute STR modifier, all rarity modifiers match StatScaling, boss no longer hardcoded +6, archer DEX modifier, support CHA modifier, CR-based scaling, explicit CR consistency, signature ability, determinism, natural weapon fallback, template stat differences
   - All 1223 combat/enemy tests pass, engine builds clean (tsc + vite)
-- [ ] **1.7.4** Update `EnemyGenerator.generate()` to apply `StatLevelOverrides`
-  - Add `statLevels?: StatLevelOverrides` to `EnemyGenerationOptions`
-  - If `statLevels.hpLevel` is set, use `getHPAtLevel(baseHP, hpLevel, rarity)` instead of default HP calculation
-  - If `statLevels.attackLevel` is set, use `getAttackAtLevel(...)` to compute damage die, damage modifier, and attack bonus at the overridden level
-  - If `statLevels.defenseLevel` is set, use `getDefenseAtLevel(...)` to compute AC at the overridden level
-  - If no overrides are set, behavior is identical to current system (all stats at CR-derived level)
-  - Store `statLevels` in `EnemyMetadata` for UI display and simulation tracking
+- [x] **1.7.4** Update `EnemyGenerator.generate()` to apply `StatLevelOverrides`
+  - Added `statLevels?: StatLevelOverrides` to `EnemyGenerationOptions` in `Enemy.ts` with JSDoc and example
+  - Added `stat_levels?: StatLevelOverrides` to `CharacterSheet` in `Character.ts` for UI display and simulation tracking
+  - HP override: when `statLevels.hpLevel` is set, uses `getHPAtLevel(template.baseHP, hpLevel, rarity)` instead of rarity multiplier + fractional CR calculation; falls back to current system when not set
+  - Attack override: when `statLevels.attackLevel` is set, uses `getAttackAtLevel(scaledStats, attackLevel, rarity, archetype)` for both weapon damage die and damage modifier; also passes through to `scaleSignatureAbility()` and `generateAbilities()` for consistent feature attack data
+  - Defense override: when `statLevels.defenseLevel` is set, uses `getDefenseAtLevel(scaledStats, defenseLevel, template.baseAC, equipmentConfig)` instead of `template.baseAC + DEX + acModifier`
+  - No overrides set → identical output to current system (backward compatible)
+  - `stat_levels` stored on generated `CharacterSheet` when overrides provided
+  - Updated imports in `EnemyGenerator.ts`: `getHPAtLevel`, `getAttackAtLevel`, `getDefenseAtLevel` from `StatScaling.js`, `StatLevelOverrides` from `Enemy.ts`
+  - All 664 combat tests pass, engine builds clean (tsc + vite)
 - [ ] **1.7.5** Add tests for stat level separation
   - Test default (no overrides) produces identical output to current system
   - Test HP-only override: high HP level, normal attack/defense
