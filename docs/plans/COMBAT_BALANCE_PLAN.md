@@ -398,15 +398,25 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 **Type mismatch:** `InnateSpell` uses `damage`/`damageType`/`save`/`range` (number) while `Spell` uses `damage_dice`/`damage_type`/`saving_throw`/`range` (string). `SpellCaster.castSpell()` reads `Spell` fields.
 
-- [ ] **1.6.1** Unify or bridge `InnateSpell` and `Spell` types
+- [x] **1.6.1** Unify or bridge `InnateSpell` and `Spell` types
   - Option A (preferred): Extend `Spell` interface to include all fields from `InnateSpell` (`tags`, `concentration`, `id`, `effect`) and update `InnateSpell` to extend `Spell`, adding only the missing fields (`damage_dice` as alias for `damage`, `damage_type` as alias for `damageType`, `saving_throw` as alias for `save`)
   - Option B: Create a converter `innateSpellToSpell(spell: InnateSpell): Spell` that maps fields correctly
   - Option A is cleaner long-term since `SpellCaster` can then use spell tags for AI decisions
-- [ ] **1.6.2** Update `EnemyGenerator` to populate `character.spells` from `SpellcastingConfig`
+  - Already implemented: `Spell` in `Character.ts` (line 312-342) is the unified interface with both player fields (`damage_dice`, `damage_type`, `saving_throw`, `attack_roll`) and enemy fields (`damage`, `damageType`, `save`, `tags`, `concentration`, `effect`, `rangeFeet`, `id`). `InnateSpell` extends `Spell` making `id`, `level`, `school`, `effect` required. `SpellCaster` already handles both naming conventions via fallback (`spell.damage_dice ?? spell.damage`, etc.). All three consumers (`SpellCaster`, `CombatEngine`, `SpellcastingGenerator`) import from the same `Character.ts` source. No combat/spell-related TypeScript errors.
+- [x] **1.6.2** Update `EnemyGenerator` to populate `character.spells` from `SpellcastingConfig`
   - Set `character.spells.spell_slots` from `SpellcastingConfig.slots` (converted to `{ [level]: { total, used } }` format)
   - Set `character.spells.known_spells` from selected leveled spell names
   - Set `character.spells.cantrips` from selected cantrip names
   - Keep spell features in `class_features` for display/UI purposes, but the authoritative spell data lives in `character.spells`
+  - Changed `generateAbilities()` return type from `Record<string, unknown>[]` to `{ abilities: Record<string, unknown>[], spellConfig?: SpellcastingConfig }` to surface the spell config
+  - In `generate()`, destructures `{ abilities: generatedAbilities, spellConfig }` and populates `character.spells` when `spellConfig` is present
+  - Converts `SpellcastingConfig.slots` (`{ [level]: count }`) to `spell_slots` format (`{ [level]: { total: count, used: 0 } }`)
+  - Non-spellcasting enemies (common/uncommon brutes/archers) still get empty spells object
+  - Boss enemies get populated spells (spellConfig is generated before boss features replace abilities)
+  - Verified: elite support enemy has `spell_slots: { 1: { total: 3, used: 0 } }`, known_spells, cantrips; common brute has empty spells
+  - Verified: `CombatEngine.createCombatant()` correctly reads enemy spell slots → `combatant.spellSlots = { 1: 3 }`
+  - Fixed pre-existing bug in `SpellCaster.castSpell()`: effect text now combines both `description` AND `effect` fields (was only checking one via `??`), fixing a failing test in `spellTypeUnification.test.ts`
+  - All 519 combat tests pass, engine builds clean
 - [ ] **1.6.3** Add a `spells` array to `CharacterSheet` for combat-ready `Spell` objects
   - Currently `CharacterSheet` has `spells_known: string[]` (just names) and `spells.spell_slots` — no actual `Spell[]` array
   - Add `character.combat_spells?: Spell[]` populated from `SpellcastingConfig` output (after type unification)
