@@ -426,10 +426,15 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - `InnateSpell extends Spell`, so the array is directly usable by `SpellCaster.castSpell()` without conversion
   - Non-spellcasting enemies (no spellConfig) don't get the field (undefined/optional)
   - All 519 combat tests pass, engine builds clean (tsc + vite)
-- [ ] **1.6.4** Update `SpellCaster` to use spell tags for AI decision-making
+- [x] **1.6.4** Update `SpellCaster` to use spell tags for AI decision-making
   - `SpellCaster` currently relies on string matching on `spell.description` for status effects
   - After type unification, check for `spell.tags` instead (more reliable than string matching)
   - `Spell.tags` from `InnateSpell` include: `'damage'`, `'healing'`, `'buff'`, `'control'`, `'aoe'`, `'multi-target'`, `'debuff'`, `'ally'`, `'self'`, `'bonus-action'`, `'ranged'`, `'melee'`, etc.
+  - Created `TAG_STATUS_EFFECTS` mapping in `SpellCaster.ts` — maps 9 status effect tags (`charm`, `frighten`, `stun`, `paralyze`, `restrain`, `poison`, `blind`, `deafen`, `burn`) to `StatusEffect` configs with proper `mechanicalEffects`
+  - Updated `castSpell()` — checks tags first for status effects, falls back to string matching on description/effect text for backward compatibility with player spells; prevents duplicate effects when both tag and description match
+  - Added 10 static helper methods for AI decision-making: `hasSpellTag()`, `getSpellTags()`, `isDamageSpell()`, `requiresConcentration()`, `isAOESpell()`, `isMultiTargetSpell()`, `isBonusActionSpell()`, `isAllySpell()`, `isSelfSpell()`, `getStatusEffectTags()`
+  - 35 new tests in `spellCaster.test.ts` covering: tag-based charm/frighten/stun/paralyze/restrain/poison/blind/burn detection, mechanicalEffects inclusion, tag priority over description text, no-duplicate prevention, multi-target application, fallback to string matching, empty/missing tags, multiple status effect tags, all 10 static helpers
+  - All 554 combat tests pass, engine builds clean (tsc + vite)
 - [ ] **1.6.5** Add tests for enemy spell data pipeline
   - Test that generated enemy `CharacterSheet` has populated `spells.spell_slots`
   - Test that `combat_spells` array is populated and each spell has correct fields
