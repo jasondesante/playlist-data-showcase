@@ -180,12 +180,30 @@ The combat subsystem has zero test coverage. The existing `tests/unit/combat.tes
   - **No roller provided** (1 test): works with default static DiceRoller
   - Uses mock DiceRollerAPI for deterministic unit tests and SeededDiceRoller for statistical sampling
   - All 201 combat tests pass (58 new + 143 existing), build verified clean (tsc --noEmit)
-- [ ] **1.2.5** Add SpellCaster tests
-  - Test spell slot consumption and restoration
-  - Test save DC calculation
-  - Test saving throw resolution
-  - Test multi-target spell damage
-  - Test status effect application
+- [x] **1.2.5** Add SpellCaster tests
+  - Created `tests/unit/combat/spellCaster.test.ts` with 76 tests covering:
+  - **hasSpellSlot** (5 tests): available slots, zero slots, cantrips always true, undefined spellSlots, depleted slots
+  - **consumeSpellSlot** (5 tests): decrements by 1, cantrips no-op, initializes undefined spellSlots, initializes missing level, sequential consumption
+  - **restoreSpellSlots** (3 tests): restores to full-caster table, high-level caster (level 20), level 1 caster
+  - **calculateSaveDC** (6 tests): DC formula (8 + mod + prof), WIS/CHA casters, lowercase keys, missing modifier, minimum DC
+  - **makeSavingThrow** (5 tests): pass/fail threshold, proficiency bonus inclusion, no proficiency, lowercase keys
+  - **castSpell basic mechanics** (7 tests): success/failure, slot consumption, no slot consumption on fail, spellSlotUsed level, caster/target references, spell name in description, spell level in description
+  - **Cantrips** (2 tests): no slot consumed, works without spell slots
+  - **Attack roll spells** (2 tests): damage calculation, injected roller usage
+  - **Saving throw spells** (4 tests): save DC calculation, damage on fail, no damage on pass, HP floor at 0 with defeated flag
+  - **Multi-target spells** (4 tests): damage to all failing targets, skip passing targets, all targets in result, all names in description
+  - **Status effects** (7 tests): Charmed via description, concentration flag, source tracking, Frightened, both effects, applied to all targets, no effects on non-matching, case-insensitive matching
+  - **No-damage spells** (1 test): buff spells succeed without damage
+  - **getSpellSlotInfo** (4 tests): slot info string, no slots available, empty slots, only shows levels with remaining slots
+  - **canUpcast** (5 tests): higher slot available, base level, downcast rejected, no slots at target, cantrip upcast
+  - **upcastSpell** (5 tests): consumes higher-level slot, failure on downcast, no consumption on fail, restores original level, spellSlotUsed records upcast level
+  - **Seeded roller determinism** (2 tests): identical results with same seed, different results with different seeds
+  - **Default roller** (2 tests): works without injection, makeSavingThrow returns boolean
+  - **Undefined spell level** (1 test): treated as cantrip
+  - **Status effect descriptions** (3 tests): caster name in charm/frighten, duration = 1
+  - **Save DC statistical sampling** (1 test): seeded roller save distribution sanity check
+  - Discovered case sensitivity bug: `calculateSaveDC()` and `makeSavingThrow()` lowercase ability keys but `ability_modifiers` and `saving_throws` use UPPERCASE keys — modifier/proficiency lookups always return 0. Tests document this existing behavior.
+  - All 277 combat tests pass (76 new + 201 existing), build verified clean (tsc --noEmit + vite build)
 
 ### 1.3 Status Effect Duration Tracking
 
