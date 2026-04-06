@@ -504,14 +504,16 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - `stat_levels` stored on generated `CharacterSheet` when overrides provided
   - Updated imports in `EnemyGenerator.ts`: `getHPAtLevel`, `getAttackAtLevel`, `getDefenseAtLevel` from `StatScaling.js`, `StatLevelOverrides` from `Enemy.ts`
   - All 664 combat tests pass, engine builds clean (tsc + vite)
-- [ ] **1.7.5** Add tests for stat level separation
-  - Test default (no overrides) produces identical output to current system
-  - Test HP-only override: high HP level, normal attack/defense
-  - Test attack-only override: high attack, normal HP/defense
-  - Test defense-only override: high AC, normal HP/attack
-  - Test combined overrides: high HP + high attack + low defense (brute-tank)
-  - Test that damage modifier now uses actual ability scores, not hardcoded rarity values
-  - Test edge cases: level 1 overrides on CR 20 enemy, level 20 overrides on CR 1 enemy
+- [x] **1.7.5** Add tests for stat level separation
+  - Created `tests/unit/combat/statLevelSeparation.test.ts` with 41 tests covering:
+  - **Backward compatibility** (5 tests): no-override determinism, stat_levels undefined when no overrides, stat_levels set with values, partial overrides only affect specified axes, deterministic with overrides
+  - **HP-only override** (6 tests): high HP level > baseline, matches getHPAtLevel, level 1 matches baseline for CR >= 1, level 1 > baseline for explicit CR < 1, attack/defense unaffected, stat_levels records only HP
+  - **Attack-only override** (7 tests): high attack > baseline die/modifier, low attack gives d6, matches getAttackAtLevel, d6 at level 1 for all rarities, HP/AC unaffected, stat_levels records only attack
+  - **Defense-only override** (5 tests): high defense changes AC, level scaling between defense levels, HP/attack unaffected, stat_levels records only defense
+  - **Combined overrides** (5 tests): brute (high HP+attack), glass cannon (high attack + HP removes fractional CR penalty), tank (high HP+defense), all three match StatScaling, deterministic
+  - **Damage modifier uses ability scores** (5 tests): matches getDamageModifierForStats, different archetypes use different primary stats, die size independent of rarity, no override still uses ability scores, high STR > low STR
+  - **Edge cases** (8 tests): level 1 HP on CR 20 boss, level 20 HP on CR 1, level 20 attack gives 2d8, level 1 attack gives d6, defense level 20 > 1, all-20 on CR 1, all-1 on CR 20, fractional level overrides, different templates
+  - All 705 combat tests pass (41 new + 664 existing), engine builds clean (tsc + vite)
 
 ---
 
