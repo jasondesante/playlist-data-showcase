@@ -106,9 +106,12 @@ Currently `createCombatant()` ignores `character.spells.spell_slots` entirely an
   - Updated `CombatEngine.initializeSpellSlots()` to use `getFullCasterSlotsForLevel()`
   - Updated `SpellCaster.restoreSpellSlots()` to use `getFullCasterSlotsForLevel()`
   - Build verified clean (tsc --noEmit passes, vite build succeeds)
-- [ ] **1.1.2** Update `initializeSpellSlots()` in `CombatEngine` to read from `character.spells.spell_slots`
+- [x] **1.1.2** Update `initializeSpellSlots()` in `CombatEngine` to read from `character.spells.spell_slots`
   - If `character.spells.spell_slots` exists, convert: `{ [level]: { total, used } }` → `{ [level]: total - used }`
   - Fall back to hardcoded table if `character.spells.spell_slots` is missing (backward compat)
+  - Updated `initializeSpellSlots()` with 3-tier priority: (1) read from `character.spells.spell_slots` if populated, (2) fall back to full-caster table for known spellcasting classes, (3) return undefined for non-spellcasters
+  - Handles edge cases: empty spell_slots object, all-used slots (returns undefined), partial usage (total - used)
+  - Build verified clean (tsc --noEmit passes, vite build succeeds)
 - [ ] **1.1.3** Add validation that spell slots are consistent between source character and combatant
 - [ ] **1.1.4** Add test verifying spell slot initialization from various character configurations
   - Character with `spells.spell_slots` (generated enemy)
