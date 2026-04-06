@@ -132,7 +132,10 @@ Currently `createCombatant()` ignores `character.spells.spell_slots` entirely an
 
 The combat subsystem has zero test coverage. The existing `tests/unit/combat.test.ts` is broken (uses non-existent `character_class` object — the actual type is `class: string`). **Rewrite tests from scratch** rather than trying to fix the broken ones — the mock data has multiple issues beyond just the type mismatch.
 
-- [ ] **1.2.1** Create `tests/unit/combat/` directory structure
+- [x] **1.2.1** Create `tests/unit/combat/` directory structure
+  - Directory already existed from Phase 1.1 work (contains `spellSlotInitialization.test.ts` and `spellSlotValidation.test.ts`)
+  - Structure matches existing test organization (`tests/unit/<category>/`)
+  - Build verified clean
 - [ ] **1.2.2** Add test helpers for creating mock combatants (leverage existing `tests/helpers/enemyTestHelpers.ts` patterns)
   - `createTestCombatant(overrides?)` — returns a `Combatant` with configurable stats
   - `createTestParty(level, count?)` — returns array of `Combatant`s
