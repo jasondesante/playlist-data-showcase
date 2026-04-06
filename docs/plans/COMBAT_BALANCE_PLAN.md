@@ -329,9 +329,15 @@ Legendary actions are generated and stored on `CharacterSheet.legendary_config` 
 - [x] **1.4.3** Integrate legendary action reset into `nextTurn()`
   - When it's a boss combatant's turn and `roundNumber` advanced, reset `legendaryActionsRemaining` to 3
   - Completed as part of 1.4.1 — resets all non-defeated boss combatants' legendary action points at start of each new round
-- [ ] **1.4.4** Add `useLegendaryResistance(combat, bossCombatant)` method
+- [x] **1.4.4** Add `useLegendaryResistance(combat, bossCombatant)` method
   - Decrement `legendaryResistancesRemaining`, auto-succeed a saving throw
   - Return whether the resistance was available
+  - Added `useLegendaryResistance(combat, bossCombatant)` public method to `CombatEngine`
+  - Checks `legendaryResistancesRemaining` (defaults to 0 for non-bosses), decrements by 1, returns `true` if used
+  - Returns `false` when no resistances remain
+  - Records usage in combat history via `statusEffectTick` action type (same pattern as `checkConcentration`)
+  - 10 tests in `legendaryAction.test.ts` covering: basic usage (available/unavailable), non-boss returns false, decrement tracking, different config counts, history recording (with/without resistances), description content, per-day not reset per round, integration with legendary actions
+  - All 443 combat tests pass, engine builds clean (tsc + vite)
 - [ ] **1.4.5** Add legendary action tests
   - Test action point tracking (spend 1+2 = 3, 4th fails)
   - Test point reset per round
