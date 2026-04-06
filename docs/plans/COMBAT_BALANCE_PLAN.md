@@ -338,11 +338,14 @@ Legendary actions are generated and stored on `CharacterSheet.legendary_config` 
   - Records usage in combat history via `statusEffectTick` action type (same pattern as `checkConcentration`)
   - 10 tests in `legendaryAction.test.ts` covering: basic usage (available/unavailable), non-boss returns false, decrement tracking, different config counts, history recording (with/without resistances), description content, per-day not reset per round, integration with legendary actions
   - All 443 combat tests pass, engine builds clean (tsc + vite)
-- [ ] **1.4.5** Add legendary action tests
+- [x] **1.4.5** Add legendary action tests
   - Test action point tracking (spend 1+2 = 3, 4th fails)
   - Test point reset per round
   - Test legendary resistance usage
   - Test damage resolution from legendary actions
+  - All 48 tests already exist in `legendaryAction.test.ts` — written as part of 1.4.1 and 1.4.4
+  - Coverage: initialization (5), validation (3), point tracking (6), damage resolution (7), history recording (9), point reset (5), full integration (2), legendary resistance (10), per-day resource (1)
+  - All 443 combat tests pass, build verified clean
 
 ### 1.5 CombatResult Winner Refactor
 
