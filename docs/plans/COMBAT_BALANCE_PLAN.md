@@ -372,7 +372,19 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Falls back to `character.level` when `cr` is undefined (e.g., mock/test characters without CR set) — since CR ≈ level in D&D 5e
   - Updated existing XP test to set explicit `cr: 0.25` on mock enemies (getXPForCR(0.25) = 50, matching previous behavior)
   - All 449 combat tests pass, no new TypeScript errors
-- [ ] **1.5.3** Add tests for winner side logic and XP calculation
+- [x] **1.5.3** Add tests for winner side logic and XP calculation
+  - Created `tests/unit/combat/winnerSideAndXpCalculation.test.ts` with 38 tests covering:
+  - **Winner side — active combat state** (2 tests): winnerSide undefined during active combat, remains undefined after turns
+  - **Winner side — player victory** (4 tests): single player, party of 4, party with casualties (some players dead), winner is first surviving player
+  - **Winner side — enemy victory** (3 tests): single enemy, multiple enemies, enemies with casualties but all players defeated
+  - **Winner side — draw scenarios** (4 tests): mutual kill, max turns no casualties, max turns partial kills on both sides, draw description
+  - **Winner side — full combat integration** (2 tests): full combat produces valid winnerSide, seeded roller consistency across runs
+  - **XP calculation — CR-based values** (9 tests): CR 0 (10), 0.125 (25), 0.25 (50), 0.5 (100), 1 (200), 3 (700), 5 (1800), 10 (5900), 20 (25000)
+  - **XP calculation — fallback to level** (4 tests): enemy without cr falls back to level, level 1/10 without cr, cr takes priority over level
+  - **XP calculation — mixed CR enemies** (3 tests): sum across different CRs, only defeated enemies counted, fractional CR summation
+  - **XP calculation — edge cases** (5 tests): 0 XP on no kills, 0 XP on player-only mutual kill, XP awarded when enemies win overall, XP on draw with partial kills, XP matches getXPForCR for all CRs 0-20
+  - **XP calculation — large encounters** (2 tests): 10 enemies same CR, varied encounter CR 0.5-5
+  - All 38 new tests pass, TypeScript check clean, no regressions
 
 ### 1.6 Enemy Spell Data Pipeline
 
