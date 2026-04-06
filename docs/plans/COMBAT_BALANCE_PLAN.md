@@ -417,10 +417,15 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Verified: `CombatEngine.createCombatant()` correctly reads enemy spell slots → `combatant.spellSlots = { 1: 3 }`
   - Fixed pre-existing bug in `SpellCaster.castSpell()`: effect text now combines both `description` AND `effect` fields (was only checking one via `??`), fixing a failing test in `spellTypeUnification.test.ts`
   - All 519 combat tests pass, engine builds clean
-- [ ] **1.6.3** Add a `spells` array to `CharacterSheet` for combat-ready `Spell` objects
+- [x] **1.6.3** Add a `spells` array to `CharacterSheet` for combat-ready `Spell` objects
   - Currently `CharacterSheet` has `spells_known: string[]` (just names) and `spells.spell_slots` — no actual `Spell[]` array
   - Add `character.combat_spells?: Spell[]` populated from `SpellcastingConfig` output (after type unification)
   - This is what `CombatEngine` and `SpellCaster` will read during combat
+  - Added `combat_spells?: Spell[]` field to `CharacterSheet` interface in `src/core/types/Character.ts`
+  - Populated from `spellConfig` in `EnemyGenerator.generate()` — combines cantrips and leveled spells into a single `Spell[]` array (`[...spellConfig.cantrips, ...spellConfig.spells]`)
+  - `InnateSpell extends Spell`, so the array is directly usable by `SpellCaster.castSpell()` without conversion
+  - Non-spellcasting enemies (no spellConfig) don't get the field (undefined/optional)
+  - All 519 combat tests pass, engine builds clean (tsc + vite)
 - [ ] **1.6.4** Update `SpellCaster` to use spell tags for AI decision-making
   - `SpellCaster` currently relies on string matching on `spell.description` for status effects
   - After type unification, check for `spell.tags` instead (more reliable than string matching)
