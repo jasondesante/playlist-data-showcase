@@ -263,11 +263,25 @@ Status effects exist as data (`StatusEffect` has a `duration` field) but are nev
   - Modified `SpellCaster.castSpell()` to check `disadvantageOnDexSaves` on target's status effects for DEX saving throws
   - 36 new tests in `tests/unit/combat/statusEffectMechanics.test.ts` covering: charmed/frightened/prone advantage+disadvantage, cancellation, burning damage (stacking, temp HP, defeat), stunned skip turn (auto-advance, damage before skip, duration expiry, infinite loop guard, death from burning), DEX save disadvantage, statistical verification, full integration
   - All 328 combat tests pass, engine builds clean
-- [ ] **1.3.6** Add concentration tracking
+- [x] **1.3.6** Add concentration tracking
   - Track which combatant is concentrating on which effect
   - When a new concentration spell is cast, drop the previous concentration effect
   - When a concentrating combatant takes damage, make a CON save (DC 10 or half damage) to maintain concentration
   - Many enemy spells are already marked `concentration: true` in `SpellcastingGenerator`
+  - Added `concentratingOn?: string` field to `Combatant` interface in `Combat.ts`
+  - Added `dropConcentration(combatant, reason)` method to `CombatEngine` — removes the concentrated effect and clears tracking
+  - Added `checkConcentration(combat, combatant, damage)` public method — rolls CON save vs DC 10 or half damage, breaks concentration on failure, logs to combat history
+  - Added private `rollConcentrationSave(combatant, damage)` — implements D&D 5e CON save: DC = max(10, floor(damage/2)), uses CON modifier + proficiency if proficient in CON saves, natural 1 always fails, natural 20 always succeeds
+  - Modified `applyStatusEffect()` — when a new concentration effect is applied, drops any previous concentration effect on the same combatant; sets `concentratingOn` on the combatant
+  - Modified `removeExpiredStatusEffects()` — clears `concentratingOn` if the concentrated effect naturally expired
+  - Modified `executeAttack()` — checks concentration on hit targets that took damage; defeated targets automatically lose concentration
+  - Modified `executeCastSpell()` — post-processes `SpellCaster` results to set `concentratingOn` on targets for concentration spells; enforces one-concentration-per-target rule (drops old concentration effect when new one applied via spell)
+  - Modified `processStartOfTurnDamage()` — start-of-turn damage (Burning, Poison) can break concentration; dead combatants automatically lose concentration
+  - Modified `nextTurn()` — incapacitated (Stunned/Unconscious) combatants automatically lose concentration when their turn is skipped
+  - Updated showcase mirror type `Combatant` in `useCombatEngine.ts` with `concentratingOn` field
+  - Updated test helper `createTestCombatant` in `combatTestHelpers.ts` with `concentratingOn` override support
+  - 32 tests in `tests/unit/combat/concentration.test.ts` covering: tracking via applyStatusEffect, one-concentration-at-a-time rule, dropConcentration, CON save DC scaling, high CON modifier, CON save proficiency, concentration breaks on attack hit, concentration not checked on miss, defeated combatants lose concentration, concentration via SpellCaster spells, new spell drops old concentration, spell damage breaks concentration, burning damage breaks concentration, death from start-of-turn damage clears concentration, stunned/incapacitated breaks concentration, concentration history logging, effect expiration clears concentratingOn, non-concentration effect expiration preserves concentratingOn, seeded roller determinism, different seeds produce different outcomes, full combat integration
+  - All 360 combat tests pass (328 existing + 32 new), engine builds clean (tsc + vite)
 - [ ] **1.3.7** Refactor `SpellCaster` to use the new `applyStatusEffect()` method instead of directly pushing to arrays
 - [ ] **1.3.8** Add status effect tests in `tests/unit/combat/`
   - Test duration decrement per round

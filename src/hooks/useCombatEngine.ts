@@ -24,6 +24,7 @@ export interface Combatant {
   bonusActionUsed: boolean;
   reactionUsed: boolean;
   spellSlots?: { [level: number]: number };
+  concentratingOn?: string;
 }
 
 export interface CombatInstance {
