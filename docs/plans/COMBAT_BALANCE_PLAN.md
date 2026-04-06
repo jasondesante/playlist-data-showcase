@@ -241,6 +241,59 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Test that `CombatEngine.createCombatant()` reads enemy spell slots correctly
   - Test that `SpellCaster` can cast an enemy spell using the unified type
 
+### 1.7 Stat Level Separation & Damage Modifier Fix
+
+> **Project:** playlist-data-engine (`../playlist-data-engine/`)
+> **Goal:** Allow enemy HP, attack, and defense to scale independently at different effective levels, enabling more creative encounter design (e.g., a tanky low-damage enemy or a glass cannon). Also fix a critical bug where damage modifiers ignore actual ability scores.
+
+**Problem:** Currently, all enemy stats scale together as a unit determined by CR + rarity. There's no way to create an enemy with "level 20 HP but level 10 attack" — you'd need to manually hack the generated `CharacterSheet`. Additionally, `getAbilityModifierForRarity()` returns hardcoded values (+2/+3/+4/+6) based on rarity tier, completely ignoring the enemy's actual scaled ability scores. A CR 20 common brute and a CR 1 common brute both get +2 damage modifier despite having vastly different STR scores.
+
+**Concept:** Like RPG character leveling where HP, attack, and defense normally scale together, the system allows overriding individual stat groups to a different effective level. The "natural" state is all three at the same level (matching CR). Overrides enable creative combinations:
+- **Tank:** high HP level, normal attack, high defense — absorbs hits, low threat
+- **Glass cannon:** low HP, high attack, low defense — dangerous but fragile
+- **Brute:** high HP, high attack, low defense — scary but hittable
+- **Standard:** all at CR level (default, no overrides needed)
+
+**Key insight for simulation:** The AI and simulator don't need to know about stat levels. They read the final `CharacterSheet` stats (HP, AC, damage dice, attack bonus) and simulate normally. This is purely a generation-layer concern.
+
+- [ ] **1.7.1** Define `StatLevelOverrides` interface
+  ```typescript
+  interface StatLevelOverrides {
+    /** Override HP to this effective level (default: CR-derived level) */
+    hpLevel?: number;
+    /** Override attack scaling to this effective level (damage die + modifier + attack bonus) */
+    attackLevel?: number;
+    /** Override defense scaling to this effective level (AC) */
+    defenseLevel?: number;
+  }
+  ```
+- [ ] **1.7.2** Create `src/constants/StatScaling.ts` — level-based stat scaling functions
+  - Define `getLevelScalingFactor(level: number): number` — returns a multiplier for how much a stat increases at a given level vs level 1. The formula should feel natural: a level 10 enemy is noticeably tougher than level 1, but not exponentially so. Tunable via constants.
+  - Define `getHPAtLevel(baseHP: number, level: number, rarity: EnemyRarity): number` — scales HP using the level scaling factor + rarity adjustments
+  - Define `getAttackAtLevel(baseStats: AbilityScores, level: number, rarity: EnemyRarity, archetype: EnemyArchetype)` — returns `{ damageDie: string; damageModifier: number; attackBonus: number }` computed at the given level
+  - Define `getDefenseAtLevel(baseStats: AbilityScores, level: number, baseAC: number, equipment: EquipmentConfig): number` — computes AC at the given level
+  - **Design principle:** When all three levels match CR, output must be identical to current generation (backward compatible). The scaling functions are additive — they compute what the stats *would be* at a given level, then the generator uses those values.
+- [ ] **1.7.3** Fix `getAbilityModifierForRarity()` — use actual ability scores
+  - Currently returns hardcoded +2/+3/+4/+6 based on rarity, ignoring scaled STR/DEX scores
+  - Replace with computing the modifier from actual scaled ability scores + archetype primary stat (STR for brute, DEX for archer, WIS/CHA for support)
+  - This fix is critical — the attack stat must reflect the enemy's actual power level, not its rarity label
+  - Update weapon damage strings (currently built with hardcoded modifier) to use the computed value
+- [ ] **1.7.4** Update `EnemyGenerator.generate()` to apply `StatLevelOverrides`
+  - Add `statLevels?: StatLevelOverrides` to `EnemyGenerationOptions`
+  - If `statLevels.hpLevel` is set, use `getHPAtLevel(baseHP, hpLevel, rarity)` instead of default HP calculation
+  - If `statLevels.attackLevel` is set, use `getAttackAtLevel(...)` to compute damage die, damage modifier, and attack bonus at the overridden level
+  - If `statLevels.defenseLevel` is set, use `getDefenseAtLevel(...)` to compute AC at the overridden level
+  - If no overrides are set, behavior is identical to current system (all stats at CR-derived level)
+  - Store `statLevels` in `EnemyMetadata` for UI display and simulation tracking
+- [ ] **1.7.5** Add tests for stat level separation
+  - Test default (no overrides) produces identical output to current system
+  - Test HP-only override: high HP level, normal attack/defense
+  - Test attack-only override: high attack, normal HP/defense
+  - Test defense-only override: high AC, normal HP/attack
+  - Test combined overrides: high HP + high attack + low defense (brute-tank)
+  - Test that damage modifier now uses actual ability scores, not hardcoded rarity values
+  - Test edge cases: level 1 overrides on CR 20 enemy, level 20 overrides on CR 1 enemy
+
 ---
 
 ## Phase 2: Combat AI System
@@ -530,7 +583,7 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 - [ ] **4.2.2** Define sweep parameter types
   ```typescript
   interface SweepParams {
-    variable: 'cr' | 'enemyCount' | 'partyLevel' | 'difficultyMultiplier' | 'rarity';
+    variable: 'cr' | 'enemyCount' | 'partyLevel' | 'difficultyMultiplier' | 'rarity' | 'hpLevel' | 'attackLevel' | 'defenseLevel';
     range: { min: number; max: number; step: number };
     simulationsPerPoint: number;  // e.g., 200 simulations per data point
     aiConfig: AIConfig;
@@ -808,6 +861,12 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Seed input (text)
   - Rarity selector
   - Difficulty multiplier slider
+  - **Stat Level Overrides** (per-enemy, collapsible section):
+    - HP Level slider (1–20, default: linked to CR)
+    - Attack Level slider (1–20, default: linked to CR)
+    - Defense Level slider (1–20, default: linked to CR)
+    - Visual indicator when a level differs from CR (highlight, badge showing "Overleveled HP" / "Underleveled Attack")
+    - Quick presets: "Tank" (HP+4, Defense+2), "Glass Cannon" (Attack+4, HP-2), "Brute" (HP+2, Attack+2), "Reset to CR"
 - [ ] **8.2.5** Create `src/components/balance/SimulationProgressBar.tsx`
   - Shows progress (runs completed / total)
   - Shows estimated time remaining
@@ -980,10 +1039,11 @@ Phase 1 (Engine Prerequisites)
   ├── 1.3 Status Effects ──→ needed by Phase 2 (AI reads status effects) [can be parallel with 2.1-2.2]
   ├── 1.4 Legendary Actions ──→ needed by Phase 2 (AI uses legendary actions) [can be parallel with 2.1-2.2]
   ├── 1.5 Winner Refactor ──→ needed by Phase 3 (Simulator checks win conditions)
-  └── 1.6 Enemy Spell Data ──→ needed by Phase 2 (AI needs enemy spell data for spell selection)
+  ├── 1.6 Enemy Spell Data ──→ needed by Phase 2 (AI needs enemy spell data for spell selection)
+  └── 1.7 Stat Level Separation ──→ needed by Phase 4.2 (sweep stat levels), Phase 8.2.4 (UI controls) [can be parallel with Phase 2-3]
 
 Phase 2 (Combat AI)
-  └── depends on Phase 0 + 1.1 + 1.2 + 1.6 complete ──→ needed by Phase 3
+  └── depends on Phase 0 + 1.1 + 1.2 + 1.6 complete ──→ needed by Phase 3 (1.7 not required — AI reads final stats)
 
 Phase 3 (Monte Carlo Simulator)
   └── depends on Phase 0 + 1.5 + Phase 2 complete ──→ needed by Phase 4
@@ -1012,7 +1072,7 @@ Phase 10 (Integration & Polish)
 
 ### Parallelizable Work
 
-- **Phase 0 + 1.1 + 1.2 + 1.6** can be done in parallel — independent prerequisites
+- **Phase 0 + 1.1 + 1.2 + 1.6 + 1.7** can be done in parallel — independent prerequisites
 - **Phase 1.3 + 1.4** can be done in parallel with **Phase 2.1-2.2** — status effects and legendary actions don't block basic AI decision-making
 - **Phase 9.1 (Install recharts)** can start in parallel with Phase 8 — charting setup doesn't depend on simulation UI
 - **Phase 4.1 + 4.2 + 4.3** can be done in parallel — independent analysis modules
@@ -1026,6 +1086,7 @@ The minimum path to get actionable balance numbers:
 2. **Phase 1.1** (Spell slot sync) + **1.2** (Tests) + **1.6** (Enemy spell data) — parallel
 3. **Phase 2** (AI with Normal + Aggressive only) — core attack loop
 4. **Phase 3** (Simulator) — run 1000 fights, get DPR/win rate/survival data
+5. **Phase 1.7** (Stat Level Separation) — optional for fast path, enables varied enemy designs for deeper balance testing
 
 This gets you *"a level 5 fighter vs a CR 3 brute wins in ~4 rounds 73% of the time"* before status effects, legendary actions, or the full frontend are complete.
 
@@ -1047,4 +1108,6 @@ This gets you *"a level 5 fighter vs a CR 3 brute wins in ~4 rounds 73% of the t
 12. **Test strategy**: Rewrite combat tests from scratch (existing `combat.test.ts` is broken with multiple mock data issues). Don't attempt to fix the broken tests.
 13. **Win rate targets**: Placeholder values (Easy ~90%+, Medium ~70-80%, Hard ~50-60%, Deadly ~30-40%) — to be tuned after simulation testing.
 14. **Styling approach**: Custom CSS with CSS variables (HSL color system in `:root`), no framework. Use `lucide-react` for icons. Balance Lab components follow existing patterns.
+15. **Stat Level Separation**: Enemies have HP, attack, and defense that normally scale together with CR (like RPG leveling). `StatLevelOverrides` allows each axis to be independently set to a different effective level. The AI and simulator don't need to know about this — they read final stats from the `CharacterSheet`. This is purely a generation-layer feature.
+16. **Damage modifier bug**: `getAbilityModifierForRarity()` returns hardcoded +2/+3/+4/+6 by rarity, ignoring actual ability scores. Fix as part of 1.7 — compute modifier from scaled ability scores + archetype primary stat. This must be fixed before stat level separation works correctly (attack level scaling depends on ability-score-based modifiers).
 15. **`getCRFromXP()` binary search**: Already implemented in `EncounterBalance.ts` — Phase 4.4.2 reuses this existing implementation.
