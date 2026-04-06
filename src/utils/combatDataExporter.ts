@@ -85,7 +85,7 @@ export interface ActionLogEntry {
   /** Reference to target in registry (if applicable) */
   targetId?: string;
   /** Type of action taken */
-  actionType: 'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'help' | 'hide' | 'ready' | 'flee' | 'useItem' | 'legendaryAction';
+  actionType: 'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'help' | 'hide' | 'ready' | 'flee' | 'useItem' | 'legendaryAction' | 'statusEffectTick';
   /** Attack or spell name */
   actionName?: string;
   /** Action result summary */

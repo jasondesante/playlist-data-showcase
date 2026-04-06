@@ -237,10 +237,17 @@ Status effects exist as data (`StatusEffect` has a `duration` field) but are nev
   - Implemented `applyStatusEffect()` in `CombatEngine` — stacking rules: same-name effect refreshes duration (take max), damage (take max), merges mechanicalEffects, carries over source/concentration/damageType
   - Implemented `removeExpiredStatusEffects()` — filters out effects with duration <= 0, returns array of removed effects for logging
   - All 277 combat tests pass, build verified clean (tsc --noEmit + vite build)
-- [ ] **1.3.4** Integrate status effect tick-down into `nextTurn()` lifecycle
+- [x] **1.3.4** Integrate status effect tick-down into `nextTurn()` lifecycle
   - At the START of each combatant's turn: decrement duration by 1 for all their effects
   - Remove expired effects (duration <= 0)
   - Track which effects were removed in combat history for logging
+  - Added `'statusEffectTick'` to `CombatAction.type` union in `Combat.ts` for logging expired effects
+  - Updated showcase mirror types in `combatDataExporter.ts` and `useCombatEngine.ts`
+  - Modified `nextTurn()` to call new private `tickStatusEffects()` method after advancing to the next combatant
+  - `tickStatusEffects()` decrements all effect durations, calls `removeExpiredStatusEffects()`, and pushes a history entry when effects expire
+  - Defeated combatants are skipped (no tick-down)
+  - 15 tests in `tests/unit/combat/statusEffectTickDown.test.ts` covering: duration decrement, expiration/removal, history logging, no-log when nothing expires, no-effect combatants, defeated skip, pre-expired effects, multi-round tracking, independent per-combatant ticking, separate history entries, field preservation, actor reference, combat-end interaction, multiple effects expiring together
+  - All 292 combat tests pass, build verified clean (tsc --noEmit + vite build)
 - [ ] **1.3.5** Implement mechanical enforcement for existing effects
   - **Charmed**: combatant has disadvantage on attack rolls against non-charming targets (needs source tracking)
   - **Frightened**: combatant has disadvantage on attack rolls and ability checks while source is visible

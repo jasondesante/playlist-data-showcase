@@ -40,7 +40,7 @@ export interface CombatInstance {
 }
 
 export interface CombatAction {
-  type: 'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'flee' | 'help' | 'hide' | 'ready' | 'useItem' | 'legendaryAction';
+  type: 'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'flee' | 'help' | 'hide' | 'ready' | 'useItem' | 'legendaryAction' | 'statusEffectTick';
   actor: Combatant;
   target?: Combatant;
   targets?: Combatant[];
