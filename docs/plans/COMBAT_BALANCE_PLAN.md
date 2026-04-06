@@ -625,12 +625,20 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 2.3 AI Integration with CombatEngine
 
-- [ ] **2.3.1** Create `src/core/combat/AI/AICombatRunner.ts` — runs a full combat with AI decisions
-  - `runFullCombat(players, enemies, aiConfig, combatConfig?, diceRoller?): CombatResult`
-  - Loops through turns, calls `CombatAI.decide()` for each combatant, executes the decision
+- [x] **2.3.1** Create `src/core/combat/AI/AICombatRunner.ts` — runs a full combat with AI decisions
+  - Created `AICombatRunner` class with `runFullCombat(players, enemies, aiConfig, combatConfig?, diceRoller?): AICombatResult` method
+  - Returns `AICombatResult` interface containing both `combat: CombatInstance` (full history) and `result: CombatResult`
+  - Loops through turns, calls `CombatAI.decide()` for each combatant, executes the decision via CombatEngine
   - Handles the complete lifecycle: startCombat → turn loop → getCombatResult
-  - Accepts optional `SeededDiceRoller` for deterministic simulation
-  - Returns the full `CombatInstance` (including history) plus the `CombatResult`
+  - Accepts optional `DiceRollerAPI` (SeededDiceRoller) for deterministic simulation
+  - Executes all AI action types: attack, castSpell, dodge, dash, disengage, flee, useItem, legendaryAction
+  - Handles weapon name mismatch (AI returns 'Unarmed Strike', engine expects 'unarmed') with automatic conversion
+  - Resilient weapon execution: try/catch with unarmed fallback if weapon not in DEFAULT_EQUIPMENT
+  - Processes legendary actions for boss enemies after each turn (chains multiple actions per round)
+  - Handles edge cases: empty combatants, defeated combatants, no valid targets, flee disabled
+  - Exported `AICombatRunner` and `AICombatResult` type from engine `src/index.ts`
+  - 39 tests in `tests/unit/combat/aiCombatRunner.test.ts` covering: basic 1v1/party/many combat, determinism (same/diff seeds), edge cases (empty, max turns, unarmed, flee disabled, spells), legendary actions, AI config variations (normal/aggressive/mixed/overrides), various compositions (large party, mobs, elites, asymmetric, equal CR), action type execution (attacks, dodge, useItem, spell casting), result validation (XP, draw, defeated array), CombatAI integration, performance sanity (100 runs <5s, 10 boss runs <10s)
+  - All 830 combat tests pass, engine builds clean (tsc --noEmit)
 - [ ] **2.3.2** Handle edge cases in AI combat runner
   - Stunned combatants skip their turn
   - No valid targets → skip turn
