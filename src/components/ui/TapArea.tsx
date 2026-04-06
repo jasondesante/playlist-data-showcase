@@ -108,6 +108,8 @@ export function TapArea({
   const [isPressed, setIsPressed] = useState(false);
   const pressTimeoutRef = useRef<number | null>(null);
   const feedbackTimeoutRef = useRef<number | null>(null);
+  // Prevent mousedown from firing after touchstart (mobile browsers synthesize mouse events after touch)
+  const touchHandledRef = useRef(false);
 
   /**
    * Handle tap action (from click or touch)
@@ -133,17 +135,24 @@ export function TapArea({
   }, [isActive, onTap]);
 
   /**
-   * Handle touch events for mobile
+   * Handle touch events for mobile.
+   * Sets a flag so the synthesized mousedown is ignored.
    */
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
+    touchHandledRef.current = true;
     handleTap();
   }, [handleTap]);
 
   /**
-   * Handle mouse down for desktop
+   * Handle mouse down for desktop.
+   * Skips if this was triggered by a touch (mobile browsers synthesize mousedown after touchstart).
    */
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (touchHandledRef.current) {
+      touchHandledRef.current = false;
+      return;
+    }
     e.preventDefault();
     handleTap();
   }, [handleTap]);
