@@ -340,6 +340,10 @@ export function EnvironmentalSensorsTab() {
   // Track if user has dismissed the current severe weather alert
   const [dismissedAlertAt, setDismissedAlertAt] = useState<number | null>(null);
 
+  // Auto-start monitoring is handled in the hook (after engine permissions are synced)
+  // to avoid a race condition where monitoring starts before the engine's internal
+  // permission state is set.
+
   // Show alert if there's a severe weather alert and user hasn't dismissed this one
   const showSevereWeatherAlert = severeWeatherAlert && severeWeatherAlert.detectedAt !== dismissedAlertAt;
 
@@ -614,9 +618,9 @@ export function EnvironmentalSensorsTab() {
                     <span className="sensor-solar-stage-label">Current Stage</span>
                     <span className="sensor-solar-stage-value" style={{
                       color: solarInfo.stage === 'night' ? 'hsl(260 60% 65%)' :
-                             solarInfo.stage === 'dawn' ? 'hsl(30 80% 60%)' :
-                             solarInfo.stage === 'dusk' ? 'hsl(25 80% 55%)' :
-                             'hsl(45 100% 50%)'
+                        solarInfo.stage === 'dawn' ? 'hsl(30 80% 60%)' :
+                          solarInfo.stage === 'dusk' ? 'hsl(25 80% 55%)' :
+                            'hsl(45 100% 50%)'
                     }}>
                       {solarInfo.stage.charAt(0).toUpperCase() + solarInfo.stage.slice(1)}
                     </span>

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { EnvironmentalSensors, BiomeType, XPBonusSource, XpModifierBreakdown, SolarInfo } from 'playlist-data-engine';
 import { useSensorStore } from '@/store/sensorStore';
 import { useAppStore } from '@/store/appStore';
@@ -91,52 +91,6 @@ export const useEnvironmentalSensors = () => {
         logger.info('EnvironmentalSensors', 'EnvironmentalSensors instance created/updated');
     }, [_hasHydrated, settings.openWeatherApiKey, usedApiKey, sensors]);
 
-    // Sync engine permissions with browser's actual permission state when sensors instance is created
-    // This fixes the bug where permissions had to be requested every time
-    useEffect(() => {
-        if (!sensors) return;
-
-        const syncPermissionsWithBrowser = async () => {
-            const typesToRequest: ('geolocation' | 'motion' | 'weather' | 'light')[] = [];
-
-            // Check geolocation permission
-            if ('permissions' in navigator) {
-                try {
-                    const geoStatus = await navigator.permissions.query({ name: 'geolocation' });
-                    if (geoStatus.state === 'granted') {
-                        typesToRequest.push('geolocation', 'weather');
-                    }
-                } catch {
-                    // Some browsers don't support permissions.query for geolocation
-                }
-            }
-
-            // Check motion permission (desktop browsers usually auto-grant)
-            if ('DeviceMotionEvent' in window) {
-                if (typeof (DeviceMotionEvent as any).requestPermission !== 'function') {
-                    // Desktop browser - motion is auto-granted
-                    typesToRequest.push('motion');
-                }
-                // iOS requires explicit user gesture to check/request, so we skip it here
-            }
-
-            // Request permissions for already-granted browser permissions
-            if (typesToRequest.length > 0) {
-                logger.info('EnvironmentalSensors', 'Auto-syncing permissions with browser state', typesToRequest);
-                await sensors.requestPermissions(typesToRequest);
-
-                // Update React store to reflect the synced state
-                typesToRequest.forEach(type => {
-                    if (type !== 'weather') {
-                        setPermission(type, 'granted');
-                    }
-                });
-            }
-        };
-
-        syncPermissionsWithBrowser();
-    }, [sensors, setPermission]);
-
     // Calculate solar info on mount if we already have location data (persisted from previous session)
     // This allows solar info to show immediately without clicking "Start Monitoring"
     useEffect(() => {
@@ -152,6 +106,12 @@ export const useEnvironmentalSensors = () => {
     }, [sensors, environmentalContext?.geolocation]);
 
     const [isMonitoring, setIsMonitoring] = useState(false);
+
+    // Ref guard to prevent concurrent starts regardless of stale closures.
+    // This avoids a dependency cycle where startMonitoring depends on isMonitoring
+    // (causing it to get a new identity on every state change, which re-triggers
+    // useEffects that depend on it).
+    const isMonitoringRef = useRef(false);
 
     // Severe weather alert state - updated when weather changes
     // Null if no severe weather detected
@@ -200,6 +160,211 @@ export const useEnvironmentalSensors = () => {
         if (!environmentalContext) return undefined;
         return (environmentalContext as any).biome;
     }, [environmentalContext]);
+
+    // Helper to update diagnostics for debugging (shared between functions)
+    const updateDiagnosticsState = useCallback(() => {
+        if (!sensors) return;
+
+        const diag = sensors.getDiagnostics();
+        setDiagnostics(diag);
+
+        // Extract weather-specific error from diagnostics
+        const weatherSensor = (diag.sensors as any[])?.find((s: any) => s?.type?.toLowerCase() === 'weather');
+        if (weatherSensor?.lastError) {
+            setWeatherError(weatherSensor.lastError);
+        }
+
+        // Clear error if weather is working
+        if (weatherSensor?.health === 'healthy') {
+            setWeatherError(null);
+        }
+    }, [sensors]);
+
+    // Helper to check and track weather status (shared between functions)
+    const checkWeatherStatus = useCallback((context: any) => {
+        if (!sensors) return;
+
+        if (context?.weather) {
+            setLastWeatherSuccess(Date.now());
+            setWeatherError(null);
+        } else {
+            // Check diagnostics for weather error
+            const diag = sensors.getDiagnostics();
+            const weatherSensor = (diag.sensors as any[])?.find((s: any) => s?.type?.toLowerCase() === 'weather');
+            if (weatherSensor?.lastError) {
+                setWeatherError(weatherSensor.lastError);
+            }
+        }
+
+        // Update solar info whenever we have location (works without API key)
+        if (context?.geolocation || sensors.getLastKnownGood('geolocation')?.geolocation) {
+            const solar = sensors.getSolarInfo();
+            setSolarInfo(solar);
+        }
+    }, [sensors]);
+
+    const startMonitoring = useCallback(async () => {
+        if (isMonitoringRef.current) return;
+        if (!sensors) {
+            logger.warn('EnvironmentalSensors', 'Cannot start monitoring - sensors instance not ready (waiting for hydration)');
+            return;
+        }
+
+        logger.info('EnvironmentalSensors', 'Starting monitoring');
+        // Debug: Log current settings state for troubleshooting
+        const apiKey = settings.openWeatherApiKey;
+        if (apiKey) {
+            const maskedKey = apiKey.length > 8
+                ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}`
+                : `${apiKey.slice(0, 2)}...${apiKey.slice(-2)}`;
+            logger.debug('EnvironmentalSensors', `Current API key from settings: ${maskedKey} (${apiKey.length} chars)`);
+        } else {
+            logger.warn('EnvironmentalSensors', 'No API key found in settings - weather will not load');
+        }
+        isMonitoringRef.current = true;
+        setIsMonitoring(true);
+
+        // Helper to detect and update severe weather alert
+        const updateSevereWeather = () => {
+            const alert = sensors.detectSevereWeather();
+            setSevereWeatherAlert(alert as SevereWeatherAlert | null);
+            if (alert) {
+                logger.info('EnvironmentalSensors', `Severe weather detected: ${alert.type}`, alert);
+            }
+        };
+
+        try {
+            // Stop any existing push sensors (e.g. auto-started by permission sync)
+            // before restarting to prevent duplicate event listeners
+            sensors.stopMonitoring();
+
+            // Start push-based sensors (motion + light) with live callback
+            sensors.startMonitoring((context) => {
+                // This fires instantly on every shake/tilt
+                // updateEnvironmentalContext({ ...context } as any);
+                updateEnvironmentalContext({ ...context });
+            });
+
+            // Initial pull of geolocation + weather
+            logger.debug('EnvironmentalSensors', 'Calling updateSnapshot() for initial data...');
+            const initial = await sensors.updateSnapshot();
+            logger.debug('EnvironmentalSensors', 'updateSnapshot() returned', {
+                hasGeolocation: !!(initial as any).geolocation,
+                hasWeather: !!(initial as any).weather,
+                weatherData: (initial as any).weather ? {
+                    temp: (initial as any).weather.temperature,
+                    condition: (initial as any).weather.condition,
+                    description: (initial as any).weather.description
+                } : null
+            });
+            updateEnvironmentalContext({ ...initial } as any);
+            // Check for severe weather after initial snapshot
+            updateSevereWeather();
+            // Check weather status for error tracking
+            checkWeatherStatus(initial);
+            // Update diagnostics after initial snapshot
+            updateDiagnosticsState();
+
+            // Keep geolocation/weather fresh every 30 seconds
+            const interval = setInterval(async () => {
+                try {
+                    logger.debug('EnvironmentalSensors', 'Calling updateSnapshot() (interval refresh)...');
+                    const updated = await sensors.updateSnapshot();
+                    logger.debug('EnvironmentalSensors', 'updateSnapshot() interval returned', {
+                        hasGeolocation: !!(updated as any).geolocation,
+                        hasWeather: !!(updated as any).weather,
+                        weatherData: (updated as any).weather ? {
+                            temp: (updated as any).weather.temperature,
+                            condition: (updated as any).weather.condition
+                        } : null
+                    });
+                    updateEnvironmentalContext({ ...updated } as any);
+                    // Check for severe weather after each update
+                    updateSevereWeather();
+                    // Check weather status for error tracking
+                    checkWeatherStatus(updated);
+                    // Update diagnostics after each update
+                    updateDiagnosticsState();
+                } catch (err) {
+                    logger.warn('EnvironmentalSensors', 'Snapshot update failed', err);
+                    // Still update diagnostics on error to show the failure
+                    updateDiagnosticsState();
+                }
+            }, 30_000);
+
+            // Cleanup function
+            return () => {
+                clearInterval(interval);
+                sensors.stopMonitoring();
+                isMonitoringRef.current = false;
+                setIsMonitoring(false);
+                setSevereWeatherAlert(null);
+                setDiagnostics(null);
+                setWeatherError(null);
+                setLastWeatherSuccess(null);
+            };
+        } catch (error) {
+            isMonitoringRef.current = false;
+            setIsMonitoring(false);
+            handleError(error, 'EnvironmentalSensors');
+        }
+    }, [sensors, updateEnvironmentalContext, settings.openWeatherApiKey, checkWeatherStatus, updateDiagnosticsState]);
+
+    // Sync engine permissions with browser's actual permission state when sensors instance is created
+    // This fixes the bug where permissions had to be requested every time
+    useEffect(() => {
+        if (!sensors) return;
+
+        const syncPermissionsWithBrowser = async () => {
+            const typesToRequest: ('geolocation' | 'motion' | 'weather' | 'light')[] = [];
+
+            // Check geolocation permission
+            if ('permissions' in navigator) {
+                try {
+                    const geoStatus = await navigator.permissions.query({ name: 'geolocation' });
+                    if (geoStatus.state === 'granted') {
+                        typesToRequest.push('geolocation', 'weather');
+                    }
+                } catch {
+                    // Some browsers don't support permissions.query for geolocation
+                }
+            }
+
+            // Check motion permission (desktop browsers usually auto-grant)
+            if ('DeviceMotionEvent' in window) {
+                if (typeof (DeviceMotionEvent as any).requestPermission !== 'function') {
+                    // Desktop browser - motion is auto-granted
+                    typesToRequest.push('motion');
+                }
+                // iOS requires explicit user gesture to check/request, so we skip it here
+            }
+
+            // Request permissions for already-granted browser permissions
+            if (typesToRequest.length > 0) {
+                logger.info('EnvironmentalSensors', 'Auto-syncing permissions with browser state', typesToRequest);
+                await sensors.requestPermissions(typesToRequest);
+
+                // Update React store to reflect the synced state
+                typesToRequest.forEach(type => {
+                    if (type !== 'weather') {
+                        setPermission(type, 'granted');
+                    }
+                });
+
+                // Start push-based sensors (motion + light) so live data streams immediately,
+                // and pull fresh geo/weather to replace the persisted stale data.
+                // This does NOT set isMonitoring — the button stays clickable so the user
+                // can do a full start (which adds the geo/weather refresh interval).
+                sensors.startMonitoring((context) => {
+                    updateEnvironmentalContext({ ...context });
+                });
+                const snapshot = await sensors.updateSnapshot();
+                updateEnvironmentalContext({ ...snapshot } as any);
+            }
+        };
+
+        syncPermissionsWithBrowser();
+    }, [sensors, setPermission]);
 
     const requestPermission = useCallback(async (sensorType: 'geolocation' | 'motion' | 'light') => {
         logger.info('EnvironmentalSensors', `Requesting permission: ${sensorType}`);
@@ -264,148 +429,6 @@ export const useEnvironmentalSensors = () => {
             return false;
         }
     }, [sensors, setPermission]);
-
-    // Helper to update diagnostics for debugging (shared between functions)
-    const updateDiagnosticsState = useCallback(() => {
-        if (!sensors) return;
-
-        const diag = sensors.getDiagnostics();
-        setDiagnostics(diag);
-
-        // Extract weather-specific error from diagnostics
-        const weatherSensor = (diag.sensors as any[])?.find((s: any) => s?.type?.toLowerCase() === 'weather');
-        if (weatherSensor?.lastError) {
-            setWeatherError(weatherSensor.lastError);
-        }
-
-        // Clear error if weather is working
-        if (weatherSensor?.health === 'healthy') {
-            setWeatherError(null);
-        }
-    }, [sensors]);
-
-    // Helper to check and track weather status (shared between functions)
-    const checkWeatherStatus = useCallback((context: any) => {
-        if (!sensors) return;
-
-        if (context?.weather) {
-            setLastWeatherSuccess(Date.now());
-            setWeatherError(null);
-        } else {
-            // Check diagnostics for weather error
-            const diag = sensors.getDiagnostics();
-            const weatherSensor = (diag.sensors as any[])?.find((s: any) => s?.type?.toLowerCase() === 'weather');
-            if (weatherSensor?.lastError) {
-                setWeatherError(weatherSensor.lastError);
-            }
-        }
-
-        // Update solar info whenever we have location (works without API key)
-        if (context?.geolocation || sensors.getLastKnownGood('geolocation')?.geolocation) {
-            const solar = sensors.getSolarInfo();
-            setSolarInfo(solar);
-        }
-    }, [sensors]);
-
-    const startMonitoring = useCallback(async () => {
-        if (isMonitoring) return;
-        if (!sensors) {
-            logger.warn('EnvironmentalSensors', 'Cannot start monitoring - sensors instance not ready (waiting for hydration)');
-            return;
-        }
-
-        logger.info('EnvironmentalSensors', 'Starting monitoring');
-        // Debug: Log current settings state for troubleshooting
-        const apiKey = settings.openWeatherApiKey;
-        if (apiKey) {
-            const maskedKey = apiKey.length > 8
-                ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}`
-                : `${apiKey.slice(0, 2)}...${apiKey.slice(-2)}`;
-            logger.debug('EnvironmentalSensors', `Current API key from settings: ${maskedKey} (${apiKey.length} chars)`);
-        } else {
-            logger.warn('EnvironmentalSensors', 'No API key found in settings - weather will not load');
-        }
-        setIsMonitoring(true);
-
-        // Helper to detect and update severe weather alert
-        const updateSevereWeather = () => {
-            const alert = sensors.detectSevereWeather();
-            setSevereWeatherAlert(alert as SevereWeatherAlert | null);
-            if (alert) {
-                logger.info('EnvironmentalSensors', `Severe weather detected: ${alert.type}`, alert);
-            }
-        };
-
-        try {
-            // Start push-based sensors (motion + light) with live callback
-            sensors.startMonitoring((context) => {
-                // This fires instantly on every shake/tilt
-                // updateEnvironmentalContext({ ...context } as any);
-                updateEnvironmentalContext({ ...context });
-            });
-
-            // Initial pull of geolocation + weather
-            logger.debug('EnvironmentalSensors', 'Calling updateSnapshot() for initial data...');
-            const initial = await sensors.updateSnapshot();
-            logger.debug('EnvironmentalSensors', 'updateSnapshot() returned', {
-                hasGeolocation: !!(initial as any).geolocation,
-                hasWeather: !!(initial as any).weather,
-                weatherData: (initial as any).weather ? {
-                    temp: (initial as any).weather.temperature,
-                    condition: (initial as any).weather.condition,
-                    description: (initial as any).weather.description
-                } : null
-            });
-            updateEnvironmentalContext({ ...initial } as any);
-            // Check for severe weather after initial snapshot
-            updateSevereWeather();
-            // Check weather status for error tracking
-            checkWeatherStatus(initial);
-            // Update diagnostics after initial snapshot
-            updateDiagnosticsState();
-
-            // Keep geolocation/weather fresh every 30 seconds
-            const interval = setInterval(async () => {
-                try {
-                    logger.debug('EnvironmentalSensors', 'Calling updateSnapshot() (interval refresh)...');
-                    const updated = await sensors.updateSnapshot();
-                    logger.debug('EnvironmentalSensors', 'updateSnapshot() interval returned', {
-                        hasGeolocation: !!(updated as any).geolocation,
-                        hasWeather: !!(updated as any).weather,
-                        weatherData: (updated as any).weather ? {
-                            temp: (updated as any).weather.temperature,
-                            condition: (updated as any).weather.condition
-                        } : null
-                    });
-                    updateEnvironmentalContext({ ...updated } as any);
-                    // Check for severe weather after each update
-                    updateSevereWeather();
-                    // Check weather status for error tracking
-                    checkWeatherStatus(updated);
-                    // Update diagnostics after each update
-                    updateDiagnosticsState();
-                } catch (err) {
-                    logger.warn('EnvironmentalSensors', 'Snapshot update failed', err);
-                    // Still update diagnostics on error to show the failure
-                    updateDiagnosticsState();
-                }
-            }, 30_000);
-
-            // Cleanup function
-            return () => {
-                clearInterval(interval);
-                sensors.stopMonitoring();
-                setIsMonitoring(false);
-                setSevereWeatherAlert(null);
-                setDiagnostics(null);
-                setWeatherError(null);
-                setLastWeatherSuccess(null);
-            };
-        } catch (error) {
-            handleError(error, 'EnvironmentalSensors');
-            setIsMonitoring(false);
-        }
-    }, [sensors, isMonitoring, updateEnvironmentalContext, settings.openWeatherApiKey, checkWeatherStatus, updateDiagnosticsState]);
 
     // Manual refresh for weather data
     const refreshWeather = useCallback(async () => {
