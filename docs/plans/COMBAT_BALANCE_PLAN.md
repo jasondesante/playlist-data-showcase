@@ -548,79 +548,80 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
     enableClassFeatures?: boolean;
   }
   ```
-- [ ] **2.1.3** Define `AIDecision` interface — the output of the AI's decision for a single turn
-  ```typescript
-  interface AIDecision {
-    action: 'attack' | 'castSpell' | 'dodge' | 'dash' | 'disengage' | 'flee' | 'useItem' | 'legendaryAction';
-    target?: string;           // target combatant ID
-    targetIds?: string[];      // for multi-target spells
-    weaponName?: string;       // which weapon to attack with
-    spellName?: string;        // which spell to cast
-    itemName?: string;         // which consumable item to use
-    legendaryActionId?: string; // which legendary action
-    reasoning?: string;        // human-readable explanation of the decision
-  }
-  ```
-- [ ] **2.1.4** Define `AIThreatAssessment` — how the AI evaluates the battlefield
-  ```typescript
-  interface AIThreatAssessment {
-    myHPPercent: number;        // current HP / max HP
-    myAC: number;
-    lowestAllyHPPercent: number;
-    lowestEnemyHP: number;      // absolute HP of weakest enemy
-    highestEnemyDamage: number; // estimated DPR of scariest enemy
-    partySize: number;
-    enemyCount: number;
-    roundNumber: number;
-    isLowHP: boolean;           // below 25% HP
-    isCriticalHP: boolean;      // below 10% HP
-    hasHealingItems: boolean;
-    hasSpellSlots: boolean;
-    hasRemainingLimitedAbilities: boolean;
-  }
-  ```
+- [x] **2.1.3** Define `AIDecision` interface — the output of the AI's decision for a single turn
+  - Already implemented in `src/core/types/CombatAI.ts` (lines 50-74) alongside 2.1.1/2.1.2
+  - Matches spec exactly: all 8 action types, target/targetIds, weaponName, spellName, itemName, legendaryActionId, reasoning
+  - Exported from engine `src/index.ts` (line 332)
+  - TypeScript check clean
+- [x] **2.1.4** Define `AIThreatAssessment` — how the AI evaluates the battlefield
+  - Already implemented in `src/core/types/CombatAI.ts` (lines 82-121) alongside 2.1.1/2.1.2
+  - Matches spec exactly: all 13 fields (myHPPercent, myAC, ally/enemy stats, roundNumber, HP flags, resource flags)
+  - Exported from engine `src/index.ts` (line 333)
+  - TypeScript check clean
 
 ### 2.2 AI Decision Engine
 
-- [ ] **2.2.1** Create `src/core/combat/AI/CombatAI.ts` — main AI class
-  - `constructor(config: AIConfig)`
-  - `decide(combatant, combatInstance): AIDecision` — main entry point
-  - `assessThreat(combatant, combatInstance): AIThreatAssessment` — evaluate battlefield state
-- [ ] **2.2.2** Implement target selection logic (`selectTarget()`)
-  - **Normal**: target nearest / lowest AC enemy (balanced approach)
-  - **Aggressive**: target lowest HP enemy (finish them off for action economy, maximize kills)
-  - Exclude defeated combatants, prefer living targets
-- [ ] **2.2.3** Implement weapon selection logic (`selectWeapon()`)
-  - Evaluate all equipped weapons + unarmed strike
-  - Consider: damage potential, attack bonus, range, properties (finesse, versatile)
-  - **Normal**: balanced (highest expected damage with reasonable hit chance)
-  - **Aggressive**: highest expected damage weapon regardless of hit chance
-- [ ] **2.2.4** Implement spell selection logic (`selectSpell()`)
-  - Evaluate all known spells + cantrips against available spell slots
-  - Use spell tags (`damage`, `healing`, `buff`, `control`, `aoe`, `multi-target`) for decision-making
-  - **Normal**: cantrips and basic attacks primarily, use leveled spells only when clearly beneficial (e.g., Fireball vs 3+ enemies)
-  - **Aggressive**: highest damage spell available at all times, prioritize AoE when multiple enemies alive, burn all spell slots immediately, use healing spells proactively to maintain max HP for max damage output
-- [ ] **2.2.5** Implement item usage logic (`shouldUseItem()`)
-  - Check inventory for healing items (potions, etc.)
-  - **Normal**: use healing when below 50% HP
-  - **Aggressive**: use healing items proactively to stay at high HP for max damage output
-- [ ] **2.2.6** Implement action economy logic (`shouldDodge()`, `shouldFlee()`)
-  - **Normal**: dodge when isolated and low HP, flee when clearly outmatched
+- [x] **2.2.1** Create `src/core/combat/AI/CombatAI.ts` — main AI class
+  - Created `src/core/combat/AI/CombatAI.ts` with full AI decision engine
+  - `constructor(config: AIConfig)` — accepts AI configuration with per-side styles and per-combatant overrides
+  - `decide(combatant, combatInstance): AIDecision` — main entry point, evaluates battlefield and selects best action
+  - `assessThreat(combatant, combatInstance): AIThreatAssessment` — evaluates HP, AC, allies, enemies, resources
+  - Helper methods: `getStyleForCombatant()`, `getSide()`, `getEnemies()`, `getAllies()`
+  - Utility: `averageDamageFromFormula()` for expected damage calculations, `isSupportArchetype()` detection
+  - Exported from engine `src/index.ts`
+  - 86 tests in `tests/unit/combat/combatAI.test.ts` covering all subsystems
+  - All 791 combat tests pass, engine builds clean (tsc + vite)
+- [x] **2.2.2** Implement target selection logic (`selectTarget()`)
+  - **Normal**: targets lowest AC enemy (balanced — easiest to hit)
+  - **Aggressive**: targets lowest HP enemy (finish them off for action economy)
+  - Excludes defeated combatants, handles single-enemy edge case, throws on empty list
+  - 4 tests covering both styles, single target, and error case
+- [x] **2.2.3** Implement weapon selection logic (`selectWeapon()`)
+  - Evaluates all equipped weapons + unarmed strike as fallback
+  - Calculates expected damage from dice formula and attack bonus from ability scores
+  - **Normal**: balanced score (expected damage + attack bonus weight)
+  - **Aggressive**: highest raw expected damage regardless of hit chance
+  - Handles ranged weapons (DEX-based) and melee weapons (STR-based)
+  - 4 tests covering weapon selection, unarmed fallback, aggressive max-damage, and damage calculation
+- [x] **2.2.4** Implement spell selection logic (`selectSpell()`)
+  - Evaluates all `combat_spells` against available spell slots via `getAvailableSpells()`
+  - Uses `SpellCaster` static helpers for tag-based classification (damage, healing, buff, control, aoe, multi-target, ally, self, bonus-action, concentration)
+  - `evaluateSpell()` computes expected damage with AoE/multi-target multiplier and leveled spell bonus
+  - **Normal**: cantrips preferred for damage; leveled spells only when 50%+ better; conserves slots in round 1; buffs when healthy; control when 2+ enemies
+  - **Aggressive**: always casts highest-damage spell; burns all slots; heals proactively below 75% HP
+  - Healing targets lowest-HP ally; buff targets highest-stat ally
+  - Multi-target spells target all enemies
+  - 8 tests covering cantrip casting, aggressive slot burning, healing, no-slot fallback, cantrip preference, proactive healing, and multi-target targeting
+- [x] **2.2.5** Implement item usage logic (`shouldUseItem()`)
+  - Checks inventory for usable items (quantity > 0, not equipped)
+  - **Normal**: use healing items when below 25% HP and no spell slots available
+  - **Aggressive**: use healing items below 75% HP when no spell slots
+  - Items are a fallback after spell-based healing
+  - 2 tests covering item usage when low HP and skip when HP is fine
+- [x] **2.2.6** Implement action economy logic (`shouldDodge()`, `shouldFlee()`)
+  - **Normal**: dodge when isolated (partySize ≤ 1) and low HP (<25%) against multiple enemies
   - **Aggressive**: never dodge, never flee — every action is damage or healing
-- [ ] **2.2.7** Implement legendary action AI (`selectLegendaryAction()`)
-  - Boss-only: decide which legendary action to use and when
-  - Track action points remaining (3 per round)
-  - Use legendary action tags (`damage`, `heal`, `control`, `movement`) for filtering
-  - **Normal**: spread actions across the round, prefer damage actions
-  - **Aggressive**: use highest-cost damage actions immediately, use healing actions when below 50% HP
-- [ ] **2.2.8** Implement resource management per play style
-  - **Normal**: moderate resource usage, keep some reserves
-  - **Aggressive**: no conservation — burn everything for maximum effectiveness this fight
-- [ ] **2.2.9** Implement support archetype AI behaviors
-  - Support enemies with healing spells should prioritize healing lowest-HP ally
-  - Buff spells (Bless, etc.) should target allies, not self
-  - Control spells should target highest-threat enemy
-  - **Aggressive support**: still prioritize healing but also uses damage spells more freely
+  - 3 tests covering isolated+lowHP dodge, aggressive never dodges, and not-isolated attacks
+- [x] **2.2.7** Implement legendary action AI (`selectLegendaryAction()`)
+  - Boss-only: checks for `legendary_config`, respects action point budget
+  - Filters available actions by cost ≤ remaining points
+  - Separates actions by tags: damage, healing, control
+  - **Normal**: prefers lowest-cost damage action (conserve points for spread across round)
+  - **Aggressive**: prefers highest-cost damage action (max immediate impact)
+  - Falls back to healing when low HP, control when available, or any action as last resort
+  - Returns null when no points, no config, or no enemies
+  - 8 tests covering basic usage, point budget, no-config fallback, aggressive high-cost, normal low-cost, budget respect, no-enemies, and target inclusion
+- [x] **2.2.8** Implement resource management per play style
+  - **Normal**: moderate resource usage — cantrips preferred, leveled spells only when clearly better, saves slots in round 1 when few remaining, buffs only when healthy
+  - **Aggressive**: no conservation — always picks highest-damage option, burns all spell slots, heals proactively to maintain max HP for damage output
+  - Resource management is distributed across spell/weapon/item selection methods rather than a single centralized method
+- [x] **2.2.9** Implement support archetype AI behaviors
+  - `isSupportArchetype()` detects healers/buffers by checking spell tags (`healing`, `ally`, `buff`)
+  - Healing spells prioritize lowest-HP ally; normal only heals allies below 50%, aggressive heals everyone
+  - Buff spells target the ally with highest STR/DEX (best damage dealer)
+  - Control spells target enemies (normal style only, when 2+ enemies)
+  - Aggressive support still prioritizes healing but uses damage spells more freely
+  - 4 tests covering healer detection, buffer detection, damage-only caster (not support), and no-spells combatant
 
 ### 2.3 AI Integration with CombatEngine
 
