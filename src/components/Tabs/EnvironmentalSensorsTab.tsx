@@ -193,8 +193,13 @@ function MotionGraph({ data, color, label }: { data: number[]; color: string; la
 
     ctx.clearRect(0, 0, width, height);
 
+    // Canvas 2D doesn't resolve CSS custom properties — resolve them manually
+    const styles = getComputedStyle(document.documentElement);
+    const surface3 = styles.getPropertyValue('--surface-3').trim();
+    const foreground = styles.getPropertyValue('--foreground').trim();
+
     // Draw background
-    ctx.fillStyle = 'hsl(var(--surface-3))';
+    ctx.fillStyle = `hsl(${surface3})`;
     ctx.fillRect(0, 0, width, height);
 
     if (data.length < 2) return;
@@ -224,7 +229,7 @@ function MotionGraph({ data, color, label }: { data: number[]; color: string; la
     ctx.stroke();
 
     // Draw label
-    ctx.fillStyle = 'hsl(var(--foreground))';
+    ctx.fillStyle = `hsl(${foreground})`;
     ctx.font = '10px sans-serif';
     ctx.fillText(label, padding, padding + 10);
   }, [data, color, label]);
