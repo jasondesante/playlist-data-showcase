@@ -308,16 +308,27 @@ Status effects exist as data (`StatusEffect` has a `duration` field) but are nev
 
 Legendary actions are generated and stored on `CharacterSheet.legendary_config` but `CombatEngine` has no method to execute them. Important for boss simulation accuracy but **does not block** basic attack simulations.
 
-- [ ] **1.4.1** Add `executeLegendaryAction(combat, bossCombatant, action, target)` to `CombatEngine`
+- [x] **1.4.1** Add `executeLegendaryAction(combat, bossCombatant, action, target)` to `CombatEngine`
   - Validate the action exists in the boss's `legendary_config.actions`
   - Track legendary action points spent per round (3 points per round, reset at start of boss's turn)
   - Resolve damage if the action has `damage`/`damageType`
   - Record action in combat history
-- [ ] **1.4.2** Add legendary action point tracking to `Combatant` type
+  - Added `executeLegendaryAction()` method to `CombatEngine` — validates action belongs to boss, checks point budget, spends points, resolves damage via `parseDiceFormula` (strips spaces from formulas like "2d8 + 5"), records `legendaryAction` type in history with full result
+  - Added `legendaryActionsRemaining` and `legendaryResistancesRemaining` fields to `Combatant` interface in `Combat.ts` (needed for 1.4.1's point tracking requirement)
+  - Updated `createCombatant()` in `CombatEngine` to initialize legendary fields for boss enemies (3 action points, resistances from config)
+  - Integrated legendary action point reset into `nextTurn()` — resets to 3 for all non-defeated boss combatants at the start of each new round
+  - Updated test helper `createTestCombatant` in `combatTestHelpers.ts` with legendary override support
+  - Updated showcase mirror type `Combatant` in `useCombatEngine.ts` with new legendary fields
+  - Strips spaces from damage formulas before parsing (`parseDiceFormula` regex requires no spaces)
+  - 38 tests in `tests/unit/combat/legendaryAction.test.ts` covering: initialization (5), validation (3), point tracking (6), damage resolution (7), history recording (9), point reset (5), full combat integration (2)
+  - All 433 combat tests pass, engine builds clean (tsc + vite)
+- [x] **1.4.2** Add legendary action point tracking to `Combatant` type
   - `legendaryActionsRemaining: number` — reset to 3 at start of boss's turn
   - `legendaryResistancesRemaining: number` — per-day resource
-- [ ] **1.4.3** Integrate legendary action reset into `nextTurn()`
+  - Completed as part of 1.4.1
+- [x] **1.4.3** Integrate legendary action reset into `nextTurn()`
   - When it's a boss combatant's turn and `roundNumber` advanced, reset `legendaryActionsRemaining` to 3
+  - Completed as part of 1.4.1 — resets all non-defeated boss combatants' legendary action points at start of each new round
 - [ ] **1.4.4** Add `useLegendaryResistance(combat, bossCombatant)` method
   - Decrement `legendaryResistancesRemaining`, auto-succeed a saving throw
   - Return whether the resistance was available

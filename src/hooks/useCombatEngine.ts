@@ -25,6 +25,8 @@ export interface Combatant {
   reactionUsed: boolean;
   spellSlots?: { [level: number]: number };
   concentratingOn?: string;
+  legendaryActionsRemaining?: number;
+  legendaryResistancesRemaining?: number;
 }
 
 export interface CombatInstance {
