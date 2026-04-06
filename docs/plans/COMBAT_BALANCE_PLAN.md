@@ -67,7 +67,7 @@ The current `DiceRoller` class uses `Math.random()` for all rolls. It has a `see
 - [x] **0.1.2** Add `createSeededRoller(seed: string): SeededDiceRoller` factory method
   - Creates a `SeededRNG` from the seed, wraps it in `SeededDiceRoller`
   - This is what `CombatSimulator` will call per run
-- [ ] **0.1.3** Update `CombatEngine` to accept an optional `DiceRoller` instance
+- [x] **0.1.3** Update `CombatEngine` to accept an optional `DiceRoller` instance
   - If provided, use it for all combat rolls instead of the static `DiceRoller`
   - This allows the same `CombatEngine` class to work in both live (random) and simulation (seeded) modes
   - Default: use static `DiceRoller` (backward compatible)
