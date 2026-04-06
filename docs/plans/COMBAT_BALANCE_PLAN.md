@@ -248,12 +248,21 @@ Status effects exist as data (`StatusEffect` has a `duration` field) but are nev
   - Defeated combatants are skipped (no tick-down)
   - 15 tests in `tests/unit/combat/statusEffectTickDown.test.ts` covering: duration decrement, expiration/removal, history logging, no-log when nothing expires, no-effect combatants, defeated skip, pre-expired effects, multi-round tracking, independent per-combatant ticking, separate history entries, field preservation, actor reference, combat-end interaction, multiple effects expiring together
   - All 292 combat tests pass, build verified clean (tsc --noEmit + vite build)
-- [ ] **1.3.5** Implement mechanical enforcement for existing effects
+- [x] **1.3.5** Implement mechanical enforcement for existing effects
   - **Charmed**: combatant has disadvantage on attack rolls against non-charming targets (needs source tracking)
   - **Frightened**: combatant has disadvantage on attack rolls and ability checks while source is visible
   - **Burning**: deal damage equal to effect's damage value at start of turn
   - **Stunned**: skip turn entirely (auto-advance), disadvantage on DEX saves, speed 0
   - **Prone**: disadvantage on melee attack rolls, advantage on ranged attack rolls against prone target, melee attacks have advantage against prone
+  - Added `getAttackAdvantageDisadvantage()` to CombatEngine — checks attacker/target status effects for advantage/disadvantage, with cancellation per D&D 5e rules
+  - Modified `executeAttack()` to route to `attackWithAdvantage()`/`attackWithDisadvantage()`/`resolveAttack()` based on effect flags
+  - Added `processStartOfTurnDamage()` to CombatEngine — deals damage from effects with `damage > 0` before skip check
+  - Restructured `nextTurn()` with loop (not recursion) — processes damage → checks skip BEFORE duration decrement → decrements after skip. Prevents infinite loops via maxIterations guard
+  - Added `shouldSkipTurn()` helper — checks for `mechanicalEffects.skipTurn` on any active effect
+  - Modified `SpellCaster.makeSavingThrow()` to accept `disadvantage?: boolean` parameter — rolls with disadvantage using `rollWithDisadvantage()`
+  - Modified `SpellCaster.castSpell()` to check `disadvantageOnDexSaves` on target's status effects for DEX saving throws
+  - 36 new tests in `tests/unit/combat/statusEffectMechanics.test.ts` covering: charmed/frightened/prone advantage+disadvantage, cancellation, burning damage (stacking, temp HP, defeat), stunned skip turn (auto-advance, damage before skip, duration expiry, infinite loop guard, death from burning), DEX save disadvantage, statistical verification, full integration
+  - All 328 combat tests pass, engine builds clean
 - [ ] **1.3.6** Add concentration tracking
   - Track which combatant is concentrating on which effect
   - When a new concentration spell is cast, drop the previous concentration effect
