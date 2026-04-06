@@ -468,12 +468,17 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Notes backward compatibility: when all levels match CR, output is identical to current generation
   - Exported from `Enemy.ts` for use by `EnemyGenerationOptions` (1.7.4) and `StatScaling.ts` (1.7.2)
   - Engine builds clean (tsc --noEmit + vite build pass)
-- [ ] **1.7.2** Create `src/constants/StatScaling.ts` — level-based stat scaling functions
-  - Define `getLevelScalingFactor(level: number): number` — returns a multiplier for how much a stat increases at a given level vs level 1. The formula should feel natural: a level 10 enemy is noticeably tougher than level 1, but not exponentially so. Tunable via constants.
-  - Define `getHPAtLevel(baseHP: number, level: number, rarity: EnemyRarity): number` — scales HP using the level scaling factor + rarity adjustments
-  - Define `getAttackAtLevel(baseStats: AbilityScores, level: number, rarity: EnemyRarity, archetype: EnemyArchetype)` — returns `{ damageDie: string; damageModifier: number; attackBonus: number }` computed at the given level
-  - Define `getDefenseAtLevel(baseStats: AbilityScores, level: number, baseAC: number, equipment: EquipmentConfig): number` — computes AC at the given level
-  - **Design principle:** When all three levels match CR, output must be identical to current generation (backward compatible). The scaling functions are additive — they compute what the stats *would be* at a given level, then the generator uses those values.
+- [x] **1.7.2** Create `src/constants/StatScaling.ts` — level-based stat scaling functions
+  - Created `src/constants/StatScaling.ts` with 5 exported functions and tunable constants
+  - `getLevelScalingFactor(level)` — linear scaling: `1 + (level - 1) * 0.035`, produces 1.0x at level 1, ~1.67x at level 20 (not exponential)
+  - `getHPAtLevel(baseHP, level, rarity)` — `baseHP * (1 + HP_PER_LEVEL_FACTOR * (level - 1)) * rarityMultiplier * fractionalCRMultiplier`; at level 1 common, output matches current system exactly
+  - `getAttackAtLevel(baseStats, level, rarity, archetype)` — returns `{ damageDie, damageModifier, attackBonus }`; damage die scales by level thresholds (d6 → d8 → d10 → d12 → 2d6 → 2d8); damage modifier uses actual primary ability score (STR/DEX/CHA) + base level bonus instead of hardcoded rarity values; attack bonus = proficiency + primary mod + extra level bonus
+  - `getDefenseAtLevel(baseStats, level, baseAC, equipment)` — `baseAC + DEX modifier + equipment AC + level bonus`; at level 1 with no equipment, matches current system exactly
+  - `getDamageModifierForStats(baseStats, level, archetype)` — convenience function matching getAttackAtLevel's damageModifier
+  - Tunable constants: HP_PER_LEVEL_FACTOR (0.06), ATTACK_BONUS_PER_LEVEL (0.2), BASE_DAMAGE_MOD_PER_LEVEL (0.2), AC_PER_LEVEL (0.2)
+  - **Backward compatibility verified**: level 1 common matches current system for HP, AC; damage modifier now uses actual ability scores (fixing the bug described in 1.7.3)
+  - 58 tests in `tests/unit/combat/statScaling.test.ts` covering: level scaling factor (8), HP at level (11), attack damage die (6), damage modifier (6), attack bonus (6), defense (9), damage modifier for stats (6), stat level separation scenarios (4), independence from rarity (1), integration with current system (1)
+  - All 653 combat tests pass, engine builds clean (tsc --noEmit + vite build)
 - [ ] **1.7.3** Fix `getAbilityModifierForRarity()` — use actual ability scores
   - Currently returns hardcoded +2/+3/+4/+6 based on rarity, ignoring scaled STR/DEX scores
   - Replace with computing the modifier from actual scaled ability scores + archetype primary stat (STR for brute, DEX for archer, WIS/CHA for support)
