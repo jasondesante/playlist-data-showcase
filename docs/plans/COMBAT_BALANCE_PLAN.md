@@ -524,9 +524,13 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 2.1 AI Architecture & Types
 
-- [ ] **2.1.1** Define `AIPlayStyle` enum type
+- [x] **2.1.1** Define `AIPlayStyle` enum type
   - `normal` — balanced play, basic attacks primarily, uses abilities when clearly beneficial, conserves limited resources
   - `aggressive` — maximizes damage output, uses ALL spells/abilities/healing items immediately, no resource conservation, no strategy except maximum damage and maximum healing
+  - Created `src/core/types/CombatAI.ts` with `AIPlayStyle` type union (`'normal' | 'aggressive'`), following existing codebase convention (e.g., `EnemyRarity`, `EncounterDifficulty`)
+  - Added `isValidAIPlayStyle()` type guard function
+  - Exported `AIPlayStyle` and `isValidAIPlayStyle` from engine `src/index.ts`
+  - Engine builds clean (vite build), all 769 combat tests pass
 - [ ] **2.1.2** Define `AIConfig` interface
   ```typescript
   interface AIConfig {
