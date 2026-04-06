@@ -206,7 +206,7 @@
 .auto-ready-actions {
     display: flex;
     justify-content: center;
-    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
 }
 
 .auto-ready-start-btn {

@@ -305,6 +305,31 @@ export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRege
                 </p>
             </div>
 
+            {/* Start Practice Button */}
+            <div className="auto-ready-actions">
+                <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={handleStartPractice}
+                    disabled={!hasLevel}
+                    className="auto-ready-start-btn"
+                >
+                    <Play size={18} />
+                    Start Practice
+                </Button>
+                {onExport && (
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={onExport}
+                        disabled={!hasLevel}
+                    >
+                        <Download size={18} />
+                        Export Level
+                    </Button>
+                )}
+            </div>
+
             {/* Difficulty Switcher (preset mode only) */}
             {autoSubMode !== 'customDensity' && (
                 <div className="auto-ready-difficulty-section">
@@ -432,30 +457,6 @@ export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRege
                 />
             </div>
 
-            {/* Start Practice Button */}
-            <div className="auto-ready-actions">
-                <Button
-                    variant="primary"
-                    size="lg"
-                    onClick={handleStartPractice}
-                    disabled={!hasLevel}
-                    className="auto-ready-start-btn"
-                >
-                    <Play size={18} />
-                    Start Practice
-                </Button>
-                {onExport && (
-                    <Button
-                        variant="outline"
-                        size="lg"
-                        onClick={onExport}
-                        disabled={!hasLevel}
-                    >
-                        <Download size={18} />
-                        Export Level
-                    </Button>
-                )}
-            </div>
         </Card>
     );
 }
