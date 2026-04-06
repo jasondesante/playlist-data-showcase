@@ -209,11 +209,16 @@ The combat subsystem has zero test coverage. The existing `tests/unit/combat.tes
 
 Status effects exist as data (`StatusEffect` has a `duration` field) but are never decremented, enforced, or removed. Two effects are hardcoded in `SpellCaster` (charmed, frightened) but they have no mechanical impact.
 
-- [ ] **1.3.1** Expand `CombatAction` type union in `src/core/types/Combat.ts`
+- [x] **1.3.1** Expand `CombatAction` type union in `src/core/types/Combat.ts`
   - Add `'useItem'` and `'legendaryAction'` to the action type union
   - Currently: `'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'help' | 'hide' | 'ready' | 'flee'`
   - After: `'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'help' | 'hide' | 'ready' | 'flee' | 'useItem' | 'legendaryAction'`
   - Add corresponding optional fields to `CombatAction` interface: `item?: Item`, `legendaryAction?: LegendaryAction`
+  - Added `'useItem'` and `'legendaryAction'` to the `CombatAction.type` union in `src/core/types/Combat.ts`
+  - Added `item?: Equipment` field (using existing `Equipment` type from `utils/constants.ts` since no standalone `Item` type exists)
+  - Added `legendaryAction?: LegendaryAction` field (imported from `./Enemy`)
+  - Updated showcase mirror types: `ActionLogEntry.actionType` in `combatDataExporter.ts` and `CombatAction` in `useCombatEngine.ts`
+  - Engine type-check and build verified clean, all 277 combat tests pass
 - [ ] **1.3.2** Extend `StatusEffect` interface with optional fields: `damage?: number`, `damageType?: DamageType`, `mechanicalEffects?: StatusEffectMechanics` (advantage/disadvantage/immunity flags)
 - [ ] **1.3.3** Add `applyStatusEffect()` and `removeExpiredStatusEffects()` methods to `CombatEngine`
   - `applyStatusEffect(combatant, effect)` — pushes effect, checks for stacking rules (same name = refresh duration, take higher)
