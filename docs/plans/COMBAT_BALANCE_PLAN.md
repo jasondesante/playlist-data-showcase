@@ -99,9 +99,13 @@ Currently `createCombatant()` ignores `character.spells.spell_slots` entirely an
 
 **Additional issue:** The same hardcoded D&D 5e spell slot table is duplicated in both `CombatEngine.initializeSpellSlots()` and `SpellCaster.restoreSpellSlots()`. These must be consolidated into a shared constant.
 
-- [ ] **1.1.1** Extract the hardcoded spell slot table into a shared constant (e.g., `src/constants/SpellSlots.ts`)
+- [x] **1.1.1** Extract the hardcoded spell slot table into a shared constant (e.g., `src/constants/SpellSlots.ts`)
   - Currently duplicated in `CombatEngine.initializeSpellSlots()` (line ~587) and `SpellCaster.restoreSpellSlots()` (line ~160)
   - Both methods should reference the same constant
+  - Created `src/constants/SpellSlots.ts` with `FULL_CASTER_SLOTS` table and `getFullCasterSlotsForLevel()` helper
+  - Updated `CombatEngine.initializeSpellSlots()` to use `getFullCasterSlotsForLevel()`
+  - Updated `SpellCaster.restoreSpellSlots()` to use `getFullCasterSlotsForLevel()`
+  - Build verified clean (tsc --noEmit passes, vite build succeeds)
 - [ ] **1.1.2** Update `initializeSpellSlots()` in `CombatEngine` to read from `character.spells.spell_slots`
   - If `character.spells.spell_slots` exists, convert: `{ [level]: { total, used } }` → `{ [level]: total - used }`
   - Fall back to hardcoded table if `character.spells.spell_slots` is missing (backward compat)
