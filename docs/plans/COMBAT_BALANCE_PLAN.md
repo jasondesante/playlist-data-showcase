@@ -71,8 +71,11 @@ The current `DiceRoller` class uses `Math.random()` for all rolls. It has a `see
   - If provided, use it for all combat rolls instead of the static `DiceRoller`
   - This allows the same `CombatEngine` class to work in both live (random) and simulation (seeded) modes
   - Default: use static `DiceRoller` (backward compatible)
-- [ ] **0.1.4** Update `AttackResolver` and `InitiativeRoller` to accept roller injection
+- [x] **0.1.4** Update `AttackResolver` and `InitiativeRoller` to accept roller injection
   - Same pattern: optional roller parameter, default to static `DiceRoller`
+  - Already implemented: `AttackResolver` (line 29-33), `InitiativeRoller` (line 23-27), and `SpellCaster` (line 14-17) all accept `DiceRollerAPI` in constructors
+  - `CombatEngine` passes its roller to all three (lines 61-63)
+  - Build verified clean
 - [ ] **0.1.5** Add tests
   - Same seed + same calls = identical results
   - Different seeds = different results
