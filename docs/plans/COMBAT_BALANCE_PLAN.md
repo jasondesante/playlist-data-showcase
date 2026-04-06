@@ -59,7 +59,7 @@ The current `DiceRoller` class uses `Math.random()` for all rolls. It has a `see
 
 **Existing foundation:** `SeededRNG` (`src/utils/random.ts`) already exists and is production-quality — uses MurmurHash V3 via `deriveSeed()` + `hashSeedToFloat()`, has stateful counter, and provides `random()`, `randomInt()`, `randomChoice()`, `weightedChoice()`, `shuffle()`. `SeededDiceRoller` will be a thin wrapper around this.
 
-- [ ] **0.1.1** Create `src/core/combat/SeededDiceRoller.ts`
+- [x] **0.1.1** Create `src/core/combat/SeededDiceRoller.ts`
   - Implements the same API as `DiceRoller` but uses `SeededRNG` internally
   - Constructor accepts a `SeededRNG` instance (or creates one from a seed string)
   - All roll methods produce deterministic results: `rollDie()`, `rollD20()`, `rollWithAdvantage()`, `rollWithDisadvantage()`, `calculateDamage()`, `rollSavingThrow()`, `rollAbilityCheck()`, `parseDiceFormula()`
