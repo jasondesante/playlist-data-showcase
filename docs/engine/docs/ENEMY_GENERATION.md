@@ -15,7 +15,8 @@ Complete guide to generating enemies and encounters in the Playlist Data Engine.
 7. [Template System](#template-system)
 8. [Audio Integration](#audio-integration)
 9. [Encounter Balance](#encounter-balance)
-10. [API Reference](#api-reference)
+10. [Simulation-Based Balance Validation](#simulation-based-balance-validation)
+11. [API Reference](#api-reference)
 
 ---
 
@@ -840,6 +841,165 @@ const enemies = EnemyGenerator.generateEncounter(party, {
 - **1.0** = Standard difficulty
 - **1.1-1.2** = Harder (for experienced players)
 - **0.8-0.9** = Easier (for newer players)
+
+---
+
+## Simulation-Based Balance Validation
+
+XP budgets (above) are **theoretical** — they use D&D 5e tables to estimate encounter difficulty. Simulation-based validation **tests actual difficulty** by running hundreds of AI-controlled combats and measuring real outcomes.
+
+### Why Simulation?
+
+| Aspect | XP Budget (Theoretical) | Simulation (Empirical) |
+|--------|------------------------|----------------------|
+| **What it measures** | Expected threat level | Actual win/loss outcomes |
+| **Accounts for** | CR, enemy count, party level | AI decisions, dice variance, action economy, abilities |
+| **Accuracy** | Approximate (designed for tabletop) | Precise (matches this game's combat engine) |
+| **Speed** | Instant (table lookup) | Seconds (hundreds of simulated combats) |
+| **Output** | "This is a Medium encounter" | "Players win 73% of the time in ~4 rounds" |
+
+**Use XP budgets for fast encounter generation, then validate with simulation when balance matters.**
+
+### Expected Win Rates
+
+The `BalanceValidator` uses these D&D 5e-inspired targets:
+
+| Difficulty | Player Win Rate | Meaning |
+|------------|----------------|---------|
+| **Easy** | 90–100% | Party almost always wins. Low risk, resource-conservative. |
+| **Medium** | 70–80% | Comfortable but not trivial. Occasional resource drain. |
+| **Hard** | 50–60% | Challenging. Real risk of character death. |
+| **Deadly** | 30–40% | Likely TPK. Major achievement to win. |
+
+These values are tunable via the `EXPECTED_WIN_RATES` constant.
+
+### BalanceValidator
+
+Validates an encounter by comparing simulated win rate against the intended difficulty tier.
+
+```typescript
+import {
+  BalanceValidator,
+  CombatSimulator,
+  AIPlayStyle
+} from 'playlist-data-engine';
+
+// ═══════════════════════════════════════════════════════════════
+// Option A: Validate from scratch (runs simulations internally)
+// ═══════════════════════════════════════════════════════════════
+const validator = new BalanceValidator();
+const report = validator.validate(
+  party,           // Player CharacterSheet[]
+  enemies,         // Enemy CharacterSheet[]
+  'medium',        // Intended difficulty
+  {
+    runCount: 500,
+    baseSeed: 'validation-seed',
+    aiConfig: {
+      playerStyle: 'normal',
+      enemyStyle: 'aggressive'
+    }
+  }
+);
+
+// ═══════════════════════════════════════════════════════════════
+// Option B: Analyze existing simulation results
+// ═══════════════════════════════════════════════════════════════
+const simulator = new CombatSimulator();
+const results = simulator.run(party, enemies, {
+  runCount: 500,
+  baseSeed: 'validation-seed',
+  aiConfig: {
+    playerStyle: 'normal',
+    enemyStyle: 'aggressive'
+  }
+});
+
+const report2 = validator.analyze(results, 'medium');
+```
+
+### BalanceReport Output
+
+The `validate()` and `analyze()` methods return a `BalanceReport`:
+
+```typescript
+interface BalanceReport {
+  intendedDifficulty: 'easy' | 'medium' | 'hard' | 'deadly';
+  actualDifficulty:   'easy' | 'medium' | 'hard' | 'deadly';
+  balanceScore: number;              // 0–100 (100 = perfect match)
+  playerWinRate: number;             // e.g., 0.73
+  expectedWinRate: { min: number; max: number }; // e.g., { min: 0.70, max: 0.80 }
+  difficultyVariance: 'underpowered' | 'balanced' | 'overpowered';
+  confidence: number;                // 0–1 (based on run count)
+  recommendations: BalanceRecommendation[];
+  averagePlayerHPPercentRemaining: number; // 0–100
+  totalRuns: number;
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `balanceScore` | 100 = win rate hits the midpoint of expected range. Decreases with deviation. |
+| `difficultyVariance` | `'underpowered'` = encounter too easy (win rate above expected), `'overpowered'` = too hard (below expected), `'balanced'` = within range. |
+| `confidence` | Statistical confidence based on run count: `1 - 1/√n`. 100 runs ≈ 0.90, 500 runs ≈ 0.96. |
+| `recommendations` | Actionable suggestions for adjusting difficulty (see below). |
+
+### Interpreting Results
+
+```typescript
+// Check if encounter is balanced for its intended difficulty
+if (report.difficultyVariance === 'balanced') {
+  console.log(`Well-balanced! Score: ${report.balanceScore}/100`);
+}
+
+// Check recommendations
+for (const rec of report.recommendations) {
+  console.log(`${rec.description} (${rec.expectedImpact})`);
+}
+// Example outputs:
+// "Reduce enemy CR by 1 level" (+8-12% player win rate)
+// "Add 1-2 additional enemies" (-6-10% player win rate)
+// "Encounter is well-balanced. No changes needed." (None — encounter is within target range)
+```
+
+### Recommendations
+
+The validator generates context-aware recommendations based on how far the win rate deviates:
+
+| Situation | Gap | Recommendations |
+|-----------|-----|----------------|
+| Way too hard | >30% below target | Reduce CR by 1-2, reduce enemy count |
+| Moderately too hard | 15-30% below | Reduce CR by 1 |
+| Slightly too hard | <15% below | Reduce CR by 1 or remove one ability |
+| Slightly too easy | <15% above | Increase CR by 1 or add one enemy |
+| Way too easy | >15% above | Increase CR by 1-2, add 1-2 enemies |
+| Balanced + high HP | Within range | Consider increasing difficulty slightly |
+| Balanced + low HP | Within range | Consider reducing enemy damage slightly |
+
+Each recommendation includes `expectedImpact` (estimated win rate change) and `confidence` (0-1).
+
+### AI Strategy Impact
+
+The AI style used during simulation significantly affects results:
+
+```typescript
+// Normal vs Normal — baseline difficulty measurement
+const normalReport = validator.validate(party, enemies, 'medium', {
+  runCount: 500,
+  aiConfig: { playerStyle: 'normal', enemyStyle: 'normal' }
+});
+
+// Normal players vs Aggressive enemies — maximum threat ceiling
+const aggressiveReport = validator.validate(party, enemies, 'medium', {
+  runCount: 500,
+  aiConfig: { playerStyle: 'normal', enemyStyle: 'aggressive' }
+});
+```
+
+- **Normal enemies** — balanced combat, basic attacks, conservative resources. Measures baseline difficulty.
+- **Aggressive enemies** — maximum effort, burns all spell slots and abilities. Measures difficulty ceiling.
+
+Comparing Normal vs Aggressive enemy results reveals how much enemy resource usage affects the encounter.
 
 ---
 

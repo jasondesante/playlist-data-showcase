@@ -1142,12 +1142,16 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 > This doc covers "how to build balanced encounters." Extend the existing Encounter Balance section with simulation-based tools.
 
-- [ ] **6.2.1** Add **Simulation-Based Balance Validation** section (after existing Encounter Balance)
+- [x] **6.2.1** Add **Simulation-Based Balance Validation** section (after existing Encounter Balance)
   - Explain the concept: XP budgets are theoretical, simulation validates actual difficulty
   - Document `BalanceValidator` — how to validate an encounter against intended difficulty
   - Document `BalanceReport` output (balance score, actual vs intended, recommendations)
   - Include code example: validate a party-balanced encounter
   - Explain expected win rates per difficulty tier (Easy ~90%+, Medium ~70-80%, Hard ~50-60%, Deadly ~30-40%)
+  - Added comprehensive "Simulation-Based Balance Validation" section to `docs/engine/docs/ENEMY_GENERATION.md` between Encounter Balance and API Reference
+  - Covers: Why Simulation comparison table (theoretical vs empirical), Expected Win Rates table (4 tiers), BalanceValidator usage (two patterns: validate from scratch vs analyze existing results), BalanceReport interface with field descriptions table, Interpreting Results code example, Recommendations table (7 situations with suggested actions), AI Strategy Impact (Normal vs Aggressive enemy comparison)
+  - Updated Table of Contents with new section entry (item 10, API Reference renumbered to 11)
+  - Build verified (pre-existing errors only, no regressions from doc change)
 - [ ] **6.2.2** Add **Parameter Sweep** subsection
   - Document `ParameterSweep` and `SweepParams` (variable, range, simulations per point)
   - Document `SweepResults` and `SweepDataPoint`
