@@ -1925,10 +1925,17 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Pure CSS styling for `kbd` hints using project HSL variable system (border, muted background, small font)
   - Hints hidden on mobile (max-width 640px) where keyboard shortcuts don't apply
   - TypeScript check clean (zero new errors), pre-existing build errors unchanged
-- [ ] **10.3.4** Add empty states and guidance
+- [x] **10.3.4** Add empty states and guidance
   - First-time user guidance in Balance Lab
   - Explain what each metric means
   - Suggest starting configurations for new users
+  - Enhanced results panel empty state with 4-step "How to use Balance Lab" guide and 4 suggested starting configurations (Quick Test, Party Balance, Boss Fight, Stress Test)
+  - Added tooltips to all key metrics in ResultsSummary: win rate (context-sensitive explanation per difficulty tier), Avg Rounds, HP Remaining, Player Deaths, Enemy Deaths, Total Runs, Duration, and balance score card (shows score + confidence + run count)
+  - Added tooltips to all PerCombatantMetrics column headers explaining DPR, Survival Rate, Kill Rate, Crit Rate, Avg Dmg Taken, Side, and Name
+  - Enhanced PartySelector empty state with clearer guidance mentioning the Hero tab
+  - Added `cursor: help` to metric cards and win rate/balance cards to indicate tooltip availability
+  - Added responsive styles for guide sections (single-column preset grid on mobile)
+  - All pre-existing TypeScript errors unchanged, zero new errors in modified files
 
 ---
 

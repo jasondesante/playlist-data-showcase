@@ -328,14 +328,54 @@ export function BalanceLabTab() {
                                 </>
                             )}
 
-                            {/* ─── Empty State ──────────────────────── */}
+                            {/* ─── Empty State / First-Time Guidance ──── */}
                             {!hasResults && !isRunning && !isError && (
                                 <div className="bl-results-empty">
-                                    <Zap size={32} strokeWidth={1.5} className="bl-placeholder-icon" />
+                                    <Scale size={32} strokeWidth={1.5} className="bl-placeholder-icon" />
                                     <p className="bl-placeholder-text">No simulation results yet</p>
                                     <p className="bl-placeholder-hint">
-                                        Configure an encounter on the left and run a simulation to see balance analysis here.
+                                        Configure a party and encounter on the left, then run a simulation to analyze balance.
                                     </p>
+
+                                    <div className="bl-guide-steps">
+                                        <h3 className="bl-guide-heading">How to use Balance Lab</h3>
+                                        <ol className="bl-guide-list">
+                                            <li className="bl-guide-step">
+                                                <strong>Select a party</strong> — pick up to 4 characters from the Hero tab. Generate characters there first if needed.
+                                            </li>
+                                            <li className="bl-guide-step">
+                                                <strong>Configure the encounter</strong> — set enemy CR, count, rarity, and archetype. Use presets (Tank, Glass Cannon, Brute) to test specialized enemies.
+                                            </li>
+                                            <li className="bl-guide-step">
+                                                <strong>Choose AI strategies</strong> — Normal AI simulates balanced play; Aggressive AI simulates maximum threat. Both sides can be set independently.
+                                            </li>
+                                            <li className="bl-guide-step">
+                                                <strong>Run the simulation</strong> — 500 runs gives good confidence. Results show win rate, balance score, per-combatant stats, and actionable recommendations.
+                                            </li>
+                                        </ol>
+                                    </div>
+
+                                    <div className="bl-guide-presets">
+                                        <h3 className="bl-guide-heading">Suggested starting configurations</h3>
+                                        <div className="bl-guide-preset-grid">
+                                            <div className="bl-guide-preset">
+                                                <span className="bl-guide-preset-label">Quick Test</span>
+                                                <span className="bl-guide-preset-desc">1 player vs 1 CR-matched enemy, 100 runs</span>
+                                            </div>
+                                            <div className="bl-guide-preset">
+                                                <span className="bl-guide-preset-label">Party Balance</span>
+                                                <span className="bl-guide-preset-desc">4 players vs CR-appropriate encounter, 500 runs</span>
+                                            </div>
+                                            <div className="bl-guide-preset">
+                                                <span className="bl-guide-preset-label">Boss Fight</span>
+                                                <span className="bl-guide-preset-desc">4 players vs 1 boss enemy, 500 runs</span>
+                                            </div>
+                                            <div className="bl-guide-preset">
+                                                <span className="bl-guide-preset-label">Stress Test</span>
+                                                <span className="bl-guide-preset-desc">4 players vs 6+ enemies, aggressive AI on both sides</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>

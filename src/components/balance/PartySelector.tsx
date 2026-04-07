@@ -97,7 +97,7 @@ export function PartySelector({
                 </div>
             ) : (
                 <div className="party-selector-empty">
-                    <p>Generate characters in the Hero tab first to select a party.</p>
+                    <p>No characters available. Go to the <strong>Hero</strong> tab to generate characters, then come back to select your party.</p>
                 </div>
             )}
         </div>

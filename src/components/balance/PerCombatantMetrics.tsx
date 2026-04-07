@@ -45,6 +45,8 @@ interface ColumnDef {
     key: SortKey;
     label: string;
     icon: React.ReactNode;
+    /** Tooltip explaining what this metric means */
+    tooltip: string;
     /** Extract the comparable value from a metric */
     getValue: (m: CombatantSimulationMetrics) => number | string;
     /** Format the value for display */
@@ -60,6 +62,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'name',
         label: 'Name',
         icon: <Swords size={12} />,
+        tooltip: 'Combatant name',
         getValue: (m) => m.name,
         format: (m) => m.name,
         higherIsBetter: false,
@@ -68,6 +71,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'side',
         label: 'Side',
         icon: <Shield size={12} />,
+        tooltip: 'Whether this combatant is on the player or enemy side',
         getValue: (m) => m.side,
         format: (m) => m.side === 'player' ? 'Player' : 'Enemy',
         higherIsBetter: false,
@@ -76,6 +80,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'dpr',
         label: 'DPR',
         icon: <Crosshair size={12} />,
+        tooltip: 'Average Damage Per Round — total damage dealt divided by rounds survived',
         getValue: (m) => m.averageDamagePerRound,
         format: (m) => m.averageDamagePerRound.toFixed(1),
         higherIsBetter: true,
@@ -84,6 +89,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'damageTaken',
         label: 'Avg Dmg Taken',
         icon: <Heart size={12} />,
+        tooltip: 'Average total damage taken per simulation run across all runs',
         getValue: (m) => m.averageTotalDamageTaken,
         format: (m) => m.averageTotalDamageTaken.toFixed(0),
         higherIsBetter: false,
@@ -92,6 +98,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'survivalRate',
         label: 'Survival',
         icon: <Shield size={12} />,
+        tooltip: 'Percentage of simulation runs where this combatant was still alive at combat end',
         getValue: (m) => m.survivalRate,
         format: (m) => `${(m.survivalRate * 100).toFixed(0)}%`,
         higherIsBetter: true,
@@ -100,6 +107,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'killRate',
         label: 'Kill Rate',
         icon: <Skull size={12} />,
+        tooltip: 'Percentage of simulation runs where this combatant scored the killing blow on at least one enemy',
         getValue: (m) => m.killRate,
         format: (m) => `${(m.killRate * 100).toFixed(0)}%`,
         higherIsBetter: true,
@@ -108,6 +116,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'critRate',
         label: 'Crit Rate',
         icon: <Zap size={12} />,
+        tooltip: 'Percentage of attack rolls that were natural 20 critical hits (expected ~5%)',
         getValue: (m) => m.criticalHitRate,
         format: (m) => `${(m.criticalHitRate * 100).toFixed(1)}%`,
         higherIsBetter: true,
@@ -232,7 +241,7 @@ function PerCombatantMetricsComponent({
                                             className="pcm-sort-btn"
                                             onClick={() => handleSort(col.key)}
                                             type="button"
-                                            title={`Sort by ${col.label}`}
+                                            title={`${col.tooltip} — click to sort`}
                                         >
                                             <span className="pcm-th-content">
                                                 {col.icon}

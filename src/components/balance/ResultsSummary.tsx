@@ -78,6 +78,15 @@ function ResultsSummaryComponent({
         [summary.playerWinRate],
     );
 
+    const winRateTooltip = useMemo(() => {
+        const pct = summary.playerWinRate * 100;
+        if (pct >= 90) return 'Easy encounter — players win almost every time. Consider increasing enemy CR or count.';
+        if (pct >= 70) return 'Medium encounter — challenging but survivable. Good for standard gameplay.';
+        if (pct >= 50) return 'Hard encounter — risky fight with significant casualties expected.';
+        if (pct >= 30) return 'Deadly encounter — players are likely to lose. High risk of total party wipe.';
+        return 'Extremely deadly — players almost never win. Far beyond intended difficulty.';
+    }, [summary.playerWinRate]);
+
     const winRateColorClass = useMemo(
         () => getWinRateColorClass(summary.playerWinRate),
         [summary.playerWinRate],
@@ -98,40 +107,46 @@ function ResultsSummaryComponent({
             icon: <Timer size={14} />,
             label: 'Avg Rounds',
             value: summary.averageRounds.toFixed(1),
+            tooltip: 'Average number of combat rounds until the encounter resolves (win, loss, or draw)',
         },
         {
             icon: <Heart size={14} />,
             label: 'HP Remaining',
             value: formatPercent(summary.averagePlayerHPPercentRemaining),
+            tooltip: 'Average HP percentage remaining on surviving players at combat end',
         },
         {
             icon: <Skull size={14} />,
             label: 'Player Deaths',
             value: summary.totalPlayerDeaths.toLocaleString(),
             valueClass: summary.totalPlayerDeaths > 0 ? 'rs-metric-danger' : '',
+            tooltip: 'Total number of player deaths across all simulation runs',
         },
         {
             icon: <Swords size={14} />,
             label: 'Enemy Deaths',
             value: summary.totalEnemyDeaths.toLocaleString(),
             valueClass: summary.totalEnemyDeaths > 0 ? 'rs-metric-success' : '',
+            tooltip: 'Total number of enemy deaths across all simulation runs',
         },
         {
             icon: <Target size={14} />,
             label: 'Total Runs',
             value: summary.totalRuns.toLocaleString(),
+            tooltip: 'Total number of combat simulations run. More runs = more reliable statistics',
         },
         ...(formattedDuration !== null ? [{
             icon: <Clock size={14} />,
             label: 'Duration',
             value: formattedDuration,
+            tooltip: 'Wall-clock time the simulation took to complete',
         }] : []),
     ], [summary, formattedDuration]);
 
     return (
         <div className={`rs-results-summary ${className}`}>
             {/* Win Rate Card */}
-            <div className={`rs-win-rate-card ${winRateColorClass}`}>
+            <div className={`rs-win-rate-card ${winRateColorClass}`} title={winRateTooltip}>
                 <span className="rs-win-rate-value">{winRatePercent}</span>
                 <span className="rs-win-rate-label">Player Win Rate</span>
             </div>
@@ -139,7 +154,7 @@ function ResultsSummaryComponent({
             {/* Key Metrics Grid */}
             <div className="rs-metrics-grid">
                 {metrics.map((m) => (
-                    <div key={m.label} className="rs-metric">
+                    <div key={m.label} className="rs-metric" title={m.tooltip}>
                         <span className="rs-metric-icon">{m.icon}</span>
                         <span className={`rs-metric-value ${m.valueClass ?? ''}`}>
                             {m.value}
@@ -151,7 +166,7 @@ function ResultsSummaryComponent({
 
             {/* Difficulty Assessment */}
             {balanceReport && (
-                <div className={`rs-balance-card rs-balance-${balanceReport.difficultyVariance}`}>
+                <div className={`rs-balance-card rs-balance-${balanceReport.difficultyVariance}`} title={`Balance Score: ${balanceReport.balanceScore}/100 — ${balanceReport.confidence >= 0.95 ? 'High' : balanceReport.confidence >= 0.90 ? 'Moderate' : 'Low'} confidence based on ${balanceReport.totalRuns} runs`}>
                     <div className="rs-balance-header">
                         <div className="rs-balance-difficulty-row">
                             <span className="rs-balance-difficulty">
