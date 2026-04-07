@@ -667,11 +667,19 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 2.4 AI Tests
 
-- [ ] **2.4.1** Add AI decision tests
-  - Test that aggressive AI picks highest-damage options and burns resources
-  - Test that normal AI conserves resources and uses basic attacks primarily
-  - Test target selection logic for each play style
-  - Test support AI prioritizes healing allies
+- [x] **2.4.1** Add AI decision tests
+  - Created `tests/unit/combat/aiDecisionTests.test.ts` with 63 tests organized into 10 sections
+  - **Aggressive AI resource burning** (8 tests): highest-damage weapon selection, spell over basic attack, leveled spell over cantrip, proactive healing below 75% HP, no healing above 75%, never dodges/flees, AoE even vs single enemy, legendary action picks highest-cost damage
+  - **Normal AI resource conservation** (9 tests): cantrip preference over leveled spells, leveled spell only when significantly better, weapon attack fallback, dodge when isolated+low HP, attacks when party present, item usage only when low HP + no spell slots, no item use when slots available, no heal above 25% HP, control spell with 2+ enemies, no control with 1 enemy, buff targeting highest STR/DEX ally, no buff when low HP, balanced weapon score
+  - **Target selection** (8 tests): normal targets lowest AC, aggressive targets lowest HP, different targets per style, single enemy regardless of style, throws on empty, returns sole enemy, spell targets follow same logic, excludes defeated enemies
+  - **Support AI healing priority** (7 tests): heals lowest HP ally first (normal), heals self when ally above 50%, aggressive heals below 75% even if ally above 50%, support heals over damage when ally critical, multi-target healing targets multiple allies, support archetype detection for healing+buff, false for pure damage caster
+  - **Multi-turn resource patterns** (4 tests): aggressive burns slots across turns then falls back to cantrip, normal conserves vs uses leveled spell, slot exhaustion falls back to weapon
+  - **Decision pipeline priority** (5 tests): spell healing over item healing, damage spell over weapon when significantly better, cantrip when available, dodge over attack when isolated+low HP, aggressive ignores dodge
+  - **Threat assessment edge cases** (5 tests): 0 max HP, enemy DPR from weapons, defeated allies, no enemies, legendary resistances
+  - **Weapon selection edge cases** (5 tests): aggressive picks 2d6 over 1d8, normal balanced score, ranged uses DEX, melee uses STR, unarmed includes STR mod
+  - **Spell slot availability** (5 tests): exact slot, higher slot for upcast, no slots, cantrips always available, mixed availability
+  - **Legendary action edge cases** (3 tests): healing when low HP, control actions, fallback action
+  - All 939 combat tests pass (63 new + 876 existing), TypeScript check clean, vite build clean
 - [ ] **2.4.2** Add AI combat runner integration tests
   - Test full combat runs to completion (victory/defeat)
   - Test that AI doesn't get stuck in infinite loops
