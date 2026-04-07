@@ -399,6 +399,9 @@ export interface SimulationSettingsUI {
 
     /** Whether fleeing is allowed (optional) */
     allowFleeing?: boolean;
+
+    /** Whether to regenerate enemies per simulation run (captures generation variance) */
+    regenerateEnemiesPerRun: boolean;
 }
 
 /**
@@ -535,6 +538,7 @@ export const DEFAULT_SIMULATION_SETTINGS: SimulationSettingsUI = {
     collectDetailedLogs: false,
     maxTurnsBeforeDraw: undefined,
     allowFleeing: undefined,
+    regenerateEnemiesPerRun: false,
 };
 
 /**

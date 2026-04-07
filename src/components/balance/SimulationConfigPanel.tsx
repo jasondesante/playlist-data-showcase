@@ -15,6 +15,7 @@ import {
     type EnemyRarity,
     type EnemyCategory,
     type EnemyArchetype,
+    type EncounterGenerationOptions,
     type PartyAnalysis,
     PartyAnalyzer,
 } from 'playlist-data-engine';
@@ -106,7 +107,7 @@ export function SimulationConfigPanel({
         [onEncounterConfigChange],
     );
 
-    const { generate } = useEnemyGenerator();
+    const { generateEncounterByCR } = useEnemyGenerator();
     const characters = useCharacterStore((s) => s.characters);
 
     // Track live win rate during simulation
@@ -143,22 +144,19 @@ export function SimulationConfigPanel({
             return;
         }
 
-        // Generate enemies from encounter config
+        // Generate enemies from encounter config using CR-based generation
+        // which correctly targets the requested CR (unlike generate() which ignores it).
         const seed = encounterConfig.seed || `balance-${Date.now()}`;
-        const generatedEnemies: CharacterSheet[] = [];
-
-        for (let i = 0; i < encounterConfig.enemyCount; i++) {
-            const enemy = generate({
-                seed: `${seed}-enemy-${i}`,
-                category: encounterConfig.category as EnemyCategory,
-                archetype: encounterConfig.archetype as EnemyArchetype,
-                rarity: encounterConfig.rarity as EnemyRarity,
-                difficultyMultiplier: encounterConfig.difficultyMultiplier,
-            });
-            if (enemy) {
-                generatedEnemies.push(enemy);
-            }
-        }
+        const generatedEnemies = generateEncounterByCR({
+            seed,
+            count: encounterConfig.enemyCount,
+            targetCR: encounterConfig.cr,
+            category: encounterConfig.category as EnemyCategory,
+            archetype: encounterConfig.archetype as EnemyArchetype,
+            baseRarity: encounterConfig.rarity as EnemyRarity,
+            difficultyMultiplier: encounterConfig.difficultyMultiplier,
+            statLevels: encounterConfig.statLevels,
+        });
 
         if (generatedEnemies.length === 0) {
             setValidationError('Failed to generate enemies. Check configuration.');
@@ -175,6 +173,21 @@ export function SimulationConfigPanel({
             },
         });
 
+        // When "regenerate per run" is enabled, pass encounter generation options
+        // so the CombatSimulator re-rolls enemies each run with unique seeds.
+        if (settings.regenerateEnemiesPerRun) {
+            simConfig.config.enemyRegeneration = {
+                seed,
+                count: encounterConfig.enemyCount,
+                targetCR: encounterConfig.cr,
+                category: encounterConfig.category as EnemyCategory,
+                archetype: encounterConfig.archetype as EnemyArchetype,
+                baseRarity: encounterConfig.rarity as EnemyRarity,
+                difficultyMultiplier: encounterConfig.difficultyMultiplier,
+                statLevels: encounterConfig.statLevels,
+            } as EncounterGenerationOptions;
+        }
+
         // Reset win rate tracking
         completedWinsRef.current = 0;
         completedTotalRef.current = 0;
@@ -186,11 +199,12 @@ export function SimulationConfigPanel({
             runCount: settings.runCount,
             playerStyle: settings.playerStyle,
             enemyStyle: settings.enemyStyle,
+            regenerateEnemiesPerRun: settings.regenerateEnemiesPerRun,
             encounterConfig,
         });
 
         onRunSimulation(selectedParty, generatedEnemies, simConfig.config, estimateSnapshot);
-    }, [selectedParty, encounterConfig, settings, generate, onRunSimulation, estimateSnapshot]);
+    }, [selectedParty, encounterConfig, settings, generateEncounterByCR, onRunSimulation, estimateSnapshot]);
 
     const handleReset = useCallback(() => {
         onReset();
@@ -317,6 +331,18 @@ export function SimulationConfigPanel({
                     />
                     <span className="scp-toggle-label">Collect detailed combat logs</span>
                     <span className="scp-toggle-hint">(uses more memory at high run counts)</span>
+                </label>
+
+                {/* Regenerate Enemies Per Run Toggle */}
+                <label className="scp-toggle-row">
+                    <input
+                        type="checkbox"
+                        checked={settings.regenerateEnemiesPerRun}
+                        onChange={(e) => setSettings({ ...settings, regenerateEnemiesPerRun: e.target.checked })}
+                        disabled={isRunning}
+                    />
+                    <span className="scp-toggle-label">Regenerate enemies each run</span>
+                    <span className="scp-toggle-hint">(captures variance in enemy generation across runs)</span>
                 </label>
             </section>
 

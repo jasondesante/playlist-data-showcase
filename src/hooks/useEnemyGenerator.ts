@@ -11,7 +11,8 @@ import {
     EncounterDifficulty,
     EnemyMixMode,
     AudioProfile,
-    PlaylistTrack
+    PlaylistTrack,
+    StatLevelOverrides,
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 
@@ -31,6 +32,8 @@ import { logger } from '@/utils/logger';
 export interface UseEnemyGenerationOptions {
     /** Required - Seed for deterministic generation */
     seed: string;
+    /** Optional - Challenge Rating for power scaling */
+    cr?: number;
     /** Optional - Force specific template by ID */
     templateId?: string;
     /** Optional - Rarity tier (default: 'common') */
@@ -45,6 +48,8 @@ export interface UseEnemyGenerationOptions {
     audioProfile?: AudioProfile;
     /** Optional - Track data (required if audioProfile provided) */
     track?: PlaylistTrack;
+    /** Optional - Override effective levels for HP, attack, and defense independently */
+    statLevels?: StatLevelOverrides;
 }
 
 /**
@@ -89,6 +94,8 @@ export interface UseEncounterGenerationOptions {
     track?: PlaylistTrack;
     /** Optional - Enable leader promotion for groups > 3 (default: true) */
     enableLeaderPromotion?: boolean;
+    /** Optional - Override effective levels for HP, attack, and defense independently */
+    statLevels?: StatLevelOverrides;
 }
 
 /**
@@ -139,9 +146,11 @@ export function useEnemyGenerator() {
         logger.info('EnemyGenerator', 'Generating single enemy', {
             seed: options.seed,
             templateId: options.templateId,
+            cr: options.cr,
             rarity: options.rarity || 'common',
             category: options.category,
-            archetype: options.archetype
+            archetype: options.archetype,
+            statLevels: options.statLevels,
         });
 
         try {

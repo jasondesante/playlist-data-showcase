@@ -9,6 +9,7 @@ import {
     ShieldAlert,
 } from 'lucide-react';
 import type { SimulationResults, BalanceReport } from 'playlist-data-engine';
+import type { EncounterConfigUI, SimulationEstimateSnapshot, EstimateValidation } from '@/types/simulation';
 import { BalanceScoreIndicator } from './BalanceScoreIndicator';
 import { SimulationExportButton } from './SimulationExportButton';
 import './ResultsSummary.css';
@@ -56,6 +57,12 @@ export interface ResultsSummaryProps {
     onSave?: () => void;
     /** Callback to reset results */
     onReset?: () => void;
+    /** Encounter configuration (for export) */
+    encounterConfig?: EncounterConfigUI | null;
+    /** Pre-simulation estimate snapshot (for export) */
+    estimateSnapshot?: SimulationEstimateSnapshot | null;
+    /** Post-simulation validation (for export) */
+    validation?: EstimateValidation | null;
     className?: string;
 }
 
@@ -69,6 +76,9 @@ function ResultsSummaryComponent({
     isSaved,
     onSave,
     onReset,
+    encounterConfig,
+    estimateSnapshot,
+    validation,
     className = '',
 }: ResultsSummaryProps) {
     const { summary } = results;
@@ -206,7 +216,13 @@ function ResultsSummaryComponent({
                         </button>
                     )}
                     <div className="rs-action-spacer" />
-                    <SimulationExportButton results={results} balanceReport={balanceReport} />
+                    <SimulationExportButton
+                        results={results}
+                        balanceReport={balanceReport}
+                        encounterConfig={encounterConfig}
+                        estimateSnapshot={estimateSnapshot}
+                        validation={validation}
+                    />
                 </div>
             )}
         </div>

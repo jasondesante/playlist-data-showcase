@@ -12,6 +12,7 @@
 import { useState, useCallback, memo } from 'react';
 import { Download, Copy, FileJson, FileSpreadsheet } from 'lucide-react';
 import type { SimulationResults, BalanceReport } from 'playlist-data-engine';
+import type { EncounterConfigUI, SimulationEstimateSnapshot, EstimateValidation } from '@/types/simulation';
 import { showToast } from '@/components/ui/Toast';
 import './SimulationExportButton.css';
 
@@ -20,6 +21,12 @@ import './SimulationExportButton.css';
 export interface SimulationExportButtonProps {
     results: SimulationResults;
     balanceReport: BalanceReport | null;
+    /** Encounter configuration used for this simulation */
+    encounterConfig?: EncounterConfigUI | null;
+    /** Pre-simulation estimate snapshot (for validation comparison) */
+    estimateSnapshot?: SimulationEstimateSnapshot | null;
+    /** Post-simulation validation results */
+    validation?: EstimateValidation | null;
     className?: string;
 }
 
@@ -135,47 +142,147 @@ function buildCsvExport(results: SimulationResults): string {
 }
 
 /** Build a plain-text summary for clipboard */
-function buildClipboardSummary(results: SimulationResults, balanceReport: BalanceReport | null): string {
+function buildClipboardSummary(
+    results: SimulationResults,
+    balanceReport: BalanceReport | null,
+    encounterConfig?: EncounterConfigUI | null,
+    estimateSnapshot?: SimulationEstimateSnapshot | null,
+    validation?: EstimateValidation | null,
+): string {
     const s = results.summary;
-    const winRate = (s.playerWinRate * 100).toFixed(1);
-    const lines = [
-        `Balance Lab Simulation Results`,
-        `─────────────────────────────────`,
-        `Player Win Rate: ${winRate}%`,
-        `  Wins: ${s.playerWins} | Losses: ${s.enemyWins} | Draws: ${s.draws}`,
-        `  Total Runs: ${s.totalRuns}`,
-        ``,
-        `Average Rounds: ${s.averageRounds.toFixed(1)} (median: ${s.medianRounds.toFixed(1)})`,
-        `Avg HP Remaining: ${s.averagePlayerHPPercentRemaining.toFixed(1)}%`,
-        `Player Deaths: ${s.totalPlayerDeaths} | Enemy Deaths: ${s.totalEnemyDeaths}`,
-    ];
+    const lines: string[] = [];
 
-    if (balanceReport) {
-        lines.push('');
-        lines.push(`Balance Score: ${balanceReport.balanceScore}/100 (${balanceReport.difficultyVariance})`);
-        lines.push(`Difficulty: ${balanceReport.actualDifficulty} (intended: ${balanceReport.intendedDifficulty})`);
-        if (balanceReport.recommendations.length > 0) {
-            lines.push('Recommendations:');
-            for (const rec of balanceReport.recommendations.slice(0, 3)) {
-                lines.push(`  - ${rec.description}`);
-            }
+    // ─── Header ────────────────────────────────────────────────────────
+    lines.push('═══ Balance Lab Simulation Summary ═══');
+    lines.push('');
+
+    // ─── Encounter Configuration ───────────────────────────────────────
+    if (encounterConfig) {
+        lines.push('── Encounter Configuration ──');
+        lines.push(`  CR: ${encounterConfig.cr}  |  Enemies: ${encounterConfig.enemyCount}  |  Category: ${encounterConfig.category}  |  Archetype: ${encounterConfig.archetype}`);
+        lines.push(`  Rarity: ${encounterConfig.rarity}  |  Difficulty Multiplier: ${encounterConfig.difficultyMultiplier}`);
+        if (encounterConfig.statLevels) {
+            const sl = encounterConfig.statLevels;
+            lines.push(`  Stat Levels — HP: ${sl.hpLevel ?? 'default'}, Attack: ${sl.attackLevel ?? 'default'}, Defense: ${sl.defenseLevel ?? 'default'}`);
         }
+        lines.push('');
     }
 
-    if (results.perCombatantMetrics.size > 0) {
+    // ─── Simulation Settings ───────────────────────────────────────────
+    const cfg = results.config;
+    lines.push('── Simulation Settings ──');
+    lines.push(`  Runs: ${cfg.runCount}  |  Seed: ${cfg.baseSeed || '(random)'}`);
+    lines.push(`  Player AI: ${cfg.aiConfig.playerStyle}  |  Enemy AI: ${cfg.aiConfig.enemyStyle}`);
+    if (cfg.enemyRegeneration) {
+        lines.push(`  Enemy Regeneration: ON (per-run variance enabled)`);
+    }
+    lines.push('');
+
+    // ─── Party ─────────────────────────────────────────────────────────
+    lines.push('── Party ──');
+    lines.push(`  Size: ${results.party.memberCount}  |  Avg Level: ${results.party.averageLevel.toFixed(1)}`);
+    if (results.party.memberNames.length > 0) {
+        lines.push(`  Members: ${results.party.memberNames.join(', ')}`);
+    }
+    lines.push('');
+
+    // ─── Encounter ─────────────────────────────────────────────────────
+    lines.push('── Enemies ──');
+    lines.push(`  Count: ${results.encounter.enemyCount}  |  Avg CR: ${results.encounter.averageCR.toFixed(1)}`);
+    if (results.encounter.enemyNames.length > 0) {
+        lines.push(`  Names: ${results.encounter.enemyNames.join(', ')}`);
+    }
+    lines.push('');
+
+    // ─── Pre-Simulation Estimates ──────────────────────────────────────
+    if (estimateSnapshot) {
+        const est = estimateSnapshot;
+        lines.push('── Pre-Simulation Estimates ──');
+        lines.push(`  Party — Lv ${est.party.averageLevel.toFixed(1)}, AC ${est.party.averageAC.toFixed(1)}, HP ${Math.round(est.party.averageHP)}, DPR ~${est.party.estimatedDPR.toFixed(1)}`);
+        lines.push(`  Enemy — HP ${Math.round(est.enemy.perEnemyHP)}, AC ${est.enemy.perEnemyAC}, DPR ~${est.enemy.perEnemyEstDPR.toFixed(1)}, CR ${est.enemy.enemyCR}`);
+        lines.push(`  Predicted: ${est.prediction.predictedDifficulty} (XP ratio ${est.prediction.xpRatio.toFixed(2)}×, est. win rate ${(est.prediction.predictedWinRate * 100).toFixed(0)}%)`);
         lines.push('');
-        lines.push('Per-Combatant Metrics:');
-        for (const [, m] of results.perCombatantMetrics) {
-            lines.push(
-                `  ${m.name} (${m.side}): DPR ${m.averageDamagePerRound.toFixed(1)}, ` +
-                `Survival ${(m.survivalRate * 100).toFixed(0)}%, ` +
-                `Kill Rate ${(m.killRate * 100).toFixed(0)}%`,
-            );
+    }
+
+    // ─── Results ───────────────────────────────────────────────────────
+    lines.push('── Results ──');
+    lines.push(`  Win Rate: ${(s.playerWinRate * 100).toFixed(1)}%  (${s.playerWins}W / ${s.enemyWins}L / ${s.draws}D of ${s.totalRuns} runs)`);
+    lines.push(`  Rounds: avg ${s.averageRounds.toFixed(1)}, median ${s.medianRounds.toFixed(1)} (on win: ${s.averageRoundsOnWin.toFixed(1)}, on loss: ${s.averageRoundsOnLoss.toFixed(1)})`);
+    lines.push(`  HP Remaining: ${s.averagePlayerHPPercentRemaining.toFixed(1)}%`);
+    lines.push(`  Deaths — Players: ${s.totalPlayerDeaths}  |  Enemies: ${s.totalEnemyDeaths}`);
+    lines.push('');
+
+    // ─── Balance Report ────────────────────────────────────────────────
+    if (balanceReport) {
+        lines.push('── Balance Analysis ──');
+        lines.push(`  Score: ${balanceReport.balanceScore}/100  (${balanceReport.difficultyVariance})`);
+        lines.push(`  Difficulty: ${balanceReport.actualDifficulty} (intended: ${balanceReport.intendedDifficulty})`);
+        lines.push(`  Confidence: ${(balanceReport.confidence * 100).toFixed(0)}%`);
+        if (balanceReport.recommendations.length > 0) {
+            lines.push('  Recommendations:');
+            for (const rec of balanceReport.recommendations) {
+                lines.push(`    - ${rec.description} (${rec.expectedImpact})`);
+            }
         }
+        lines.push('');
+    }
+
+    // ─── Estimate Validation ───────────────────────────────────────────
+    if (validation) {
+        lines.push('── Estimate vs Actual ──');
+        for (const cmp of validation.comparisons) {
+            const sign = cmp.delta >= 0 ? '+' : '';
+            const marker = cmp.isSignificant ? ' ⚠' : '';
+            lines.push(`  ${cmp.label}: est ${cmp.estimated.toFixed(1)} → actual ${cmp.actual.toFixed(1)}  (${sign}${cmp.delta.toFixed(1)}, ${sign}${cmp.deltaPercent.toFixed(0)}%)${marker}`);
+        }
+        const dc = validation.difficultyComparison;
+        lines.push(`  Difficulty: predicted ${dc.predicted} → actual ${dc.actual} (${dc.tierDelta > 0 ? '+' : ''}${dc.tierDelta} tier${dc.tierDelta !== 1 ? 's' : ''})`);
+        if (validation.suggestions.length > 0) {
+            lines.push('  Suggestions:');
+            for (const sug of validation.suggestions) {
+                lines.push(`    [${sug.severity}] ${sug.message}`);
+                lines.push(`      → ${sug.suggestedFix}`);
+            }
+        }
+        lines.push('');
+    }
+
+    // ─── Per-Combatant Metrics ─────────────────────────────────────────
+    if (results.perCombatantMetrics.size > 0) {
+        lines.push('── Per-Combatant Metrics ──');
+        const combatants = Array.from(results.perCombatantMetrics.values());
+        const players = combatants.filter(m => m.side === 'player');
+        const enemies = combatants.filter(m => m.side === 'enemy');
+
+        if (players.length > 0) {
+            lines.push('  Players:');
+            for (const m of players) {
+                lines.push(
+                    `    ${m.name}: DPR ${m.averageDamagePerRound.toFixed(1)}, ` +
+                    `DMG dealt ${m.averageTotalDamageDealt.toFixed(0)}, ` +
+                    `DMG taken ${m.averageTotalDamageTaken.toFixed(0)}, ` +
+                    `Survival ${(m.survivalRate * 100).toFixed(0)}%, ` +
+                    `Kill Rate ${(m.killRate * 100).toFixed(0)}%, ` +
+                    `Crit ${(m.criticalHitRate * 100).toFixed(1)}%`,
+                );
+            }
+        }
+        if (enemies.length > 0) {
+            lines.push('  Enemies:');
+            for (const m of enemies) {
+                lines.push(
+                    `    ${m.name}: DPR ${m.averageDamagePerRound.toFixed(1)}, ` +
+                    `DMG dealt ${m.averageTotalDamageDealt.toFixed(0)}, ` +
+                    `DMG taken ${m.averageTotalDamageTaken.toFixed(0)}, ` +
+                    `Survival ${(m.survivalRate * 100).toFixed(0)}%, ` +
+                    `Kill Rate ${(m.killRate * 100).toFixed(0)}%`,
+                );
+            }
+        }
+        lines.push('');
     }
 
     if (results.wasCancelled) {
-        lines.push('');
         lines.push('(Simulation was cancelled — partial results)');
     }
 
@@ -200,6 +307,9 @@ function downloadFile(content: string, filename: string, mimeType: string): void
 export function SimulationExportButton({
     results,
     balanceReport,
+    encounterConfig,
+    estimateSnapshot,
+    validation,
     className = '',
 }: SimulationExportButtonProps) {
     const [activeMenu, setActiveMenu] = useState(false);
@@ -237,7 +347,7 @@ export function SimulationExportButton({
 
     const handleCopySummary = useCallback(async () => {
         try {
-            const text = buildClipboardSummary(results, balanceReport);
+            const text = buildClipboardSummary(results, balanceReport, encounterConfig, estimateSnapshot, validation);
             await navigator.clipboard.writeText(text);
             showToast('Copied summary to clipboard', 'success', 1500);
         } catch (err) {
@@ -245,7 +355,7 @@ export function SimulationExportButton({
             showToast('Failed to copy to clipboard', 'error', 2000);
         }
         closeMenu();
-    }, [results, balanceReport, closeMenu]);
+    }, [results, balanceReport, encounterConfig, estimateSnapshot, validation, closeMenu]);
 
     return (
         <div className={`seb-container ${className}`}>

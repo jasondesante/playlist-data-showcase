@@ -12,7 +12,7 @@ import {
     SurvivalRateChart,
     DamageDistributionChart,
 } from './charts';
-import type { EncounterConfigUI } from '@/types/simulation';
+import type { EncounterConfigUI, SimulationEstimateSnapshot, EstimateValidation } from '@/types/simulation';
 import './BalanceDashboard.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -36,6 +36,10 @@ export interface BalanceDashboardProps {
     encounterConfig: EncounterConfigUI;
     /** Callback when user applies a recommendation */
     onApplySuggestion?: (changes: Partial<EncounterConfigUI>) => void;
+    /** Pre-simulation estimate snapshot (for export) */
+    estimateSnapshot?: SimulationEstimateSnapshot | null;
+    /** Post-simulation validation (for export) */
+    validation?: EstimateValidation | null;
     /** Additional CSS class */
     className?: string;
 }
@@ -75,6 +79,8 @@ function BalanceDashboardComponent({
     onReset,
     encounterConfig,
     onApplySuggestion,
+    estimateSnapshot,
+    validation,
     className = '',
 }: BalanceDashboardProps) {
     const hasCombatantMetrics = results.perCombatantMetrics.size > 0;
@@ -115,6 +121,9 @@ function BalanceDashboardComponent({
                     isSaved={isSaved}
                     onSave={onSave}
                     onReset={onReset}
+                    encounterConfig={encounterConfig}
+                    estimateSnapshot={estimateSnapshot}
+                    validation={validation}
                 />
             </div>
 

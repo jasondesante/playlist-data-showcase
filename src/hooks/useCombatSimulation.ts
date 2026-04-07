@@ -434,6 +434,7 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
                     },
                     combatConfig: config.combatConfig,
                     collectDetailedLogs: config.collectDetailedLogs,
+                    enemyRegeneration: config.enemyRegeneration,
                     aiConfigOverrides,
                 },
             });

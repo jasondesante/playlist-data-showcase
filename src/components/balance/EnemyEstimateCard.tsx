@@ -91,27 +91,27 @@ export function EnemyEstimateCard({
 
             {/* Stat Pills */}
             <div className="eec-stats-row">
-                <div className="eec-pill" title="Hit Points per enemy">
+                <div className="eec-pill" data-tooltip="Hit Points per enemy — total health before defeat">
                     <Heart size={11} />
                     <span className="eec-pill-label">HP</span>
                     <span className="eec-pill-value">{Math.round(perEnemyHP)}</span>
                 </div>
-                <div className="eec-pill" title="Armor Class per enemy">
+                <div className="eec-pill" data-tooltip="Armor Class per enemy — higher = harder for players to hit">
                     <Shield size={11} />
                     <span className="eec-pill-label">AC</span>
                     <span className="eec-pill-value">{perEnemyAC}</span>
                 </div>
-                <div className="eec-pill" title="Estimated Damage Per Round per enemy">
+                <div className="eec-pill" data-tooltip="Damage Per Round — estimated average damage this enemy deals per round">
                     <Crosshair size={11} />
                     <span className="eec-pill-label">DPR</span>
                     <span className="eec-pill-value">~{perEnemyEstDPR.toFixed(1)}</span>
                 </div>
-                <div className="eec-pill" title="Challenge Rating">
+                <div className="eec-pill" data-tooltip="Challenge Rating — D&D 5e measure of enemy power (1 = 1st-level party, scales with level)">
                     <Star size={11} />
                     <span className="eec-pill-label">CR</span>
                     <span className="eec-pill-value">{enemyCR}</span>
                 </div>
-                <div className="eec-pill" title={`XP per CR ${enemyCR} enemy`}>
+                <div className="eec-pill" data-tooltip={`Experience Points — XP awarded per CR ${enemyCR} enemy on defeat`}>
                     <Skull size={11} />
                     <span className="eec-pill-label">XP</span>
                     <span className="eec-pill-value">{xpPerEnemy.toLocaleString()}</span>

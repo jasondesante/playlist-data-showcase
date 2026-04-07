@@ -50,7 +50,7 @@ export function useEstimateSnapshot(
     selectedParty: CharacterSheet[],
     encounterConfig: EncounterConfigUI
 ): SimulationEstimateSnapshot | null {
-    const { generate } = useEnemyGenerator();
+    const { generateEncounterByCR } = useEnemyGenerator();
 
     // Destructure config fields for stable useMemo dependencies.
     // Using individual primitives/refs instead of the whole object prevents
@@ -80,27 +80,34 @@ export function useEstimateSnapshot(
         }
 
         // --- Generate a preview enemy ---
+        // Use generateEncounterByCR which correctly targets the requested CR,
+        // unlike generate() which ignores CR and produces template-default stats.
         // Seed is derived deterministically from config fields (not random)
         // so the same config always produces the same preview enemy.
         const previewSeed = `preview-${cr}-${archetype}-${rarity}-${category}`;
-        const previewEnemy = generate({
+        const previewEnemies = generateEncounterByCR({
             seed: previewSeed,
-            category,
-            archetype,
-            rarity,
+            count: 1,
+            targetCR: cr,
+            category: category as import('playlist-data-engine').EnemyCategory,
+            archetype: archetype as import('playlist-data-engine').EnemyArchetype,
+            baseRarity: rarity as import('playlist-data-engine').EnemyRarity,
             difficultyMultiplier,
+            statLevels,
         });
 
-        if (!previewEnemy) {
+        if (!previewEnemies || previewEnemies.length === 0) {
             logger.warn('BalanceLab', 'Failed to generate preview enemy');
             return null;
         }
+
+        const previewEnemy = previewEnemies[0];
 
         // --- Enemy stats ---
         const perEnemyHP = previewEnemy.hp.max;
         const perEnemyAC = previewEnemy.armor_class;
         const perEnemyEstDPR = estimateEnemyDPR(previewEnemy);
-        const enemyCR = previewEnemy.cr ?? previewEnemy.level;
+        const enemyCR = cr; // Use the requested CR, not the generated enemy's CR
 
         // --- Adjusted XP calculation ---
         const enemyCRs = Array(enemyCount).fill(enemyCR);
@@ -163,5 +170,5 @@ export function useEstimateSnapshot(
         });
 
         return snapshot;
-    }, [selectedParty, generate, cr, enemyCount, category, archetype, rarity, difficultyMultiplier, statLevels]);
+    }, [selectedParty, generateEncounterByCR, cr, enemyCount, category, archetype, rarity, difficultyMultiplier, statLevels]);
 }

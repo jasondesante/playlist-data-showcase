@@ -123,6 +123,7 @@ function handleStart(msg: SimulationWorkerStartMessage): void {
         aiConfig: aiConfig as SimulationConfig['aiConfig'],
         combatConfig: config.combatConfig,
         collectDetailedLogs: config.collectDetailedLogs,
+        enemyRegeneration: config.enemyRegeneration as SimulationConfig['enemyRegeneration'],
         abortSignal: abortController.signal,
         onProgress: (completed: number, total: number) => {
             const response: SimulationWorkerProgressMessage = {
