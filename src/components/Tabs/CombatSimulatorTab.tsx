@@ -30,7 +30,9 @@ import {
     getXPForCR,
     getEncounterMultiplier,
     calculateAdjustedXP,
-    PartyAnalyzer
+    PartyAnalyzer,
+    CombatAI,
+    type AIPlayStyle,
 } from 'playlist-data-engine';
 import { useCombatEngine, type Combatant, type TreasureConfig } from '../../hooks/useCombatEngine';
 import { logger } from '../../utils/logger';
@@ -691,6 +693,7 @@ function getLogEntryColor(action: any): string {
   if (action.type === 'dash') return 'combat-log-entry-dash';
   if (action.type === 'disengage') return 'combat-log-entry-disengage';
   if (action.type === 'flee') return 'combat-log-entry-flee';
+  if (action.type === 'legendaryAction') return 'combat-log-entry-legendary';
   // Standard actions
   if (action.type === 'spell') return 'combat-log-entry-spell';
   if (action.result?.success) return 'combat-log-entry-success';
@@ -1314,8 +1317,17 @@ export function CombatSimulatorTab() {
 
   // State for auto-play functionality (task 4.9.7)
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [aiPlayStyle, setAiPlayStyle] = useState<AIPlayStyle>('normal');
   const autoPlayIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const combatLogRef = useRef<HTMLDivElement>(null);
+  const aiReasoningRef = useRef<Map<number, { reasoning: string; style: AIPlayStyle }>>(new Map());
+
+  // CombatAI instance for intelligent auto-play (task 10.2.1)
+  // Recreated when AI play style changes
+  const combatAI = useMemo(() => new CombatAI({
+    playerStyle: aiPlayStyle,
+    enemyStyle: aiPlayStyle,
+  }), [aiPlayStyle]);
 
   // ============================================================
   // Phase 7.1: Party Mode Toggle State
@@ -1847,6 +1859,7 @@ export function CombatSimulatorTab() {
     }
 
     // Start combat with the party members and generated enemies
+    aiReasoningRef.current.clear();
     startCombat(partyMembers, enemiesToUse);
   }, [
     getActiveCharacter,
@@ -2020,32 +2033,91 @@ export function CombatSimulatorTab() {
     setSelectedTargetId(null);
   };
 
-  // Auto-play functionality (task 4.9.7)
-  // Execute a single turn for auto-play
+  // Auto-play functionality (task 4.9.7, upgraded in task 10.2.1)
+  // Execute a single turn for auto-play using AI decision-making
   const executeAutoPlayTurn = () => {
     if (!combat) return;
 
     // Start performance timer on first turn of auto-play
     if (combatStartTimeRef.current === null) {
       combatStartTimeRef.current = performance.now();
-      logger.info('CombatEngine', 'Auto-play started', {
+      logger.info('CombatEngine', 'AI auto-play started', {
         combatId: combat.id,
         combatants: combat.combatants.length,
-        autoPlayInterval: `${AUTO_PLAY_INTERVAL_MS / 1000}s`
+        autoPlayInterval: `${AUTO_PLAY_INTERVAL_MS / 1000}s`,
+        aiStyle: aiPlayStyle,
       });
     }
 
     const current = getCurrentCombatant();
     if (!current) return;
 
-    // Auto-attack first living target
-    const livingTargets = combat.combatants.filter((c: Combatant) => !c.isDefeated && c.id !== current.id);
-    if (livingTargets.length > 0) {
-      const target = livingTargets[0];
-      const action = executeAttack(current, target);
-      if (action) {
-        console.log('[Combat Auto-Play]', action.result?.description);
+    // Use CombatAI to decide the best action for this combatant
+    const decision = combatAI.decide(current, combat);
+
+    // Record AI reasoning for display in combat log (task 10.2.1)
+    if (decision.reasoning) {
+      console.log(`[AI: ${aiPlayStyle}] ${current.character.name} — ${decision.reasoning}`);
+      const historyIndex = combat.history.length;
+      aiReasoningRef.current.set(historyIndex, {
+        reasoning: decision.reasoning,
+        style: aiPlayStyle,
+      });
+    }
+
+    // Execute the AI decision through the existing engine methods
+    switch (decision.action) {
+      case 'attack': {
+        const target = combat.combatants.find((c: Combatant) => c.id === decision.target);
+        if (target && !target.isDefeated) {
+          executeAttack(current, target);
+        }
+        break;
       }
+
+      case 'castSpell': {
+        const spell = current.character.combat_spells?.find(s => s.name === decision.spellName);
+        if (spell) {
+          const targetIds = decision.targetIds || (decision.target ? [decision.target] : []);
+          const targets = targetIds
+            .map(id => combat.combatants.find((c: Combatant) => c.id === id))
+            .filter((c): c is Combatant => c !== undefined && !c.isDefeated);
+          if (targets.length > 0) {
+            executeCastSpell(current, spell, targets);
+          }
+        }
+        break;
+      }
+
+      case 'dodge':
+        executeDodge(current);
+        break;
+
+      case 'dash':
+        executeDash(current);
+        break;
+
+      case 'disengage':
+        executeDisengage(current);
+        break;
+
+      case 'flee':
+        if (canFlee()) {
+          executeFlee(current);
+        }
+        break;
+
+      case 'skip':
+        // AI decided to skip — just advance turn
+        break;
+
+      default:
+        // Fallback: basic attack on first living target
+        const livingTargets = combat.combatants.filter((c: Combatant) => !c.isDefeated && c.id !== current.id);
+        if (livingTargets.length > 0) {
+          executeAttack(current, livingTargets[0]);
+        }
+        break;
     }
 
     const updated = nextTurn();
@@ -2061,7 +2133,6 @@ export function CombatSimulatorTab() {
       const roundsElapsed = result?.roundsElapsed || 0;
 
       // Performance target: <5 seconds for 50-round combat
-      // For shorter combats, we scale the target proportionally
       const expectedSeconds = (roundsElapsed / 50) * 5;
       const performanceTarget = elapsedSeconds !== null && parseFloat(elapsedSeconds) < expectedSeconds ? 'PASS' : 'FAIL';
 
@@ -2072,20 +2143,19 @@ export function CombatSimulatorTab() {
         performanceTarget
       });
 
-      logger.info('CombatEngine', 'Combat ended - Performance metrics', {
+      logger.info('CombatEngine', 'AI combat ended - Performance metrics', {
         combatId: combat.id,
         winner: result?.winner?.character?.name ?? 'draw',
+        winnerSide: result?.winnerSide ?? 'draw',
         roundsElapsed,
         totalTurns,
         combatTimeSeconds: elapsedSeconds,
         performanceTarget,
-        expectedTarget: `${expectedSeconds.toFixed(2)}s for ${roundsElapsed} rounds`
+        aiStyle: aiPlayStyle,
       });
 
-      console.log('[Combat Auto-Play]', `Combat ended! Winner: ${result?.winner?.character?.name ?? 'draw'}`);
       // Stop auto-play when combat ends
       setIsAutoPlaying(false);
-      // Reset start time ref
       combatStartTimeRef.current = null;
     }
   };
@@ -4526,6 +4596,7 @@ export function CombatSimulatorTab() {
                   const isSuccessHit = action.result?.success === true && action.type === 'attack';
                   const isMiss = action.result?.success === false;
                   const isSpell = action.type === 'spell';
+                  const aiReasoning = aiReasoningRef.current.get(index);
 
                   return (
                     <div
@@ -4556,6 +4627,12 @@ export function CombatSimulatorTab() {
                                 return 'fled from combat 🏳️';
                               case 'spell':
                                 return 'cast a spell';
+                              case 'legendaryAction':
+                                return 'used a legendary action ✨';
+                              case 'useItem':
+                                return 'used an item 🧪';
+                              case 'statusEffectTick':
+                                return null; // Shown via description below
                               default:
                                 return `used ${action.type}`;
                             }
@@ -4566,7 +4643,20 @@ export function CombatSimulatorTab() {
                             on <span className="combat-log-target-name">{action.target.character.name}</span>
                           </span>
                         )}
+                        {action.target && action.type === 'spell' && (
+                          <span className="combat-log-action">
+                            on <span className="combat-log-target-name">{action.target.character.name}</span>
+                          </span>
+                        )}
                       </div>
+
+                      {/* AI reasoning display (task 10.2.1) */}
+                      {aiReasoning && (
+                        <div className={`combat-log-ai-reasoning combat-log-ai-reasoning-${aiReasoning.style}`}>
+                          <span className="combat-log-ai-badge">AI ({aiReasoning.style})</span>{' '}
+                          {aiReasoning.reasoning}
+                        </div>
+                      )}
 
                       {/* Action details */}
                       {action.attack && (
@@ -4867,13 +4957,13 @@ export function CombatSimulatorTab() {
                 Next Turn
               </button>
 
-              {/* Auto-play buttons (task 4.9.7) */}
+              {/* Auto-play buttons (task 4.9.7, upgraded with AI in task 10.2.1) */}
               {!isAutoPlaying ? (
                 <button
                   onClick={handleStartAutoPlay}
                   className="combat-action-button combat-button combat-button-green"
                 >
-                  <span>▶</span> Auto-Play
+                  <span>▶</span> AI Auto-Play
                 </button>
               ) : (
                 <button
@@ -4891,10 +4981,31 @@ export function CombatSimulatorTab() {
                 Reset Combat
               </button>
 
-              {/* Auto-play status indicator (task 4.9.7) */}
+              {/* AI strategy selector (task 10.2.1) */}
+              <div className="combat-ai-strategy-selector">
+                <span className="combat-ai-strategy-label">AI:</span>
+                <button
+                  onClick={() => setAiPlayStyle('normal')}
+                  disabled={isAutoPlaying}
+                  className={`combat-ai-strategy-btn ${aiPlayStyle === 'normal' ? 'combat-ai-strategy-btn-active' : ''} ${isAutoPlaying ? 'combat-button-disabled' : ''}`}
+                  title="Balanced combat — basic attacks, standard tactics, conserves resources"
+                >
+                  Normal
+                </button>
+                <button
+                  onClick={() => setAiPlayStyle('aggressive')}
+                  disabled={isAutoPlaying}
+                  className={`combat-ai-strategy-btn ${aiPlayStyle === 'aggressive' ? 'combat-ai-strategy-btn-active combat-ai-strategy-btn-aggressive' : ''} ${isAutoPlaying ? 'combat-button-disabled' : ''}`}
+                  title="Maximum threat — burns all spell slots, items, and abilities every fight"
+                >
+                  Aggressive
+                </button>
+              </div>
+
+              {/* Auto-play status indicator (task 4.9.7, updated 10.2.1) */}
               {isAutoPlaying && (
                 <div className="combat-autoplay-status">
-                  <span className="combat-autoplay-label">Auto-playing...</span>
+                  <span className="combat-autoplay-label">AI Auto-playing ({aiPlayStyle})...</span>
                   <span className="combat-autoplay-interval">({AUTO_PLAY_INTERVAL_MS / 1000}s per turn)</span>
                 </div>
               )}

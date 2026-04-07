@@ -2165,6 +2165,97 @@
   color: hsl(var(--muted-foreground));
 }
 
+/* AI Strategy Selector (task 10.2.1) */
+.combat-ai-strategy-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: 100%;
+  padding: 0.25rem 0;
+}
+
+@media (min-width: 640px) {
+  .combat-ai-strategy-selector {
+    width: auto;
+  }
+}
+
+.combat-ai-strategy-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.combat-ai-strategy-btn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.375rem;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 500;
+}
+
+.combat-ai-strategy-btn:hover:not(:disabled) {
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary));
+}
+
+.combat-ai-strategy-btn-active {
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.15);
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.combat-ai-strategy-btn-aggressive {
+  border-color: hsl(0 76% 50%);
+  background: hsl(0 76% 50% / 0.15);
+  color: hsl(0 76% 50%);
+}
+
+/* AI Reasoning in Combat Log (task 10.2.1) */
+.combat-log-ai-reasoning {
+  font-size: 0.7rem;
+  font-style: italic;
+  padding: 0.2rem 0.5rem;
+  margin: 0.15rem 0 0;
+  border-radius: 0.25rem;
+  border-left: 2px solid;
+  line-height: 1.4;
+}
+
+.combat-log-ai-reasoning-normal {
+  background: hsl(220 76% 50% / 0.08);
+  border-left-color: hsl(220 76% 50%);
+  color: hsl(220 30% 60%);
+}
+
+.combat-log-ai-reasoning-aggressive {
+  background: hsl(0 76% 50% / 0.08);
+  border-left-color: hsl(0 76% 50%);
+  color: hsl(0 30% 60%);
+}
+
+.combat-log-ai-badge {
+  font-weight: 700;
+  font-style: normal;
+  text-transform: uppercase;
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+/* Legendary Action Log Entry */
+.combat-log-entry-legendary {
+  border-left-color: hsl(45 93% 47%);
+  background: hsl(45 93% 47% / 0.05);
+}
+
 /* Combat JSON Dump Section */
 .combat-dump-section {
   display: flex;

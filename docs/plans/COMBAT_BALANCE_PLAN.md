@@ -1856,10 +1856,24 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 10.2 AI-Auto-Play Upgrade
 
-- [ ] **10.2.1** Replace the basic auto-play in CombatSimulatorTab with the new AI system
+- [x] **10.2.1** Replace the basic auto-play in CombatSimulatorTab with the new AI system
   - Add AI strategy selector to auto-play controls (Normal / Aggressive)
   - Use `AICombatRunner` for intelligent auto-play instead of "attack first target"
   - Show AI reasoning in combat log (e.g., "[AI: Aggressive] Grognak attacks weakest target — Goblin Archer (5 HP)")
+  - Imported `CombatAI` and `AIPlayStyle` from `playlist-data-engine`
+  - Added `aiPlayStyle` state (default `'normal'`) with `CombatAI` instance via `useMemo`
+  - Replaced `executeAutoPlayTurn()` — now uses `combatAI.decide(current, combat)` to get `AIDecision`, then executes through existing engine methods (`executeAttack`, `executeCastSpell`, `executeDodge`, `executeDash`, `executeDisengage`, `executeFlee`)
+  - AI handles all action types: attack (with weapon/target selection), castSpell (with spell target resolution including multi-target), dodge, dash, disengage, flee, skip, with fallback to basic attack
+  - Added AI strategy selector UI: two buttons (Normal/Aggressive) next to auto-play controls, disabled during active auto-play, with distinct styling per style (blue for normal, red for aggressive)
+  - Added AI reasoning display in combat log: `aiReasoningRef` maps history index → reasoning string, displayed as styled italic entry with color-coded left border (blue for normal, red for aggressive) and `[AI (style)]` badge
+  - Added `legendaryAction` and `useItem` handling in combat log display (action type labels and log entry colors)
+  - Added `statusEffectTick` entries hidden from action type label (shown via description only)
+  - Auto-play status indicator updated to show AI style: "AI Auto-playing (normal)..."
+  - Button label changed from "Auto-Play" to "AI Auto-Play"
+  - Added `combat-log-entry-legendary` CSS style (gold border for legendary actions)
+  - Added AI strategy selector CSS (`.combat-ai-strategy-*` styles)
+  - Added AI reasoning CSS (`.combat-log-ai-reasoning-*` styles with per-style color coding)
+  - TypeScript check clean (0 new errors), build pre-existing errors unchanged
 - [ ] **10.2.2** Add per-combatant AI strategy override
   - Allow setting different AI strategies for individual combatants
   - Useful for testing specific scenarios
