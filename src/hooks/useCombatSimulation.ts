@@ -7,6 +7,7 @@ import {
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
+import { simulationCache } from '@/utils/simulationCache';
 import type {
     SimulationWorkerOutgoingMessage,
 } from '@/workers/simulationWorker';
@@ -42,6 +43,8 @@ export interface UseCombatSimulationReturn {
     error: SimulationError | null;
     /** Duration of the last simulation in milliseconds */
     durationMs: number | null;
+    /** Whether the current results were retrieved from cache */
+    fromCache: boolean;
 
     /**
      * Start a Monte Carlo combat simulation.
@@ -211,6 +214,7 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
     });
     const [error, setError] = useState<SimulationError | null>(null);
     const [durationMs, setDurationMs] = useState<number | null>(null);
+    const [fromCache, setFromCache] = useState(false);
 
     // Refs for values that must survive across renders without triggering re-renders
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -220,6 +224,12 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
     const workerMessageHandlerRef = useRef<((msg: MessageEvent<SimulationWorkerOutgoingMessage>) => void) | null>(null);
     /** Tracks the current worker run ID so cancel can target the right simulation */
     const currentRunIdRef = useRef<string | null>(null);
+    /** Tracks inputs for the current simulation (needed for cache storage on completion) */
+    const currentInputsRef = useRef<{
+        party: CharacterSheet[];
+        enemies: CharacterSheet[];
+        config: SimulationConfig;
+    } | null>(null);
 
     // Cleanup on unmount — cancel any running simulation
     useEffect(() => {
@@ -251,6 +261,7 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
         setProgress({ completed: 0, total: 0, fraction: 0, estimatedMsRemaining: null });
         setError(null);
         setDurationMs(null);
+        setFromCache(false);
         lastCompletedRef.current = 0;
     }, []);
 
@@ -286,7 +297,26 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
                 abortControllerRef.current.abort();
             }
 
+            // Check simulation cache before running
+            const cached = simulationCache.get(party, enemies, config);
+            if (cached) {
+                setStatus('completed');
+                setResults(cached.results);
+                setDurationMs(cached.durationMs);
+                setFromCache(true);
+                setError(null);
+                setProgress({
+                    completed: cached.totalRuns,
+                    total: cached.totalRuns,
+                    fraction: 1,
+                    estimatedMsRemaining: 0,
+                });
+                abortControllerRef.current = null;
+                return cached.results;
+            }
+
             // Reset state
+            setFromCache(false);
             setStatus('running');
             setResults(null);
             setError(null);
@@ -309,6 +339,9 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
                 playerStyle: config.aiConfig.playerStyle,
                 enemyStyle: config.aiConfig.enemyStyle,
             });
+
+            // Store inputs for cache storage on completion
+            currentInputsRef.current = { party, enemies, config };
 
             // Try Web Worker for larger simulations
             const worker = getWorker();
@@ -430,6 +463,17 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
                     estimatedMsRemaining: 0,
                 });
 
+                // Cache completed results
+                if (currentInputsRef.current) {
+                    simulationCache.set(
+                        currentInputsRef.current.party,
+                        currentInputsRef.current.enemies,
+                        currentInputsRef.current.config,
+                        simResults,
+                        workerDurationMs,
+                    );
+                }
+
                 logger.info('CombatSimulator', 'Simulation completed', {
                     totalRuns: simResults.summary.totalRuns,
                     playerWinRate: (simResults.summary.playerWinRate * 100).toFixed(1) + '%',
@@ -498,6 +542,9 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
                         estimatedMsRemaining: 0,
                     });
 
+                    // Cache completed results
+                    simulationCache.set(party, enemies, config, simResults, Math.round(elapsed));
+
                     logger.info('CombatSimulator', 'Simulation completed', {
                         totalRuns: simResults.summary.totalRuns,
                         playerWinRate: (simResults.summary.playerWinRate * 100).toFixed(1) + '%',
@@ -544,6 +591,7 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
         progress,
         error,
         durationMs,
+        fromCache,
         startSimulation,
         cancelSimulation,
         resetSimulation,

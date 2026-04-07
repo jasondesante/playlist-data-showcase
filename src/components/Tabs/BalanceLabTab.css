@@ -304,6 +304,30 @@
     line-height: 1.4;
 }
 
+/* ─── Cache Indicator ────────────────────────── */
+
+.bl-cache-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    background: hsl(var(--primary) / 0.06);
+    border: 1px solid hsl(var(--primary) / 0.15);
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+}
+
+.bl-cache-icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+}
+
+.bl-cache-text {
+    font-size: 0.75rem;
+    color: hsl(var(--primary) / 0.8);
+    font-weight: 500;
+}
+
 /* ─── Empty State ─────────────────────────────── */
 
 .bl-results-empty {

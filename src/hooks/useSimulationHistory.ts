@@ -16,6 +16,7 @@ export interface UseSimulationHistoryReturn {
     progress: SimulationProgress;
     error: SimulationError | null;
     durationMs: number | null;
+    fromCache: boolean;
     startSimulation: (
         party: CharacterSheet[],
         enemies: CharacterSheet[],
@@ -57,6 +58,7 @@ export function useSimulationHistory(): UseSimulationHistoryReturn {
         progress,
         error,
         durationMs,
+        fromCache,
         startSimulation,
         cancelSimulation,
         resetSimulation,
@@ -144,6 +146,7 @@ export function useSimulationHistory(): UseSimulationHistoryReturn {
         progress,
         error,
         durationMs,
+        fromCache,
         startSimulation: wrappedStartSimulation,
         cancelSimulation,
         resetSimulation,

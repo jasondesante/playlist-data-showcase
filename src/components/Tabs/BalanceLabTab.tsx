@@ -7,6 +7,7 @@ import {
     AlertCircle,
     Clock,
     Zap,
+    Database,
 } from 'lucide-react';
 import { useSimulationHistory } from '@/hooks/useSimulationHistory';
 import { SimulationHistoryPanel } from '@/components/balance/SimulationHistoryPanel';
@@ -83,6 +84,7 @@ export function BalanceLabTab() {
         progress,
         error,
         durationMs,
+        fromCache,
         startSimulation,
         cancelSimulation,
         resetSimulation,
@@ -298,17 +300,25 @@ export function BalanceLabTab() {
 
                             {/* ─── Balance Dashboard ────────────────── */}
                             {hasResults && (
-                                <BalanceDashboard
-                                    results={results}
-                                    balanceReport={balanceReport}
-                                    durationMs={durationMs}
-                                    isCancelled={isCancelled}
-                                    isSaved={!!activeSavedId}
-                                    onSave={isCompleted ? handleSave : undefined}
-                                    onReset={handleReset}
-                                    encounterConfig={encounterConfig}
-                                    onApplySuggestion={handleApplyRecommendation}
-                                />
+                                <>
+                                    {fromCache && (
+                                        <div className="bl-cache-indicator">
+                                            <Database size={14} className="bl-cache-icon" />
+                                            <span className="bl-cache-text">Results loaded from cache</span>
+                                        </div>
+                                    )}
+                                    <BalanceDashboard
+                                        results={results}
+                                        balanceReport={balanceReport}
+                                        durationMs={durationMs}
+                                        isCancelled={isCancelled}
+                                        isSaved={!!activeSavedId}
+                                        onSave={isCompleted ? handleSave : undefined}
+                                        onReset={handleReset}
+                                        encounterConfig={encounterConfig}
+                                        onApplySuggestion={handleApplyRecommendation}
+                                    />
+                                </>
                             )}
 
                             {/* ─── Empty State ──────────────────────── */}

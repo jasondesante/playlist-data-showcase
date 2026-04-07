@@ -45,6 +45,7 @@ type LogCategory =
     | 'SimulationStore'
     | 'SimulationHistory'
     | 'SimulationComparison'
+    | 'SimulationCache'
     | 'BalanceLab';
 
 

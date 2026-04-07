@@ -1892,10 +1892,21 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 10.3 Performance & UX
 
-- [ ] **10.3.1** Add simulation caching
+- [x] **10.3.1** Add simulation caching
   - Cache simulation results by config hash
   - Avoid re-running identical simulations
   - Invalidate cache when engine version changes
+  - Created `src/utils/simulationCache.ts` — in-memory LRU cache (max 20 entries) with deterministic config hash key
+  - `computeCacheKey()` extracts combat-affecting fields from party/enemies (seed, level, HP, AC, ability scores, CR, equipped weapons) and simulation config (baseSeed, runCount, AI styles, overrides, combat config, detailed logs flag) — produces a djb2 hash string
+  - `SimulationCache` class with `get()`, `set()`, `has()`, `clear()` methods and LRU eviction via access-order tracking
+  - Modified `useCombatSimulation.ts` — checks cache before starting simulation; on cache hit, immediately sets status='completed' with cached results and `fromCache=true`; on completion (worker or sync), stores results in cache
+  - Modified `useSimulationHistory.ts` — passes through `fromCache` boolean
+  - Added `fromCache: boolean` to `UseCombatSimulationReturn` and `UseSimulationHistoryReturn` interfaces
+  - Added `'SimulationCache'` to `LogCategory` in `logger.ts`
+  - Added cache hit indicator in `BalanceLabTab.tsx` — shows "Results loaded from cache" with Database icon and primary-tinted styling above the dashboard
+  - Added `.bl-cache-indicator` CSS styles in `BalanceLabTab.css`
+  - Cache is per-session (in-memory Map) — naturally invalidated on page reload/engine update
+  - TypeScript check clean (zero new errors), all pre-existing build errors unchanged
 - [ ] **10.3.2** Add loading skeletons for Balance Lab tab
   - Match existing skeleton patterns from PartyAnalyzerCard
 - [ ] **10.3.3** Add keyboard shortcuts
