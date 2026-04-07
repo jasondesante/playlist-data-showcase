@@ -9,6 +9,7 @@ import {
     ShieldAlert,
 } from 'lucide-react';
 import type { SimulationResults, BalanceReport } from 'playlist-data-engine';
+import { BalanceScoreIndicator } from './BalanceScoreIndicator';
 import './ResultsSummary.css';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -160,16 +161,8 @@ function ResultsSummaryComponent({
                                 intended: {balanceReport.intendedDifficulty}
                             </span>
                         </div>
-                        <span className="rs-balance-score">
-                            Score: {balanceReport.balanceScore}
-                        </span>
                     </div>
-                    <div className="rs-balance-score-bar">
-                        <div
-                            className="rs-balance-score-fill"
-                            style={{ width: `${balanceReport.balanceScore}%` }}
-                        />
-                    </div>
+                    <BalanceScoreIndicator report={balanceReport} />
                     {balanceReport.recommendations.length > 0 && (
                         <div className="rs-balance-recommendations">
                             <span className="rs-balance-rec-label">Suggestions</span>

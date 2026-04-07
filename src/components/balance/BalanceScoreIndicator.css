@@ -1,0 +1,235 @@
+/* ============================================
+   BALANCE SCORE INDICATOR COMPONENT
+   ============================================
+   Semicircular gauge showing balance score (0-100)
+   with color gradient from red to green.
+   ============================================ */
+
+.bsi-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.25rem 0.25rem;
+}
+
+/* ============================================
+   GAUGE WRAPPER — positions SVG + center text
+   ============================================ */
+
+.bsi-gauge-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 180px;
+    aspect-ratio: 120 / 85;
+}
+
+.bsi-gauge {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* ─── Background Arc ──────────────────────────────── */
+
+.bsi-gauge-bg {
+    stroke: hsl(var(--muted) / 0.25);
+}
+
+/* ─── Filled Arc ─────────────────────────────────── */
+
+.bsi-gauge-fill {
+    transition: d 0.4s ease, stroke 0.3s ease;
+}
+
+/* ─── Needle ─────────────────────────────────────── */
+
+.bsi-needle {
+    transition: all 0.4s ease;
+    filter: drop-shadow(0 1px 2px hsl(var(--foreground) / 0.2));
+}
+
+/* ─── Tick Marks ─────────────────────────────────── */
+
+.bsi-tick-line {
+    stroke: hsl(var(--muted-foreground) / 0.3);
+    stroke-width: 1;
+}
+
+.bsi-tick-label {
+    fill: hsl(var(--muted-foreground));
+    font-size: 5.5px;
+    font-weight: 500;
+}
+
+/* ============================================
+   CENTER SCORE DISPLAY
+   ============================================ */
+
+.bsi-score-center {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+}
+
+.bsi-score-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--bsi-score-color, hsl(var(--foreground)));
+    line-height: 1.1;
+}
+
+.bsi-score-max {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    margin-top: 0.05rem;
+}
+
+.bsi-score-label {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--bsi-score-color, hsl(var(--muted-foreground)));
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 0.15rem;
+    opacity: 0.85;
+}
+
+/* ============================================
+   INFO ROW — variance badge + tooltip
+   ============================================ */
+
+.bsi-info-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    position: relative;
+}
+
+/* ─── Variance Badge ─────────────────────────────── */
+
+.bsi-variance-badge {
+    font-size: 0.6rem;
+    font-weight: 600;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.bsi-variance-badge[data-variance="balanced"] {
+    color: hsl(142 76% 46%);
+    background-color: hsl(142 76% 36% / 0.1);
+    border: 1px solid hsl(142 76% 36% / 0.2);
+}
+
+.bsi-variance-badge[data-variance="underpowered"] {
+    color: hsl(48 96% 53%);
+    background-color: hsl(48 96% 53% / 0.1);
+    border: 1px solid hsl(48 96% 53% / 0.2);
+}
+
+.bsi-variance-badge[data-variance="overpowered"] {
+    color: hsl(0 84% 60%);
+    background-color: hsl(0 84% 60% / 0.1);
+    border: 1px solid hsl(0 84% 60% / 0.2);
+}
+
+/* ─── Info Button ────────────────────────────────── */
+
+.bsi-info-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.15rem;
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.bsi-info-btn:hover {
+    color: hsl(var(--foreground));
+}
+
+.bsi-info-btn:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 1px;
+}
+
+/* ─── Tooltip ────────────────────────────────────── */
+
+.bsi-tooltip {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 260px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.7rem;
+    line-height: 1.5;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--popover));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow: 0 4px 16px hsl(var(--foreground) / 0.08);
+    z-index: 10;
+    pointer-events: none;
+    animation: bsi-tooltip-in 0.15s ease;
+}
+
+.bsi-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: hsl(var(--border));
+}
+
+@keyframes bsi-tooltip-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+    .bsi-gauge-wrapper {
+        max-width: 150px;
+    }
+
+    .bsi-score-value {
+        font-size: 1.4rem;
+    }
+
+    .bsi-score-max {
+        font-size: 0.6rem;
+    }
+
+    .bsi-score-label {
+        font-size: 0.55rem;
+    }
+
+    .bsi-tooltip {
+        width: 220px;
+        font-size: 0.65rem;
+    }
+}

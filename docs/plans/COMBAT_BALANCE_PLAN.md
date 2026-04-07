@@ -1521,10 +1521,21 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Refactored `BalanceLabTab.tsx` to use `<ResultsSummary>` instead of ~110 lines of inline JSX
   - Cleaned up `BalanceLabTab.css` — removed ~300 lines of styles now in `ResultsSummary.css` (win rate, metrics grid, balance card, recommendations, cancelled notice, action buttons)
   - TypeScript check clean (no new errors), pre-existing build errors unchanged
-- [ ] **8.3.2** Create `src/components/balance/BalanceScoreIndicator.tsx`
+- [x] **8.3.2** Create `src/components/balance/BalanceScoreIndicator.tsx`
   - Visual gauge/meter showing balance score (0-100)
   - Color gradient: red (poor balance) → yellow (acceptable) → green (well balanced)
   - Tooltip with detailed explanation
+  - Created `src/components/balance/BalanceScoreIndicator.tsx` with semicircular SVG gauge
+  - Created `src/components/balance/BalanceScoreIndicator.css` with pure CSS styling using project HSL variable system
+  - **SVG gauge**: semicircular arc with gradient background track (red → orange → yellow → green), colored fill arc to score position, needle indicator, tick marks at 0/25/50/75/100
+  - **Color mapping**: `getScoreColor()` produces continuous HSL gradient — hue 0 (red) at score 0, hue 48 (yellow) at score 50, hue 142 (green) at score 100
+  - **Center display**: large score number (/100), score label (Excellent/Good/Acceptable/Poor/Very Poor) — all colored by score
+  - **Variance badge**: pill badge below gauge showing difficulty variance (balanced/underpowered/overpowered) with matching color scheme
+  - **Tooltip**: hover/focus/click-triggered tooltip with detailed explanation — score meaning, variance context (actual vs intended difficulty), confidence percentage, run count; positioned above gauge with CSS arrow; fade-in animation
+  - **Accessibility**: `role="img"` with `aria-label` on SVG, `aria-describedby` on info button, `focus-visible` outline, keyboard-friendly toggle
+  - **Integration**: replaced inline score text + thin 4px bar in `ResultsSummary.tsx` with `<BalanceScoreIndicator>` component; removed old `rs-balance-score-bar` and `rs-balance-score-fill` CSS rules from `ResultsSummary.css`
+  - **Responsive**: scales down on mobile (max-width 640px) — smaller gauge, smaller text, narrower tooltip
+  - TypeScript check clean (zero new errors), pre-existing build error only (crypto import in worker)
 - [ ] **8.3.3** Create `src/components/balance/PerCombatantMetrics.tsx`
   - Table showing per-combatant aggregate stats
   - Columns: Name, Side, DPR, Avg Damage Taken, Survival Rate, Kill Rate, Crit Rate
