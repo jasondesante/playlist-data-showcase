@@ -15,7 +15,7 @@ import { ResultsSummary } from '@/components/balance/ResultsSummary';
 import { PerCombatantMetrics } from '@/components/balance/PerCombatantMetrics';
 import { BalanceRecommendations } from '@/components/balance/BalanceRecommendations';
 import { SimulationLogViewer } from '@/components/balance/SimulationLogViewer';
-import { WinRateChart } from '@/components/balance/charts';
+import { WinRateChart, DPRComparisonChart } from '@/components/balance/charts';
 import {
     BalanceValidator,
     type EncounterDifficulty,
@@ -289,6 +289,11 @@ export function BalanceLabTab() {
                             {/* ─── Win Rate Chart ───────────────────── */}
                             {hasResults && (
                                 <WinRateChart results={results} />
+                            )}
+
+                            {/* ─── DPR Comparison Chart ────────────── */}
+                            {hasResults && results.perCombatantMetrics.size > 0 && (
+                                <DPRComparisonChart metrics={results.perCombatantMetrics} />
                             )}
 
                             {/* ─── Balance Recommendations ──────────── */}

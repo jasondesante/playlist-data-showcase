@@ -1654,10 +1654,24 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Integrated into `BalanceLabTab.tsx` — rendered between ResultsSummary and BalanceRecommendations when results are available
   - Memoized with `React.memo` for render performance
   - TypeScript check clean (zero new errors), pre-existing build errors unchanged
-- [ ] **9.2.2** Create `src/components/balance/charts/DPRComparisonChart.tsx`
+- [x] **9.2.2** Create `src/components/balance/charts/DPRComparisonChart.tsx`
   - Horizontal bar chart comparing DPR across combatants
   - Separate sections for players vs enemies
   - Color-coded by side
+  - Created `src/components/balance/charts/DPRComparisonChart.tsx` with full horizontal bar chart using recharts `BarChart` with `layout="vertical"`
+  - Created `src/components/balance/charts/DPRComparisonChart.css` — pure CSS styling using project HSL variable system
+  - **Layout**: Horizontal bars with combatant names on Y-axis, DPR values on X-axis
+  - **Side grouping**: Enemies sorted by DPR (descending) displayed first, then visual separator row ("─── Players ───"), then players sorted by DPR (descending)
+  - **Color coding**: Player bars use `CHART_COLORS.player` (primary blue), enemy bars use `CHART_COLORS.enemy` (destructive red), separator row is transparent
+  - **Dynamic sizing**: Bar size and chart height adapt to number of combatants (22–32px bars, 200–500px max height)
+  - **Custom tooltip**: Shows combatant name (side-colored), DPR, total damage dealt/taken per run, survival rate, kill rate, crit rate, avg rounds survived, most used action; skips separator row
+  - **Reference line**: Neutral dashed line at 50% of max DPR for visual baseline
+  - **Subtitle**: Shows player/enemy count (e.g., "4 players, 3 enemies")
+  - Uses `ChartContainer` wrapper with responsive `ResponsiveContainer`, follows same pattern as `WinRateChart`
+  - Memoized with `React.memo` for render performance
+  - Updated barrel export `charts/index.ts` with `DPRComparisonChart`
+  - Integrated into `BalanceLabTab.tsx` — rendered after WinRateChart when perCombatantMetrics has entries
+  - TypeScript check clean (zero new errors), pre-existing build errors unchanged (crypto import in worker)
 - [ ] **9.2.3** Create `src/components/balance/charts/HPRemainingDistribution.tsx`
   - Histogram showing HP remaining at end of combat (winning runs only)
   - Helps understand how close fights were
