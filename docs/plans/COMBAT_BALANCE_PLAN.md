@@ -1347,7 +1347,29 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Added `'SimulationHistory'` to `LogCategory` in `src/utils/logger.ts`
   - Zero new TypeScript errors (verified against pre-existing error baseline)
   - Build verified clean (pre-existing errors only, none from new code)
-- [ ] **7.2.3** Implement comparison mode — save two simulation results for side-by-side comparison
+- [x] **7.2.3** Implement comparison mode — save two simulation results for side-by-side comparison
+  - Store already had comparison infrastructure from 7.2.1 (`setComparisonSlot`, `clearComparison`, `getComparisonPair`)
+  - Created `src/hooks/useSimulationComparison.ts` — manages comparison state, computes quick deltas from saved results, runs full ComparativeAnalyzer analysis
+  - Two comparison levels: **Quick deltas** (instant from saved results) and **Full analysis** (re-simulates with identical seeds via ComparativeAnalyzer for statistical significance)
+  - `QuickDelta` interface: win rate, avg rounds, median rounds, HP remaining, player deaths, enemy deaths — all computed from `SimulationResults.summary`
+  - `runAnalysis()` uses engine's `ComparativeAnalyzer.compare()` with `AbortSignal` for cancellation and progress callback
+  - Created `src/components/balance/ComparisonPanel.tsx` — full comparison UI with:
+    - Two-column slot layout (A vs B) with colored accents (blue for A, amber for B)
+    - Slot display showing win rate, avg rounds, HP remaining, player deaths, meta (party size, run count, time)
+    - Delta metrics table with directional arrows and color coding (green = A better, red = B better)
+    - "Run Statistical Analysis" button for full ComparativeAnalyzer re-simulation
+    - Significance result card showing p-value and interpretation
+    - Progress bar and cancel button during analysis
+    - Empty state with guidance text
+  - Created `src/components/balance/ComparisonPanel.css` — pure CSS styling using project HSL variable system
+  - Updated `SimulationHistoryItem` with comparison props: `isComparisonSlotA`, `isComparisonSlotB`, `onCompare` callback
+  - Added compare button (GitCompareArrows icon) to each history item; shows slot badge (A/B) when assigned
+  - Added compare button CSS with slot-specific color styling
+  - Updated `SimulationHistoryPanel` to track comparison slot state and smart-assign items (fills empty slot first, then replaces slot A)
+  - `ComparisonPanel` rendered inline below simulation list when comparison mode is active
+  - Added `'SimulationComparison'` to `LogCategory` in `src/utils/logger.ts`
+  - Exported `useSimulationComparison` from `src/hooks/index.ts`
+  - Zero new TypeScript errors (verified with `tsc --noEmit`), pre-existing build errors unchanged
 
 ### 7.3 Simulation Configuration Types
 

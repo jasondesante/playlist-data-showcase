@@ -179,6 +179,43 @@
     background-color: hsl(var(--destructive) / 0.1);
 }
 
+.simulation-history-item-compare-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.simulation-history-item-compare-btn:hover {
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary) / 0.4);
+    background-color: hsl(var(--primary) / 0.08);
+}
+
+.simulation-history-item-slot-a {
+    color: hsl(210 80% 55%);
+    border-color: hsl(210 80% 55% / 0.4);
+    background-color: hsl(210 80% 55% / 0.1);
+    cursor: default;
+}
+
+.simulation-history-item-slot-b {
+    color: hsl(30 90% 55%);
+    border-color: hsl(30 90% 55% / 0.4);
+    background-color: hsl(30 90% 55% / 0.1);
+    cursor: default;
+}
+
 .simulation-history-item-toggle {
     color: hsl(var(--muted-foreground));
     display: flex;

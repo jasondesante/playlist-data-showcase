@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useSimulationStore } from '@/store/simulationStore';
 import { SimulationHistoryItem } from './SimulationHistoryItem';
+import { ComparisonPanel } from './ComparisonPanel';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import './SimulationHistoryPanel.css';
 
@@ -35,6 +36,26 @@ export function SimulationHistoryPanel({
     const savedSimulations = useSimulationStore((s) => s.savedSimulations);
     const deleteSimulation = useSimulationStore((s) => s.deleteSimulation);
     const clearAllSimulations = useSimulationStore((s) => s.clearAllSimulations);
+    const comparisonSlotA = useSimulationStore((s) => s.comparison.slotA.simulationId);
+    const comparisonSlotB = useSimulationStore((s) => s.comparison.slotB.simulationId);
+    const setComparisonSlot = useSimulationStore((s) => s.setComparisonSlot);
+
+    const isComparisonMode = comparisonSlotA !== null || comparisonSlotB !== null;
+
+    const handleCompare = useCallback(
+        (simulationId: string) => {
+            // Smart assignment: fill empty slot first, then replace the oldest
+            if (!comparisonSlotA) {
+                setComparisonSlot('A', simulationId);
+            } else if (!comparisonSlotB) {
+                setComparisonSlot('B', simulationId);
+            } else {
+                // Both filled — replace slot A (first selected)
+                setComparisonSlot('A', simulationId);
+            }
+        },
+        [comparisonSlotA, comparisonSlotB, setComparisonSlot],
+    );
 
     const visibleSimulations = useMemo(() => {
         if (showAll || savedSimulations.length <= MAX_VISIBLE_ITEMS) {
@@ -147,6 +168,9 @@ export function SimulationHistoryPanel({
                                 isActive={sim.id === activeSimulationId}
                                 onSelect={onSelectSimulation}
                                 onDelete={handleDelete}
+                                isComparisonSlotA={sim.id === comparisonSlotA}
+                                isComparisonSlotB={sim.id === comparisonSlotB}
+                                onCompare={isComparisonMode ? () => handleCompare(sim.id) : undefined}
                             />
                         ))}
                     </div>
@@ -162,6 +186,13 @@ export function SimulationHistoryPanel({
                             >
                                 {showAll ? 'Show Less' : `Show ${remainingCount} More`}
                             </button>
+                        </div>
+                    )}
+
+                    {/* Comparison Panel */}
+                    {isComparisonMode && (
+                        <div className="simulation-history-panel-comparison">
+                            <ComparisonPanel />
                         </div>
                     )}
                 </div>

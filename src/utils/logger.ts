@@ -43,7 +43,8 @@ type LogCategory =
     | 'BatchImagePersistence'
     | 'PitchAnalyzer'
     | 'SimulationStore'
-    | 'SimulationHistory';
+    | 'SimulationHistory'
+    | 'SimulationComparison';
 
 
 

@@ -8,6 +8,7 @@ import {
     ChevronDown,
     ChevronUp,
     Target,
+    GitCompareArrows,
 } from 'lucide-react';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import type { SavedSimulation } from '@/store/simulationStore';
@@ -18,6 +19,12 @@ export interface SimulationHistoryItemProps {
     isActive: boolean;
     onSelect: (id: string) => void;
     onDelete: (id: string) => void;
+    /** Whether this simulation is currently assigned to comparison slot A */
+    isComparisonSlotA?: boolean;
+    /** Whether this simulation is currently assigned to comparison slot B */
+    isComparisonSlotB?: boolean;
+    /** Callback to assign this simulation to a comparison slot */
+    onCompare?: (slot: 'A' | 'B') => void;
     className?: string;
 }
 
@@ -60,6 +67,8 @@ function arePropsEqual(
     return (
         prev.simulation.id === next.simulation.id &&
         prev.isActive === next.isActive &&
+        prev.isComparisonSlotA === next.isComparisonSlotA &&
+        prev.isComparisonSlotB === next.isComparisonSlotB &&
         prev.className === next.className
     );
 }
@@ -69,6 +78,9 @@ const SimulationHistoryItemComponent = memo(function SimulationHistoryItem({
     isActive,
     onSelect,
     onDelete,
+    isComparisonSlotA = false,
+    isComparisonSlotB = false,
+    onCompare,
     className = '',
 }: SimulationHistoryItemProps) {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -157,6 +169,47 @@ const SimulationHistoryItemComponent = memo(function SimulationHistoryItem({
                                 type="button"
                             >
                                 View
+                            </button>
+                        )}
+                        {onCompare && !isComparisonSlotA && !isComparisonSlotB && (
+                            <button
+                                className="simulation-history-item-compare-btn"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onCompare('A');
+                                }}
+                                title="Compare (assign to slot A)"
+                                type="button"
+                            >
+                                <GitCompareArrows size={13} />
+                            </button>
+                        )}
+                        {onCompare && isComparisonSlotA && (
+                            <button
+                                className="simulation-history-item-compare-btn simulation-history-item-slot-a"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onCompare('A');
+                                }}
+                                title="Remove from comparison slot A"
+                                type="button"
+                                disabled
+                            >
+                                A
+                            </button>
+                        )}
+                        {onCompare && isComparisonSlotB && (
+                            <button
+                                className="simulation-history-item-compare-btn simulation-history-item-slot-b"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onCompare('B');
+                                }}
+                                title="Remove from comparison slot B"
+                                type="button"
+                                disabled
+                            >
+                                B
                             </button>
                         )}
                         <button

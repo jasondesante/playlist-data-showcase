@@ -1,0 +1,641 @@
+/* ============================================
+   COMPARISON PANEL COMPONENT
+   ============================================ */
+
+.comparison-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background-color: hsl(var(--card));
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    overflow: visible;
+    transition: all 0.2s ease;
+}
+
+.comparison-panel:hover {
+    border-color: hsl(var(--border) / 1.2);
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.comparison-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.comparison-panel-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.comparison-panel-icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+}
+
+.comparison-panel-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+}
+
+.comparison-panel-badge {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.1);
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--primary) / 0.2);
+}
+
+.comparison-panel-clear-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.comparison-panel-clear-btn:hover {
+    color: hsl(var(--destructive));
+    background-color: hsl(var(--destructive) / 0.1);
+}
+
+/* ============================================
+   SLOTS LAYOUT
+   ============================================ */
+
+.comparison-slots {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.75rem;
+    padding: 0 1rem;
+    align-items: stretch;
+}
+
+.comparison-slots-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 0.25rem;
+}
+
+/* ============================================
+   SLOT CARD
+   ============================================ */
+
+.comparison-slot {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+    transition: all 0.2s ease;
+}
+
+/* Slot A subtle blue tint */
+.comparison-slot-a {
+    border-color: hsl(210 80% 55% / 0.2);
+    background-color: hsl(210 80% 55% / 0.03);
+}
+
+/* Slot B subtle amber tint */
+.comparison-slot-b {
+    border-color: hsl(30 90% 55% / 0.2);
+    background-color: hsl(30 90% 55% / 0.03);
+}
+
+/* Empty Slot */
+.comparison-slot-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+    border-style: dashed;
+}
+
+.comparison-slot-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.comparison-slot-letter {
+    font-size: 1.25rem;
+    font-weight: 800;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+}
+
+.comparison-slot-a .comparison-slot-letter {
+    background-color: hsl(210 80% 55% / 0.15);
+    color: hsl(210 80% 55%);
+}
+
+.comparison-slot-b .comparison-slot-letter {
+    background-color: hsl(30 90% 55% / 0.15);
+    color: hsl(30 90% 55%);
+}
+
+.comparison-slot-hint {
+    font-size: 0.8rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.comparison-slot-missing {
+    font-size: 0.7rem;
+    color: hsl(var(--destructive));
+    margin: 0;
+}
+
+/* Filled Slot */
+.comparison-slot-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.comparison-slot-title {
+    flex: 1;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.comparison-slot-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.comparison-slot-remove:hover {
+    color: hsl(var(--destructive));
+    background-color: hsl(var(--destructive) / 0.1);
+}
+
+/* Slot Stats */
+.comparison-slot-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+}
+
+.comparison-slot-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.comparison-slot-stat-label {
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.comparison-slot-stat-value {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.comparison-slot-win-rate {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.comparison-win-rate-high {
+    background-color: hsl(142 76% 36% / 0.12);
+    color: hsl(142 76% 46%);
+}
+
+.comparison-win-rate-medium {
+    background-color: hsl(48 96% 53% / 0.12);
+    color: hsl(48 96% 53%);
+}
+
+.comparison-win-rate-low {
+    background-color: hsl(28 96% 53% / 0.12);
+    color: hsl(28 96% 53%);
+}
+
+.comparison-win-rate-critical {
+    background-color: hsl(0 84% 60% / 0.12);
+    color: hsl(0 84% 60%);
+}
+
+.comparison-slot-deaths {
+    color: hsl(var(--destructive));
+}
+
+/* Slot Meta */
+.comparison-slot-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.65rem;
+    color: hsl(var(--muted-foreground));
+    flex-wrap: wrap;
+}
+
+.comparison-slot-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+/* ============================================
+   DELTA METRICS TABLE
+   ============================================ */
+
+.comparison-deltas {
+    border-top: 1px solid hsl(var(--border) / 0.5);
+    padding: 0.75rem 1rem 0.25rem;
+}
+
+.comparison-deltas-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin-bottom: 0.5rem;
+}
+
+.comparison-significant-badge {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: hsl(142 76% 46%);
+    background-color: hsl(142 76% 36% / 0.1);
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    border: 1px solid hsl(142 76% 36% / 0.2);
+}
+
+.comparison-deltas-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.comparison-delta-row {
+    display: grid;
+    grid-template-columns: 1fr 70px 90px 70px;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.comparison-delta-row:last-child {
+    border-bottom: none;
+}
+
+.comparison-delta-label {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.comparison-delta-value {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    text-align: center;
+}
+
+.comparison-delta-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--radius-sm);
+}
+
+.comparison-delta-positive {
+    color: hsl(142 76% 46%);
+    background-color: hsl(142 76% 36% / 0.08);
+}
+
+.comparison-delta-negative {
+    color: hsl(0 84% 60%);
+    background-color: hsl(0 84% 60% / 0.08);
+}
+
+.comparison-delta-neutral {
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted) / 0.3);
+}
+
+.comparison-delta-change {
+    font-size: 0.7rem;
+}
+
+.comparison-deltas-note {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted) / 0.2);
+    border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   ACTIONS
+   ============================================ */
+
+.comparison-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 1rem 0.75rem;
+}
+
+.comparison-run-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: hsl(var(--background));
+    background-color: hsl(var(--primary));
+    border: 1px solid hsl(var(--primary));
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.comparison-run-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px hsl(var(--primary) / 0.3);
+}
+
+.comparison-run-btn:active {
+    transform: translateY(0);
+}
+
+.comparison-run-hint {
+    font-size: 0.65rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    text-align: center;
+}
+
+/* ============================================
+   RUNNING STATE
+   ============================================ */
+
+.comparison-running {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+
+.comparison-running-spinner {
+    color: hsl(var(--primary));
+    animation: comparison-spin 1s linear infinite;
+}
+
+@keyframes comparison-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.comparison-running-text {
+    font-size: 0.85rem;
+    color: hsl(var(--foreground));
+    font-weight: 500;
+}
+
+.comparison-progress-bar {
+    width: 100%;
+    height: 4px;
+    background-color: hsl(var(--muted) / 0.3);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.comparison-progress-fill {
+    height: 100%;
+    background-color: hsl(var(--primary));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.comparison-cancel-btn {
+    padding: 0.3rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.comparison-cancel-btn:hover {
+    color: hsl(var(--destructive));
+    border-color: hsl(var(--destructive) / 0.3);
+}
+
+/* ============================================
+   SIGNIFICANCE RESULT
+   ============================================ */
+
+.comparison-significance {
+    padding: 0 1rem 0.75rem;
+}
+
+.comparison-significance-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    border: 1px solid;
+}
+
+.comparison-significance-yes {
+    background-color: hsl(142 76% 36% / 0.05);
+    border-color: hsl(142 76% 36% / 0.2);
+}
+
+.comparison-significance-no {
+    background-color: hsl(var(--muted) / 0.2);
+    border-color: hsl(var(--border) / 0.5);
+}
+
+.comparison-significance-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.comparison-significance-yes .comparison-significance-label {
+    color: hsl(142 76% 46%);
+}
+
+.comparison-significance-no .comparison-significance-label {
+    color: hsl(var(--muted-foreground));
+}
+
+.comparison-significance-p {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    font-family: monospace;
+}
+
+.comparison-significance-interpretation {
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.4;
+}
+
+/* ============================================
+   ERROR
+   ============================================ */
+
+.comparison-error {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    color: hsl(var(--destructive));
+    background-color: hsl(var(--destructive) / 0.08);
+    border-radius: var(--radius-sm);
+    border: 1px solid hsl(var(--destructive) / 0.15);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.comparison-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1.5rem 1rem;
+    text-align: center;
+}
+
+.comparison-empty-icon {
+    color: hsl(var(--muted-foreground) / 0.3);
+}
+
+.comparison-empty-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+}
+
+.comparison-empty-hint {
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground) / 0.7);
+    margin: 0;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+    .comparison-slots {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .comparison-slots-divider {
+        padding: 0.25rem 0;
+    }
+
+    .comparison-slots-divider span::before {
+        content: '';
+    }
+
+    .comparison-delta-row {
+        grid-template-columns: 1fr 55px 70px 55px;
+        gap: 0.25rem;
+    }
+
+    .comparison-slot-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .comparison-panel-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .comparison-deltas {
+        padding: 0.5rem 0.75rem 0.25rem;
+    }
+
+    .comparison-actions {
+        padding: 0.25rem 0.75rem 0.5rem;
+    }
+}

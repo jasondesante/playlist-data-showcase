@@ -168,6 +168,15 @@
     padding: 0 0.75rem 0.75rem;
 }
 
+/* ============================================
+   COMPARISON SECTION
+   ============================================ */
+
+.simulation-history-panel-comparison {
+    margin-top: 0.75rem;
+    padding: 0 0.75rem 0.75rem;
+}
+
 .simulation-history-panel-show-more {
     width: 100%;
     padding: 0.4rem;
