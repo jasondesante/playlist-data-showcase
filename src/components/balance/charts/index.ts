@@ -9,3 +9,4 @@ export { chartTheme, axisProps, gridProps, tooltipProps, legendProps, difficulty
 export { default as ChartContainer } from './ChartContainer';
 export { WinRateChart } from './WinRateChart';
 export { DPRComparisonChart } from './DPRComparisonChart';
+export { HPRemainingDistribution } from './HPRemainingDistribution';

@@ -1672,10 +1672,23 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Updated barrel export `charts/index.ts` with `DPRComparisonChart`
   - Integrated into `BalanceLabTab.tsx` — rendered after WinRateChart when perCombatantMetrics has entries
   - TypeScript check clean (zero new errors), pre-existing build errors unchanged (crypto import in worker)
-- [ ] **9.2.3** Create `src/components/balance/charts/HPRemainingDistribution.tsx`
+- [x] **9.2.3** Create `src/components/balance/charts/HPRemainingDistribution.tsx`
   - Histogram showing HP remaining at end of combat (winning runs only)
   - Helps understand how close fights were
   - Shows mean and median lines
+  - Fixed engine gap: `CombatantAccumulator.hpRemainingList` was declared but never populated — `accumulate()` method now records HP remaining from `CombatantMetrics.hpRemainingPercent` for survivors
+  - Added `hpRemainingPercent` field to `CombatantMetrics` interface in `CombatAI.ts` (HP remaining at combat end as percentage, 0 if defeated)
+  - Updated `CombatMetricsTracker.computeMetrics()` to populate `hpRemainingPercent` from `combatant.currentHP / character.hp.max`
+  - Created `HPRemainingDistribution.tsx` with recharts `BarChart` histogram
+  - Aggregates per-combatant `hpRemainingDistribution` histograms into a single party-wide distribution with 10 buckets (0–100%)
+  - Color-coded buckets: green ≥75%, teal ≥50%, yellow ≥25%, red <25%
+  - Mean and median reference lines computed from aggregated data
+  - Custom tooltip showing range, run count, and share percentage
+  - Empty state when no survivor data is available
+  - Created `HPRemainingDistribution.css` — pure CSS using project HSL variable system
+  - Updated barrel export `charts/index.ts` with `HPRemainingDistribution`
+  - Integrated into `BalanceLabTab.tsx` — rendered after DPRComparisonChart when results are available
+  - TypeScript check clean (zero new errors), all 1265 engine combat tests pass, engine builds clean
 - [ ] **9.2.4** Create `src/components/balance/charts/TurnDistributionChart.tsx`
   - Histogram showing number of rounds to combat resolution
   - Separate distributions for wins vs losses
