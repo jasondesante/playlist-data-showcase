@@ -1288,6 +1288,234 @@ interface CombatantMetrics {
 
 These metrics are the foundation for Monte Carlo simulation aggregation — the simulator averages them across hundreds of runs to produce per-combatant DPR, survival rate, and kill rate.
 
+### Monte Carlo Simulation
+
+The `CombatSimulator` runs N independent combat encounters using AI-controlled combatants, each with a unique seeded RNG. It aggregates the outcomes into statistical summaries and per-combatant metrics. This is the core analysis tool — it answers *"Given this party and these enemies, how often does each side win, how many rounds do fights last, and how much damage does each combatant deal?"*
+
+The simulator is stateless between `run()` calls. Each call produces a fresh, independent set of results.
+
+#### CombatSimulator
+
+```typescript
+import { CombatSimulator } from 'playlist-data-engine';
+
+const simulator = new CombatSimulator();
+
+const results = simulator.run(
+  party,    // CharacterSheet[]
+  enemies,  // CharacterSheet[]
+  {
+    runCount: 1000,
+    baseSeed: 'encounter-analysis',
+    aiConfig: { playerStyle: 'normal', enemyStyle: 'aggressive' },
+  }
+);
+
+console.log(`Player win rate: ${(results.summary.playerWinRate * 100).toFixed(1)}%`);
+console.log(`Average rounds: ${results.summary.averageRounds.toFixed(1)}`);
+console.log(`Player deaths: ${results.summary.totalPlayerDeaths}`);
+```
+
+Internally, each run creates a fresh `SeededDiceRoller` and `AICombatRunner`. The seed for run `i` is `"${baseSeed}-${i}"`, ensuring every run is independent and the full simulation is reproducible.
+
+#### SimulationConfig
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `runCount` | `number` | required | Number of simulations to run (100–10000 recommended) |
+| `baseSeed` | `string` | required | Base seed — each run gets `baseSeed-index` |
+| `aiConfig` | `AIConfig` | required | AI play styles per side |
+| `combatConfig` | `CombatConfig` | — | Optional combat engine overrides (max turns, flee, etc.) |
+| `collectDetailedLogs` | `boolean` | `false` | Save full combat log per run (memory-intensive for large runCount) |
+| `onProgress` | `(completed, total) => void` | — | Progress callback after each run |
+| `abortSignal` | `AbortSignal` | — | Cancel long-running simulations; returns partial results |
+
+#### SimulationResults
+
+The top-level result object returned by `simulator.run()`:
+
+```typescript
+interface SimulationResults {
+  config: SimulationConfig;                              // Input config echo
+  summary: SimulationSummary;                            // Aggregate statistics
+  party: PartyConfig;                                    // Party snapshot (memberCount, averageLevel, names)
+  encounter: EncounterConfig;                            // Enemy snapshot (enemyCount, averageCR, names)
+  perCombatantMetrics: Map<string, CombatantSimulationMetrics>;  // Per-combatant stats
+  runDetails?: SimulationRunDetail[];                    // Per-run data (only if collectDetailedLogs)
+  wasCancelled: boolean;                                 // true if aborted before completion
+}
+```
+
+#### SimulationSummary
+
+Aggregate statistics across all runs — the core output for balance decisions:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `totalRuns` | `number` | Completed simulation runs |
+| `playerWins` | `number` | Runs where all enemies were defeated |
+| `enemyWins` | `number` | Runs where all players were defeated |
+| `draws` | `number` | Runs ending in a draw (max turns, mutual kill) |
+| `playerWinRate` | `number` | Player win rate (0.0–1.0) |
+| `averageRounds` | `number` | Average rounds across all runs |
+| `medianRounds` | `number` | Median rounds across all runs |
+| `averageRoundsOnWin` | `number` | Average rounds in player-win runs |
+| `averageRoundsOnLoss` | `number` | Average rounds in player-loss runs |
+| `averagePlayerHPPercentRemaining` | `number` | Average remaining HP % for players in winning runs |
+| `totalPlayerDeaths` | `number` | Total player deaths across all runs |
+| `averageRoundsPerPlayerDeath` | `number` | Average round at which each player death occurred |
+| `totalEnemyDeaths` | `number` | Total enemy deaths across all runs |
+| `averageRoundsPerEnemyDeath` | `number` | Average round at which each enemy death occurred |
+
+Invariant: `playerWins + enemyWins + draws = totalRuns`.
+
+#### CombatantSimulationMetrics
+
+Per-combatant aggregate stats across all simulation runs. Keyed by combatant ID in `perCombatantMetrics`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `combatantId` | `string` | Combatant ID (matches CombatEngine scheme) |
+| `name` | `string` | Display name |
+| `side` | `'player' \| 'enemy'` | Which side this combatant was on |
+| `averageDamagePerRound` | `number` | Average DPR across all runs |
+| `medianDamagePerRound` | `number` | Median DPR across all runs |
+| `averageTotalDamageDealt` | `number` | Average total damage dealt per run |
+| `averageTotalDamageTaken` | `number` | Average total damage taken per run |
+| `averageHealingDone` | `number` | Average healing per run |
+| `averageRoundsSurvived` | `number` | Average rounds survived per run |
+| `survivalRate` | `number` | Survival rate (0.0–1.0) |
+| `killRate` | `number` | Final blow rate (0.0–1.0) |
+| `criticalHitRate` | `number` | Crit rate across all attack actions (0.0–1.0) |
+| `averageSpellSlotsUsed` | `number` | Average spell slots consumed per run |
+| `mostUsedAction` | `string` | Most frequent action type (`attack`, `castSpell`, etc.) |
+| `damageDistribution` | `HistogramBucket[]` | DPR distribution for visualization |
+| `hpRemainingDistribution` | `HistogramBucket[]` | HP remaining distribution for visualization |
+
+#### HistogramBucket
+
+Distribution data for chart visualization. Used in `damageDistribution` and `hpRemainingDistribution`:
+
+```typescript
+interface HistogramBucket {
+  rangeStart: number;   // Start of range (inclusive)
+  rangeEnd: number;     // End of range (exclusive, except last bucket)
+  count: number;        // Data points in this bucket
+  percent: number;      // Percentage of total (0–100)
+}
+```
+
+Histograms are built with 20 buckets by default. Bucket percentages sum to 100%. When all values are identical, a single bucket is returned.
+
+#### Detailed Run Logs
+
+When `collectDetailedLogs: true`, each run produces a `SimulationRunDetail`:
+
+```typescript
+interface SimulationRunDetail {
+  runIndex: number;                              // 0-based run index
+  seed: string;                                  // Seed used for this run
+  result: CombatResult;                          // Final combat result
+  metrics: Map<string, CombatantMetrics>;        // Per-combatant metrics for this run
+}
+```
+
+Detailed logs are memory-intensive — a 1000-run simulation with 8 combatants stores 1000 full combat histories. Use for small-scale analysis or debugging, not for large sweeps.
+
+#### Code Examples
+
+**Basic simulation with progress:**
+
+```typescript
+import { CombatSimulator } from 'playlist-data-engine';
+
+const simulator = new CombatSimulator();
+
+const results = simulator.run(party, enemies, {
+  runCount: 500,
+  baseSeed: 'balance-test',
+  aiConfig: {
+    playerStyle: 'normal',
+    enemyStyle: 'normal',
+  },
+  onProgress: (completed, total) => {
+    console.log(`${completed}/${total} runs complete`);
+  },
+});
+
+console.log(`Win rate: ${(results.summary.playerWinRate * 100).toFixed(1)}%`);
+console.log(`Avg rounds: ${results.summary.averageRounds.toFixed(1)}`);
+console.log(`Player HP remaining: ${results.summary.averagePlayerHPPercentRemaining.toFixed(0)}%`);
+```
+
+**Cancellation with AbortController:**
+
+```typescript
+const controller = new AbortController();
+
+// Cancel after 2 seconds
+setTimeout(() => controller.abort(), 2000);
+
+const results = simulator.run(party, enemies, {
+  runCount: 10000,
+  baseSeed: 'long-sim',
+  aiConfig: { playerStyle: 'aggressive', enemyStyle: 'aggressive' },
+  abortSignal: controller.signal,
+});
+
+console.log(`Completed ${results.summary.totalRuns} of 10000 runs`);
+console.log(`Was cancelled: ${results.wasCancelled}`);
+// Results are still valid — partial data is usable
+```
+
+**Collecting detailed logs for debugging:**
+
+```typescript
+const results = simulator.run(party, enemies, {
+  runCount: 50,
+  baseSeed: 'debug-run',
+  aiConfig: { playerStyle: 'normal', enemyStyle: 'normal' },
+  collectDetailedLogs: true,
+});
+
+// Inspect a specific run
+const run3 = results.runDetails![3];
+console.log(`Run 3 seed: ${run3.seed}`);
+console.log(`Run 3 winner: ${run3.result.winnerSide}`);
+for (const [id, m] of run3.metrics) {
+  console.log(`  ${m.name}: ${m.totalDamageDealt} damage, survived=${m.survived}`);
+}
+```
+
+#### Determinism
+
+The simulator guarantees reproducibility:
+
+```typescript
+// Same inputs → byte-identical results
+const a = simulator.run(party, enemies, { runCount: 100, baseSeed: 'test', aiConfig });
+const b = simulator.run(party, enemies, { runCount: 100, baseSeed: 'test', aiConfig });
+// a.summary === b.summary (all fields identical)
+// a.perCombatantMetrics === b.perCombatantMetrics (all fields identical)
+
+// Different seeds → different results
+const c = simulator.run(party, enemies, { runCount: 100, baseSeed: 'other', aiConfig });
+// c.summary.playerWinRate !== a.summary.playerWinRate (almost certainly)
+```
+
+This extends to full combat history: the same party, enemies, seed, and AI config produce an identical combat history entry-by-entry within each run.
+
+#### Recommended Run Counts
+
+| Purpose | Runs | Speed | Confidence |
+|---------|------|-------|------------|
+| Quick exploration | 100 | Instant | Rough estimate |
+| Standard analysis | 500 | Fast | Reasonable for most decisions |
+| Thorough validation | 2000 | Moderate | High confidence for balance patches |
+| Publication-quality | 5000+ | Slow | Very high confidence |
+
+The simulator processes 5,000–10,000+ runs per second for standard party-vs-encounter compositions, so even 2000-run simulations complete in well under a second.
+
 ---
 
 ## Seeded Dice Rolling

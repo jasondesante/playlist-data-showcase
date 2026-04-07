@@ -1116,13 +1116,17 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Covers: AIPlayStyle comparison table (Normal vs Aggressive across 5 dimensions), AIConfig with per-side styles and per-combatant overrides (4 code examples), AIDecision interface with all 9 action types and reasoning field, decision-making priority chain diagram (5-step: assess → spell → item → defensive → attack), target selection strategies (Normal=lowest AC, Aggressive=lowest HP), weapon selection scoring formulas, spell selection table (5 categories with tag detection and style-dependent behavior), support archetype AI detection and behavior differences, AIThreatAssessment interface with all 13 fields and direct access example, AICombatRunner usage with seeded/random modes, AICombatResult interface table, full combat lifecycle diagram (turn loop with legendary action chaining), CombatantMetrics interface for per-combatant stats
   - TOC already had Combat AI placeholder entry (line 26) — no update needed
   - Build verified clean (pre-existing TS errors only, no regressions from doc change)
-- [ ] **6.1.5** Add **Monte Carlo Simulation** section
+- [x] **6.1.5** Add **Monte Carlo Simulation** section
   - Document `CombatSimulator` class and `SimulationConfig`
   - Document `SimulationResults` and `SimulationSummary` interfaces
   - Document `CombatantSimulationMetrics` (DPR, survival rate, kill rate, etc.)
   - Document `HistogramBucket` for distribution data
   - Include code examples: basic simulation, progress callback, cancellation
   - Explain determinism (same seed + config = identical results)
+  - Added comprehensive "Monte Carlo Simulation" section to `docs/engine/docs/COMBAT_SYSTEM.md` between Combat AI and Seeded Dice Rolling
+  - Covers: CombatSimulator class overview with basic usage, SimulationConfig parameter table (7 fields), SimulationResults interface with all nested types, SimulationSummary table (14 fields with invariant note), CombatantSimulationMetrics table (16 fields), HistogramBucket interface definition, Detailed Run Logs (SimulationRunDetail), 3 code examples (basic with progress, AbortController cancellation, detailed log debugging), determinism guarantees with code proof, recommended run counts table (4 tiers from 100–5000+)
+  - TOC already had Monte Carlo Simulation entry from prior task — no update needed
+  - Build verified clean (documentation change only, no code changes)
 - [ ] **6.1.6** Update Table of Contents to include new sections
 
 ### 6.2 Update ENEMY_GENERATION.md — Balance Analysis Tools
