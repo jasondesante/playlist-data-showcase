@@ -1501,7 +1501,7 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 8.3 Results Summary Panel
 
-- [ ] **8.3.1** Create `src/components/balance/ResultsSummary.tsx`
+- [x] **8.3.1** Create `src/components/balance/ResultsSummary.tsx`
   - **Win Rate Display**: Large percentage with color coding (green = high, red = low)
   - **Difficulty Assessment**: Shows actual vs intended difficulty with match indicator
   - **Key Metrics Grid**:
@@ -1509,6 +1509,18 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
     - Average player HP remaining (%)
     - Total player deaths across all runs
     - Total enemy deaths across all runs
+  - Created `src/components/balance/ResultsSummary.tsx` — standalone results summary component extracted from BalanceLabTab inline code
+  - Created `src/components/balance/ResultsSummary.css` — pure CSS with project HSL variable system
+  - **Win Rate Display**: Large 2rem percentage with 4-tier color coding (high >=80%, medium >=50%, low >=30%, critical <30%) matching existing patterns
+  - **Key Metrics Grid**: 3-column responsive grid with icons — Avg Rounds, HP Remaining, Player Deaths (red), Enemy Deaths (green), Total Runs, Duration; added enemy deaths metric (was missing from inline version); removed median rounds (replaced with enemy deaths per spec)
+  - **Difficulty Assessment**: Balance card showing actual difficulty (with contextual icon), intended difficulty, score bar (0-100), and up to 3 recommendations
+  - **Cancelled Notice**: Shown when simulation was cancelled with partial run count
+  - **Action Buttons**: Save (primary) and Reset (muted) buttons; shows "Saved" badge when already saved
+  - Props interface: `ResultsSummaryProps` with results, balanceReport, durationMs, isCancelled, isSaved, onSave, onReset
+  - Memoized with `React.memo` for render performance
+  - Refactored `BalanceLabTab.tsx` to use `<ResultsSummary>` instead of ~110 lines of inline JSX
+  - Cleaned up `BalanceLabTab.css` — removed ~300 lines of styles now in `ResultsSummary.css` (win rate, metrics grid, balance card, recommendations, cancelled notice, action buttons)
+  - TypeScript check clean (no new errors), pre-existing build errors unchanged
 - [ ] **8.3.2** Create `src/components/balance/BalanceScoreIndicator.tsx`
   - Visual gauge/meter showing balance score (0-100)
   - Color gradient: red (poor balance) → yellow (acceptable) → green (well balanced)

@@ -4,8 +4,6 @@ import {
     ChevronDown,
     ChevronUp,
     Swords,
-    Save,
-    RotateCcw,
     AlertCircle,
     Clock,
     Zap,
@@ -13,6 +11,7 @@ import {
 import { useSimulationHistory } from '@/hooks/useSimulationHistory';
 import { SimulationHistoryPanel } from '@/components/balance/SimulationHistoryPanel';
 import { SimulationConfigPanel } from '@/components/balance/SimulationConfigPanel';
+import { ResultsSummary } from '@/components/balance/ResultsSummary';
 import {
     BalanceValidator,
     type EncounterDifficulty,
@@ -25,21 +24,10 @@ import './BalanceLabTab.css';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatPercent(value: number): string {
-    return `${(value * 100).toFixed(1)}%`;
-}
-
 function formatDuration(ms: number): string {
     if (ms < 1000) return `${ms}ms`;
     if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
     return `${Math.floor(ms / 60000)}m ${Math.round((ms % 60000) / 1000)}s`;
-}
-
-function getWinRateColorClass(winRate: number): string {
-    if (winRate >= 0.8) return 'bl-win-rate-high';
-    if (winRate >= 0.5) return 'bl-win-rate-medium';
-    if (winRate >= 0.3) return 'bl-win-rate-low';
-    return 'bl-win-rate-critical';
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -252,113 +240,15 @@ export function BalanceLabTab() {
 
                             {/* ─── Results Summary ──────────────────── */}
                             {hasResults && (
-                                <div className="bl-results-summary">
-                                    {/* Win Rate */}
-                                    <div className={`bl-win-rate-card ${getWinRateColorClass(results.summary.playerWinRate)}`}>
-                                        <span className="bl-win-rate-value">
-                                            {formatPercent(results.summary.playerWinRate)}
-                                        </span>
-                                        <span className="bl-win-rate-label">Player Win Rate</span>
-                                    </div>
-
-                                    {/* Metrics Grid */}
-                                    <div className="bl-metrics-grid">
-                                        <div className="bl-metric">
-                                            <span className="bl-metric-value">
-                                                {results.summary.averageRounds.toFixed(1)}
-                                            </span>
-                                            <span className="bl-metric-label">Avg Rounds</span>
-                                        </div>
-                                        <div className="bl-metric">
-                                            <span className="bl-metric-value">
-                                                {results.summary.medianRounds.toFixed(1)}
-                                            </span>
-                                            <span className="bl-metric-label">Median Rounds</span>
-                                        </div>
-                                        <div className="bl-metric">
-                                            <span className="bl-metric-value">
-                                                {formatPercent(results.summary.averagePlayerHPPercentRemaining)}
-                                            </span>
-                                            <span className="bl-metric-label">HP Remaining</span>
-                                        </div>
-                                        <div className="bl-metric">
-                                            <span className="bl-metric-value bl-metric-deaths">
-                                                {results.summary.totalPlayerDeaths}
-                                            </span>
-                                            <span className="bl-metric-label">Player Deaths</span>
-                                        </div>
-                                        <div className="bl-metric">
-                                            <span className="bl-metric-value">
-                                                {results.summary.totalRuns.toLocaleString()}
-                                            </span>
-                                            <span className="bl-metric-label">Total Runs</span>
-                                        </div>
-                                        {durationMs !== null && (
-                                            <div className="bl-metric">
-                                                <span className="bl-metric-value">
-                                                    {formatDuration(durationMs)}
-                                                </span>
-                                                <span className="bl-metric-label">Duration</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Balance Assessment */}
-                                    {balanceReport && (
-                                        <div className={`bl-balance-card bl-balance-${balanceReport.difficultyVariance}`}>
-                                            <div className="bl-balance-header">
-                                                <span className="bl-balance-difficulty">
-                                                    {balanceReport.actualDifficulty}
-                                                </span>
-                                                <span className="bl-balance-score">
-                                                    Score: {balanceReport.balanceScore}
-                                                </span>
-                                            </div>
-                                            <div className="bl-balance-score-bar">
-                                                <div
-                                                    className="bl-balance-score-fill"
-                                                    style={{ width: `${balanceReport.balanceScore}%` }}
-                                                />
-                                            </div>
-                                            {balanceReport.recommendations.length > 0 && (
-                                                <div className="bl-balance-recommendations">
-                                                    <span className="bl-balance-rec-label">Suggestions</span>
-                                                    <ul className="bl-balance-rec-list">
-                                                        {balanceReport.recommendations.slice(0, 3).map((rec, i) => (
-                                                            <li key={i} className="bl-balance-rec-item">
-                                                                {rec.description}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* Cancelled notice */}
-                                    {isCancelled && (
-                                        <div className="bl-cancelled-notice">
-                                            Simulation cancelled — showing partial results ({results.summary.totalRuns} runs completed)
-                                        </div>
-                                    )}
-
-                                    {/* Action Buttons */}
-                                    <div className="bl-results-actions">
-                                        {!activeSavedId && isCompleted && (
-                                            <button className="bl-action-btn bl-action-save" onClick={handleSave}>
-                                                <Save size={14} />
-                                                Save Results
-                                            </button>
-                                        )}
-                                        {activeSavedId && (
-                                            <span className="bl-saved-indicator">Saved</span>
-                                        )}
-                                        <button className="bl-action-btn bl-action-reset" onClick={handleReset}>
-                                            <RotateCcw size={14} />
-                                            Reset
-                                        </button>
-                                    </div>
-                                </div>
+                                <ResultsSummary
+                                    results={results}
+                                    balanceReport={balanceReport}
+                                    durationMs={durationMs}
+                                    isCancelled={isCancelled}
+                                    isSaved={!!activeSavedId}
+                                    onSave={isCompleted ? handleSave : undefined}
+                                    onReset={handleReset}
+                                />
                             )}
 
                             {/* ─── Empty State ──────────────────────── */}
