@@ -1614,10 +1614,26 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 9.1 Install & Configure recharts
 
-- [ ] **9.1.1** Install `recharts` as a dependency
-- [ ] **9.1.2** Configure recharts theming to match existing project styles
-  - Dark theme colors consistent with existing HSL palette
-  - Responsive container wrapper component
+- [x] **9.1.1** Install `recharts` as a dependency
+  - Installed `recharts` via `npm install recharts` — 308 packages added
+- [x] **9.1.2** Configure recharts theming to match existing project styles
+  - Created `src/components/balance/charts/chartTheme.ts` — full recharts theme derived from project's HSL CSS custom properties
+    - `CHART_COLORS` — semantic chart colors (player/enemy/positive/negative/critical/muted + 8-color series palette)
+    - `chartTheme` — base chart props (width, height, margin, background)
+    - `axisProps` — pre-configured X/Y axis styles (monospace ticks, border-colored axis lines)
+    - `gridProps` — dashed grid lines matching border color
+    - `tooltipProps` — dark tooltip with surface-3 background, border, shadow
+    - `legendProps` — legend with border separator
+    - `difficultyReferenceLines` — preset line styles for Easy/Medium/Hard/Deadly thresholds
+    - Helper functions: `getSeriesColor()`, `getSideColor()`, `getWinRateChartColor()`
+  - Created `src/components/balance/charts/ChartContainer.tsx` — responsive card wrapper component
+    - Title/subtitle header with border separator
+    - Constrained chart body (configurable min/max height via CSS custom properties)
+    - Hover border effect, mobile responsive (640px breakpoint)
+    - Overrides for recharts tooltip z-index, axis tick fonts, legend text colors
+  - Created `src/components/balance/charts/ChartContainer.css` — pure CSS using project HSL variable system
+  - Created `src/components/balance/charts/index.ts` — barrel export
+  - TypeScript check clean (0 new errors, 8 pre-existing errors unchanged), build pre-existing error only (crypto import)
 
 ### 9.2 Balance Visualization Components
 

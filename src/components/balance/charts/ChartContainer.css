@@ -1,0 +1,85 @@
+/* ========================================
+   CHART CONTAINER
+   Responsive wrapper for recharts charts
+   ======================================== */
+
+.chart-container {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.chart-container:hover {
+  border-color: hsl(var(--muted-foreground) / 0.3);
+}
+
+/* Header */
+.chart-container-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.chart-container-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0;
+  line-height: 1.4;
+}
+
+.chart-container-subtitle {
+  font-size: var(--font-size-xs);
+  color: hsl(var(--muted-foreground));
+  margin: 0.25rem 0 0;
+  line-height: 1.4;
+}
+
+/* Body — constrains chart height */
+.chart-container-body {
+  padding: 0.5rem;
+  min-height: var(--chart-min-h, 280px);
+  max-height: var(--chart-max-h, 400px);
+  width: 100%;
+  position: relative;
+}
+
+/* recharts responsive container fills the body */
+.chart-container-body .recharts-responsive-container {
+  min-height: 100%;
+}
+
+/* Override recharts default tooltip z-index to sit above everything */
+.chart-container-body .recharts-tooltip-wrapper {
+  z-index: 10;
+}
+
+/* Axis label styling override for recharts */
+.chart-container-body .recharts-cartesian-axis-tick-value {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+}
+
+/* Legend text override */
+.chart-container-body .recharts-legend-item-text {
+  color: hsl(var(--foreground)) !important;
+  font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .chart-container-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .chart-container-title {
+    font-size: var(--font-size-xs);
+  }
+
+  .chart-container-body {
+    padding: 0.25rem;
+    min-height: calc(var(--chart-min-h, 280px) * 0.75);
+    max-height: calc(var(--chart-max-h, 400px) * 0.85);
+  }
+}
