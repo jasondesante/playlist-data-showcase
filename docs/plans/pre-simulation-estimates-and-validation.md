@@ -83,7 +83,7 @@ BalanceLabTab (results area)
   - Derives predicted win rate: midpoint of `EXPECTED_WIN_RATES[predictedDifficulty]`
   - All memoized with `useMemo`, recalculates only when inputs change
 
-- [ ] **1.3 Create `estimateEnemyDPR()` utility function** in `src/utils/estimateEnemyDPR.ts`
+- [x] **1.3 Create `estimateEnemyDPR()` utility function** in `src/utils/estimateEnemyDPR.ts`
 
   Standalone pure function (not a hook) that takes a `CharacterSheet` (enemy) and returns estimated DPR.
 
