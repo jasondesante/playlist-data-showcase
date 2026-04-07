@@ -96,6 +96,8 @@ export function BalanceLabTab() {
         resetSimulation,
         saveCurrentResults,
         loadSimulation,
+        getLoadedEstimateSnapshot,
+        setEstimateSnapshot: setHistoryEstimateSnapshot,
         activeSavedId,
         savedSimulations,
     } = useSimulationHistory();
@@ -145,17 +147,21 @@ export function BalanceLabTab() {
     const handleLoadSimulation = useCallback(
         (id: string) => {
             loadSimulation(id);
+            // Restore estimate snapshot for validation panel
+            const snapshot = getLoadedEstimateSnapshot();
+            setEstimateSnapshot(snapshot);
         },
-        [loadSimulation],
+        [loadSimulation, getLoadedEstimateSnapshot],
     );
 
     // Handle run simulation from config panel
     const handleRunSimulation = useCallback(
         (party: CharacterSheet[], enemies: CharacterSheet[], config: SimulationConfig, snapshot: SimulationEstimateSnapshot | null) => {
             setEstimateSnapshot(snapshot);
+            setHistoryEstimateSnapshot(snapshot);
             startSimulation(party, enemies, config);
         },
-        [startSimulation],
+        [startSimulation, setHistoryEstimateSnapshot],
     );
 
     // Track encounter config changes from SimulationConfigPanel

@@ -10,6 +10,7 @@ import type {
     SimulationResults,
     AIConfig,
 } from 'playlist-data-engine';
+import type { SimulationEstimateSnapshot } from '@/types/simulation';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -84,6 +85,8 @@ export interface SavedSimulation {
     results: SimulationResults;
     /** Duration of the simulation in milliseconds */
     durationMs: number;
+    /** Pre-simulation estimate snapshot (for validation comparison) */
+    estimateSnapshot?: SimulationEstimateSnapshot;
 }
 
 /**
@@ -113,7 +116,8 @@ interface SimulationState {
         config: SimulationConfig,
         results: SimulationResults,
         durationMs: number,
-        label?: string
+        label?: string,
+        estimateSnapshot?: SimulationEstimateSnapshot
     ) => string;
 
     /** Update the label of a saved simulation */
@@ -232,7 +236,7 @@ export const useSimulationStore = create<SimulationState>()(
              * Enforces MAX_SAVED_SIMULATIONS by evicting the oldest entry.
              * Returns the new simulation's ID.
              */
-            saveSimulation: (party, enemies, config, results, durationMs, label) => {
+            saveSimulation: (party, enemies, config, results, durationMs, label, estimateSnapshot) => {
                 const id = generateId();
 
                 const saved: SavedSimulation = {
@@ -246,6 +250,7 @@ export const useSimulationStore = create<SimulationState>()(
                     config: serializeSimulationConfig(config),
                     results,
                     durationMs,
+                    estimateSnapshot,
                 };
 
                 set((state) => {

@@ -68,6 +68,12 @@ export interface UseCombatSimulationReturn {
 
     /** Clear results and reset to idle state */
     resetSimulation: () => void;
+
+    /**
+     * Restore results from a saved simulation (e.g. loading from history).
+     * Sets status to 'completed' and populates results/durationMs.
+     */
+    loadResults: (results: SimulationResults, durationMs: number) => void;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -585,6 +591,28 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
         }
     }, []);
 
+    const loadResults = useCallback(
+        (loadedResults: SimulationResults, loadedDurationMs: number) => {
+            setStatus('completed');
+            setResults(loadedResults);
+            setDurationMs(loadedDurationMs);
+            setFromCache(false);
+            setError(null);
+            setProgress({
+                completed: loadedResults.summary.totalRuns,
+                total: loadedResults.summary.totalRuns,
+                fraction: 1,
+                estimatedMsRemaining: 0,
+            });
+            logger.info('CombatSimulator', 'Loaded results from history', {
+                totalRuns: loadedResults.summary.totalRuns,
+                playerWinRate: (loadedResults.summary.playerWinRate * 100).toFixed(1) + '%',
+                durationMs: loadedDurationMs,
+            });
+        },
+        [],
+    );
+
     return {
         status,
         results,
@@ -595,5 +623,6 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
         startSimulation,
         cancelSimulation,
         resetSimulation,
+        loadResults,
     };
 };

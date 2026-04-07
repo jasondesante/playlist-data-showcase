@@ -8,6 +8,7 @@ import { useSimulationStore } from '@/store/simulationStore';
 import { useCombatSimulation } from '@/hooks/useCombatSimulation';
 import type { SimulationStatus, SimulationProgress, SimulationError } from '@/hooks/useCombatSimulation';
 import { logger } from '@/utils/logger';
+import type { SimulationEstimateSnapshot } from '@/types/simulation';
 
 export interface UseSimulationHistoryReturn {
     // From useCombatSimulation — pass through
@@ -24,14 +25,20 @@ export interface UseSimulationHistoryReturn {
     ) => SimulationResults | null;
     cancelSimulation: () => void;
     resetSimulation: () => void;
+    /** Restore results from a saved simulation (e.g. loading from history) */
+    loadResults: (results: SimulationResults, durationMs: number) => void;
 
     // History additions
     activeSavedId: string | null;
     savedSimulations: ReturnType<typeof useSimulationStore.getState>['savedSimulations'];
     /** Save the current simulation results to the store. Returns the saved ID or null. */
     saveCurrentResults: (label?: string) => string | null;
-    /** Select a saved simulation to view its results */
+    /** Select a saved simulation to view its results. Returns the estimate snapshot if available. */
     loadSimulation: (id: string) => SimulationResults | null;
+    /** Get the estimate snapshot from the most recently loaded simulation */
+    getLoadedEstimateSnapshot: () => SimulationEstimateSnapshot | null;
+    /** Set the estimate snapshot to persist alongside the next save */
+    setEstimateSnapshot: (snapshot: SimulationEstimateSnapshot | null) => void;
     /** Delete a saved simulation by ID */
     deleteSimulation: (id: string) => void;
     /** Whether the current results have been saved */
@@ -62,6 +69,7 @@ export function useSimulationHistory(): UseSimulationHistoryReturn {
         startSimulation,
         cancelSimulation,
         resetSimulation,
+        loadResults,
     } = simulation;
 
     const savedSimulations = useSimulationStore((s) => s.savedSimulations);
@@ -77,6 +85,12 @@ export function useSimulationHistory(): UseSimulationHistoryReturn {
         enemies: CharacterSheet[];
         config: SimulationConfig;
     } | null>(null);
+
+    // Track the estimate snapshot for the current simulation (for saving)
+    const lastEstimateSnapshotRef = useRef<SimulationEstimateSnapshot | null>(null);
+
+    // Track the estimate snapshot from the most recently loaded simulation (ref for sync access)
+    const loadedEstimateSnapshotRef = useRef<SimulationEstimateSnapshot | null>(null);
 
     // Track whether current results have been saved
     const [isCurrentSaved, setIsCurrentSaved] = useState(false);
@@ -99,6 +113,14 @@ export function useSimulationHistory(): UseSimulationHistoryReturn {
         [startSimulation],
     );
 
+    /**
+     * Set the estimate snapshot to persist alongside the next save.
+     * Called from BalanceLabTab when a simulation is started.
+     */
+    const setEstimateSnapshot = useCallback((snapshot: SimulationEstimateSnapshot | null) => {
+        lastEstimateSnapshotRef.current = snapshot;
+    }, []);
+
     const saveCurrentResults = useCallback(
         (label?: string): string | null => {
             if (!results || !lastRunRef.current) {
@@ -107,13 +129,17 @@ export function useSimulationHistory(): UseSimulationHistoryReturn {
             }
 
             const { party, enemies, config } = lastRunRef.current;
-            const id = saveSimulation(party, enemies, config, results, durationMs ?? 0, label);
+            const id = saveSimulation(party, enemies, config, results, durationMs ?? 0, label, lastEstimateSnapshotRef.current ?? undefined);
             setIsCurrentSaved(true);
             logger.info('SimulationHistory', 'Saved simulation results', { id, label });
             return id;
         },
         [results, durationMs, saveSimulation],
     );
+
+    const getLoadedEstimateSnapshot = useCallback(() => {
+        return loadedEstimateSnapshotRef.current;
+    }, []);
 
     const loadSimulation = useCallback(
         (id: string): SimulationResults | null => {
@@ -123,9 +149,17 @@ export function useSimulationHistory(): UseSimulationHistoryReturn {
                 return null;
             }
             setActiveSimulation(id);
+            // Restore results into combat simulation state so dashboard renders
+            loadResults(saved.results, saved.durationMs);
+            // Restore estimate snapshot for validation panel (ref for sync access)
+            loadedEstimateSnapshotRef.current = saved.estimateSnapshot ?? null;
+            logger.info('SimulationHistory', 'Loaded simulation from history', {
+                id,
+                hasEstimateSnapshot: !!saved.estimateSnapshot,
+            });
             return saved.results;
         },
-        [getSimulation, setActiveSimulation],
+        [getSimulation, setActiveSimulation, loadResults],
     );
 
     const deleteSimulation = useCallback(
@@ -150,10 +184,13 @@ export function useSimulationHistory(): UseSimulationHistoryReturn {
         startSimulation: wrappedStartSimulation,
         cancelSimulation,
         resetSimulation,
+        loadResults,
         activeSavedId,
         savedSimulations,
         saveCurrentResults,
         loadSimulation,
+        getLoadedEstimateSnapshot,
+        setEstimateSnapshot,
         deleteSimulation,
         isCurrentSaved,
         markCurrentSaved,

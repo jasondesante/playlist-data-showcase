@@ -332,7 +332,7 @@ BalanceLabTab (results area)
 
   The enemy preview should regenerate whenever `encounterConfig` changes (CR, count, archetype, rarity, category, difficultyMultiplier, statLevels). Use `useMemo` with all config fields as dependencies. The preview seed should be stable (derived from config, not random) so it doesn't flicker on unrelated re-renders. Use `preview-${encounterConfig.cr}-${encounterConfig.archetype}-${encounterConfig.rarity}-${encounterConfig.category}` as the seed.
 
-- [ ] **4.3 Estimate snapshot persistence (optional)**
+- [x] **4.3 Estimate snapshot persistence (optional)**
 
   Store `estimateSnapshot` in `SavedSimulation` (simulationStore) so that:
   - Loading a saved simulation from history can still show validation
