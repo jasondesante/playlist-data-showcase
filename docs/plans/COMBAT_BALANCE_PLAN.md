@@ -984,9 +984,20 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - **Rounds to resolution** (1 test): rounds increase with enemy count
   - Key finding: CR-based sweeps have limited resolution due to template-based enemy generation. Difficulty multiplier sweep produces the cleanest monotonic curves. Enemy count sweeps show clear curves when base enemy strength is calibrated relative to party (e.g., 4×lvl3 vs CR2 uncommon)
   - All 1247 combat tests pass, engine builds clean (tsc + vite)
-- [ ] **4.5.3** Test comparative analysis detects meaningful differences
+- [x] **4.5.3** Test comparative analysis detects meaningful differences
   - +2 AC should improve win rate measurably
   - Adding a party member should improve win rate measurably
+  - Created `tests/unit/combat/comparativeAnalyzerMeaningfulDifferences.test.ts` with 23 tests organized into 8 sections
+  - **+2 AC improvement** (4 tests): base vs +2 AC win rate comparison (solo & party), aggressive enemies amplify AC effect, per-combatant survival rate delta validation
+  - **Party member addition** (5 tests): 4v3 party size, 5v2 large gap, rounds-to-victory, death count tracking, unmatched combatant tracking (2→4 players correctly shows 2 unmatched in B)
+  - **Combined advantage** (1 test): +2 AC AND extra party member produces larger improvement
+  - **Enemy-side changes** (1 test): CR 3 vs CR 5 detected as meaningful difficulty difference, positive delta direction and death count validated
+  - **Determinism** (2 tests): identical config+seed = identical results (all fields match), different seeds produce valid results
+  - **Edge cases** (4 tests): identical configs → zero delta + p=1, extreme power difference (lvl20 vs CR1 vs lvl1 vs CR10 boss) → significant, single run → binary outcome, 0 runs → empty results
+  - **Per-combatant delta consistency** (2 tests): DPR/survival rate finite and consistent, enemy damage taken reflects party size difference
+  - **Statistical significance** (2 tests): high run count (500) increases significance vs low (50), adjustable threshold
+  - **Labels/metadata** (2 tests): custom labels preserved, default "Config A"/"Config B" when omitted
+  - All 1265 combat tests pass (23 new + 1242 existing), engine type-check clean (tsc --noEmit)
 
 ---
 
