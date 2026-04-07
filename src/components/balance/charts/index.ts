@@ -12,3 +12,4 @@ export { DPRComparisonChart } from './DPRComparisonChart';
 export { HPRemainingDistribution } from './HPRemainingDistribution';
 export { TurnDistributionChart } from './TurnDistributionChart';
 export { SurvivalRateChart } from './SurvivalRateChart';
+export { DamageDistributionChart } from './DamageDistributionChart';

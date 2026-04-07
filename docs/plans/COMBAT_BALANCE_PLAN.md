@@ -1724,9 +1724,24 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Updated barrel export `charts/index.ts` with `SurvivalRateChart`
   - Integrated into `BalanceLabTab.tsx` — rendered after TurnDistributionChart when perCombatantMetrics has entries
   - TypeScript check clean (zero new errors), pre-existing errors unchanged
-- [ ] **9.2.6** Create `src/components/balance/charts/DamageDistributionChart.tsx`
+- [x] **9.2.6** Create `src/components/balance/charts/DamageDistributionChart.tsx`
   - Histogram showing per-round damage dealt distribution for selected combatant
   - Dropdown to select which combatant to view
+  - Created `DamageDistributionChart.tsx` with recharts `BarChart` histogram
+  - Created `DamageDistributionChart.css` — pure CSS using project HSL variable system
+  - **Combatant selector**: dropdown in chart header listing all combatants grouped by side (Players first, then Enemies), with side label shown in parentheses
+  - **Histogram data**: reads per-combatant `damageDistribution` (HistogramBucket[]) from `CombatantSimulationMetrics`, converts to display rows with bucket labels
+  - **Color coding**: 4-tier color gradient based on DPR relative to max — pink (low, <25%), teal (moderate, 25–50%), gold (high, 50–75%), red (extreme, ≥75%)
+  - **Mean/Median reference lines**: computed from histogram data, displayed as dashed lines with labels (Mean: X.X, Median: X.X) snapped to nearest bucket
+  - **Custom tooltip**: shows damage range, run count, and share percentage
+  - **Empty state**: shown when no combatant data or no damage distribution available
+  - **Subtitle**: shows selected combatant name, side, and average DPR
+  - **Selection persistence**: dropdown value persists when switching; auto-corrects if selected combatant disappears from new results
+  - Uses `ChartContainer` wrapper with responsive `ResponsiveContainer`, follows same pattern as `HPRemainingDistribution`
+  - Updated barrel export `charts/index.ts` with `DamageDistributionChart`
+  - Integrated into `BalanceLabTab.tsx` — rendered after `SurvivalRateChart` when `perCombatantMetrics` has entries
+  - Memoized with `React.memo` for render performance
+  - TypeScript check clean (zero new errors), pre-existing build errors unchanged (crypto import in worker)
 - [ ] **9.2.7** Create `src/components/balance/charts/SweepResultsChart.tsx`
   - Line chart showing how win rate changes as a parameter varies (from parameter sweep)
   - X-axis: parameter value (CR, count, etc.)
