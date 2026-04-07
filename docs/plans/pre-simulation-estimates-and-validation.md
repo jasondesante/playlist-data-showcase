@@ -262,7 +262,7 @@ BalanceLabTab (results area)
   - If predicted harder than actual: "XP budget overestimates encounter difficulty. The party composition (e.g., high spellcaster count) may make this encounter easier than XP alone suggests."
   - Code ref: `../playlist-data-engine/src/constants/EncounterBalance.ts`
 
-- [ ] **3.2 Create `EstimateValidationPanel` component** in `src/components/balance/EstimateValidationPanel.tsx` + `.css`
+- [x] **3.2 Create `EstimateValidationPanel` component** in `src/components/balance/EstimateValidationPanel.tsx` + `.css`
 
   Collapsible section rendered in the Balance Lab results area (below `BalanceDashboard`).
 

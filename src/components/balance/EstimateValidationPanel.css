@@ -1,0 +1,462 @@
+/* ============================================
+   ESTIMATE VALIDATION PANEL (Task 3.2)
+   ============================================
+   Collapsible panel showing estimate vs actual
+   comparisons with color-coded deltas and
+   actionable code suggestions for significant
+   discrepancies.
+   ============================================ */
+
+/* ─── Container ───────────────────────────────────────────────────────── */
+
+.evp-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ============================================
+   PANEL HEADER (collapsible toggle)
+   ============================================ */
+
+.evp-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background-color: hsl(var(--card) / 0.5);
+    color: hsl(var(--foreground));
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.evp-panel-header:hover {
+    background-color: hsl(var(--card) / 0.8);
+}
+
+.evp-panel-header:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: -2px;
+}
+
+.evp-panel-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.evp-panel-icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+}
+
+.evp-panel-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+}
+
+.evp-panel-toggle {
+    color: hsl(var(--muted-foreground));
+    flex-shrink: 0;
+}
+
+/* ─── Badges ─────────────────────────────────────────────────────────── */
+
+.evp-badge {
+    font-size: 0.6rem;
+    font-weight: 600;
+    padding: 0.05rem 0.35rem;
+    border-radius: 999px;
+}
+
+.evp-badge-ok {
+    background-color: hsl(142 76% 46% / 0.15);
+    color: hsl(142 76% 46%);
+}
+
+.evp-badge-warning {
+    background-color: hsl(48 96% 53% / 0.15);
+    color: hsl(48 96% 53%);
+}
+
+/* ============================================
+   CONTENT
+   ============================================ */
+
+.evp-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0 0.25rem;
+}
+
+/* ============================================
+   COMPARISON TABLE
+   ============================================ */
+
+.evp-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+}
+
+.evp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+}
+
+/* ─── Header Row ─────────────────────────────────────────────────────── */
+
+.evp-table thead {
+    background-color: hsl(var(--muted) / 0.3);
+}
+
+.evp-table th {
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+    white-space: nowrap;
+}
+
+.evp-th-metric {
+    width: 25%;
+}
+
+.evp-th-value {
+    width: 18%;
+}
+
+.evp-th-delta {
+    width: 28%;
+}
+
+.evp-th-status {
+    width: 18%;
+}
+
+/* ─── Body Rows ──────────────────────────────────────────────────────── */
+
+.evp-table td {
+    padding: 0.35rem 0.6rem;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    color: hsl(var(--foreground));
+    vertical-align: middle;
+}
+
+.evp-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.evp-table tbody tr {
+    transition: background-color 0.1s ease;
+}
+
+.evp-table tbody tr:hover {
+    background-color: hsl(var(--muted) / 0.1);
+}
+
+/* ─── Metric Cell ────────────────────────────────────────────────────── */
+
+.evp-td-metric {
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+/* ─── Value Cells ────────────────────────────────────────────────────── */
+
+.evp-td-value {
+    font-variant-numeric: tabular-nums;
+    color: hsl(var(--foreground));
+    font-weight: 500;
+}
+
+/* ─── Delta Cell ─────────────────────────────────────────────────────── */
+
+.evp-td-delta {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.evp-delta-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+}
+
+/* Delta color tiers */
+.evp-delta-good {
+    color: hsl(142 76% 46%);
+}
+
+.evp-delta-warning {
+    color: hsl(48 96% 53%);
+}
+
+.evp-delta-error {
+    color: hsl(0 84% 60%);
+}
+
+/* Row backgrounds for severity */
+.evp-row-good td:first-child {
+    /* subtle green left indicator */
+    box-shadow: inset 3px 0 0 hsl(142 76% 46%);
+}
+
+.evp-row-warning td:first-child {
+    box-shadow: inset 3px 0 0 hsl(48 96% 53%);
+}
+
+.evp-row-error td:first-child {
+    box-shadow: inset 3px 0 0 hsl(0 84% 60%);
+}
+
+/* ─── Status Cell ────────────────────────────────────────────────────── */
+
+.evp-td-status {
+    text-align: center;
+}
+
+.evp-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.evp-status-ok {
+    color: hsl(142 76% 46%);
+    background-color: hsl(142 76% 46% / 0.1);
+}
+
+.evp-status-warn {
+    color: hsl(48 96% 53%);
+    background-color: hsl(48 96% 53% / 0.1);
+}
+
+.evp-status-error {
+    color: hsl(0 84% 60%);
+    background-color: hsl(0 84% 60% / 0.1);
+}
+
+/* ============================================
+   SUGGESTIONS
+   ============================================ */
+
+.evp-suggestions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.evp-suggestions-header {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.evp-suggestions-header-icon {
+    color: hsl(var(--muted-foreground));
+    flex-shrink: 0;
+}
+
+.evp-suggestions-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.evp-suggestions-count {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.05rem 0.3rem;
+    border-radius: 999px;
+    background-color: hsl(var(--muted) / 0.15);
+    color: hsl(var(--muted-foreground));
+}
+
+/* ─── Suggestion List ────────────────────────────────────────────────── */
+
+.evp-suggestion-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+/* ─── Suggestion Item ────────────────────────────────────────────────── */
+
+.evp-suggestion {
+    padding: 0.5rem 0.6rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid hsl(var(--border) / 0.5);
+    background-color: hsl(var(--card) / 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.evp-suggestion-info {
+    border-left: 3px solid hsl(200 80% 55%);
+}
+
+.evp-suggestion-warning {
+    border-left: 3px solid hsl(48 96% 53%);
+    background-color: hsl(48 96% 53% / 0.04);
+}
+
+.evp-suggestion-error {
+    border-left: 3px solid hsl(0 84% 60%);
+    background-color: hsl(0 84% 60% / 0.04);
+}
+
+/* ─── Suggestion Top (icon + message) ────────────────────────────────── */
+
+.evp-suggestion-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+}
+
+.evp-suggestion-icon {
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.evp-suggestion-icon-info {
+    color: hsl(200 80% 55%);
+}
+
+.evp-suggestion-icon-warning {
+    color: hsl(48 96% 53%);
+}
+
+.evp-suggestion-icon-error {
+    color: hsl(0 84% 60%);
+}
+
+.evp-suggestion-message {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    line-height: 1.4;
+}
+
+/* ─── Suggestion Details (code ref + fix) ────────────────────────────── */
+
+.evp-suggestion-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-left: 0.25rem;
+}
+
+/* Code reference */
+.evp-suggestion-ref {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.68rem;
+    color: hsl(var(--muted-foreground));
+    flex-wrap: wrap;
+}
+
+.evp-suggestion-ref-icon {
+    flex-shrink: 0;
+    color: hsl(var(--muted-foreground) / 0.7);
+}
+
+.evp-suggestion-ref-text {
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.65rem;
+    color: hsl(var(--muted-foreground));
+    word-break: break-all;
+}
+
+.evp-suggestion-func {
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.65rem;
+    color: hsl(var(--muted-foreground) / 0.7);
+    font-style: italic;
+}
+
+/* Suggested fix */
+.evp-suggestion-fix {
+    font-size: 0.72rem;
+    line-height: 1.45;
+    color: hsl(var(--muted-foreground));
+}
+
+.evp-suggestion-fix-label {
+    font-weight: 700;
+    color: hsl(var(--foreground) / 0.8);
+}
+
+.evp-suggestion-fix-text {
+    color: hsl(var(--muted-foreground) / 0.9);
+}
+
+/* ============================================
+   ALL GOOD NOTE
+   ============================================ */
+
+.evp-all-good-note {
+    font-size: 0.72rem;
+    color: hsl(142 76% 46%);
+    padding: 0.4rem 0.6rem;
+    background-color: hsl(142 76% 46% / 0.06);
+    border-radius: var(--radius-sm);
+    border: 1px solid hsl(142 76% 46% / 0.15);
+    text-align: center;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+    .evp-table {
+        font-size: 0.7rem;
+    }
+
+    .evp-table th,
+    .evp-table td {
+        padding: 0.3rem 0.4rem;
+    }
+
+    .evp-th-metric {
+        width: 22%;
+    }
+
+    .evp-th-delta {
+        width: 30%;
+    }
+
+    .evp-suggestion {
+        padding: 0.4rem 0.5rem;
+    }
+
+    .evp-suggestion-ref {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.15rem;
+    }
+}
