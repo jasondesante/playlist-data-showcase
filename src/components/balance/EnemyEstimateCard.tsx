@@ -10,7 +10,7 @@
 
 import type { SimulationEstimateSnapshot } from '@/types/simulation';
 import { getXPForCR, getEncounterMultiplier } from 'playlist-data-engine';
-import { Heart, Shield, Crosshair, Star, Skull, TrendingUp } from 'lucide-react';
+import { Heart, Shield, Crosshair, Star, Skull, TrendingUp, AlertCircle } from 'lucide-react';
 import './EnemyEstimateCard.css';
 
 export interface EnemyEstimateCardProps {
@@ -53,9 +53,19 @@ export function EnemyEstimateCard({
         return <Skeleton />;
     }
 
-    // No snapshot means enemy preview failed
+    // No snapshot means enemy preview failed — show a message instead of hiding
     if (!snapshot) {
-        return null;
+        return (
+            <div className="eec-card eec-card-unavailable">
+                <div className="eec-header">
+                    <span className="eec-title">Enemy Estimate</span>
+                </div>
+                <div className="eec-unavailable">
+                    <AlertCircle size={13} className="eec-unavailable-icon" />
+                    <span className="eec-unavailable-text">Unable to preview enemy</span>
+                </div>
+            </div>
+        );
     }
 
     const { count, perEnemyHP, perEnemyAC, perEnemyEstDPR, totalAdjustedXP, enemyCR, archetype, rarity } = snapshot;

@@ -321,7 +321,7 @@ BalanceLabTab (results area)
 
 ## Phase 4: Polish & Edge Cases
 
-- [ ] **4.1 Handle edge cases in estimate display**
+- [x] **4.1 Handle edge cases in estimate display**
   - No party selected → don't render estimate cards
   - Enemy generation fails → show "Unable to preview enemy" in EnemyEstimateCard
   - No simulation run yet → don't render validation panel

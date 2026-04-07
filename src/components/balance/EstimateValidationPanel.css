@@ -429,6 +429,37 @@
 }
 
 /* ============================================
+   NO ESTIMATE STATE
+   ============================================ */
+
+.evp-no-estimate {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: var(--radius-sm);
+    background-color: hsl(var(--card) / 0.4);
+}
+
+.evp-no-estimate-icon {
+    color: hsl(var(--muted-foreground));
+    flex-shrink: 0;
+}
+
+.evp-no-estimate-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+}
+
+.evp-no-estimate-hint {
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground) / 0.7);
+    line-height: 1.45;
+}
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 

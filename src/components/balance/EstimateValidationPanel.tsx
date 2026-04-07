@@ -35,6 +35,9 @@ import './EstimateValidationPanel.css';
 export interface EstimateValidationPanelProps {
     /** Validation data comparing estimates vs actuals. Null if not yet computed. */
     validation: EstimateValidation | null;
+    /** True when results exist but no pre-simulation estimate snapshot is available
+     *  (e.g., simulation loaded from history). Shows a notice instead of hiding. */
+    hasResultsWithoutEstimate?: boolean;
     /** Additional CSS class */
     className?: string;
 }
@@ -97,6 +100,7 @@ function SeverityIcon({ severity }: { severity: 'info' | 'warning' | 'error' }) 
 
 function EstimateValidationPanelComponent({
     validation,
+    hasResultsWithoutEstimate = false,
     className = '',
 }: EstimateValidationPanelProps) {
     const [collapsed, setCollapsed] = useState(false);
@@ -109,10 +113,46 @@ function EstimateValidationPanelComponent({
         return comparisonSignificant + difficultySignificant;
     }, [validation]);
 
-    // Don't render if no validation data
-    if (!validation) return null;
+    // Don't render if nothing to show at all
+    if (!validation && !hasResultsWithoutEstimate) return null;
 
-    const { comparisons, difficultyComparison, suggestions } = validation;
+    // When results exist but no estimate snapshot (e.g., loaded from history)
+    if (hasResultsWithoutEstimate && !validation) {
+        return (
+            <div className={`evp-container ${className}`}>
+                <button
+                    className="evp-panel-header"
+                    onClick={() => setCollapsed(!collapsed)}
+                    aria-expanded={!collapsed}
+                >
+                    <div className="evp-panel-title-row">
+                        <GitCompareArrows size={16} className="evp-panel-icon" />
+                        <span className="evp-panel-title">Estimate Validation</span>
+                        <span className="evp-badge evp-badge-warning">No estimate</span>
+                    </div>
+                    <span className="evp-panel-toggle">
+                        {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+                    </span>
+                </button>
+
+                {!collapsed && (
+                    <div className="evp-content">
+                        <div className="evp-no-estimate">
+                            <Info size={14} className="evp-no-estimate-icon" />
+                            <span className="evp-no-estimate-text">
+                                No pre-simulation estimate available for comparison.
+                            </span>
+                            <span className="evp-no-estimate-hint">
+                                Estimates are captured when a simulation is run. Historical simulations loaded from storage do not include estimate snapshots.
+                            </span>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    const { comparisons, difficultyComparison, suggestions } = validation!;
 
     return (
         <div className={`evp-container ${className}`}>

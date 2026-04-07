@@ -334,7 +334,10 @@ export function BalanceLabTab() {
                                         encounterConfig={encounterConfig}
                                         onApplySuggestion={handleApplyRecommendation}
                                     />
-                                    <EstimateValidationPanel validation={validation} />
+                                    <EstimateValidationPanel
+                                        validation={validation}
+                                        hasResultsWithoutEstimate={hasResults && !estimateSnapshot}
+                                    />
                                 </>
                             )}
 
