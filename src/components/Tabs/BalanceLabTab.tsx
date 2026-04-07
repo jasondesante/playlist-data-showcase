@@ -13,6 +13,7 @@ import { useSimulationHistory } from '@/hooks/useSimulationHistory';
 import { SimulationHistoryPanel } from '@/components/balance/SimulationHistoryPanel';
 import { SimulationConfigPanel } from '@/components/balance/SimulationConfigPanel';
 import { BalanceDashboard } from '@/components/balance/BalanceDashboard';
+import { ResultsDashboardSkeleton } from '@/components/balance/BalanceLabSkeleton';
 import {
     BalanceValidator,
     type EncounterDifficulty,
@@ -296,6 +297,11 @@ export function BalanceLabTab() {
                                     <AlertCircle size={16} className="bl-error-icon" />
                                     <span className="bl-error-text">{error.message}</span>
                                 </div>
+                            )}
+
+                            {/* ─── Dashboard Skeleton (while running) ──── */}
+                            {isRunning && (
+                                <ResultsDashboardSkeleton />
                             )}
 
                             {/* ─── Balance Dashboard ────────────────── */}

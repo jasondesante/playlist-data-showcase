@@ -1,0 +1,231 @@
+/* ============================================
+   BALANCE LAB SKELETON COMPONENT
+   ============================================
+   Loading skeletons for the Balance Lab tab.
+   Uses shimmer animation matching PartyAnalyzerCard pattern.
+   ============================================ */
+
+/* ─── Shared Shimmer ─────────────────────────────────────────────────── */
+
+.bls-shimmer {
+    background: linear-gradient(
+        90deg,
+        hsl(var(--muted)) 0%,
+        hsl(var(--muted) / 0.4) 50%,
+        hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: bls-skeleton-shimmer 1.5s infinite;
+    border-radius: 0.25rem;
+}
+
+@keyframes bls-skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ============================================
+   RESULTS DASHBOARD SKELETON
+   ============================================
+   Mimics the BalanceDashboard layout:
+     - Win rate card (centered, prominent)
+     - Metrics grid (3 columns)
+     - Full-width chart
+     - Two-column chart grid (2 rows)
+     - Full-width chart
+   ============================================ */
+
+.bls-dashboard-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    pointer-events: none;
+}
+
+/* ─── Win Rate Card Skeleton ─────────────────────────────────────────── */
+
+.bls-win-rate-skeleton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1rem;
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+}
+
+.bls-win-rate-value {
+    width: 100px;
+    height: 2rem;
+}
+
+.bls-win-rate-label {
+    width: 90px;
+    height: 0.625rem;
+}
+
+/* ─── Metrics Grid Skeleton ──────────────────────────────────────────── */
+
+.bls-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.bls-metric-skeleton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.25rem;
+    background-color: hsl(var(--muted) / 0.08);
+    border-radius: var(--radius-sm);
+    border: 1px solid hsl(var(--border) / 0.4);
+}
+
+.bls-metric-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 0.125rem;
+}
+
+.bls-metric-value {
+    width: 36px;
+    height: 1rem;
+}
+
+.bls-metric-label {
+    width: 52px;
+    height: 0.5rem;
+}
+
+/* ─── Chart Skeleton ─────────────────────────────────────────────────── */
+
+.bls-chart-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+}
+
+.bls-chart-skeleton-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bls-chart-title {
+    width: 120px;
+    height: 0.875rem;
+}
+
+.bls-chart-subtitle {
+    width: 80px;
+    height: 0.625rem;
+}
+
+.bls-chart-area {
+    width: 100%;
+    height: 180px;
+    border-radius: 0.375rem;
+}
+
+.bls-chart-area-sm {
+    height: 140px;
+}
+
+.bls-chart-full {
+    width: 100%;
+}
+
+.bls-chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+/* ============================================
+   SIMULATION HISTORY SKELETON
+   ============================================
+   Mimics SimulationHistoryItem layout.
+   ============================================ */
+
+.bls-history-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.bls-history-item-skeleton {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+}
+
+.bls-history-badge {
+    width: 56px;
+    height: 1.75rem;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+}
+
+.bls-history-item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.bls-history-title {
+    width: 60%;
+    height: 0.8125rem;
+}
+
+.bls-history-meta {
+    width: 40%;
+    height: 0.625rem;
+}
+
+.bls-history-action {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.25rem;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 900px) {
+    .bls-chart-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .bls-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bls-chart-area {
+        height: 140px;
+    }
+
+    .bls-chart-area-sm {
+        height: 100px;
+    }
+
+    .bls-dashboard-skeleton {
+        gap: 0.5rem;
+    }
+}

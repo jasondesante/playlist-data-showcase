@@ -1907,8 +1907,15 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Added `.bl-cache-indicator` CSS styles in `BalanceLabTab.css`
   - Cache is per-session (in-memory Map) — naturally invalidated on page reload/engine update
   - TypeScript check clean (zero new errors), all pre-existing build errors unchanged
-- [ ] **10.3.2** Add loading skeletons for Balance Lab tab
+- [x] **10.3.2** Add loading skeletons for Balance Lab tab
   - Match existing skeleton patterns from PartyAnalyzerCard
+  - Created `src/components/balance/BalanceLabSkeleton.tsx` with two skeleton components
+  - `ResultsDashboardSkeleton` — mimics BalanceDashboard layout: win rate card, 6-metric grid, full-width chart, two-column chart grid (2 rows), full-width chart; shown in results panel while simulation is running (below progress bar)
+  - `SimulationHistorySkeleton` — mimics SimulationHistoryItem layout: win rate badge, title, meta, action button; available for history panel use
+  - Created `src/components/balance/BalanceLabSkeleton.css` — pure CSS using project HSL variable system with shimmer animation matching PartyAnalyzerCard pattern (`skeleton-shimmer` keyframe, `hsl(var(--muted))` gradient)
+  - Integrated into `BalanceLabTab.tsx` — `ResultsDashboardSkeleton` renders in results panel when `isRunning` is true, replacing the empty state during simulation execution
+  - Responsive: two-column chart grid collapses on mobile (900px), metrics grid becomes 2-column (640px), reduced chart heights
+  - TypeScript check clean (zero new errors), pre-existing build errors unchanged (crypto import in worker)
 - [ ] **10.3.3** Add keyboard shortcuts
   - `Ctrl+Shift+B` — open Balance Lab tab
   - `Ctrl+Enter` — run simulation from config panel
