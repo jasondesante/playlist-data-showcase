@@ -10,9 +10,28 @@
 
 import { useMemo } from 'react';
 import { CharacterSheet, getXPForCR, getEncounterMultiplier, calculateAdjustedXP, getXPBudgetPerLevel } from 'playlist-data-engine';
-import { Swords, Users, Skull, Star, AlertTriangle } from 'lucide-react';
+import { Swords, Users, Skull, Star, AlertTriangle, Scale, ExternalLink } from 'lucide-react';
 import { CombatExportButton, type ExportAction } from '../ui/CombatExportButton';
 import './EncounterSummaryPanel.css';
+
+/**
+ * Balance indicator data from a simulation result.
+ * Passed in when a matching simulation exists in the store.
+ */
+export interface BalanceIndicatorData {
+  /** Player win rate (0.0–1.0) */
+  winRate: number;
+  /** Simulated difficulty tier */
+  difficulty: string;
+  /** Number of simulation runs */
+  totalRuns: number;
+  /** Average rounds to resolution */
+  averageRounds: number;
+  /** When the simulation was run (ISO string) */
+  timestamp: string;
+  /** Simulation ID for navigation to Balance Lab */
+  simulationId: string;
+}
 
 export interface EncounterSummaryPanelProps {
   /** Generated enemies for the encounter */
@@ -25,6 +44,10 @@ export interface EncounterSummaryPanelProps {
   className?: string;
   /** Optional export handler - receives action type, returns success */
   onExport?: (action: ExportAction) => Promise<boolean> | boolean;
+  /** Optional balance indicator from a matching simulation */
+  balanceIndicator?: BalanceIndicatorData;
+  /** Callback when user clicks "View in Balance Lab" on the indicator */
+  onViewBalanceLab?: (simulationId: string) => void;
 }
 
 /**
@@ -227,6 +250,16 @@ function calculateDifficultyRating(
 }
 
 /**
+ * Get a color for a win rate value, matching the difficulty color scheme.
+ */
+function getBalanceColor(winRate: number): string {
+  if (winRate >= 0.8) return 'hsl(142 70% 45%)';
+  if (winRate >= 0.5) return 'hsl(48 96% 53%)';
+  if (winRate >= 0.3) return 'hsl(24 95% 53%)';
+  return 'hsl(0 84% 60%)';
+}
+
+/**
  * Main EncounterSummaryPanel component
  */
 export function EncounterSummaryPanel({
@@ -234,7 +267,9 @@ export function EncounterSummaryPanel({
   partyMembers,
   compact = false,
   className = '',
-  onExport
+  onExport,
+  balanceIndicator,
+  onViewBalanceLab
 }: EncounterSummaryPanelProps) {
   // Calculate enemy type breakdown
   const enemyBreakdown = useMemo((): EnemyTypeBreakdown[] => {
@@ -440,14 +475,54 @@ export function EncounterSummaryPanel({
           />
         </div>
         <div className="encounter-summary-challenge-label">
-          {encounterStats.rating === 'impossible' && '☠️ This encounter is likely impossible!'}
-          {encounterStats.rating === 'deadly' && '💀 Deadly encounter - casualties likely!'}
-          {encounterStats.rating === 'hard' && '⚠️ Hard encounter - use resources wisely'}
-          {encounterStats.rating === 'medium' && '⚡ Medium encounter - balanced fight'}
-          {encounterStats.rating === 'easy' && '✓ Easy encounter - few resources needed'}
-          {encounterStats.rating === 'trivial' && '○ Trivial encounter - minimal challenge'}
+          {encounterStats.rating === 'impossible' && 'This encounter is likely impossible!'}
+          {encounterStats.rating === 'deadly' && 'Deadly encounter - casualties likely!'}
+          {encounterStats.rating === 'hard' && 'Hard encounter - use resources wisely'}
+          {encounterStats.rating === 'medium' && 'Medium encounter - balanced fight'}
+          {encounterStats.rating === 'easy' && 'Easy encounter - few resources needed'}
+          {encounterStats.rating === 'trivial' && 'Trivial encounter - minimal challenge'}
         </div>
       </div>
+
+      {/* Balance Simulation Indicator */}
+      {balanceIndicator && (
+        <div className="encounter-summary-balance">
+          <div className="encounter-summary-balance-header">
+            <Scale size={14} />
+            <span className="encounter-summary-balance-title">Simulation Verified</span>
+            <span className="encounter-summary-balance-runs">
+              {balanceIndicator.totalRuns.toLocaleString()} runs
+            </span>
+          </div>
+          <div className="encounter-summary-balance-body">
+            <div className="encounter-summary-balance-winrate"
+                 style={{ color: getBalanceColor(balanceIndicator.winRate) }}>
+              {Math.round(balanceIndicator.winRate * 100)}% win rate
+            </div>
+            <div className="encounter-summary-balance-assessment">
+              This encounter is{' '}
+              <span className="encounter-summary-balance-tier"
+                    style={{ color: getBalanceColor(balanceIndicator.winRate) }}>
+                {balanceIndicator.difficulty}
+              </span>{' '}
+              difficulty
+              {balanceIndicator.averageRounds > 0 && (
+                <> — avg {balanceIndicator.averageRounds.toFixed(1)} rounds</>
+              )}
+            </div>
+          </div>
+          {onViewBalanceLab && (
+            <button
+              className="encounter-summary-balance-link"
+              onClick={() => onViewBalanceLab(balanceIndicator.simulationId)}
+              type="button"
+            >
+              View in Balance Lab
+              <ExternalLink size={12} />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

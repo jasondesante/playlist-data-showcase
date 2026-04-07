@@ -1843,9 +1843,16 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Updated `SimulationConfigPanel` — added `partySeedsOverride` prop with sync logic (same pattern as `encounterConfigOverride`)
   - Updated `BalanceLabTab` — listens for config transfer events via `onBalanceConfigTransfer`, sets encounter config override and party seeds override, expands config panel on transfer
   - TypeScript check clean (0 new errors, 8 pre-existing errors unchanged), all pre-existing build errors unchanged
-- [ ] **10.1.2** Add balance indicator to CombatSimulatorTab's encounter summary
+- [x] **10.1.2** Add balance indicator to CombatSimulatorTab's encounter summary
   - After running a simulation, show a small badge/indicator on the encounter summary
   - "This encounter is balanced for Medium difficulty (72% win rate)"
+  - Added `BalanceIndicatorData` interface to `EncounterSummaryPanel.tsx` — optional prop with winRate, difficulty, totalRuns, averageRounds, timestamp, simulationId
+  - Added "Simulation Verified" indicator section to `EncounterSummaryPanel` — shows win rate (color-coded), difficulty tier label, average rounds, run count; includes "View in Balance Lab" button that sets active simulation and navigates to Balance Lab tab
+  - Added pure CSS styling in `EncounterSummaryPanel.css` — primary-tinted background with border, responsive layout (larger on desktop), hidden in compact mode
+  - Added `getBalanceColor()` helper — maps win rate to 4-tier color scheme (green >=80%, yellow >=50%, orange >=30%, red <30%)
+  - Added simulation store lookup in `CombatSimulatorTab.tsx` — imports `useSimulationStore`, builds enemy fingerprint (sorted name+CR pairs), searches saved simulations for matching encounter, passes most recent match as `balanceIndicator` prop
+  - "View in Balance Lab" button sets the simulation as active in the store and navigates to the balance tab via `tabContext.navigateToTab('balance')`
+  - TypeScript check clean (zero new errors), pre-existing build errors unchanged (SessionTrackingTab, DifficultyConversionPanel, SessionHistoryItem)
 
 ### 10.2 AI-Auto-Play Upgrade
 

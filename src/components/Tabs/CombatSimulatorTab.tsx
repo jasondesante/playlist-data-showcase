@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useCharacterStore } from '../../store/characterStore';
+import { useSimulationStore } from '../../store/simulationStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { useEnemyGenerator } from '../../hooks/useEnemyGenerator';
 import { useAudioEnemyGeneration, type TemplateReasoning } from '../../hooks/useAudioEnemyGeneration';
@@ -9,7 +10,7 @@ import { RawJsonDump } from '../ui/RawJsonDump';
 import { CharacterCard } from '../ui/CharacterCard';
 import { useTabContext } from '../../App';
 import { dispatchBalanceConfigTransfer } from '../../utils/balanceConfigTransfer';
-import { type EncounterConfigUI } from '../../types/simulation';
+import { type EncounterConfigUI, getWinRateDifficulty } from '../../types/simulation';
 import {
     SPELL_DATABASE,
     ExtensionManager,
@@ -37,7 +38,7 @@ import { arweaveGatewayManager } from 'playlist-data-engine';
 import type { PlaylistTrack, ServerlessPlaylist } from '../../types';
 import { PartyAnalyzerCard } from '../combat/PartyAnalyzerCard';
 import { TemplateBrowser } from '../combat/TemplateBrowser';
-import { EncounterSummaryPanel } from '../combat/EncounterSummaryPanel';
+import { EncounterSummaryPanel, type BalanceIndicatorData } from '../combat/EncounterSummaryPanel';
 import { CombatExportButton } from '../ui/CombatExportButton';
 import { exportPreCombat, exportCombatLog, exportPostCombat, exportFullCombatData, type ExportAction, type EnemyGenerationConfigExport, type AdvancedCombatConfigExport, type TreasureGenerationConfigExport } from '../../utils/combatDataExporter';
 import './CombatSimulatorTab.css';
@@ -1922,6 +1923,47 @@ export function CombatSimulatorTab() {
     tabContext,
   ]);
 
+  // ── Balance indicator: find matching simulation from store ──
+  const savedSimulations = useSimulationStore(s => s.savedSimulations);
+  const setActiveSimulation = useSimulationStore(s => s.setActiveSimulation);
+
+  const balanceIndicator = useMemo((): BalanceIndicatorData | undefined => {
+    if (generatedEnemies.length === 0 || savedSimulations.length === 0) return undefined;
+
+    // Build a fingerprint from current enemies (sorted name+level pairs)
+    const currentFingerprint = generatedEnemies
+      .map(e => `${e.name}|${e.cr ?? e.level}`)
+      .sort()
+      .join(',');
+
+    // Find the most recent simulation matching this encounter
+    const match = savedSimulations.find(sim => {
+      const simFingerprint = sim.encounter.enemySheets
+        .map(e => `${e.name}|${e.cr ?? e.level}`)
+        .sort()
+        .join(',');
+      return simFingerprint === currentFingerprint;
+    });
+
+    if (!match) return undefined;
+
+    const { label } = getWinRateDifficulty(match.results.summary.playerWinRate);
+
+    return {
+      winRate: match.results.summary.playerWinRate,
+      difficulty: label,
+      totalRuns: match.results.summary.totalRuns,
+      averageRounds: match.results.summary.averageRounds,
+      timestamp: match.timestamp,
+      simulationId: match.id,
+    };
+  }, [generatedEnemies, savedSimulations]);
+
+  const handleViewBalanceLab = useCallback((simulationId: string) => {
+    setActiveSimulation(simulationId);
+    tabContext?.navigateToTab('balance');
+  }, [setActiveSimulation, tabContext]);
+
   const handleNextTurn = () => {
     if (!combat) return;
 
@@ -2638,6 +2680,8 @@ export function CombatSimulatorTab() {
                 }
                 className="combat-encounter-summary"
                 onExport={handlePreCombatExport}
+                balanceIndicator={balanceIndicator}
+                onViewBalanceLab={handleViewBalanceLab}
               />
             )}
 

@@ -400,3 +400,117 @@
     font-size: 0.75rem;
   }
 }
+
+/* Balance Simulation Indicator */
+.encounter-summary-balance {
+  margin-top: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  background-color: hsl(var(--primary) / 0.06);
+  border: 1px solid hsl(var(--primary) / 0.2);
+  border-radius: var(--radius-sm);
+}
+
+.encounter-summary-balance-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.375rem;
+  color: hsl(var(--primary));
+}
+
+.encounter-summary-balance-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.encounter-summary-balance-runs {
+  margin-left: auto;
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+
+.encounter-summary-balance-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+  margin-bottom: 0.375rem;
+}
+
+.encounter-summary-balance-winrate {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.encounter-summary-balance-assessment {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.4;
+}
+
+.encounter-summary-balance-tier {
+  font-weight: 700;
+}
+
+.encounter-summary-balance-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--primary));
+  background: none;
+  border: 1px solid hsl(var(--primary) / 0.3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.encounter-summary-balance-link:hover {
+  background-color: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+.encounter-summary-balance-link:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 1px;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-balance {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .encounter-summary-balance-title {
+    font-size: 0.75rem;
+  }
+
+  .encounter-summary-balance-runs {
+    font-size: 0.6875rem;
+  }
+
+  .encounter-summary-balance-winrate {
+    font-size: 1.5rem;
+  }
+
+  .encounter-summary-balance-assessment {
+    font-size: 0.8125rem;
+  }
+
+  .encounter-summary-balance-link {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.625rem;
+  }
+}
+
+/* Hide balance indicator in compact mode */
+.encounter-summary-compact .encounter-summary-balance {
+  display: none;
+}
