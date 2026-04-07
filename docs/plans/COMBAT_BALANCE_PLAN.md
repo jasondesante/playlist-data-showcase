@@ -804,8 +804,21 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 4.1 Balance Validator
 
-- [ ] **4.1.1** Create `src/core/combat/Analysis/BalanceValidator.ts`
+- [x] **4.1.1** Create `src/core/combat/Analysis/BalanceValidator.ts`
   - `validate(party, enemies, intendedDifficulty, config): BalanceReport`
+  - Created `src/core/combat/Analysis/BalanceValidator.ts` with `BalanceValidator` class
+  - `validate()` convenience method runs simulations and produces a `BalanceReport`
+  - `analyze()` method takes existing `SimulationResults` and produces a `BalanceReport`
+  - Defined `BalanceReport` interface with all specified fields (intendedDifficulty, actualDifficulty, balanceScore, playerWinRate, expectedWinRate, difficultyVariance, confidence, recommendations, averagePlayerHPPercentRemaining, totalRuns)
+  - Defined `BalanceRecommendation` interface (description, expectedImpact, confidence)
+  - Defined `DifficultyVariance` type union (`'underpowered' | 'balanced' | 'overpowered'`)
+  - Defined `EXPECTED_WIN_RATES` constant: easy (90-100%), medium (70-80%), hard (50-60%), deadly (30-40%)
+  - Balance score calculation: 100 at midpoint of expected range, decreasing for deviation
+  - Variance classification: win rate above expected → underpowered, below → overpowered, within → balanced
+  - Confidence calculation: power curve based on run count (1 - 1/√n)
+  - Context-aware recommendations: overpowered suggests reducing CR/enemy count/legendary actions; underpowered suggests increasing CR/adding enemies; balanced checks HP remaining for fine-tuning
+  - 60 tests in `tests/unit/combat/balanceValidator.test.ts` covering: expected win rate constants (5), difficulty classification (11), balance score (10), difficulty variance (9), confidence (4), report structure (4), recommendations (9), full pipeline (2), edge cases (6), integration scenarios (2)
+  - All 1132 combat tests pass, engine builds clean (tsc + vite)
 - [ ] **4.1.2** Define `BalanceReport` interface
   ```typescript
   interface BalanceReport {
