@@ -798,10 +798,21 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 3.3 Simulation Tests
 
-- [ ] **3.3.1** Add simulator unit tests
-  - Test deterministic results: same seed + same config = identical results
-  - Test different seeds produce different results
-  - Test aggregation math (mean, median, histograms)
+- [x] **3.3.1** Add simulator unit tests
+  - Created `tests/unit/combat/combatSimulator.test.ts` with 49 tests organized into 10 sections
+  - **Determinism** (5 tests): same seed + same config = identical summary, identical per-combatant metrics, identical party-of-4 results; different seeds produce different results; different run counts produce correct totalRuns
+  - **Summary aggregation math** (8 tests): totalRuns = runCount; playerWins + enemyWins + draws = totalRuns; playerWinRate = playerWins/totalRuns; winRate in [0,1]; averageRounds/medianRounds non-negative; HP% remaining in [0,100] on wins; death counts non-negative
+  - **Per-combatant metrics** (9 tests): correct count of entries; correct IDs/names/sides; DPR/damage dealt non-negative; survivalRate in [0,1]; criticalHitRate in [0,1]; mostUsedAction non-empty; damageDistribution/hpRemainingDistribution valid HistogramBucket structures
+  - **Histogram math** (3 tests): bucket counts sum to total data points; percentages sum to ~100%; contiguous ranges; 0-run empty results
+  - **Cancellation** (4 tests): pre-aborted signal returns 0 results; mid-run cancellation returns partial results; partial summary valid (wins+losses+draws=total); no signal runs all
+  - **Progress callback** (2 tests): called once per run with correct completed/total; optional (no error if omitted)
+  - **Detailed logs** (4 tests): collectDetailedLogs=false → undefined; collectDetailedLogs=true → correct count; correct entry structure (runIndex, seed, result, metrics); determinism across runs
+  - **Party/encounter config** (2 tests): party config reflects memberCount, averageLevel, memberNames; encounter config reflects enemyCount, averageCR
+  - **AI config variations** (2 tests): aggressive vs normal produce different results; mixed styles (normal players, aggressive enemies) work correctly
+  - **Edge cases** (5 tests): 0 runs valid empty; 1 run valid; large party vs boss; single player vs many enemies; combatConfig maxTurnsBeforeDraw respected
+  - **Statistical properties** (4 tests): stronger party wins >80%; stronger enemy wins <20%; round count variance >1 unique value; survival rate consistent with win rates in no-draw scenarios
+  - **Config in results** (1 test): results.config matches input config
+  - All 1031 combat tests pass (49 new + 982 existing), engine builds clean (tsc + vite)
 - [ ] **3.3.2** Add simulator integration tests
   - Test small simulations (10 runs) complete correctly
   - Test various party/enemy compositions
