@@ -1306,10 +1306,24 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 7.2 Simulation State Persistence
 
-- [ ] **7.2.1** Create `src/store/simulationStore.ts` (Zustand with persist)
+- [x] **7.2.1** Create `src/store/simulationStore.ts` (Zustand with persist)
   - Store simulation configs, results, and history
   - Max 50 saved simulations
   - Key fields: party config, encounter config, AI config, results, timestamp
+  - Created `src/store/simulationStore.ts` with full Zustand persist store using localforage (same pattern as characterStore)
+  - Defined `SavedSimulation` interface with: `id`, `timestamp`, `label?`, `party` (PartySnapshot with seeds/names/levels/classes), `encounter` (EncounterSnapshot with full enemy CharacterSheets for re-run), `config` (SerializedSimulationConfig), `results` (SimulationResults), `durationMs`
+  - Defined serialization types: `SerializedAIConfig` (Map → entries array for JSON), `SerializedSimulationConfig` (runtime fields stripped), `PartySnapshot` (lightweight party summary without full sheets), `EncounterSnapshot` (enemy sheets preserved for re-run capability)
+  - `saveSimulation()` — saves with auto-generated ID, enforces MAX_SAVED_SIMULATIONS (50) by evicting oldest, clears stale comparison slot references
+  - `deleteSimulation()` — removes by ID, clears active + comparison references
+  - `getSimulation()` / `getActiveSimulation()` — lookup helpers
+  - `updateSimulationLabel()` — rename saved simulations
+  - `clearAllSimulations()` — bulk clear
+  - Comparison mode: `setComparisonSlot('A'|'B', id)`, `clearComparison()`, `getComparisonPair()` returns `[simA?, simB?]`
+  - `toEngineConfig()` export helper — deserializes back to engine `SimulationConfig`
+  - Rehydration cleanup: validates comparison slots and active ID reference existing simulations, initializes comparison object for backwards compatibility
+  - Added `'SimulationStore'` to `LogCategory` in `src/utils/logger.ts`
+  - Exported from `src/store/index.ts`
+  - TypeScript check clean (zero new errors), pre-existing build error unrelated (third-party crypto import)
 - [ ] **7.2.2** Implement save/load/delete simulation results
 - [ ] **7.2.3** Implement comparison mode — save two simulation results for side-by-side comparison
 

@@ -6,3 +6,4 @@ export * from './appStore';
 export * from './dataViewerStore';
 export * from './progressionConfigStore';
 export * from './beatDetectionStore';
+export * from './simulationStore';
