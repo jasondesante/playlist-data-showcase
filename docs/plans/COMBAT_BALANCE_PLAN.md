@@ -1006,7 +1006,7 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 > **Project:** playlist-data-engine (`../playlist-data-engine/`)
 > **Goal:** Ensure all new modules are properly exported from the engine package for frontend consumption.
 
-- [ ] **5.1** Update `src/index.ts` (or equivalent barrel export) to export:
+- [x] **5.1** Update `src/index.ts` (or equivalent barrel export) to export:
   - `SeededDiceRoller`
   - `CombatSimulator`, `SimulationConfig`, `SimulationResults`
   - `CombatAI`, `AIConfig`, `AIPlayStyle`, `AIDecision`
@@ -1017,6 +1017,16 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - `DifficultyCalculator`
   - `SimulationAggregator`
   - All new type interfaces
+  - **Audit findings:** Most exports were already in place from prior phases. Added the following missing exports:
+    - `SeededDiceRoller` class + `createSeededRoller` factory from `SeededDiceRoller.ts`
+    - `SimulationAggregator` + `CombatantAccumulator` classes (made `export` in `CombatSimulator.ts`, previously internal)
+    - `DiceRollerAPI` type from `Combat.ts` (needed for frontend roller injection)
+    - `TreasureConfig` type from `Combat.ts`
+    - `StatLevelOverrides` type from `Enemy.ts` (new from phase 1.7)
+    - `LegendaryAction`, `LegendaryConfig` types from `Enemy.ts` (new from phase 1.4)
+    - `InnateSpell`, `SpellcastingConfig` types from `Enemy.ts` (new from phase 1.6)
+  - Already correctly exported: `CombatSimulator`, `SimulationConfig`, `SimulationResults`, `SimulationSummary`, `CombatantSimulationMetrics`, `HistogramBucket`, `PartyConfig`, `EncounterConfig`, `CombatAI`, `AIConfig`, `AIPlayStyle`, `AIDecision`, `AIThreatAssessment`, `CombatantMetrics`, `AICombatRunner`, `AICombatResult`, `CombatMetricsTracker`, `BalanceValidator`, `BalanceReport`, `BalanceRecommendation`, `DifficultyVariance`, `EXPECTED_WIN_RATES`, `ParameterSweep`, `SweepParams`, `SweepResults`, `SweepVariable`, `SweepRange`, `SweepDataPoint`, `SweepEnemyConfig`, `ComparativeAnalyzer`, `ComparisonResult`, `ComparisonConfig`, `ComparisonOptions`, `DeltaMetrics`, `CombatantDelta`, `SignificanceResult`, `DifficultyCalculator`, `DifficultyCalculatorOptions`, `DifficultyEnemyTemplate`, `DifficultyProbe`, `DifficultySuggestion`
+  - Engine builds clean (vite build + tsc --noEmit), all 1265 combat tests pass
 - [ ] **5.2** Ensure engine build compiles with all new modules
 - [ ] **5.3** Verify TypeScript types are clean (no `any`, proper generics)
 
