@@ -1373,10 +1373,17 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 7.3 Simulation Configuration Types
 
-- [ ] **7.3.1** Create `src/types/simulation.ts`
+- [x] **7.3.1** Create `src/types/simulation.ts`
   - Mirror engine types with UI-specific additions (display names, descriptions)
   - Define `SimulationConfigUI` that extends engine's `SimulationConfig` with UI state
   - Define `SimulationResultUI` that wraps engine results with metadata
+  - Created `src/types/simulation.ts` with comprehensive type definitions
+  - **Re-exports from engine**: SimulationConfig, SimulationSummary, SimulationResults, CombatantSimulationMetrics, HistogramBucket, PartyConfig, EncounterConfig, SimulationRunDetail, AIPlayStyle, AIConfig, AIDecision, AIThreatAssessment, CombatantMetrics, isValidAIPlayStyle, DifficultyVariance, BalanceRecommendation, BalanceReport, SweepVariable/SweepRange/SweepParams/SweepDataPoint/SweepResults/SweepEnemyConfig, ComparisonConfig/ComparisonOptions/DeltaMetrics/CombatantDelta/SignificanceResult/ComparisonResult, DifficultyCalculatorOptions/DifficultyEnemyTemplate/DifficultyProbe/DifficultySuggestion, EnemyCategory/EnemyRarity/EnemyArchetype/EncounterDifficulty/StatLevelOverrides, CombatSimulator/BalanceValidator/EXPECTED_WIN_RATES/ParameterSweep/ComparativeAnalyzer/DifficultyCalculator
+  - **UI-specific types**: `AIPlayStyleOption` (value + label + description), `DifficultyTierOption` (value + label + description + winRateRange), `StatLevelPreset` (label + description + overrides), `SweepVariableOption` (value + label + description + defaultRange), `WinRateColorTier` (5-tier color classification), `SimulationConfigUI` (party + enemies + settings), `SimulationSettingsUI` (runCount, seed, AI styles, detailed logs, combat config), `EncounterConfigUI` (CR, count, category, archetype, rarity, seed, difficulty multiplier, stat levels), `SimulationResultUI` (results + durationMs + label + timestamp + party + enemies + settings)
+  - **UI constants**: `AI_STYLE_OPTIONS` (Normal/Aggressive with descriptions), `RUN_COUNT_PRESETS` (100–10000), `DIFFICULTY_TIER_OPTIONS` (Easy/Medium/Hard/Deadly with win rate ranges), `STAT_LEVEL_PRESETS` (Tank/Glass Cannon/Brute), `SWEEP_VARIABLE_OPTIONS` (8 variables with labels and default ranges), `DEFAULT_SIMULATION_SETTINGS`, `DEFAULT_ENCOUNTER_CONFIG`
+  - **UI helper functions**: `getWinRateColorTier()` (maps win rate to 5-tier color), `getWinRateDifficulty()` (maps win rate to EncounterDifficulty), `toSimulationConfig()` (converts UI config to engine config)
+  - Exported all types from `src/types/index.ts` following existing pattern
+  - TypeScript check clean (0 new errors), all pre-existing errors unchanged
 
 ---
 

@@ -1563,3 +1563,84 @@ export {
     PitchAnalyzer,
     type LevelProgressCallback,
 } from './levelGeneration.js';
+
+// ============================================================
+// Combat Simulation & Balance Analysis Types
+// ============================================================
+
+export type {
+    // Simulation
+    SimulationConfig,
+    SimulationSummary,
+    SimulationResults,
+    CombatantSimulationMetrics,
+    HistogramBucket,
+    PartyConfig,
+    EncounterConfig,
+    SimulationRunDetail,
+    // Combat AI
+    AIPlayStyle,
+    AIConfig,
+    AIDecision,
+    AIThreatAssessment,
+    CombatantMetrics,
+    // Balance Analysis
+    DifficultyVariance,
+    BalanceRecommendation,
+    BalanceReport,
+    // Parameter Sweep
+    SweepVariable,
+    SweepRange,
+    SweepParams,
+    SweepDataPoint,
+    SweepResults,
+    SweepEnemyConfig,
+    // Comparative Analysis
+    ComparisonConfig,
+    ComparisonOptions,
+    DeltaMetrics,
+    CombatantDelta,
+    SignificanceResult,
+    ComparisonResult,
+    // Difficulty Calculator
+    DifficultyCalculatorOptions,
+    DifficultyEnemyTemplate,
+    DifficultyProbe,
+    DifficultySuggestion,
+    // Enemy Types
+    EnemyCategory,
+    EnemyRarity,
+    EnemyArchetype,
+    EncounterDifficulty,
+    StatLevelOverrides,
+} from './simulation.js';
+
+export {
+    isValidAIPlayStyle,
+    CombatSimulator,
+    BalanceValidator,
+    EXPECTED_WIN_RATES,
+    ParameterSweep,
+    ComparativeAnalyzer,
+    DifficultyCalculator,
+    // UI-specific types and constants
+    type AIPlayStyleOption,
+    type DifficultyTierOption,
+    type StatLevelPreset,
+    type SweepVariableOption,
+    type WinRateColorTier,
+    type SimulationConfigUI,
+    type SimulationSettingsUI,
+    type EncounterConfigUI,
+    type SimulationResultUI,
+    AI_STYLE_OPTIONS,
+    RUN_COUNT_PRESETS,
+    DIFFICULTY_TIER_OPTIONS,
+    STAT_LEVEL_PRESETS,
+    SWEEP_VARIABLE_OPTIONS,
+    DEFAULT_SIMULATION_SETTINGS,
+    DEFAULT_ENCOUNTER_CONFIG,
+    getWinRateColorTier,
+    getWinRateDifficulty,
+    toSimulationConfig,
+} from './simulation.js';
