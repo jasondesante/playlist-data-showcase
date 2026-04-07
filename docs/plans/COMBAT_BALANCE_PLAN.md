@@ -1706,9 +1706,24 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Integrated into `BalanceLabTab.tsx` — rendered after HPRemainingDistribution when results are available
   - Updated barrel export `charts/index.ts` with `TurnDistributionChart`
   - TypeScript check clean (zero new errors), pre-existing errors unchanged
-- [ ] **9.2.5** Create `src/components/balance/charts/SurvivalRateChart.tsx`
+- [x] **9.2.5** Create `src/components/balance/charts/SurvivalRateChart.tsx`
   - Bar chart showing per-combatant survival rate
   - Highlight which combatants die most/least often
+  - Created `src/components/balance/charts/SurvivalRateChart.tsx` with horizontal bar chart using recharts `BarChart` with `layout="vertical"`
+  - Created `src/components/balance/charts/SurvivalRateChart.css` — pure CSS using project HSL variable system
+  - **Layout**: Horizontal bars with combatant names on Y-axis, survival rate (0-100%) on X-axis
+  - **Side grouping**: Enemies sorted by survival rate ascending (most fragile first), then visual separator row ("─── Players ───"), then players sorted ascending
+  - **Color coding**: Survival rate bars use 4-tier color gradient — green >=80% (high survival), side color >=50%, yellow >=25%, red <25% (frequent death)
+  - **50% reference line**: Dashed neutral line at 50% with label, marking the coin-flip threshold
+  - **Bar labels**: Percentage displayed at end of each bar via `LabelList`
+  - **Custom tooltip**: Shows combatant name (side-colored), survival rate (color-coded), kill rate, avg rounds survived, avg damage dealt/taken, most used action; skips separator row
+  - **Dynamic sizing**: Bar size and chart height adapt to number of combatants (22-32px bars, 200-500px max height)
+  - **Subtitle**: Shows player/enemy count (e.g., "4 players, 3 enemies")
+  - Uses `ChartContainer` wrapper with responsive `ResponsiveContainer`, follows same pattern as `DPRComparisonChart`
+  - Memoized with `React.memo` for render performance
+  - Updated barrel export `charts/index.ts` with `SurvivalRateChart`
+  - Integrated into `BalanceLabTab.tsx` — rendered after TurnDistributionChart when perCombatantMetrics has entries
+  - TypeScript check clean (zero new errors), pre-existing errors unchanged
 - [ ] **9.2.6** Create `src/components/balance/charts/DamageDistributionChart.tsx`
   - Histogram showing per-round damage dealt distribution for selected combatant
   - Dropdown to select which combatant to view
