@@ -1027,7 +1027,14 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
     - `InnateSpell`, `SpellcastingConfig` types from `Enemy.ts` (new from phase 1.6)
   - Already correctly exported: `CombatSimulator`, `SimulationConfig`, `SimulationResults`, `SimulationSummary`, `CombatantSimulationMetrics`, `HistogramBucket`, `PartyConfig`, `EncounterConfig`, `CombatAI`, `AIConfig`, `AIPlayStyle`, `AIDecision`, `AIThreatAssessment`, `CombatantMetrics`, `AICombatRunner`, `AICombatResult`, `CombatMetricsTracker`, `BalanceValidator`, `BalanceReport`, `BalanceRecommendation`, `DifficultyVariance`, `EXPECTED_WIN_RATES`, `ParameterSweep`, `SweepParams`, `SweepResults`, `SweepVariable`, `SweepRange`, `SweepDataPoint`, `SweepEnemyConfig`, `ComparativeAnalyzer`, `ComparisonResult`, `ComparisonConfig`, `ComparisonOptions`, `DeltaMetrics`, `CombatantDelta`, `SignificanceResult`, `DifficultyCalculator`, `DifficultyCalculatorOptions`, `DifficultyEnemyTemplate`, `DifficultyProbe`, `DifficultySuggestion`
   - Engine builds clean (vite build + tsc --noEmit), all 1265 combat tests pass
-- [ ] **5.2** Ensure engine build compiles with all new modules
+- [x] **5.2** Ensure engine build compiles with all new modules
+  - Fixed 15 TypeScript errors across 4 files to make `tsc -p tsconfig.declarations.json` pass cleanly
+  - **StatScaling.ts** (2 errors): Added nullish coalescing `(baseStats[primaryStat] ?? 10)` for possibly-undefined ability score access
+  - **CombatAI.ts** (8 errors): Cast `EnhancedInventoryItem` to `any` for runtime `damage`/`weaponProperties` access; added `spell.level ?? 0` fallback; cast legendary actions to `any` for `tags` access
+  - **Enemy.ts** (1 error, affected DifficultyCalculator + ParameterSweep): Added `category?: EnemyCategory` and `archetype?: EnemyArchetype` to `EnemyGenerationOptions` interface
+  - **ParameterSweep.ts** (4 errors): Fixed `CharacterSheet.hp` type usage (object with current/max/temp, not number); removed nonexistent `max_hp` property; fixed arithmetic on possibly-undefined values
+  - `npm run build` (vite + tsc declarations) passes with zero errors
+  - All 1265 combat tests pass (31 test files)
 - [ ] **5.3** Verify TypeScript types are clean (no `any`, proper generics)
 
 ---
