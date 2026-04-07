@@ -1161,10 +1161,14 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Covers: ParameterSweep usage with full CR sweep code example, SweepParams parameter table (7 fields), SweepVariable table (8 variables with descriptions and example ranges), SweepResults and SweepDataPoint interfaces with field tables, interpreting sweep results (CR/enemy count/difficulty multiplier/stat level sweep patterns), finding sweet spots for difficulty tiers with code example, cancellation with AbortController
   - Updated Table of Contents with new entry (item 11, API Reference renumbered to 12)
   - Build verified (pre-existing TS errors only, no regressions from doc change)
-- [ ] **6.2.3** Add **Comparative Analysis** subsection
+- [x] **6.2.3** Add **Comparative Analysis** subsection
   - Document `ComparativeAnalyzer` — compare two encounter configurations
   - Explain identical-seed methodology for fair comparison
   - Include code example: compare "+2 AC" vs "no AC bonus"
+  - Added comprehensive "Comparative Analysis" subsection to `docs/engine/docs/ENEMY_GENERATION.md` after Parameter Sweep
+  - Covers: concept explanation with identical-seed methodology, ComparativeAnalyzer usage with full code example, ComparisonConfig and ComparisonOptions parameter tables, ComparisonResult interface table, DeltaMetrics table (positive=favors A), CombatantDelta table (per-combatant matched by index), SignificanceResult table (normal approximation test), 3 common use cases with code examples (stat changes, party sizes, enemy CR comparison), unmatched combatant handling
+  - Updated Table of Contents with new entry (item 12, API Reference renumbered to 13)
+  - Build verified (pre-existing TS errors only, no regressions from doc change)
 - [ ] **6.2.4** Add **Difficulty Calculator** subsection
   - Document `DifficultyCalculator` — given a party and desired difficulty, suggest enemy config
   - Explain binary search approach and confidence intervals

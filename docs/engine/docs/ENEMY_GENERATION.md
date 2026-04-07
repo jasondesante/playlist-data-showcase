@@ -17,7 +17,8 @@ Complete guide to generating enemies and encounters in the Playlist Data Engine.
 9. [Encounter Balance](#encounter-balance)
 10. [Simulation-Based Balance Validation](#simulation-based-balance-validation)
 11. [Parameter Sweep](#parameter-sweep)
-12. [API Reference](#api-reference)
+12. [Comparative Analysis](#comparative-analysis)
+13. [API Reference](#api-reference)
 
 ---
 
@@ -1139,6 +1140,189 @@ const partialResults = sweeper.sweep(party, encounter, {
 });
 
 console.log(`Completed ${partialResults.dataPoints.length} of 20 points`);
+```
+
+### Comparative Analysis
+
+**Comparative analysis** runs two encounter configurations with identical seed sequences, isolating the effect of a single variable change. This answers questions like *"How much does +2 AC improve win rate?"* or *"Is adding a 5th party member statistically significant?"*
+
+Because both configurations use the same dice rolls (via deterministic seeding), any difference in outcomes is attributable to the configuration change itself — not random variance.
+
+```typescript
+import { ComparativeAnalyzer, EnemyGenerator } from 'playlist-data-engine';
+
+const analyzer = new ComparativeAnalyzer();
+
+// ═══════════════════════════════════════════════════════════════
+// Compare: "+2 AC" vs "No AC bonus" for a level 5 party
+// ═══════════════════════════════════════════════════════════════
+const enemiesA = [
+  EnemyGenerator.generate({ seed: 'base-enemy', cr: 3, rarity: 'elite' }),
+];
+const enemiesB = [
+  EnemyGenerator.generate({ seed: 'base-enemy', cr: 3, rarity: 'elite' }),
+];
+
+// Modify one config — e.g., boost enemy AC in config B
+enemiesB[0].ac! += 2;
+
+const comparison = analyzer.compare(
+  { players: party, enemies: enemiesA, label: 'Base' },
+  { players: party, enemies: enemiesB, label: '+2 AC' },
+  {
+    runCount: 500,
+    baseSeed: 'ac-comparison',
+    aiConfig: {
+      playerStyle: 'normal',
+      enemyStyle: 'aggressive',
+    },
+  },
+);
+
+console.log(`Win rate delta: ${(comparison.deltas.winRateDelta * 100).toFixed(1)}%`);
+console.log(`Significant: ${comparison.winRateSignificance.isSignificant}`);
+console.log(comparison.winRateSignificance.interpretation);
+```
+
+#### Identical-Seed Methodology
+
+Both configurations are simulated using the same seed sequence (`baseSeed-A` for config A, `baseSeed-B` for config B). This means:
+
+- **Same dice rolls**: Each run index uses deterministic seeds derived from the same base, so both configs experience the same attack rolls, damage rolls, saving throws, and initiative order.
+- **Isolated variable**: The only difference in outcomes comes from the configuration change (e.g., +2 AC, different party size, different CR).
+- **Pair-wise comparison**: Results are comparable run-by-run, not just in aggregate.
+
+This is more statistically powerful than running two independent simulations and comparing — the paired design eliminates dice variance as a confounding factor.
+
+#### ComparisonConfig
+
+Each side of the comparison is defined by a `ComparisonConfig`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `players` | `CharacterSheet[]` | Player characters for this config |
+| `enemies` | `CharacterSheet[]` | Enemy characters for this config |
+| `label?` | `string` | Display name (e.g., `"Base"`, `"+2 AC"`). Default: `"Config A"` / `"Config B"` |
+| `combatConfig?` | `CombatConfig` | Optional combat engine overrides |
+
+#### ComparisonOptions
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `runCount` | `number` | Simulations per configuration (500+ recommended) |
+| `baseSeed` | `string` | Base seed — both configs use derived seeds from this |
+| `aiConfig` | `AIConfig` | AI strategy for all simulations |
+| `combatConfig?` | `CombatConfig` | Optional combat engine overrides (used if not set per-config) |
+| `significanceThreshold?` | `number` | Alpha level for significance test (default: `0.05`) |
+| `abortSignal?` | `AbortSignal` | Cancel the comparison mid-execution |
+| `onProgress?` | `(completed, total, side) => void` | Progress callback per side |
+
+#### ComparisonResult
+
+The `compare()` method returns a `ComparisonResult` with full data for both sides:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `labelA` | `string` | Label for configuration A |
+| `labelB` | `string` | Label for configuration B |
+| `resultsA` | `SimulationResults` | Full simulation results for config A |
+| `resultsB` | `SimulationResults` | Full simulation results for config B |
+| `summaryA` | `SimulationSummary` | Summary for config A |
+| `summaryB` | `SimulationSummary` | Summary for config B |
+| `deltas` | `DeltaMetrics` | Aggregate difference metrics |
+| `combatantDeltas` | `CombatantDelta[]` | Per-combatant differences |
+| `winRateSignificance` | `SignificanceResult` | Statistical significance of win rate difference |
+| `wasCancelled` | `boolean` | Whether comparison was cancelled |
+
+#### DeltaMetrics
+
+Aggregate differences between configurations. **Positive values favor config A** (A is better for players):
+
+| Field | Description |
+|-------|-------------|
+| `winRateDelta` | Win rate difference (e.g., `+0.15` = A wins 15% more) |
+| `averageRoundsDelta` | Average rounds difference |
+| `averageHPRemainingDelta` | Average player HP remaining % difference |
+| `totalPlayerDeathsDelta` | Player death count difference (negative = fewer deaths in A) |
+| `totalEnemyDeathsDelta` | Enemy death count difference |
+| `medianRoundsDelta` | Median rounds difference |
+
+#### CombatantDelta
+
+Per-combatant differences, matched by side and index position:
+
+| Field | Description |
+|-------|-------------|
+| `name` | Combatant name (from config A) |
+| `side` | `'player'` or `'enemy'` |
+| `dprDelta` | Damage per round difference |
+| `damageDealtDelta` | Average total damage dealt difference |
+| `damageTakenDelta` | Average total damage taken difference |
+| `survivalRateDelta` | Survival rate difference |
+| `killRateDelta` | Kill rate difference |
+| `criticalHitRateDelta` | Critical hit rate difference |
+| `healingDoneDelta` | Average healing done difference |
+
+Unmatched combatants (different party sizes) are marked with `(only in A)` or `(only in B)`.
+
+#### SignificanceResult
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `isSignificant` | `boolean` | Whether the difference is statistically significant |
+| `pValue` | `number` | Approximate p-value from the test |
+| `threshold` | `number` | The significance threshold used (alpha) |
+| `interpretation` | `string` | Human-readable explanation of the result |
+
+Significance is tested using a **normal approximation for the difference of proportions** (two-tailed test). For small samples (n < 30), a conservative minimum detectable effect threshold is used instead.
+
+#### Common Use Cases
+
+**Comparing stat changes:**
+```typescript
+// Does +2 AC on enemies meaningfully increase difficulty?
+const baseEnemy = EnemyGenerator.generate({ seed: 'goblin', cr: 2 });
+const tankyEnemy = EnemyGenerator.generate({ seed: 'goblin', cr: 2 });
+tankyEnemy.ac! += 2;
+
+const result = analyzer.compare(
+  { players: party, enemies: [baseEnemy], label: 'Base AC' },
+  { players: party, enemies: [tankyEnemy], label: '+2 AC' },
+  { runCount: 500, baseSeed: 'ac-test', aiConfig: { playerStyle: 'normal', enemyStyle: 'aggressive' } },
+);
+
+// Negative winRateDelta means B is harder (AC increase hurt players)
+console.log(result.deltas.winRateDelta); // e.g., -0.12 (12% lower win rate)
+```
+
+**Comparing party sizes:**
+```typescript
+// Is a 5th party member significantly impactful?
+const result = analyzer.compare(
+  { players: party4, enemies: encounter, label: '4 Players' },
+  { players: party5, enemies: encounter, label: '5 Players' },
+  { runCount: 500, baseSeed: 'party-size', aiConfig: { playerStyle: 'normal', enemyStyle: 'aggressive' } },
+);
+
+console.log(result.winRateSignificance.interpretation);
+// "Config 5 Players has a statistically significant 18.2% higher win rate (p=0.0012, n=500)"
+```
+
+**Comparing enemy CR:**
+```typescript
+// Is CR 5 meaningfully harder than CR 3?
+const enemies3 = Array.from({ length: 3 }, (_, i) =>
+  EnemyGenerator.generate({ seed: `cr3-${i}`, cr: 3, rarity: 'uncommon' })
+);
+const enemies5 = Array.from({ length: 3 }, (_, i) =>
+  EnemyGenerator.generate({ seed: `cr5-${i}`, cr: 5, rarity: 'uncommon' })
+);
+
+const result = analyzer.compare(
+  { players: party, enemies: enemies3, label: 'CR 3' },
+  { players: party, enemies: enemies5, label: 'CR 5' },
+  { runCount: 500, baseSeed: 'cr-compare', aiConfig: { playerStyle: 'normal', enemyStyle: 'aggressive' } },
+);
 ```
 
 ---
