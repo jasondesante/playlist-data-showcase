@@ -1228,12 +1228,22 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
     - `validateCombatantSpellSlots(combatant)` — combatant-to-source consistency validation
   - All descriptions include parameter names, return types, and behavioral notes
   - Pre-existing TypeScript errors unchanged (unrelated to documentation)
-- [ ] **6.3.3** Add entries for updated types
+- [x] **6.3.3** Add entries for updated types
   - `StatusEffect` (new optional fields)
   - `Combatant` (new legendary tracking fields)
   - `CombatResult` (new `winnerSide` field)
   - `Spell` / `InnateSpell` (unified type with tags support)
   - `CombatAction` (expanded type union with `'useItem'`, `'legendaryAction'`)
+  - Updated `StatusEffect` table with 3 new optional fields (`damage`, `damageType`, `mechanicalEffects`) and added full `StatusEffectMechanics` interface table (12 boolean/type fields for mechanical enforcement)
+  - Updated `Combatant` table with 3 new fields: `concentratingOn`, `legendaryActionsRemaining`, `legendaryResistancesRemaining`
+  - Updated `CombatAction` table: expanded `type` union with `'flee'`, `'useItem'`, `'legendaryAction'`, `'statusEffectTick'`; added `item?` and `legendaryAction?` fields; added Action Type Details reference table
+  - Added full `CombatResult` interface table (6 fields including `winnerSide`)
+  - Added `CombatInstance` updates table (`winnerSide`, `metrics` fields)
+  - Updated `Spell` table with 10 new fields (`rangeFeet`, `effect`, `damage`, `damageType`, `save`, `concentration`, `tags`, `id`) and documented naming convention fallbacks; added comprehensive Spell Tags table (20 tags with AI behavior and status effect mappings)
+  - Added `InnateSpell (extends Spell)` section documenting the unified type relationship, required vs optional fields, and cross-reference to base Spell
+  - Updated Enemy Generation section's `InnateSpell Interface` with inheritance note and cross-reference
+  - Added `Combat Types` group to Quick Export Reference
+  - Build verified clean (pre-existing TS errors only, no regressions)
 
 ### 6.4 Update ROLLS_AND_SEEDS.md
 

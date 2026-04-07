@@ -188,6 +188,8 @@ A concise overview of all main exports from the library, organized by category.
 
 **Combat AI Types:** `AIPlayStyle`, `AIConfig`, `AIDecision`, `AIThreatAssessment`, `CombatantMetrics` — see [Combat AI Types](#combat-ai-types)
 
+**Combat Types:** `StatusEffect`, `StatusEffectMechanics`, `CombatAction`, `CombatResult`, `Combatant`, `CombatInstance`, `DamageRoll`, `DiceRollerAPI` — see [Combat Types](#combat-types)
+
 **Simulation Types:** `SimulationConfig`, `SimulationResults`, `SimulationSummary`, `CombatantSimulationMetrics`, `HistogramBucket`, `PartyConfig`, `EncounterConfig`, `SimulationRunDetail` — see [CombatSimulator](#combatsimulator)
 
 **Analysis Types:** `BalanceReport`, `BalanceRecommendation`, `DifficultyVariance`, `EXPECTED_WIN_RATES`, `SweepVariable`, `SweepParams`, `SweepResults`, `SweepDataPoint`, `SweepEnemyConfig`, `ComparisonConfig`, `ComparisonOptions`, `ComparisonResult`, `DeltaMetrics`, `CombatantDelta`, `SignificanceResult`, `DifficultyCalculatorOptions`, `DifficultyEnemyTemplate`, `DifficultySuggestion`, `DifficultyProbe` — see individual sections below
@@ -648,7 +650,7 @@ Combat attack representation.
 
 *Location:* *[src/core/types/Character.ts](src/core/types/Character.ts)*
 
-Spell representation for casting.
+Unified spell representation for casting. Supports both player spells (with `damage_dice`, `saving_throw`) and enemy spells (with `damage`, `save`, `tags`). `SpellCaster` handles both naming conventions via fallback (e.g., `spell.damage_dice ?? spell.damage`).
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -656,16 +658,75 @@ Spell representation for casting.
 | level | number? | Spell level (0-9) |
 | school | string? | Magic school |
 | casting_time | string? | Casting time (e.g., "1 action") |
-| range | string? | Spell range |
+| range | string? | Spell range (string form) |
+| rangeFeet? | number | Spell range in feet (numeric form, used by enemy spells) |
 | duration | string? | Duration |
 | components | string[]? | Components (V, S, M) |
 | description | string? | Spell description |
+| effect? | string | Effect text (enemy spells — combined with description for status effect detection) |
 | icon | string? | Optional icon URL for small UI display |
 | image | string? | Optional image URL for larger display |
-| damage_dice | string? | Damage dice |
-| damage_type | string? | Damage type |
+| damage_dice | string? | Damage dice (player spell format, e.g., "2d6") |
+| damage | string? | Damage dice (enemy spell format — `SpellCaster` falls back to this if `damage_dice` is absent) |
+| damageType | string? | Damage type (enemy spell format — `SpellCaster` falls back to this if `damage_type` is absent) |
+| damage_type | string? | Damage type (player spell format) |
 | attack_roll | boolean? | Requires attack roll? |
-| saving_throw | string? | Saving throw ability |
+| saving_throw | string? | Saving throw ability (player spell format, e.g., "dexterity") |
+| save | string? | Saving throw ability (enemy spell format, e.g., "DEX") |
+| concentration? | boolean | Whether spell requires concentration |
+| tags? | string[] | Classification tags for AI decision-making and status effect detection (see below) |
+| id? | string | Unique spell identifier |
+
+**Spell Tags:**
+
+Used by `CombatAI` for spell selection and by `SpellCaster` for status effect detection.
+
+| Tag | AI Behavior | Status Effect |
+|-----|-------------|---------------|
+| `'damage'` | Selected as damage option | — |
+| `'healing'` | Used when allies are below HP threshold | — |
+| `'buff'` | Cast on highest-stat ally | — |
+| `'control'` | Used when 2+ enemies (normal style) | — |
+| `'aoe'` | Expected damage multiplied for multi-target | — |
+| `'multi-target'` | Targets all enemies | — |
+| `'debuff'` | — | — |
+| `'ally'` | Targets allies instead of enemies | — |
+| `'self'` | Targets caster | — |
+| `'bonus-action'` | Can be cast as bonus action | — |
+| `'ranged'` | Ranged spell | — |
+| `'melee'` | Melee spell | — |
+| `'charm'` | — | Charmed effect with `disadvantageOnAttackNonSource` |
+| `'frighten'` | — | Frightened effect with `disadvantageOnAttack` + `disadvantageOnAbilityChecks` |
+| `'stun'` | — | Stunned effect with `skipTurn` + `disadvantageOnDexSaves` + `speedZero` |
+| `'paralyze'` | — | Paralyzed effect with `skipTurn` + `disadvantageOnDexSaves` + `speedZero` |
+| `'restrain'` | — | Restrained effect with `disadvantageOnDexSaves` + `speedZero` |
+| `'poison'` | — | Poisoned effect |
+| `'blind'` | — | Blinded effect |
+| `'deafen'` | — | Deafened effect |
+| `'burn'` | — | Burning effect with per-turn fire damage |
+
+#### InnateSpell (extends Spell)
+
+*Location:* *[src/core/types/Enemy.ts](src/core/types/Enemy.ts)*
+
+Enemy-specific spell type. Extends `Spell` with required fields (`id`, `level`, `school`, `effect`) that are optional on the base `Spell` interface. Used by `SpellcastingGenerator` for enemy spell lists and stored in `CharacterSheet.combat_spells`.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique identifier *(required on InnateSpell)* |
+| `name` | `string` | Display name |
+| `level` | `number` | Spell level (0 = cantrip, 1-9 = spell level) *(required)* |
+| `school` | `string` | Magical school (evocation, necromancy, etc.) *(required)* |
+| `effect` | `string` | Description of what spell does *(required)* |
+| `damage?` | `string` | Damage dice (e.g., "2d6") — falls back from `damage_dice` |
+| `save?` | `string` | Save type (e.g., "DEX") — falls back from `saving_throw` |
+| `damageType?` | `string` | Damage type for resistance calculations |
+| `range?` | `number` | Range in feet |
+| `concentration?` | `boolean` | Whether spell requires concentration |
+| `tags?` | `string[]` | Classification tags (see Spell Tags table above) |
+| `rangeFeet?` | `number` | Range in feet (same as `range`, from unified Spell) |
+
+> **Note:** `InnateSpell` extends `Spell`, so it also inherits all player spell fields (`damage_dice`, `damage_type`, `saving_throw`, `attack_roll`, `components`, `icon`, `image`, etc.). `SpellCaster.castSpell()` handles both naming conventions transparently.
 
 #### AbilityScores
 
@@ -928,9 +989,11 @@ State of an active combat encounter.
 | `environment?` | EnvironmentalContext | Optional environmental context |
 | `history` | CombatAction[] | Action log |
 | `isActive` | boolean | Whether combat is ongoing |
-| `winner?` | Combatant | Winner when combat ends |
+| `winner?` | Combatant | First surviving combatant on the winning side; `undefined` on draw |
+| `winnerSide?` | `'player' \| 'enemy' \| 'draw'` | Which side won; set by `checkCombatStatus()`; `undefined` while combat is active |
 | `startTime` | number | Combat start timestamp |
 | `lastUpdated` | number | Last update timestamp |
+| `metrics?` | Map<string, CombatantMetrics> | Per-combatant aggregate metrics (computed post-combat) |
 
 #### Combatant
 
@@ -950,6 +1013,9 @@ A character participating in combat.
 | `bonusActionUsed` | boolean | Bonus action used |
 | `reactionUsed` | boolean | Reaction used |
 | `spellSlots?` | Record<number, number> | Remaining slots by level |
+| `concentratingOn?` | string | Name of the status effect this combatant is concentrating on; cleared when concentration is broken or the effect expires |
+| `legendaryActionsRemaining?` | number | Legendary action points remaining this round (3/round for bosses, reset at start of each new round); undefined for non-boss combatants |
+| `legendaryResistancesRemaining?` | number | Legendary resistances remaining today (per-day resource, not reset per round); undefined for non-boss combatants |
 
 #### CombatAction
 
@@ -957,27 +1023,67 @@ An action taken during combat.
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `type` | ActionType | `'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'help' | 'hide' | 'ready'` |
+| `type` | ActionType | `'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'help' | 'hide' | 'ready' | 'flee' | 'useItem' | 'legendaryAction' | 'statusEffectTick'` |
 | `actor` | Combatant | Who performed the action |
 | `target?` | Combatant | Single target |
 | `targets?` | Combatant[] | Multiple targets |
 | `attack?` | Attack | Attack data |
 | `spell?` | Spell | Spell data |
 | `result?` | CombatActionResult | Outcome |
+| `item?` | Equipment | Item used (when `type = 'useItem'`) |
+| `legendaryAction?` | LegendaryAction | Legendary action executed (when `type = 'legendaryAction'`) |
+
+**Action Type Details:**
+
+| Type | Description |
+|------|-------------|
+| `'attack'` | Weapon or unarmed attack |
+| `'spell'` | Spell casting (consumes slot for leveled spells) |
+| `'dodge'` | Dodge action (disadvantage on attacks against this combatant) |
+| `'dash'` | Double movement speed |
+| `'disengage'` | No opportunity attacks when moving |
+| `'help'` | Give advantage to an ally's next attack |
+| `'hide'` | Hide action (stealth check) |
+| `'ready'` | Ready an action to trigger later |
+| `'flee'` | Leave combat (requires `allowFleeing: true`) |
+| `'useItem'` | Use an item from inventory (healing potions, etc.) |
+| `'legendaryAction'` | Boss legendary action (spends action points) |
+| `'statusEffectTick'` | Status effect processing (duration decrement, expiration, concentration break, start-of-turn damage) |
 
 #### StatusEffect
 
-Temporary condition affecting a combatant.
+Temporary condition affecting a combatant. Supports mechanical enforcement via `StatusEffectMechanics` — conditions like Charmed, Frightened, Stunned, Prone, and Burning are automatically enforced by the combat engine (advantage/disadvantage, damage, skip turn, etc.).
 
 *Also known as: Condition, debuff, buff*
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `name` | string | Effect name (e.g., "Charmed", "Frightened") |
+| `name` | string | Effect name (e.g., "Charmed", "Frightened", "Burning") |
 | `description` | string | Effect description |
-| `duration` | number | Rounds remaining |
+| `duration` | number | Rounds remaining (decremented each turn; removed when ≤ 0) |
 | `source?` | string | Which combatant applied it |
 | `hasConcentration?` | boolean | Requires concentration |
+| `damage?` | number | Per-turn damage dealt at start of affected combatant's turn (e.g., Burning) |
+| `damageType?` | DamageType | Damage type for the per-turn damage (e.g., "fire", "poison") |
+| `mechanicalEffects?` | StatusEffectMechanics | Mechanical enforcement flags — see below |
+
+**StatusEffectMechanics Interface:**
+
+Optional flags that control automatic combat behavior. The engine checks these flags during attacks, saving throws, turn processing, and damage resolution.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `disadvantageOnAttack?` | boolean | Disadvantage on all attack rolls (Frightened, general) |
+| `disadvantageOnAttackNonSource?` | boolean | Disadvantage on attacks against non-source targets (Charmed) |
+| `disadvantageOnAbilityChecks?` | boolean | Disadvantage on ability checks (Frightened) |
+| `advantageOnMeleeAttackAgainst?` | boolean | Melee attacks have advantage against this combatant (Prone) |
+| `advantageOnRangedAttackAgainst?` | boolean | Ranged attacks have advantage against this combatant (Prone) |
+| `disadvantageOnDexSaves?` | boolean | Disadvantage on DEX saving throws (Stunned, Restrained) |
+| `speedZero?` | boolean | Movement speed reduced to 0 (Paralyzed, Restrained) |
+| `skipTurn?` | boolean | Combatant's turn is automatically skipped (Stunned, Unconscious) |
+| `damageImmunity?` | DamageType | Immunity to a specific damage type |
+| `damageResistance?` | DamageType | Resistance to a specific damage type (halved damage) |
+| `damageVulnerability?` | DamageType | Vulnerability to a specific damage type (double damage) |
 
 #### TreasureConfig
 
@@ -1002,9 +1108,33 @@ Configuration for custom combat loot rewards.
 | `AttackRoll` | Attack roll result (d20, bonus, hit/miss) |
 | `DamageRoll` | Damage roll result (dice, rolls, total) |
 | `SpellCastResult` | Spell casting outcome (success, save DC, effects) |
-| `CombatResult` | Final combat result (winner, XP, treasure) |
+| `CombatResult` | Final combat result (winner, winnerSide, XP, treasure) — see below |
 | `CombatConfig` | Combat configuration options (environment, music, tactical, treasure) |
 | `TreasureConfig` | Custom loot rewards (fixed gold, range, items) |
+
+**CombatResult Interface:**
+
+Final combat result produced by `getCombatResult()`.
+
+*Location:* *[src/core/types/Combat.ts](src/core/types/Combat.ts)*
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `winner?` | Combatant | First surviving combatant on the winning side; `undefined` on draw |
+| `winnerSide` | `'player' \| 'enemy' \| 'draw'` | Which side won; `'draw'` for mutual kills or max-turns-reached |
+| `xp` | number | Total XP awarded (CR-based via `getXPForCR()` for each defeated enemy) |
+| `treasure` | TreasureConfig | Loot rewards |
+| `roundsElapsed` | number | Total rounds the combat lasted |
+| `description` | string | Human-readable result description |
+
+**CombatInstance Updates:**
+
+The `CombatInstance` interface (see [CombatInstance](#combatinstance)) also has the following addition:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `winnerSide?` | `'player' \| 'enemy' \| 'draw'` | Set by `checkCombatStatus()` when combat ends; `undefined` while combat is active |
+| `metrics?` | Map<string, CombatantMetrics> | Per-combatant aggregate metrics (computed by `CombatMetricsTracker` after combat ends) |
 
 #### Combat Helper Types
 
@@ -5410,19 +5540,21 @@ Generates innate spellcasting abilities for enemy casters. Unlike player spellca
 
 **InnateSpell Interface:**
 
+> **Note:** `InnateSpell` extends `Spell` (see [Spell](#spell)). The table below shows only the enemy-specific fields. All base `Spell` fields (`damage_dice`, `damage_type`, `saving_throw`, `attack_roll`, `components`, `icon`, `image`, etc.) are also available via inheritance. `SpellCaster.castSpell()` handles both naming conventions transparently (`spell.damage_dice ?? spell.damage`).
+
 | Property | Type | Description |
 |----------|------|-------------|
-| `id` | `string` | Unique identifier |
+| `id` | `string` | Unique identifier *(required on InnateSpell)* |
 | `name` | `string` | Display name |
-| `level` | `number` | Spell level (0 = cantrip, 1-9 = spell level) |
-| `school` | `string` | Magical school (evocation, necromancy, etc.) |
-| `effect` | `string` | Description of what spell does |
-| `damage?` | `string` | Damage dice (e.g., "2d6") for damaging spells |
-| `save?` | `string` | Save type (e.g., "DEX") |
+| `level` | `number` | Spell level (0 = cantrip, 1-9 = spell level) *(required)* |
+| `school` | `string` | Magical school (evocation, necromancy, etc.) *(required)* |
+| `effect` | `string` | Description of what spell does *(required)* |
+| `damage?` | `string` | Damage dice (e.g., "2d6") — enemy format; `SpellCaster` falls back from `damage_dice` |
+| `save?` | `string` | Save type (e.g., "DEX") — enemy format; `SpellCaster` falls back from `saving_throw` |
 | `damageType?` | `string` | Damage type for resistance calculations |
 | `range?` | `number` | Range in feet |
 | `concentration?` | `boolean` | Whether spell requires concentration |
-| `tags?` | `string[]` | Classification tags |
+| `tags?` | `string[]` | Classification tags for AI and status effect detection (see [Spell Tags](#spell)) |
 
 **SpellcastingConfig Interface:**
 
