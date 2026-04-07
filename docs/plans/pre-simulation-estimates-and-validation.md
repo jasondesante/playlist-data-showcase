@@ -328,7 +328,7 @@ BalanceLabTab (results area)
   - Simulation loaded from history (no estimate snapshot) → show validation panel with "No pre-simulation estimate available for comparison" message
   - Party/encounter changes while simulation is running → estimates still update (they're live), but the snapshot used for validation is the one from when Run was clicked
 
-- [ ] **4.2 Enemy preview regeneration strategy**
+- [x] **4.2 Enemy preview regeneration strategy**
 
   The enemy preview should regenerate whenever `encounterConfig` changes (CR, count, archetype, rarity, category, difficultyMultiplier, statLevels). Use `useMemo` with all config fields as dependencies. The preview seed should be stable (derived from config, not random) so it doesn't flicker on unrelated re-renders. Use `preview-${encounterConfig.cr}-${encounterConfig.archetype}-${encounterConfig.rarity}-${encounterConfig.category}` as the seed.
 

@@ -52,6 +52,18 @@ export function useEstimateSnapshot(
 ): SimulationEstimateSnapshot | null {
     const { generate } = useEnemyGenerator();
 
+    // Destructure config fields for stable useMemo dependencies.
+    // Using individual primitives/refs instead of the whole object prevents
+    // unnecessary regeneration when the parent recreates encounterConfig
+    // with identical values on an unrelated re-render.
+    const cr = encounterConfig.cr;
+    const enemyCount = encounterConfig.enemyCount;
+    const category = encounterConfig.category;
+    const archetype = encounterConfig.archetype;
+    const rarity = encounterConfig.rarity;
+    const difficultyMultiplier = encounterConfig.difficultyMultiplier;
+    const statLevels = encounterConfig.statLevels;
+
     return useMemo(() => {
         // Need at least one party member
         if (selectedParty.length === 0) {
@@ -68,13 +80,15 @@ export function useEstimateSnapshot(
         }
 
         // --- Generate a preview enemy ---
-        const previewSeed = `preview-${encounterConfig.cr}-${encounterConfig.archetype}-${encounterConfig.rarity}-${encounterConfig.category}`;
+        // Seed is derived deterministically from config fields (not random)
+        // so the same config always produces the same preview enemy.
+        const previewSeed = `preview-${cr}-${archetype}-${rarity}-${category}`;
         const previewEnemy = generate({
             seed: previewSeed,
-            category: encounterConfig.category,
-            archetype: encounterConfig.archetype,
-            rarity: encounterConfig.rarity,
-            difficultyMultiplier: encounterConfig.difficultyMultiplier,
+            category,
+            archetype,
+            rarity,
+            difficultyMultiplier,
         });
 
         if (!previewEnemy) {
@@ -89,7 +103,6 @@ export function useEstimateSnapshot(
         const enemyCR = previewEnemy.cr ?? previewEnemy.level;
 
         // --- Adjusted XP calculation ---
-        const enemyCount = encounterConfig.enemyCount;
         const enemyCRs = Array(enemyCount).fill(enemyCR);
         const multiplier = getEncounterMultiplier(enemyCRs.length);
         const totalAdjustedXP = calculateAdjustedXP(enemyCRs, multiplier);
@@ -130,8 +143,8 @@ export function useEstimateSnapshot(
                 perEnemyEstDPR,
                 totalAdjustedXP,
                 enemyCR,
-                archetype: encounterConfig.archetype,
-                rarity: encounterConfig.rarity,
+                archetype,
+                rarity,
             },
             prediction: {
                 predictedDifficulty,
@@ -150,6 +163,5 @@ export function useEstimateSnapshot(
         });
 
         return snapshot;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedParty, encounterConfig]);
+    }, [selectedParty, generate, cr, enemyCount, category, archetype, rarity, difficultyMultiplier, statLevels]);
 }
