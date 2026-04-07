@@ -1197,7 +1197,7 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 6.3 Update DATA_ENGINE_REFERENCE.md
 
-- [ ] **6.3.1** Add entries for all new exported classes and types
+- [x] **6.3.1** Add entries for all new exported classes and types
   - `SeededDiceRoller`
   - `CombatAI`, `AIConfig`, `AIPlayStyle`, `AIDecision`, `AIThreatAssessment`
   - `AICombatRunner`
@@ -1207,6 +1207,13 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - `ParameterSweep`, `SweepParams`, `SweepResults`, `SweepDataPoint`
   - `ComparativeAnalyzer`, `ComparisonResult`
   - `DifficultyCalculator`
+  - Added 9 new subsections to `docs/engine/DATA_ENGINE_REFERENCE.md` Combat System section: SeededDiceRoller, CombatAI, AICombatRunner, CombatMetricsTracker, CombatSimulator, BalanceValidator, ParameterSweep, ComparativeAnalyzer, DifficultyCalculator
+  - Each subsection includes: location, constructor, public methods with descriptions, result type tables, configuration field tables
+  - Added Combat AI Types sub-table under CombatAI section documenting all 5 type interfaces
+  - Updated Table of Contents with 9 new subsection entries under Combat System
+  - Updated Quick Export Reference table: added 10 new class/function exports, added 3 type group summaries (Combat AI Types, Simulation Types, Analysis Types)
+  - Updated Type Exports section: added Combat AI Types, Simulation Types, and Balance Analysis Types groups with all exported interfaces
+  - Pre-existing TypeScript errors unchanged (unrelated to documentation)
 - [ ] **6.3.2** Add entries for new CombatEngine methods
   - `applyStatusEffect()`, `removeExpiredStatusEffects()`
   - `executeLegendaryAction()`, `useLegendaryResistance()`

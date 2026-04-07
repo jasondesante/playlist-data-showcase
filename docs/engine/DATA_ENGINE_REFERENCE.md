@@ -45,6 +45,15 @@ Complete API reference for the Playlist Data Engine. Contains all type definitio
 9. [Environmental Sensors](#environmental-sensors)
 10. [Gaming Integration](#gaming-integration)
 11. [Combat System](#combat-system)
+    - [SeededDiceRoller](#seededdiceroller)
+    - [CombatAI](#combatai)
+    - [AICombatRunner](#aicombatrunner)
+    - [CombatMetricsTracker](#combatmetricstracker)
+    - [CombatSimulator](#combatsimulator)
+    - [BalanceValidator](#balancevalidator)
+    - [ParameterSweep](#parametersweep)
+    - [ComparativeAnalyzer](#comparativeanalyzer)
+    - [DifficultyCalculator](#difficultycalculator)
 12. [Enemy Generation](#enemy-generation)
 13. [Equipment System](#equipment-system)
    - [Equipment Types](#equipment-types)
@@ -164,8 +173,24 @@ A concise overview of all main exports from the library, organized by category.
 | `AttackResolver` | Resolve attack rolls | [Combat System](#combat-system) |
 | `SpellCaster` | Cast spells in combat | [Combat System](#combat-system) |
 | `DiceRoller` | Standalone dice rolling utilities | [Combat System](#combat-system) |
+| `SeededDiceRoller` | Deterministic dice rolling for simulations | [Combat System](#seededdiceroller) |
+| `createSeededRoller` | Factory for creating seeded dice rollers | [Combat System](#seededdiceroller) |
+| `CombatAI` | AI decision engine for combatants | [Combat System](#combatai) |
+| `AICombatRunner` | Runs full AI-controlled combat encounters | [Combat System](#aicombatrunner) |
+| `CombatMetricsTracker` | Computes per-combatant stats from combat history | [Combat System](#combatmetricstracker) |
+| `CombatSimulator` | Monte Carlo combat simulation engine | [Combat System](#combatsimulator) |
+| `BalanceValidator` | Validates encounter balance via simulation | [Combat System](#balancevalidator) |
+| `ParameterSweep` | Sweeps a parameter across a range with simulations | [Combat System](#parametersweep) |
+| `ComparativeAnalyzer` | Compares two encounter configurations | [Combat System](#comparativeanalyzer) |
+| `DifficultyCalculator` | Suggests enemy CR for target difficulty | [Combat System](#difficultycalculator) |
 | `EnemyGenerator` | Generate enemies and encounters | [Enemy Generation](#enemy-generation) |
 | `PartyAnalyzer` | Analyze party strength for encounters | [Enemy Generation](#enemy-generation) |
+
+**Combat AI Types:** `AIPlayStyle`, `AIConfig`, `AIDecision`, `AIThreatAssessment`, `CombatantMetrics` — see [Combat AI Types](#combat-ai-types)
+
+**Simulation Types:** `SimulationConfig`, `SimulationResults`, `SimulationSummary`, `CombatantSimulationMetrics`, `HistogramBucket`, `PartyConfig`, `EncounterConfig`, `SimulationRunDetail` — see [CombatSimulator](#combatsimulator)
+
+**Analysis Types:** `BalanceReport`, `BalanceRecommendation`, `DifficultyVariance`, `EXPECTED_WIN_RATES`, `SweepVariable`, `SweepParams`, `SweepResults`, `SweepDataPoint`, `SweepEnemyConfig`, `ComparisonConfig`, `ComparisonOptions`, `ComparisonResult`, `DeltaMetrics`, `CombatantDelta`, `SignificanceResult`, `DifficultyCalculatorOptions`, `DifficultyEnemyTemplate`, `DifficultySuggestion`, `DifficultyProbe` — see individual sections below
 
 ### Beat Detection
 
@@ -269,7 +294,13 @@ All TypeScript types are exported, including:
 
 **Box Types:** `BoxDropPool`, `BoxDrop`, `BoxContents`, `BoxOpenResult`, `BoxOpenRequirement`, `BoxOpenError` — see [BoxOpener](#boxopener)
 
-**Enemy Types:** `EnemyCategory`, `EnemyRarity`, `EnemyArchetype`, `EnemyMixMode`, `EncounterDifficulty`, `SignatureAbility`, `AudioPreference`, `EnemyTemplate`, `RarityConfig`, `EnemyGenerationOptions`, `EncounterGenerationOptions`, `EnemyMetadata`, `EnemyFeature` — see [Enemy Generation](#enemy-generation)
+**Enemy Types:** `EnemyCategory`, `EnemyRarity`, `EnemyArchetype`, `EnemyMixMode`, `EncounterDifficulty`, `SignatureAbility`, `AudioPreference`, `EnemyTemplate`, `RarityConfig`, `EnemyGenerationOptions`, `EncounterGenerationOptions`, `EnemyMetadata`, `EnemyFeature`, `StatLevelOverrides`, `LegendaryAction`, `LegendaryConfig`, `InnateSpell`, `SpellcastingConfig` — see [Enemy Generation](#enemy-generation)
+
+**Combat AI Types:** `AIPlayStyle`, `AIConfig`, `AIDecision`, `AIThreatAssessment`, `CombatantMetrics` — see [Combat AI](#combatai)
+
+**Simulation Types:** `SimulationConfig`, `SimulationResults`, `SimulationSummary`, `CombatantSimulationMetrics`, `HistogramBucket`, `PartyConfig`, `EncounterConfig`, `SimulationRunDetail`, `AICombatResult` — see [CombatSimulator](#combatsimulator)
+
+**Balance Analysis Types:** `BalanceReport`, `BalanceRecommendation`, `DifficultyVariance`, `SweepVariable`, `SweepRange`, `SweepParams`, `SweepResults`, `SweepDataPoint`, `SweepEnemyConfig`, `ComparisonConfig`, `ComparisonOptions`, `ComparisonResult`, `DeltaMetrics`, `CombatantDelta`, `SignificanceResult`, `DifficultyCalculatorOptions`, `DifficultyEnemyTemplate`, `DifficultySuggestion`, `DifficultyProbe` — see individual sections in [Combat System](#combat-system)
 
 **Beat Detection Types:** `Beat`, `BeatMap`, `BeatMapMetadata`, `BeatEvent`, `BeatEventType`, `BeatStreamCallback`, `AudioSyncState`, `BeatMapGeneratorOptions`, `BeatStreamOptions`, `BeatMapJSON`, `BeatAccuracy`, `ButtonPressResult`, `AccuracyThresholds`, `DifficultyPreset`, `TempoEstimate`, `OSEConfig`, `BeatTrackerConfig`, `TempoDetectorConfig`, `TimeSignatureConfig`, `DownbeatSegment`, `DownbeatConfig`, `BeatMapGenerationProgress` — see [Beat Detection](#beat-detection) and [docs/AUDIO_ANALYSIS.md](docs/AUDIO_ANALYSIS.md)
 
@@ -4843,6 +4874,313 @@ Handles spell casting mechanics (spell slots, saving throws, spell damage).
 | `getSpellSlotInfo(caster)` | Returns formatted spell slot information |
 | `canUpcast(caster, spell, targetSlotLevel)` | Checks if spell can be upcast to higher level |
 | `upcastSpell(caster, spell, targets, slotLevelUsed)` | Upcasts spell using higher-level slot |
+
+### SeededDiceRoller
+
+*Also known as: Deterministic dice roller, simulation dice, seeded RNG*
+
+*Location:* *[src/core/combat/SeededDiceRoller.ts](src/core/combat/SeededDiceRoller.ts)*
+
+> **Note:** Instance class — create with `new SeededDiceRoller(seed)` or `createSeededRoller(seed)`
+
+Deterministic D&D-style dice rolling for reproducible combat simulations. Implements the same API as `DiceRoller` but uses `SeededRNG` internally, producing deterministic results given the same seed and call sequence.
+
+**Constructor:**
+
+| Constructor | Description |
+|-------------|-------------|
+| `new SeededDiceRoller(seed: string \| SeededRNG)` | Initialize with a seed string or existing `SeededRNG` instance |
+
+**Factory:**
+
+| Function | Description |
+|----------|-------------|
+| `createSeededRoller(seed: string): SeededDiceRoller` | Create a seeded roller from a seed string (convenience factory) |
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `rollDie(sides)` | Roll single die (1 to sides) |
+| `rollD20()` | Roll d20 |
+| `rollMultipleDice(count, sides)` | Roll multiple dice, return array |
+| `rollPercentile()` | Roll d100 |
+| `parseDiceFormula(formula)` | Parse and roll "2d6+3", returns parsed data and results |
+| `rollWithAdvantage()` | Roll twice, take higher |
+| `rollWithDisadvantage()` | Roll twice, take lower |
+| `rollInitiative(dexModifier)` | Roll d20 + DEX modifier |
+| `calculateDamage(formula, modifier, isCritical?)` | Calculate damage with optional modifier (doubles dice on crit) |
+| `rollSavingThrow(abilityModifier, proficiencyBonus?)` | Roll d20 + ability + proficiency |
+| `rollAbilityCheck(abilityModifier, proficiencyBonus?)` | Roll d20 + ability + proficiency |
+| `isCriticalHit(d20Roll)` | Returns true if natural 20 |
+| `isCriticalMiss(d20Roll)` | Returns true if natural 1 |
+| `doubleDamage(rolls)` | Double dice array for critical hit |
+
+### CombatAI
+
+*Also known as: AI decision engine, combat AI, NPC AI*
+
+*Location:* *[src/core/combat/AI/CombatAI.ts](src/core/combat/AI/CombatAI.ts)*
+
+> **Note:** Instance class — create with `new CombatAI(config)`
+
+Decision engine for AI-controlled combatants. Produces an `AIDecision` for each combatant's turn based on threat assessment, play style, and available actions. Deterministic given the same combat state — all randomness comes from the dice roller.
+
+**Constructor:**
+
+| Constructor | Description |
+|-------------|-------------|
+| `new CombatAI(config: AIConfig)` | Initialize with AI configuration (play styles per side) |
+
+**Public Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `decide(combatant, combatInstance)` | Main entry point — evaluates battlefield and returns best `AIDecision` |
+| `assessThreat(combatant, combatInstance)` | Evaluates HP, AC, allies, enemies, resources — returns `AIThreatAssessment` |
+| `selectTarget(enemies, style)` | Normal: lowest AC; Aggressive: lowest HP |
+| `selectWeapon(combatant, style)` | Evaluates equipped weapons + unarmed; returns best by style |
+| `getAvailableSpells(combatant)` | Returns cantrips + slotted spells available to combatant |
+| `selectLegendaryAction(boss, combat)` | Boss-only: picks legendary action based on style and point budget |
+| `getStyleForCombatant(combatant)` | Returns effective play style (per-combatant overrides take priority) |
+| `getSide(combatant)` | Returns 'player' or 'enemy' |
+| `getEnemies(combatant, combat)` | Returns all living enemy combatants |
+| `getAllies(combatant, combat)` | Returns all living ally combatants (including self) |
+| `isSupportArchetype(combatant)` | Returns true if combatant has healing/buff spells |
+| `averageDamageFromFormula(formula)` | Calculates expected (average) damage from a dice formula string |
+
+#### Combat AI Types
+
+*Location:* *[src/core/types/CombatAI.ts](src/core/types/CombatAI.ts)*
+
+| Type | Description | Key Properties |
+|------|-------------|----------------|
+| `AIPlayStyle` | Play style for AI combatants: `'normal'` or `'aggressive'` | — |
+| `AIConfig` | Configuration for AI-controlled combat | `playerStyle`, `enemyStyle`, `overrides?`, `enableClassFeatures?` |
+| `AIDecision` | AI's decision for a single turn | `action`, `target?`, `weaponName?`, `spellName?`, `reasoning?` |
+| `AIThreatAssessment` | Battlefield state snapshot | `myHPPercent`, `myAC`, `lowestEnemyHP`, `enemyCount`, `isLowHP`, `hasSpellSlots` |
+| `CombatantMetrics` | Per-combatant stats from a single combat | `totalDamageDealt`, `totalDamageTaken`, `totalHealingDone`, `spellsCast`, `criticalHits`, `roundsSurvived`, `survived`, `actionsByType`, `damagePerRound` |
+
+### AICombatRunner
+
+*Also known as: AI combat orchestrator, simulation runner*
+
+*Location:* *[src/core/combat/AI/AICombatRunner.ts](src/core/combat/AI/AICombatRunner.ts)*
+
+> **Note:** Instance class — create with `new AICombatRunner()`
+
+Orchestrates full combat encounters with AI decision-making. Bridges `CombatAI` (decisions) and `CombatEngine` (execution). For each combatant's turn: asks AI for a decision, executes it via CombatEngine, processes legendary actions for bosses, then advances.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `runFullCombat(players, enemies, aiConfig, combatConfig?, diceRoller?)` | Run a complete AI-controlled combat encounter. Returns `AICombatResult` with `combat`, `result`, and `metrics` |
+
+**Result Type:**
+
+| Type | Description |
+|------|-------------|
+| `AICombatResult` | `{ combat: CombatInstance, result: CombatResult, metrics: Map<string, CombatantMetrics> }` |
+
+### CombatMetricsTracker
+
+*Also known as: Combat statistics analyzer, metrics computer*
+
+*Location:* *[src/core/combat/AI/CombatMetricsTracker.ts](src/core/combat/AI/CombatMetricsTracker.ts)*
+
+> **Note:** Instance class — create with `new CombatMetricsTracker()`
+
+Post-hoc analysis that computes per-combatant statistics from a completed `CombatInstance` history without modifying the engine. Processes all action types: attack, spell, legendary action, use item.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `computeMetrics(combat)` | Compute per-combatant metrics from completed combat. Returns `Map<string, CombatantMetrics>` |
+
+### CombatSimulator
+
+*Also known as: Monte Carlo simulator, combat simulation engine*
+
+*Location:* *[src/core/combat/Simulation/CombatSimulator.ts](src/core/combat/Simulation/CombatSimulator.ts)*
+
+> **Note:** Instance class — create with `new CombatSimulator()`
+
+Monte Carlo combat simulation engine. Runs N independent combat simulations with seeded RNG, aggregates statistical results, and returns structured data for balance analysis. Each run gets a unique seed (`baseSeed-runIndex`). Stateless between `run()` calls.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `run(players, enemies, config)` | Run N simulations. Returns `SimulationResults` with summary and per-combatant metrics |
+
+**Configuration:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `runCount` | number | Number of simulations (100–10000 recommended) |
+| `baseSeed` | string | Base seed — each run gets `baseSeed + index` |
+| `aiConfig` | AIConfig | AI play styles per side |
+| `combatConfig?` | CombatConfig | Optional combat engine configuration |
+| `collectDetailedLogs?` | boolean | Save full combat log per run (memory-intensive) |
+| `onProgress?` | (completed, total) => void | Progress callback after each run |
+| `abortSignal?` | AbortSignal | Cancellation support (returns partial results) |
+
+**Result Types:**
+
+| Type | Description | Key Fields |
+|------|-------------|------------|
+| `SimulationResults` | Complete simulation results | `config`, `summary`, `party`, `encounter`, `perCombatantMetrics`, `runDetails?`, `wasCancelled` |
+| `SimulationSummary` | Aggregate statistics | `totalRuns`, `playerWins`, `enemyWins`, `draws`, `playerWinRate`, `averageRounds`, `medianRounds`, `totalPlayerDeaths`, `totalEnemyDeaths` |
+| `CombatantSimulationMetrics` | Per-combatant aggregate stats | `averageDamagePerRound`, `survivalRate`, `killRate`, `criticalHitRate`, `mostUsedAction`, `damageDistribution`, `hpRemainingDistribution` |
+| `HistogramBucket` | Distribution visualization bucket | `rangeStart`, `rangeEnd`, `count`, `percent` |
+| `PartyConfig` | Party configuration snapshot | `memberCount`, `averageLevel`, `memberNames` |
+| `EncounterConfig` | Encounter configuration snapshot | `enemyCount`, `averageCR`, `enemyNames` |
+| `SimulationRunDetail` | Single run detail (detailed logs only) | `runIndex`, `seed`, `result`, `metrics` |
+
+### BalanceValidator
+
+*Also known as: Encounter balance checker, difficulty validator*
+
+*Location:* *[src/core/combat/Analysis/BalanceValidator.ts](src/core/combat/Analysis/BalanceValidator.ts)*
+
+> **Note:** Instance class — create with `new BalanceValidator()`
+
+Validates encounter balance using Monte Carlo simulation results. Compares actual player win rate against expected win rates per difficulty tier. Produces a `BalanceReport` with balance score, variance classification, and actionable recommendations.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `validate(players, enemies, intendedDifficulty, config)` | Run simulations and produce balance report (convenience method) |
+| `analyze(results, intendedDifficulty)` | Analyze existing simulation results against target difficulty |
+
+**Constants:**
+
+| Constant | Description |
+|----------|-------------|
+| `EXPECTED_WIN_RATES` | Expected win rate ranges per difficulty: Easy (90-100%), Medium (70-80%), Hard (50-60%), Deadly (30-40%) |
+
+**Result Types:**
+
+| Type | Description | Key Fields |
+|------|-------------|------------|
+| `BalanceReport` | Complete balance analysis | `intendedDifficulty`, `actualDifficulty`, `balanceScore` (0-100), `playerWinRate`, `difficultyVariance`, `confidence`, `recommendations` |
+| `BalanceRecommendation` | Actionable suggestion | `description`, `expectedImpact`, `confidence` |
+| `DifficultyVariance` | Variance classification | `'underpowered' \| 'balanced' \| 'overpowered'` |
+
+### ParameterSweep
+
+*Also known as: Parameter sweep, sweep analysis*
+
+*Location:* *[src/core/combat/Analysis/ParameterSweep.ts](src/core/combat/Analysis/ParameterSweep.ts)*
+
+> **Note:** Instance class — create with `new ParameterSweep()`
+
+Varies a single encounter parameter across a range and runs simulations at each data point. Produces `SweepResults` with one data point per parameter value, useful for finding difficulty sweet spots. Stateless between `sweep()` calls.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `sweep(players, baseEncounter, params, onProgress?)` | Run parameter sweep. Returns `SweepResults` with data points |
+
+**Sweep Variables:** `'cr'`, `'enemyCount'`, `'partyLevel'`, `'difficultyMultiplier'`, `'rarity'`, `'hpLevel'`, `'attackLevel'`, `'defenseLevel'`
+
+**Configuration:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `variable` | SweepVariable | Which parameter to vary |
+| `range` | SweepRange | `{ min, max, step }` |
+| `simulationsPerPoint` | number | Simulations per data point |
+| `aiConfig` | AIConfig | AI configuration |
+| `baseSeed?` | string | Seed prefix — each point gets `baseSeed-value` |
+| `abortSignal?` | AbortSignal | Cancellation support |
+
+**Result Types:**
+
+| Type | Description | Key Fields |
+|------|-------------|------------|
+| `SweepResults` | Complete sweep results | `variable`, `range`, `simulationsPerPoint`, `dataPoints[]`, `wasCancelled` |
+| `SweepDataPoint` | Single data point | `parameterValue`, `playerWinRate`, `averageRounds`, `averageHPRemaining`, `totalPlayerDeaths`, `totalEnemyDeaths`, `medianRounds` |
+| `SweepEnemyConfig` | Base enemy config | `cr?`, `rarity?`, `category?`, `archetype?`, `templateId?`, `statLevels?`, `difficultyMultiplier?` |
+
+### ComparativeAnalyzer
+
+*Also known as: A/B comparison, config comparison*
+
+*Location:* *[src/core/combat/Analysis/ComparativeAnalyzer.ts](src/core/combat/Analysis/ComparativeAnalyzer.ts)*
+
+> **Note:** Instance class — create with `new ComparativeAnalyzer()`
+
+Compares two encounter configurations using identical-seed simulation. Both configs are simulated with the same seed sequence, eliminating dice roll variance so outcome differences are attributable to the configuration change. Stateless between `compare()` calls.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `compare(configA, configB, options)` | Compare two configs. Returns `ComparisonResult` with deltas and significance |
+
+**Options:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `runCount` | number | Simulations per configuration |
+| `baseSeed` | string | Both configs use same seed sequence |
+| `aiConfig` | AIConfig | AI configuration |
+| `significanceThreshold?` | number | Alpha for significance test (default: 0.05) |
+| `abortSignal?` | AbortSignal | Cancellation support |
+| `onProgress?` | (completed, total, side) => void | Progress callback |
+
+**Result Types:**
+
+| Type | Description | Key Fields |
+|------|-------------|------------|
+| `ComparisonResult` | Full comparison | `labelA`, `labelB`, `resultsA`, `resultsB`, `deltas`, `combatantDeltas`, `winRateSignificance` |
+| `DeltaMetrics` | Aggregate deltas (positive = favors A) | `winRateDelta`, `averageRoundsDelta`, `averageHPRemainingDelta`, `totalPlayerDeathsDelta` |
+| `CombatantDelta` | Per-combatant deltas | `dprDelta`, `damageDealtDelta`, `damageTakenDelta`, `survivalRateDelta`, `killRateDelta`, `criticalHitRateDelta`, `healingDoneDelta` |
+| `SignificanceResult` | Statistical significance test | `isSignificant`, `pValue`, `threshold`, `interpretation` |
+| `ComparisonConfig` | One side of comparison | `players`, `enemies`, `label?`, `combatConfig?` |
+
+### DifficultyCalculator
+
+*Also known as: CR suggestion engine, difficulty finder*
+
+*Location:* *[src/core/combat/Analysis/DifficultyCalculator.ts](src/core/combat/Analysis/DifficultyCalculator.ts)*
+
+> **Note:** Instance class — create with `new DifficultyCalculator()`
+
+Suggests enemy CR for a target difficulty using simulation-driven binary search. Two-phase approach: (1) XP-budget initial CR estimate, (2) simulation-driven refinement adjusting CR up/down until win rate converges. Stateless between `suggest()` calls.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `suggest(players, enemyTemplate, targetDifficulty, options)` | Suggest enemy CR. Returns `DifficultySuggestion` with recommended CR and simulation data |
+
+**Options:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `aiConfig` | AIConfig | — | AI configuration (required) |
+| `combatConfig?` | CombatConfig | — | Combat engine configuration |
+| `baseSeed?` | string | — | Seed prefix |
+| `simulationsPerProbe?` | number | 200 | Simulations per CR probe |
+| `maxIterations?` | number | 10 | Max binary search iterations |
+| `enemyCount?` | number | 1 | Number of enemies in encounter |
+| `abortSignal?` | AbortSignal | — | Cancellation support |
+| `onProgress?` | (iteration, max, cr) => void | — | Progress callback |
+
+**Result Types:**
+
+| Type | Description | Key Fields |
+|------|-------------|------------|
+| `DifficultySuggestion` | Complete suggestion | `recommendedCR`, `winRate`, `confidenceInterval`, `marginOfError`, `converged`, `probes`, `initialCREstimate`, `suggestedEnemy`, `wasCancelled` |
+| `DifficultyProbe` | Single search probe | `cr`, `winRate`, `totalRuns`, `averageRounds`, `averageHPRemaining` |
+| `DifficultyEnemyTemplate` | Enemy template config | `rarity?`, `category?`, `archetype?`, `templateId?`, `statLevels?`, `difficultyMultiplier?` |
+| `DifficultyCalculatorOptions` | Calculator options | See Options table above |
 
 ---
 
