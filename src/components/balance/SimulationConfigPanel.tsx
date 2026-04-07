@@ -42,6 +42,11 @@ interface SimulationConfigPanelProps {
     error: { message: string } | null;
     isRunning: boolean;
 
+    /** Optional external encounter config override (e.g., from applying a recommendation) */
+    encounterConfigOverride?: EncounterConfigUI | null;
+    /** Called when the internal encounter config changes (for tracking in parent) */
+    onEncounterConfigChange?: (config: EncounterConfigUI) => void;
+
     onRunSimulation: (party: CharacterSheet[], enemies: CharacterSheet[], config: SimulationConfig) => void;
     onCancel: () => void;
     onReset: () => void;
@@ -52,6 +57,8 @@ export function SimulationConfigPanel({
     progress,
     error,
     isRunning,
+    encounterConfigOverride,
+    onEncounterConfigChange,
     onRunSimulation,
     onCancel,
     onReset,
@@ -61,6 +68,24 @@ export function SimulationConfigPanel({
     const [encounterConfig, setEncounterConfig] = useState<EncounterConfigUI>(DEFAULT_ENCOUNTER_CONFIG);
     const [settings, setSettings] = useState<SimulationSettingsUI>(DEFAULT_SIMULATION_SETTINGS);
     const [validationError, setValidationError] = useState<string | null>(null);
+
+    // Sync external encounter config override into internal state
+    const prevOverrideRef = useRef<EncounterConfigUI | null | undefined>(undefined);
+    if (encounterConfigOverride !== prevOverrideRef.current) {
+        if (encounterConfigOverride != null) {
+            setEncounterConfig(encounterConfigOverride);
+        }
+        prevOverrideRef.current = encounterConfigOverride;
+    }
+
+    // Notify parent of encounter config changes
+    const updateEncounterConfig = useCallback(
+        (config: EncounterConfigUI) => {
+            setEncounterConfig(config);
+            onEncounterConfigChange?.(config);
+        },
+        [onEncounterConfigChange],
+    );
 
     const { generate } = useEnemyGenerator();
     const characters = useCharacterStore((s) => s.characters);
@@ -161,7 +186,7 @@ export function SimulationConfigPanel({
                 </div>
                 <EncounterConfigForm
                     config={encounterConfig}
-                    onChange={setEncounterConfig}
+                    onChange={updateEncounterConfig}
                     disabled={isRunning}
                 />
             </section>

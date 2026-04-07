@@ -1552,10 +1552,22 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - **Memoized** with `React.memo` for render performance
   - Integrated into `BalanceLabTab.tsx` — rendered below `ResultsSummary` when `perCombatantMetrics` has entries
   - TypeScript check clean (zero new errors), pre-existing build errors unchanged
-- [ ] **8.3.4** Create `src/components/balance/BalanceRecommendations.tsx`
+- [x] **8.3.4** Create `src/components/balance/BalanceRecommendations.tsx`
   - List of actionable recommendations from `BalanceValidator`
   - Each recommendation shows: what to change, expected impact, confidence level
   - Click to apply suggestion (updates encounter config)
+  - Created `src/components/balance/BalanceRecommendations.tsx` with full recommendations display component
+  - Created `src/components/balance/BalanceRecommendations.css` — pure CSS using project HSL variable system
+  - **Recommendation display**: each item shows description, expected impact (with trend icon), confidence level (color-coded badge: Very High/High/Moderate/Low)
+  - **Actionable recommendations**: regex-based parser (`parseRecommendationAction()`) maps recommendation text to `EncounterConfigUI` changes — supports CR changes (increase/decrease), enemy count changes, difficulty multiplier changes
+  - **CR snapping**: `snapToStandardCR()` snaps CR values to nearest standard D&D CR step (0.125, 0.25, 0.5, 1–30)
+  - **Apply button**: actionable recommendations show an "Apply" button with the delta label (e.g., "CR 3 → CR 2") that calls `onApplySuggestion(changes)` to update encounter config
+  - **Non-actionable recommendations**: shown as info-only items with left border accent (e.g., "Consider removing legendary actions")
+  - **Balanced note**: when variance is 'balanced', shows a green confirmation note
+  - **Integration with BalanceLabTab**: lifted `encounterConfig` state to `BalanceLabTab`, added `encounterConfigOverride`/`onEncounterConfigChange` props to `SimulationConfigPanel` for bidirectional sync, applying a recommendation expands the config panel and updates the encounter form
+  - **Replaced inline recommendations** in `ResultsSummary.tsx` — removed `rs-balance-recommendations` section and CSS, now rendered as standalone `BalanceRecommendations` component below `ResultsSummary`
+  - Responsive: stacks layout on mobile, button alignment adjusts
+  - TypeScript check clean (zero new errors), pre-existing build error only (crypto import in worker)
 
 ### 8.4 Detailed Log Viewer
 

@@ -163,18 +163,6 @@ function ResultsSummaryComponent({
                         </div>
                     </div>
                     <BalanceScoreIndicator report={balanceReport} />
-                    {balanceReport.recommendations.length > 0 && (
-                        <div className="rs-balance-recommendations">
-                            <span className="rs-balance-rec-label">Suggestions</span>
-                            <ul className="rs-balance-rec-list">
-                                {balanceReport.recommendations.slice(0, 3).map((rec, i) => (
-                                    <li key={i} className="rs-balance-rec-item">
-                                        {rec.description}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
                 </div>
             )}
 

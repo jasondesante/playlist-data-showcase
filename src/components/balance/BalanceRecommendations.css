@@ -1,0 +1,214 @@
+/* ============================================
+   BALANCE RECOMMENDATIONS COMPONENT
+   ============================================ */
+
+.br-recommendations {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.br-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.br-header-icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+}
+
+.br-header-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.br-header-hint {
+    font-size: 0.6rem;
+    color: hsl(var(--muted-foreground));
+    margin-left: auto;
+}
+
+/* ============================================
+   RECOMMENDATION LIST
+   ============================================ */
+
+.br-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+/* ============================================
+   RECOMMENDATION ITEM
+   ============================================ */
+
+.br-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    transition: border-color 0.15s ease;
+}
+
+.br-item-actionable {
+    background-color: hsl(var(--muted) / 0.08);
+    border-color: hsl(var(--border) / 0.5);
+}
+
+.br-item-actionable:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    background-color: hsl(var(--muted) / 0.12);
+}
+
+.br-item-info {
+    padding-left: 0.6rem;
+    border-left: 2px solid hsl(var(--muted-foreground) / 0.2);
+}
+
+.br-item-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+/* Description */
+.br-item-description {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    line-height: 1.4;
+}
+
+/* Meta row: impact + confidence */
+.br-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.br-item-impact {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.68rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.br-item-confidence {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.65rem;
+    font-weight: 500;
+    padding: 0.05rem 0.35rem;
+    border-radius: 999px;
+}
+
+.br-confidence-high {
+    color: hsl(142 76% 46%);
+    background-color: hsl(142 76% 36% / 0.1);
+}
+
+.br-confidence-medium {
+    color: hsl(48 96% 53%);
+    background-color: hsl(48 96% 53% / 0.1);
+}
+
+.br-confidence-low {
+    color: hsl(0 84% 60%);
+    background-color: hsl(0 84% 60% / 0.1);
+}
+
+/* ============================================
+   APPLY BUTTON
+   ============================================ */
+
+.br-apply-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.08);
+    border: 1px solid hsl(var(--primary) / 0.2);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.br-apply-btn:hover {
+    background-color: hsl(var(--primary) / 0.15);
+    border-color: hsl(var(--primary) / 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px hsl(var(--primary) / 0.15);
+}
+
+.br-apply-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* ============================================
+   BALANCED NOTE
+   ============================================ */
+
+.br-balanced-note {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.68rem;
+    color: hsl(142 76% 46%);
+    padding: 0.35rem 0.5rem;
+    background-color: hsl(142 76% 36% / 0.06);
+    border-radius: var(--radius-sm);
+    border: 1px solid hsl(142 76% 36% / 0.15);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+    .br-item {
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .br-apply-btn {
+        align-self: flex-start;
+    }
+
+    .br-header-hint {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .br-item-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.15rem;
+    }
+}

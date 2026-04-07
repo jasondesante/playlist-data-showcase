@@ -1,4 +1,4 @@
-import { useState, useCallback, useId, useMemo } from 'react';
+import { useState, useCallback, useId, useMemo, useRef } from 'react';
 import {
     Scale,
     ChevronDown,
@@ -13,13 +13,14 @@ import { SimulationHistoryPanel } from '@/components/balance/SimulationHistoryPa
 import { SimulationConfigPanel } from '@/components/balance/SimulationConfigPanel';
 import { ResultsSummary } from '@/components/balance/ResultsSummary';
 import { PerCombatantMetrics } from '@/components/balance/PerCombatantMetrics';
+import { BalanceRecommendations } from '@/components/balance/BalanceRecommendations';
 import {
     BalanceValidator,
     type EncounterDifficulty,
     type SimulationConfig,
     type CharacterSheet,
 } from 'playlist-data-engine';
-import { getWinRateDifficulty } from '@/types/simulation';
+import { getWinRateDifficulty, type EncounterConfigUI, DEFAULT_ENCOUNTER_CONFIG } from '@/types/simulation';
 import { logger } from '@/utils/logger';
 import './BalanceLabTab.css';
 
@@ -45,6 +46,11 @@ export function BalanceLabTab() {
     const [configCollapsed, setConfigCollapsed] = useState(false);
     const [resultsCollapsed, setResultsCollapsed] = useState(false);
     const [historyCollapsed, setHistoryCollapsed] = useState(false);
+
+    // Track encounter config for recommendation "apply" integration
+    const [encounterConfig, setEncounterConfig] = useState<EncounterConfigUI>(DEFAULT_ENCOUNTER_CONFIG);
+    const [configOverride, setConfigOverride] = useState<EncounterConfigUI | null>(null);
+    const configOverrideConsumedRef = useRef(false);
 
     // Simulation hook with persistence
     const {
@@ -115,6 +121,30 @@ export function BalanceLabTab() {
         [startSimulation],
     );
 
+    // Track encounter config changes from SimulationConfigPanel
+    const handleEncounterConfigChange = useCallback((config: EncounterConfigUI) => {
+        setEncounterConfig(config);
+        // Clear override after it's been consumed by the config panel
+        if (configOverrideConsumedRef.current) {
+            setConfigOverride(null);
+            configOverrideConsumedRef.current = false;
+        }
+    }, []);
+
+    // Handle applying a recommendation — updates encounter config in config panel
+    const handleApplyRecommendation = useCallback(
+        (changes: Partial<EncounterConfigUI>) => {
+            const newConfig = { ...encounterConfig, ...changes };
+            setEncounterConfig(newConfig);
+            setConfigOverride(newConfig);
+            configOverrideConsumedRef.current = false;
+            // Expand config panel so user sees the change
+            setConfigCollapsed(false);
+            logger.info('BalanceLab', 'Applied recommendation', { changes });
+        },
+        [encounterConfig],
+    );
+
     // ─── Render ────────────────────────────────────────────────────────────
 
     const hasResults = results !== null && results.summary.totalRuns > 0;
@@ -162,6 +192,8 @@ export function BalanceLabTab() {
                                 progress={progress}
                                 error={error}
                                 isRunning={isRunning}
+                                encounterConfigOverride={configOverride}
+                                onEncounterConfigChange={handleEncounterConfigChange}
                                 onRunSimulation={handleRunSimulation}
                                 onCancel={cancelSimulation}
                                 onReset={resetSimulation}
@@ -249,6 +281,16 @@ export function BalanceLabTab() {
                                     isSaved={!!activeSavedId}
                                     onSave={isCompleted ? handleSave : undefined}
                                     onReset={handleReset}
+                                />
+                            )}
+
+                            {/* ─── Balance Recommendations ──────────── */}
+                            {hasResults && balanceReport && balanceReport.recommendations.length > 0 && (
+                                <BalanceRecommendations
+                                    recommendations={balanceReport.recommendations}
+                                    encounterConfig={encounterConfig}
+                                    variance={balanceReport.difficultyVariance}
+                                    onApplySuggestion={handleApplyRecommendation}
                                 />
                             )}
 
