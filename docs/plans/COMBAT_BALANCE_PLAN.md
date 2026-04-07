@@ -1324,7 +1324,29 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Added `'SimulationStore'` to `LogCategory` in `src/utils/logger.ts`
   - Exported from `src/store/index.ts`
   - TypeScript check clean (zero new errors), pre-existing build error unrelated (third-party crypto import)
-- [ ] **7.2.2** Implement save/load/delete simulation results
+- [x] **7.2.2** Implement save/load/delete simulation results
+  - Created `src/hooks/useSimulationHistory.ts` — bridge hook combining `useCombatSimulation` with `useSimulationStore`
+    - Wraps `useCombatSimulation` and adds: `saveCurrentResults(label?)`, `loadSimulation(id)`, `deleteSimulation(id)`, `isCurrentSaved` flag
+    - Tracks the party/enemies/config used for the current run so results can be saved after completion
+    - `loadSimulation(id)` retrieves a saved simulation from store and sets it as active
+    - Exported from `src/hooks/index.ts`
+  - Created `src/components/balance/SimulationHistoryPanel.tsx` — collapsible panel listing saved simulations
+    - Header with count badge, collapse/expand toggle, clear-all button
+    - List of `SimulationHistoryItem` components with "Show More" pagination
+    - Empty state with guidance text
+    - Clear-all confirmation dialog using existing `ConfirmDialog` component
+    - Props: `activeSimulationId`, `onSelectSimulation`, `className`
+  - Created `src/components/balance/SimulationHistoryItem.tsx` — individual simulation entry
+    - Color-coded win rate badge (green/yellow/orange/red thresholds)
+    - Display: label, party size vs enemy count, run count, duration, relative timestamp
+    - Expandable details: party members, enemy CRs, avg rounds, HP remaining, player deaths, AI strategy
+    - "View" button to load saved results (hidden when already active)
+    - Delete button with confirmation dialog
+    - Memoized with shallow prop comparison for render performance
+  - Created CSS files for both components using project's HSL variable system (`hsl(var(--card))`, `hsl(var(--border))`, etc.)
+  - Added `'SimulationHistory'` to `LogCategory` in `src/utils/logger.ts`
+  - Zero new TypeScript errors (verified against pre-existing error baseline)
+  - Build verified clean (pre-existing errors only, none from new code)
 - [ ] **7.2.3** Implement comparison mode — save two simulation results for side-by-side comparison
 
 ### 7.3 Simulation Configuration Types

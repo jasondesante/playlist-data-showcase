@@ -42,7 +42,8 @@ type LogCategory =
     | 'ArweaveGateway'
     | 'BatchImagePersistence'
     | 'PitchAnalyzer'
-    | 'SimulationStore';
+    | 'SimulationStore'
+    | 'SimulationHistory';
 
 
 

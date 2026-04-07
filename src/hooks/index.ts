@@ -35,3 +35,4 @@ export * from './useTimelinePosition';
 export * from './useLevelGeneration';
 export * from './usePitchAnalyzer';
 export * from './useCombatSimulation';
+export * from './useSimulationHistory';
