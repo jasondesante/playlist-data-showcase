@@ -620,3 +620,81 @@ export interface SimulationEstimateSnapshot {
     /** ISO timestamp when the snapshot was captured */
     timestamp: string;
 }
+
+// ============================================================================
+// ESTIMATE VALIDATION TYPES
+// ============================================================================
+
+/**
+ * Comparison of a single estimated metric vs its actual simulation value.
+ */
+export interface EstimateComparison {
+    /** Human-readable metric label (e.g. "Party DPR") */
+    label: string;
+    /** Pre-simulation estimate */
+    estimated: number;
+    /** Actual simulation result */
+    actual: number;
+    /** Difference: actual - estimated */
+    delta: number;
+    /** Percentage difference: (actual - estimated) / estimated * 100 */
+    deltaPercent: number;
+    /** Whether the discrepancy is significant (|deltaPercent| > 10%) */
+    isSignificant: boolean;
+}
+
+/**
+ * Comparison of predicted vs actual encounter difficulty.
+ */
+export interface DifficultyComparison {
+    /** Predicted difficulty tier from XP budget analysis */
+    predicted: EncounterDifficulty;
+    /** Actual difficulty tier derived from win rate */
+    actual: EncounterDifficulty;
+    /** Predicted win rate (midpoint of predicted tier) */
+    predictedWinRate: number;
+    /** Actual win rate from simulation */
+    actualWinRate: number;
+    /** How many tiers off the prediction was (0 = exact, 1 = adjacent, etc.) */
+    tierDelta: number;
+}
+
+/**
+ * A code suggestion for fixing a significant estimation discrepancy.
+ */
+export interface EstimateSuggestion {
+    /** Severity level */
+    severity: 'info' | 'warning' | 'error';
+    /** Which metric this suggestion relates to */
+    metric: string;
+    /** Human-readable description of the discrepancy */
+    message: string;
+    /** Reference to the engine code that needs adjustment */
+    codeReference: {
+        /** Relative path to the engine file */
+        file: string;
+        /** Function name */
+        function: string;
+        /** Optional line number */
+        line?: number;
+    };
+    /** What to change and why */
+    suggestedFix: string;
+}
+
+/**
+ * Complete validation result comparing pre-simulation estimates vs actual results.
+ *
+ * Computed by `useEstimateValidation()` hook and displayed in
+ * `EstimateValidationPanel` component.
+ *
+ * (Task 3.1)
+ */
+export interface EstimateValidation {
+    /** Individual metric comparisons */
+    comparisons: EstimateComparison[];
+    /** Difficulty tier comparison */
+    difficultyComparison: DifficultyComparison;
+    /** Code suggestions for significant discrepancies */
+    suggestions: EstimateSuggestion[];
+}

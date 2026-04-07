@@ -188,7 +188,7 @@ BalanceLabTab (results area)
 
 ## Phase 3: Post-Simulation Validation Panel
 
-- [ ] **3.1 Create `useEstimateValidation()` hook** in `src/hooks/useEstimateValidation.ts`
+- [x] **3.1 Create `useEstimateValidation()` hook** in `src/hooks/useEstimateValidation.ts`
 
   Takes `estimateSnapshot: SimulationEstimateSnapshot | null` and `simulationResults: SimulationResults | null`. Returns validation data.
 
