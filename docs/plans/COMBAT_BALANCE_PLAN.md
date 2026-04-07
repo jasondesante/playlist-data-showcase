@@ -1689,10 +1689,23 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Updated barrel export `charts/index.ts` with `HPRemainingDistribution`
   - Integrated into `BalanceLabTab.tsx` — rendered after DPRComparisonChart when results are available
   - TypeScript check clean (zero new errors), all 1265 engine combat tests pass, engine builds clean
-- [ ] **9.2.4** Create `src/components/balance/charts/TurnDistributionChart.tsx`
+- [x] **9.2.4** Create `src/components/balance/charts/TurnDistributionChart.tsx`
   - Histogram showing number of rounds to combat resolution
   - Separate distributions for wins vs losses
   - Shows mean and median
+  - Created `TurnDistributionChart.tsx` with stacked bar chart using recharts `BarChart`
+  - Created `TurnDistributionChart.css` with pure CSS using project HSL variable system
+  - **Data source**: Reads per-run round data from `results.runDetails[].result.roundsElapsed` when `collectDetailedLogs` is enabled
+  - **Fallback**: When detailed logs are unavailable, displays summary stats (mean/median rounds, avg on win/loss) in a clean card layout with hint to enable detailed logs
+  - **Stacked histogram**: Three stacked bars per round bucket — Player Wins (primary blue), Enemy Wins (destructive red), Draws (critical yellow)
+  - **Dynamic bucket sizing**: Automatically adjusts bucket width based on round range (1 round/bucket for ≤6 rounds, 2 for ≤15, 3 for ≤30, 5 for larger)
+  - **Reference lines**: Mean (yellow dashed) and Median (green dashed) with labels, snapped to nearest bucket
+  - **Legend**: Custom color-coded legend distinguishing Player Wins, Enemy Wins, and Draws
+  - **Custom tooltip**: Shows round range label, per-outcome breakdown (Player Wins, Enemy Wins, Draws), and total runs
+  - **Responsive**: adapts on mobile (640px breakpoint)
+  - Integrated into `BalanceLabTab.tsx` — rendered after HPRemainingDistribution when results are available
+  - Updated barrel export `charts/index.ts` with `TurnDistributionChart`
+  - TypeScript check clean (zero new errors), pre-existing errors unchanged
 - [ ] **9.2.5** Create `src/components/balance/charts/SurvivalRateChart.tsx`
   - Bar chart showing per-combatant survival rate
   - Highlight which combatants die most/least often

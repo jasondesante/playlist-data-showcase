@@ -15,7 +15,7 @@ import { ResultsSummary } from '@/components/balance/ResultsSummary';
 import { PerCombatantMetrics } from '@/components/balance/PerCombatantMetrics';
 import { BalanceRecommendations } from '@/components/balance/BalanceRecommendations';
 import { SimulationLogViewer } from '@/components/balance/SimulationLogViewer';
-import { WinRateChart, DPRComparisonChart, HPRemainingDistribution } from '@/components/balance/charts';
+import { WinRateChart, DPRComparisonChart, HPRemainingDistribution, TurnDistributionChart } from '@/components/balance/charts';
 import {
     BalanceValidator,
     type EncounterDifficulty,
@@ -299,6 +299,11 @@ export function BalanceLabTab() {
                             {/* ─── HP Remaining Distribution ────────── */}
                             {hasResults && results.perCombatantMetrics.size > 0 && (
                                 <HPRemainingDistribution metrics={results.perCombatantMetrics} />
+                            )}
+
+                            {/* ─── Turn Distribution ────────────────── */}
+                            {hasResults && (
+                                <TurnDistributionChart results={results} />
                             )}
 
                             {/* ─── Balance Recommendations ──────────── */}

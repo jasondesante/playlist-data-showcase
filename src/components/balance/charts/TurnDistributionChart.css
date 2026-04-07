@@ -1,0 +1,144 @@
+/* ========================================
+   TURN DISTRIBUTION CHART
+   Stacked histogram with mean/median lines
+   ======================================== */
+
+/* ── Tooltip ────────────────────────────────────────────────────── */
+
+.tdc-tooltip {
+    background-color: hsl(var(--surface-3));
+    border: 1px solid hsl(var(--border));
+    border-radius: 6px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    padding: 0.625rem 0.75rem;
+    min-width: 170px;
+}
+
+.tdc-tooltip-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0.375rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.tdc-tooltip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.125rem 0;
+}
+
+.tdc-tooltip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.tdc-tooltip-label {
+    font-size: 12px;
+    color: hsl(var(--muted-foreground));
+    flex: 1;
+}
+
+.tdc-tooltip-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: ui-monospace, monospace;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.tdc-tooltip-divider {
+    height: 1px;
+    background: hsl(var(--border));
+    margin: 0.375rem 0;
+}
+
+/* ── Summary Fallback (no detailed logs) ─────────────────────────── */
+
+.tdc-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 1rem 1.25rem;
+    min-height: 120px;
+    justify-content: center;
+}
+
+.tdc-summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+}
+
+.tdc-summary-row:last-of-type {
+    border-bottom: none;
+}
+
+.tdc-summary-label {
+    font-size: 13px;
+    color: hsl(var(--muted-foreground));
+}
+
+.tdc-summary-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: ui-monospace, monospace;
+}
+
+.tdc-summary-hint {
+    font-size: 12px;
+    color: hsl(var(--muted-foreground));
+    text-align: center;
+    margin-top: 0.5rem;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* ── Legend Overrides ────────────────────────────────────────────── */
+
+.tdc-chart .recharts-legend-item-text {
+    font-size: 12px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    .tdc-tooltip {
+        min-width: 150px;
+        padding: 0.5rem 0.625rem;
+    }
+
+    .tdc-tooltip-title {
+        font-size: 11px;
+    }
+
+    .tdc-tooltip-label {
+        font-size: 11px;
+    }
+
+    .tdc-tooltip-value {
+        font-size: 12px;
+    }
+
+    .tdc-summary {
+        padding: 0.75rem 1rem;
+    }
+
+    .tdc-summary-label {
+        font-size: 12px;
+    }
+
+    .tdc-summary-value {
+        font-size: 13px;
+    }
+}
