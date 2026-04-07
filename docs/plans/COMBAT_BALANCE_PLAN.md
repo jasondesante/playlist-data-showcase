@@ -639,11 +639,19 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Exported `AICombatRunner` and `AICombatResult` type from engine `src/index.ts`
   - 39 tests in `tests/unit/combat/aiCombatRunner.test.ts` covering: basic 1v1/party/many combat, determinism (same/diff seeds), edge cases (empty, max turns, unarmed, flee disabled, spells), legendary actions, AI config variations (normal/aggressive/mixed/overrides), various compositions (large party, mobs, elites, asymmetric, equal CR), action type execution (attacks, dodge, useItem, spell casting), result validation (XP, draw, defeated array), CombatAI integration, performance sanity (100 runs <5s, 10 boss runs <10s)
   - All 830 combat tests pass, engine builds clean (tsc --noEmit)
-- [ ] **2.3.2** Handle edge cases in AI combat runner
-  - Stunned combatants skip their turn
-  - No valid targets → skip turn
-  - All spell slots used → fall back to weapon attacks
-  - Defeated combatants are skipped
+- [x] **2.3.2** Handle edge cases in AI combat runner
+  - Added `'skip'` action to `AIDecision.action` type union in `CombatAI.ts`
+  - Updated `CombatAI.decide()` to return `{ action: 'skip' }` when no valid targets (instead of wasteful dodge)
+  - Added `hasSkipTurnEffect()` helper to `AICombatRunner` — checks for `mechanicalEffects?.skipTurn` on status effects
+  - Added skipTurn detection in `AICombatRunner.runFullCombat()` main loop before calling `ai.decide()` — handles first-turn stun edge case where `nextTurn()` hasn't been called yet
+  - Added `'skip'` case to `AICombatRunner.executeDecision()` — logs skip in combat history without mechanical effect
+  - Stunned combatants skip their turn: runner detects skipTurn effects and advances without calling AI
+  - No valid targets → skip turn: AI returns `'skip'` action, runner logs and advances
+  - All spell slots used → fall back to weapon attacks: `getAvailableSpells()` filters by available slots, AI falls through to unarmed attack when no spells available (already working, verified with tests)
+  - Defeated combatants are skipped: existing `isDefeated` check in runner (already working, verified with tests)
+  - Updated existing test in `combatAI.test.ts`: "returns dodge when no enemies" → "returns skip when no enemies"
+  - 18 new tests in `aiCombatRunnerEdgeCases.test.ts` covering: stunned first turn (4), skip action (3), spell slot exhaustion (4), defeated combatants (4), combined scenarios (3)
+  - All 848 combat tests pass, engine builds clean (tsc + vite)
 - [ ] **2.3.3** Add combat event tracking for metrics
   - Track per-combatant: total damage dealt, total damage taken, healing done, spells cast, items used, critical hits, rounds survived
   - Store in a `CombatMetrics` object attached to the `CombatInstance`
