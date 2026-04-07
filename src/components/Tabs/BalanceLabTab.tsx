@@ -15,6 +15,7 @@ import { ResultsSummary } from '@/components/balance/ResultsSummary';
 import { PerCombatantMetrics } from '@/components/balance/PerCombatantMetrics';
 import { BalanceRecommendations } from '@/components/balance/BalanceRecommendations';
 import { SimulationLogViewer } from '@/components/balance/SimulationLogViewer';
+import { WinRateChart } from '@/components/balance/charts';
 import {
     BalanceValidator,
     type EncounterDifficulty,
@@ -283,6 +284,11 @@ export function BalanceLabTab() {
                                     onSave={isCompleted ? handleSave : undefined}
                                     onReset={handleReset}
                                 />
+                            )}
+
+                            {/* ─── Win Rate Chart ───────────────────── */}
+                            {hasResults && (
+                                <WinRateChart results={results} />
                             )}
 
                             {/* ─── Balance Recommendations ──────────── */}

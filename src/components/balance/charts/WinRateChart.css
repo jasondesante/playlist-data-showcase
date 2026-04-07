@@ -1,0 +1,92 @@
+/* ========================================
+   WIN RATE CHART
+   Bar chart with confidence interval
+   ======================================== */
+
+/* ── Tooltip ────────────────────────────────────────────────────── */
+
+.wrc-tooltip {
+    background-color: hsl(var(--surface-3));
+    border: 1px solid hsl(var(--border));
+    border-radius: 6px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    padding: 0.625rem 0.75rem;
+    min-width: 180px;
+}
+
+.wrc-tooltip-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0.375rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.wrc-tooltip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.125rem 0;
+}
+
+.wrc-tooltip-row.wrc-tooltip-detail {
+    padding-left: 1.25rem;
+}
+
+.wrc-tooltip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.wrc-tooltip-label {
+    font-size: 12px;
+    color: hsl(var(--muted-foreground));
+    flex: 1;
+}
+
+.wrc-tooltip-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: ui-monospace, monospace;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.wrc-tooltip-divider {
+    height: 1px;
+    background: hsl(var(--border));
+    margin: 0.375rem 0;
+}
+
+/* ── Error bar styling ──────────────────────────────────────────── */
+
+/* recharts error bar serifs */
+.wrc-chart .recharts-error-bar {
+    stroke-linecap: round;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    .wrc-tooltip {
+        min-width: 150px;
+        padding: 0.5rem 0.625rem;
+    }
+
+    .wrc-tooltip-title {
+        font-size: 11px;
+    }
+
+    .wrc-tooltip-label {
+        font-size: 11px;
+    }
+
+    .wrc-tooltip-value {
+        font-size: 12px;
+    }
+}

@@ -1637,10 +1637,23 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 9.2 Balance Visualization Components
 
-- [ ] **9.2.1** Create `src/components/balance/charts/WinRateChart.tsx`
+- [x] **9.2.1** Create `src/components/balance/charts/WinRateChart.tsx`
   - Bar chart showing player win rate with confidence interval
   - Color-coded by difficulty assessment
   - Optional: overlay multiple simulation results for comparison
+  - Created `WinRateChart.tsx` — recharts `BarChart` with `ErrorBar` for 95% confidence interval whiskers
+  - Data scale: win rate stored as 0–100 percentage for Y-axis, MOE computed via normal approximation (`1.96 * sqrt(p*(1-p)/n)`)
+  - Color-coded bar via `getWinRateChartColor()` — green ≥80%, teal ≥50%, orange ≥30%, red <30%
+  - Four `ReferenceLine`s for difficulty thresholds: Easy (90%), Medium (75%), Hard (55%), Deadly (35%) with dashed lines and colored labels
+  - Comparison support: optional `comparisonResults` prop renders grouped bars with reduced opacity for secondary results
+  - Custom tooltip: shows win rate, 95% CI range, runs, W/L/D breakdown, avg rounds
+  - Subtitle: single result shows win rate + CI range; comparison shows count
+  - Uses `ChartContainer` wrapper with responsive `ResponsiveContainer`
+  - Created `WinRateChart.css` — pure CSS with project HSL variable system for tooltip styling
+  - Updated barrel export `charts/index.ts`
+  - Integrated into `BalanceLabTab.tsx` — rendered between ResultsSummary and BalanceRecommendations when results are available
+  - Memoized with `React.memo` for render performance
+  - TypeScript check clean (zero new errors), pre-existing build errors unchanged
 - [ ] **9.2.2** Create `src/components/balance/charts/DPRComparisonChart.tsx`
   - Horizontal bar chart comparing DPR across combatants
   - Separate sections for players vs enemies
