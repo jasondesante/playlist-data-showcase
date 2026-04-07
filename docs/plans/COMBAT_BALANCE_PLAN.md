@@ -781,10 +781,19 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - **Statistical Sanity** (4 tests): determinism (same seed = identical results); different party sizes produce different win rates; round count variance positive; critical hit rate approximately 5%
   - **Result Structure at Scale** (3 tests): 100 runs with 4v4; detailed logs at 50 runs cross-validate with summary; multiple sequential simulations are independent
   - All 1062 combat tests pass (27 new + 1035 existing), engine builds clean (tsc + vite)
-- [ ] **3.3.3** Add performance benchmarks
+- [x] **3.3.3** Add performance benchmarks
   - Measure simulation throughput (runs/second)
   - Target: 100+ runs/second for standard party vs encounter
   - Identify bottlenecks if below target
+  - Created `tests/unit/combat/simulationPerformance.test.ts` with 10 benchmark tests covering:
+  - **Standard Party vs Encounter** (2 tests): 4v1 at 100 and 500 runs — both far exceed 100 runs/s target (9,605 and 27,167 runs/s respectively)
+  - **Scaling with encounter size** (3 tests): 1v1 solo (12,802 runs/s), 4v4 group (4,518 runs/s), 4v1 boss with legendary actions (5,495 runs/s) — all well above minimums
+  - **AI style comparison** (1 test): Normal vs Aggressive AI throughput comparable (0.90x ratio, aggressive actually faster)
+  - **Component-level benchmarks** (1 test): SeededDiceRoller creation 0.3µs, single combat run ~86µs (5.3 rounds avg), CombatMetricsTracker 2.8µs, ~16µs per combat round — no bottlenecks identified
+  - **Aggregation overhead** (1 test): Detailed logs add modest overhead (measured at 200 runs to avoid sub-ms timing noise)
+  - **Determinism under load** (1 test): 50-run simulation produces identical results across repeated runs
+  - **Memory efficiency** (1 test): Without detailed logs, runDetails is undefined; histogram buckets bounded at 20 per distribution
+  - All 1072 combat tests pass (1062 existing + 10 new benchmarks), engine builds clean
 
 ---
 
