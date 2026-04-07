@@ -680,11 +680,18 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - **Spell slot availability** (5 tests): exact slot, higher slot for upcast, no slots, cantrips always available, mixed availability
   - **Legendary action edge cases** (3 tests): healing when low HP, control actions, fallback action
   - All 939 combat tests pass (63 new + 876 existing), TypeScript check clean, vite build clean
-- [ ] **2.4.2** Add AI combat runner integration tests
-  - Test full combat runs to completion (victory/defeat)
-  - Test that AI doesn't get stuck in infinite loops
-  - Test with various party sizes and enemy compositions
-  - Test deterministic behavior with same seed
+- [x] **2.4.2** Add AI combat runner integration tests
+  - Created `tests/unit/combat/aiCombatRunnerIntegration.test.ts` with 43 integration tests organized into 8 sections
+  - **Combat State Consistency** (5 tests): player victory, enemy victory, draw by max turns, party wipe, HP bounds validation — validates HP non-negative, isDefeated matches HP, winnerSide matches combatant states, defeated array correctness, rounds/turns positive, history non-empty, combat inactive
+  - **History Integrity** (5 tests): all actor references valid combatants, meaningful actions per round, history length vs total turns, legendary action entries, multi-participant tracking
+  - **Full History Determinism** (4 tests): same seed → identical history entry-by-entry (type, actor, description, damage, targets, HP states), identical metrics, different seeds → different histories, determinism across party sizes (4v4)
+  - **Metrics Validation** (8 tests): all combatants have entries, actionsByType matches history counts, damage dealt/taken non-negative and cross-side consistent, survived matches isDefeated, roundsSurvived reasonable, critical hits ≤ attack actions, 1v1 and 4v3 consistency
+  - **Statistical Distribution** (4 tests): balanced encounter produces varied rounds across 50 seeds, overwhelming party always wins, weak party always loses, round counts follow reasonable distribution (positive mean, positive std dev)
+  - **Various Compositions** (8 tests): 1v1, 4v1 boss, 1v5 mob, 4v4 even match, 2v3, boss + minions, all common, all elite — all with full state + history + metrics validation
+  - **No Infinite Loops** (4 tests): stalemate terminates at max turns, 50 rapid combats, 5 boss combats, spell combat terminates
+  - **AI Style Behavioral Differences** (3 tests): aggressive deals more damage than normal (same seed), combat speed comparison, normal uses dodge while aggressive never does
+  - **Full Pipeline** (2 tests): generate → fight → validate everything, 5 rapid simulations with full validation
+  - All 982 combat tests pass (43 new + 939 existing), engine builds clean (tsc + vite)
 
 ---
 
