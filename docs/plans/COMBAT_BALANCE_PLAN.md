@@ -725,9 +725,16 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
     - Fixed `SimulationAggregator` combatant ID mismatch — used `enemy_0..N` but `CombatEngine` uses a shared counter (`player_0..P-1`, `enemy_P..P+N-1`). Fixed ID generation to match engine's scheme
   - Smoke test verified: determinism, abort, progress callback, detailed logs, per-combatant metrics (DPR, survival rate, damage distribution), party+enemy compositions, correct ID mapping
   - All 982 combat tests pass, engine builds clean (tsc + vite)
-- [ ] **3.1.3** Implement cancellation support
+- [x] **3.1.3** Implement cancellation support
   - `AbortController` pattern for cancelling long-running simulations
   - Clean up resources on cancellation, return partial results
+  - Cancellation was already partially implemented in 3.1.2 (`abortSignal` in config, pre-run check, partial results)
+  - Added `wasCancelled: boolean` field to `SimulationResults` interface — consumers can now distinguish partial results from complete results
+  - `CombatSimulator.run()` tracks cancellation state and passes it to `SimulationAggregator.getResults(wasCancelled)`
+  - `getResults()` accepts optional `wasCancelled` parameter (defaults `false` for backward compatibility)
+  - Updated existing cancellation tests to assert `wasCancelled` flag
+  - Added 4 new tests: signal provided but never aborted → `wasCancelled=false`; 0-run cancellation → `wasCancelled=true`; cancelled results still have valid per-combatant metrics; cancelled detailed logs contain only completed runs with sequential indices
+  - All 53 simulator tests pass, engine builds clean (vite build)
 
 ### 3.2 Result Aggregation
 
