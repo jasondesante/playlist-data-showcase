@@ -34,7 +34,7 @@ BalanceLabTab (results area)
 
 ## Phase 1: Pre-Simulation Estimate Types & Utilities
 
-- [ ] **1.1 Create `SimulationEstimateSnapshot` type** in `src/types/simulation.ts`
+- [x] **1.1 Create `SimulationEstimateSnapshot` type** in `src/types/simulation.ts`
 
   ```ts
   interface SimulationEstimateSnapshot {

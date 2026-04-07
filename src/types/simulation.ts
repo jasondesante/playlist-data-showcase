@@ -549,3 +549,74 @@ export const DEFAULT_ENCOUNTER_CONFIG: EncounterConfigUI = {
     seed: '',
     difficultyMultiplier: 1.0,
 };
+
+// ============================================================================
+// PRE-SIMULATION ESTIMATE TYPES
+// ============================================================================
+
+/**
+ * Snapshot of pre-simulation estimates captured when "Run" is clicked.
+ *
+ * Stores party stats, enemy preview stats, and derived difficulty predictions
+ * so they can be compared against actual simulation results in the
+ * EstimateValidationPanel.
+ *
+ * (Task 1.1)
+ */
+export interface SimulationEstimateSnapshot {
+    /** Party statistics from PartyAnalyzer.analyzeParty() */
+    party: {
+        /** Average character level (rounded down) */
+        averageLevel: number;
+        /** Number of party members */
+        partySize: number;
+        /** Average armor class across all party members */
+        averageAC: number;
+        /** Average hit points across all party members */
+        averageHP: number;
+        /** Estimated average damage per round for the party */
+        estimatedDPR: number;
+        /** Total party strength score (abstract value) */
+        totalStrength: number;
+        /** XP budgets per difficulty tier */
+        xpBudgets: {
+            easy: number;
+            medium: number;
+            hard: number;
+            deadly: number;
+        };
+    };
+
+    /** Enemy statistics from preview generation + formula parsing */
+    enemy: {
+        /** Number of enemies in the encounter */
+        count: number;
+        /** Average HP per enemy */
+        perEnemyHP: number;
+        /** Average armor class per enemy */
+        perEnemyAC: number;
+        /** Estimated damage per round per enemy */
+        perEnemyEstDPR: number;
+        /** Total adjusted XP for the encounter (accounts for enemy count multiplier) */
+        totalAdjustedXP: number;
+        /** Challenge rating of the enemy template */
+        enemyCR: number;
+        /** Combat archetype (e.g. 'brute', 'skirmisher') */
+        archetype: string;
+        /** Rarity tier (e.g. 'common', 'uncommon') */
+        rarity: string;
+    };
+
+    /** Derived difficulty prediction */
+    prediction: {
+        /** Predicted encounter difficulty tier */
+        predictedDifficulty: EncounterDifficulty;
+        /** Encounter XP / party medium XP budget ratio */
+        xpRatio: number;
+        /** Midpoint of the predicted difficulty tier's expected win rate range */
+        predictedWinRate: number;
+    };
+
+    /** ISO timestamp when the snapshot was captured */
+    timestamp: string;
+}
