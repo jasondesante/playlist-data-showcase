@@ -1,0 +1,139 @@
+/* ============================================
+   SIMULATION EXPORT BUTTON COMPONENT
+   ============================================ */
+
+.seb-container {
+    position: relative;
+    display: inline-flex;
+}
+
+/* ─── Trigger Button ─────────────────────────── */
+
+.seb-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.seb-trigger:hover {
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--foreground) / 0.3);
+    background-color: hsl(var(--muted) / 0.15);
+}
+
+.seb-trigger:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 1px;
+}
+
+/* ─── Dropdown Menu ──────────────────────────── */
+
+.seb-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 50;
+    min-width: 200px;
+    padding: 0.25rem;
+    background-color: hsl(var(--popover));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow: 0 4px 12px hsl(0 0% 0% / 0.15);
+    animation: seb-menu-in 0.12s ease-out;
+}
+
+@keyframes seb-menu-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ─── Menu Items ─────────────────────────────── */
+
+.seb-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.75rem;
+    color: hsl(var(--foreground));
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+    text-align: left;
+}
+
+.seb-menu-item:hover {
+    background-color: hsl(var(--accent));
+}
+
+.seb-menu-item:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: -2px;
+}
+
+/* ─── Menu Icon ──────────────────────────────── */
+
+.seb-menu-icon {
+    flex-shrink: 0;
+    color: hsl(var(--muted-foreground));
+}
+
+.seb-menu-icon-json {
+    color: hsl(200 80% 50%);
+}
+
+.seb-menu-icon-csv {
+    color: hsl(142 70% 40%);
+}
+
+.seb-menu-icon-copy {
+    color: hsl(270 60% 60%);
+}
+
+.seb-menu-item:hover .seb-menu-icon-json,
+.seb-menu-item:hover .seb-menu-icon-csv,
+.seb-menu-item:hover .seb-menu-icon-copy {
+    color: hsl(var(--foreground));
+}
+
+/* ─── Menu Text ──────────────────────────────── */
+
+.seb-menu-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.seb-menu-label {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.seb-menu-desc {
+    font-size: 0.65rem;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+}
+
+.seb-menu-item:hover .seb-menu-desc {
+    color: hsl(var(--muted-foreground) / 0.8);
+}

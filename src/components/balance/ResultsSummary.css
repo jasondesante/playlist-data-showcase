@@ -221,6 +221,10 @@
     padding-top: 0.25rem;
 }
 
+.rs-action-spacer {
+    flex: 1;
+}
+
 .rs-action-btn {
     display: inline-flex;
     align-items: center;

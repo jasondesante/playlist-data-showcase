@@ -1589,10 +1589,21 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Integrated into `BalanceLabTab.tsx` — rendered below PerCombatantMetrics when results are available
   - Sub-components memoized with `React.memo` for performance
   - TypeScript check clean (zero new errors), pre-existing build error only (crypto import in worker)
-- [ ] **8.4.2** Add export functionality
+- [x] **8.4.2** Add export functionality
   - Export simulation results as JSON (full structured data)
   - Export as CSV (summary table for spreadsheets)
   - Copy to clipboard
+  - Created `src/components/balance/SimulationExportButton.tsx` — dropdown export button with 3 options
+  - Created `src/components/balance/SimulationExportButton.css` — pure CSS styling using project HSL variable system
+  - **JSON export**: Full structured payload with summary, balance report, party/encounter config, per-combatant metrics (Map serialized to object); downloaded as timestamped `.json` file with win rate in filename
+  - **CSV export**: Three sections — Simulation Summary (12 columns), Per-Combatant Metrics (12 columns with DPR/survival/kill/crit rates), Party and Encounter config; downloaded as `.csv` file
+  - **Copy to clipboard**: Plain-text summary with win rate, rounds, HP remaining, deaths, balance score, difficulty, recommendations (up to 3), and per-combatant metrics
+  - Uses existing `showToast()` for success/error feedback (same pattern as `combatDataExporter.ts`)
+  - Integrated into `ResultsSummary.tsx` — rendered in action bar alongside Save/Reset buttons with flex spacer
+  - Added `.rs-action-spacer` CSS to push export button to the right of the action bar
+  - Dropdown menu with `onBlur` auto-close, accessible (`role="menu"`, `role="menuitem"`, `aria-haspopup`, `aria-expanded`)
+  - Memoized with `React.memo` for render performance
+  - Zero new TypeScript errors, pre-existing build error only (crypto import in worker)
 
 ---
 

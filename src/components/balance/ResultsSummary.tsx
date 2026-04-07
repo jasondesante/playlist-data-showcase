@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { SimulationResults, BalanceReport } from 'playlist-data-engine';
 import { BalanceScoreIndicator } from './BalanceScoreIndicator';
+import { SimulationExportButton } from './SimulationExportButton';
 import './ResultsSummary.css';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -189,6 +190,8 @@ function ResultsSummaryComponent({
                             Reset
                         </button>
                     )}
+                    <div className="rs-action-spacer" />
+                    <SimulationExportButton results={results} balanceReport={balanceReport} />
                 </div>
             )}
         </div>
