@@ -19,7 +19,8 @@ Complete guide to generating enemies and encounters in the Playlist Data Engine.
 11. [Parameter Sweep](#parameter-sweep)
 12. [Comparative Analysis](#comparative-analysis)
 13. [Difficulty Calculator](#difficulty-calculator)
-14. [API Reference](#api-reference)
+14. [Recommended Simulation Counts](#recommended-simulation-counts)
+15. [API Reference](#api-reference)
 
 ---
 
@@ -1493,6 +1494,55 @@ console.log(suggestion.probes.length); // 1–2 (partial results)
 | "How does difficulty change across CR 1–10?" | `ParameterSweep` (curve exploration) |
 | "What CR should I use for Medium difficulty?" | **`DifficultyCalculator`** (inverse problem) |
 | "Is +2 AC meaningfully different?" | `ComparativeAnalyzer` (A/B testing) |
+
+---
+
+## Recommended Simulation Counts
+
+Choosing the right number of simulation runs balances confidence against speed. More runs = tighter confidence intervals, but diminishing returns set in quickly.
+
+### Quick Reference
+
+| Purpose | Runs | Speed* | Confidence | Margin of Error | Use When |
+|---------|------|--------|------------|-----------------|----------|
+| Quick exploration | 100 | <0.1s | Rough estimate | ~±10% | Prototyping, sanity checks, early iteration |
+| Standard analysis | 500 | <0.5s | Reasonable | ~±4% | Most balance decisions, parameter sweeps |
+| Thorough validation | 2,000 | ~1s | High | ~±2% | Final balance passes, shipping decisions |
+| Publication-quality | 5,000+ | ~2s | Very high | ~±1.5% | Documentation, balance patches, release notes |
+
+*\*Speed estimates based on standard 4v1 party-vs-encounter composition. Actual speed depends on encounter size and combat duration.*
+
+### How Margin of Error Works
+
+The simulator reports results as percentages (e.g., "72% player win rate"). With fewer runs, that percentage has more uncertainty:
+
+- **100 runs**: A reported 72% win rate means the true value is likely between 62–82% (±10%)
+- **500 runs**: A reported 72% win rate means the true value is likely between 68–76% (±4%)
+- **2,000 runs**: A reported 72% win rate means the true value is likely between 70–74% (±2%)
+
+The formula: `margin of error ≈ 1 / √(totalRuns)` (at 95% confidence).
+
+### Recommendations by Tool
+
+| Tool | Recommended Runs | Why |
+|------|-----------------|-----|
+| `BalanceValidator` | 500 | Single data point — 500 gives ±4% which is enough to classify difficulty |
+| `ParameterSweep` | 100–250 per point | Sweeps generate many data points — lower per-point counts are acceptable for curve shape |
+| `ComparativeAnalyzer` | 500–1,000 per config | Statistical significance testing needs sufficient sample size per config |
+| `DifficultyCalculator` | 250 per probe | Binary search makes multiple probes — lower per-probe counts with convergence checking |
+
+### When to Use More Runs
+
+- **Close to a difficulty boundary**: If win rate is near a threshold (e.g., 68–72% for Medium), use more runs to determine which side it falls on
+- **Comparing similar configurations**: Small differences need larger samples to detect as statistically significant
+- **Boss encounters**: Boss fights have higher variance (legendary actions, more abilities) — use 2× the normal count
+- **Final ship decisions**: Always validate with 2,000+ runs before committing balance changes
+
+### When Fewer Runs Are Fine
+
+- **Early iteration**: While adjusting CR, enemy count, or templates, 100 runs gives enough signal to guide direction
+- **Obviously broken balance**: A 5% or 95% win rate won't change meaningfully with more runs
+- **Sweep exploration**: A 20-point CR sweep at 100 runs/point completes in under a second and shows the trend clearly
 
 ---
 

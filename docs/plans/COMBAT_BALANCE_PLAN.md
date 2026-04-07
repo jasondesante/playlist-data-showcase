@@ -1177,12 +1177,23 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Covers: two-phase approach (XP Budget Estimate + Simulation-Driven Refinement), CR rounding to standard D&D steps, confidence interval calculation (normal approximation, z=1.96), full usage code example, DifficultyCalculatorOptions parameter table (8 fields), DifficultyEnemyTemplate parameter table (6 fields), DifficultySuggestion result table (13 fields), DifficultyProbe table (5 fields), multi-enemy encounter usage with encounter multiplier adjustment, cancellation with AbortController, "When to Use" decision table (DifficultyCalculator vs BalanceValidator vs ParameterSweep vs ComparativeAnalyzer)
   - Updated Table of Contents: added entry 13 (Difficulty Calculator), renumbered API Reference to 14
   - Build verified (pre-existing TS errors only, no regressions from doc change)
-- [ ] **6.2.5** Add **Recommended Simulation Counts** reference table
+- [x] **6.2.5** Add **Recommended Simulation Counts** reference table
   - Quick exploration (100 runs): rough estimate, fast
   - Standard analysis (500 runs): reasonable confidence for most decisions
   - Thorough validation (2000 runs): high confidence, good for final balance decisions
   - Publication-quality (5000+ runs): very high confidence, for documentation/balance patches
-- [ ] **6.2.6** Update Table of Contents to include new sections
+  - Added comprehensive "Recommended Simulation Counts" section to `docs/engine/docs/ENEMY_GENERATION.md` between Difficulty Calculator and API Reference
+  - Quick Reference table with 4 tiers (100/500/2000/5000+ runs), speed estimates, confidence levels, margin of error, and use cases
+  - "How Margin of Error Works" subsection with formula (`≈ 1/√n`) and concrete examples at each tier
+  - "Recommendations by Tool" table with per-tool run count guidance (BalanceValidator 500, ParameterSweep 100–250/point, ComparativeAnalyzer 500–1000/config, DifficultyCalculator 250/probe)
+  - "When to Use More Runs" guidance (difficulty boundaries, similar configs, boss encounters, ship decisions)
+  - "When Fewer Runs Are Fine" guidance (early iteration, obviously broken balance, sweep exploration)
+  - Updated TOC with new entry (item 14, API Reference renumbered to 15)
+  - Build verified (pre-existing errors only, no regressions from doc change)
+- [x] **6.2.6** Update Table of Contents to include new sections
+  - Added entry 14: "Recommended Simulation Counts" to TOC in `docs/engine/docs/ENEMY_GENERATION.md`
+  - Renumbered API Reference from 14 to 15
+  - Completed as part of 6.2.5
 
 ### 6.3 Update DATA_ENGINE_REFERENCE.md
 
