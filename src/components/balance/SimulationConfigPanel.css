@@ -1,0 +1,220 @@
+/* ============================================
+   SIMULATION CONFIGURATION PANEL
+   ============================================ */
+
+.sim-config-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+/* ─── Sections ──────────────────────────────── */
+
+.scp-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.scp-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.scp-section-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ─── Settings Grid ────────────────────────── */
+
+.scp-settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.625rem;
+}
+
+.scp-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.scp-field-wide {
+    grid-column: 1 / -1;
+}
+
+.scp-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+}
+
+.scp-input,
+.scp-select {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius, 0.5rem) * 0.6);
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-size: 0.8rem;
+    font-family: inherit;
+    transition: border-color 0.15s ease;
+}
+
+.scp-input:focus,
+.scp-select:focus {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.2);
+}
+
+.scp-input:disabled,
+.scp-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.scp-select {
+    cursor: pointer;
+    appearance: auto;
+}
+
+/* ─── AI Strategies ────────────────────────── */
+
+.scp-ai-strategies {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.625rem;
+}
+
+/* ─── Toggle Row ───────────────────────────── */
+
+.scp-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.25rem 0;
+}
+
+.scp-toggle-row input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: hsl(var(--primary));
+    cursor: pointer;
+}
+
+.scp-toggle-label {
+    font-size: 0.8rem;
+    color: hsl(var(--foreground));
+    font-weight: 500;
+}
+
+.scp-toggle-hint {
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground) / 0.7);
+    margin-left: auto;
+}
+
+.scp-toggle-row input:disabled ~ .scp-toggle-label,
+.scp-toggle-row input:disabled ~ .scp-toggle-hint {
+    opacity: 0.5;
+}
+
+/* ─── Error ─────────────────────────────────── */
+
+.scp-error {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.625rem;
+    border: 1px solid hsl(0 60% 50% / 0.3);
+    border-radius: calc(var(--radius, 0.5rem) * 0.6);
+    background: hsl(0 60% 50% / 0.05);
+    color: hsl(0 60% 50%);
+    font-size: 0.78rem;
+}
+
+/* ─── Action Buttons ───────────────────────── */
+
+.scp-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.scp-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius, 0.5rem);
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.scp-btn:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: -2px;
+}
+
+.scp-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.scp-btn-run {
+    flex: 1;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+}
+
+.scp-btn-run:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px hsl(var(--primary) / 0.3);
+}
+
+.scp-btn-cancel {
+    flex: 1;
+    background: transparent;
+    color: hsl(0 60% 50%);
+    border-color: hsl(0 60% 50% / 0.4);
+}
+
+.scp-btn-cancel:hover:not(:disabled) {
+    background: hsl(0 60% 50% / 0.1);
+}
+
+.scp-btn-reset {
+    flex: 1;
+    background: hsl(var(--muted) / 0.2);
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+}
+
+.scp-btn-reset:hover:not(:disabled) {
+    background: hsl(var(--muted) / 0.3);
+}
+
+/* ─── Responsive ───────────────────────────── */
+
+@media (max-width: 640px) {
+    .scp-settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .scp-ai-strategies {
+        grid-template-columns: 1fr;
+    }
+}

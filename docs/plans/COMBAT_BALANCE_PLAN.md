@@ -1439,42 +1439,65 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 8.2 Simulation Configuration Panel
 
-- [ ] **8.2.1** Create `src/components/balance/SimulationConfigPanel.tsx`
-  - **Party Selection**: Pull characters from `characterStore`, select up to 4
-  - **Encounter Configuration**: CR, count, category, archetype, seed, rarity
-  - **Simulation Settings**:
-    - Run count slider (100 / 250 / 500 / 1000 / 2500 / 5000 / 10000)
-    - AI Strategy per side (two dropdowns: player strategy, enemy strategy)
-    - Collect detailed logs toggle (warning about memory for high run counts)
-  - **Run / Cancel buttons** with progress bar
-- [ ] **8.2.2** Create `src/components/balance/AIStrategySelector.tsx`
-  - Visual selector for AI strategy with descriptions
+- [x] **8.2.1** Create `src/components/balance/SimulationConfigPanel.tsx`
+  - Created main configuration panel that orchestrates all sub-components
+  - **Party Selection**: Integrates `PartySelector` pulling characters from `characterStore`, max 4
+  - **Encounter Configuration**: Integrates `EncounterConfigForm` with CR, count, category, archetype, seed, rarity, difficulty multiplier, stat level overrides
+  - **Simulation Settings**: Run count dropdown (7 presets from 100–10,000), simulation seed input
+  - **AI Strategy per side**: Two `AIStrategySelector` instances (Players / Enemies) with Normal/Aggressive radio cards
+  - **Collect detailed logs toggle** with memory warning hint
+  - **Run / Cancel / New Simulation buttons** — Run validates party selection, generates enemies via `useEnemyGenerator`, builds engine config via `toSimulationConfig()`, calls `onRunSimulation`; Cancel and Reset wired to simulation hook
+  - Validation: party must have at least 1 member, enemies must generate successfully
+  - Progress bar shown during simulation run via `SimulationProgressBar`
+  - Error display for validation errors and simulation errors
+  - Wired into `BalanceLabTab.tsx` replacing the placeholder — `startSimulation` destructured from `useSimulationHistory`, passed as `onRunSimulation` callback
+  - TypeScript check clean, pre-existing build error only (crypto import in worker)
+- [x] **8.2.2** Create `src/components/balance/AIStrategySelector.tsx`
+  - Visual radio-card selector for AI play style with descriptions
   - **Normal**: "Balanced combat — basic attacks, standard tactics, conserves resources"
   - **Aggressive**: "Maximum threat — burns all spell slots, items, and abilities every fight"
-  - Per-side configuration (Players / Enemies)
-- [ ] **8.2.3** Create `src/components/balance/PartySelector.tsx`
-  - Reuse character selection pattern from CombatSimulatorTab
-  - Show character cards with key stats (level, AC, HP, class)
-  - Max 4 characters
-- [ ] **8.2.4** Create `src/components/balance/EncounterConfigForm.tsx`
-  - CR input (number or slider, 0.25-30)
-  - Enemy count (1-10)
-  - Category dropdown
-  - Archetype dropdown
-  - Seed input (text)
-  - Rarity selector
-  - Difficulty multiplier slider
-  - **Stat Level Overrides** (per-enemy, collapsible section):
-    - HP Level slider (1–20, default: linked to CR)
-    - Attack Level slider (1–20, default: linked to CR)
-    - Defense Level slider (1–20, default: linked to CR)
-    - Visual indicator when a level differs from CR (highlight, badge showing "Overleveled HP" / "Underleveled Attack")
-    - Quick presets: "Tank" (HP+4, Defense+2), "Glass Cannon" (Attack+4, HP-2), "Brute" (HP+2, Attack+2), "Reset to CR"
-- [ ] **8.2.5** Create `src/components/balance/SimulationProgressBar.tsx`
-  - Shows progress (runs completed / total)
-  - Shows estimated time remaining
-  - Cancel button
-  - Current win rate preview (updates live as runs complete)
+  - Per-side configuration via `side: 'player' | 'enemy'` prop with side-specific labels
+  - Uses `AI_STYLE_OPTIONS` from `simulation.ts` for option data
+  - Accessible: `role="radiogroup"` container, `role="radio"` + `aria-checked` on each option
+  - Disabled state support for when simulation is running
+  - Pure CSS styling with active state highlighting (primary border + background tint)
+  - Responsive: stacks vertically on mobile
+- [x] **8.2.3** Create `src/components/balance/PartySelector.tsx`
+  - Reuses character data from `useCharacterStore` — filters to `level > 0` characters
+  - Character cards showing: name, level, AC (`armor_class`), max HP, class
+  - Max 4 characters enforced — full party shows disabled/excluded state on unselected cards
+  - Toggle selection by clicking cards — selected cards show "Selected" badge
+  - Empty state with guidance when no characters generated yet
+  - Header shows count: "Party Members (2/4)"
+  - Disabled state support for when simulation is running
+  - Icons from lucide-react (Swords, Shield, Heart)
+  - Responsive grid: auto-fill columns, 2 columns on mobile
+- [x] **8.2.4** Create `src/components/balance/EncounterConfigForm.tsx`
+  - CR dropdown with all standard D&D values (0.125–30, 32 options)
+  - Enemy count number input (1–10, clamped)
+  - Category dropdown (8 categories: humanoid, beast, undead, fiend, elemental, construct, dragon, monstrosity)
+  - Archetype dropdown (brute, archer, support)
+  - Rarity dropdown (common, uncommon, elite, boss)
+  - Difficulty multiplier number input (0.1–5.0, step 0.1)
+  - Seed text input (placeholder: "Random if empty")
+  - **Stat Level Overrides** (collapsible section with ChevronDown/Up toggle):
+    - "Custom" badge shown when overrides are active
+    - Quick presets: Tank (HP+4, Defense+2), Glass Cannon (Attack+4, HP-2), Brute (HP+2, Attack+2), Reset to CR
+    - HP Level slider (1–20, default tracks CR)
+    - Attack Level slider (1–20, default tracks CR)
+    - Defense Level slider (1–20, default tracks CR)
+    - Visual indicators: green "+" for overleveled, red "-" for underleveled
+    - Hint text explaining overrides relative to current CR
+  - Uses `EncounterConfigUI` type and `STAT_LEVEL_PRESETS` from `simulation.ts`
+  - Disabled state support throughout
+  - Responsive: 2-column grid on desktop, single column on mobile
+- [x] **8.2.5** Create `src/components/balance/SimulationProgressBar.tsx`
+  - Animated progress bar (primary-colored fill with smooth CSS transition)
+  - Shows progress: "500 / 1,000 (50.0%)" with tabular-nums for stable layout
+  - Estimated time remaining with Clock icon (formatDuration helper: `<1s`, `5s`, `1m 30s`)
+  - Live win rate preview with color coding (green ≥50%, red <50%)
+  - Cancel button with X icon, hover state turns red
+  - Accepts `completed`, `total`, `estimatedMsRemaining`, `liveWinRate`, `onCancel` props
 
 ### 8.3 Results Summary Panel
 

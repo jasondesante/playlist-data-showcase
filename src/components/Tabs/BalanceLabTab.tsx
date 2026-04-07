@@ -12,9 +12,12 @@ import {
 } from 'lucide-react';
 import { useSimulationHistory } from '@/hooks/useSimulationHistory';
 import { SimulationHistoryPanel } from '@/components/balance/SimulationHistoryPanel';
+import { SimulationConfigPanel } from '@/components/balance/SimulationConfigPanel';
 import {
     BalanceValidator,
     type EncounterDifficulty,
+    type SimulationConfig,
+    type CharacterSheet,
 } from 'playlist-data-engine';
 import { getWinRateDifficulty } from '@/types/simulation';
 import { logger } from '@/utils/logger';
@@ -61,6 +64,7 @@ export function BalanceLabTab() {
         progress,
         error,
         durationMs,
+        startSimulation,
         cancelSimulation,
         resetSimulation,
         saveCurrentResults,
@@ -114,6 +118,14 @@ export function BalanceLabTab() {
         [loadSimulation],
     );
 
+    // Handle run simulation from config panel
+    const handleRunSimulation = useCallback(
+        (party: CharacterSheet[], enemies: CharacterSheet[], config: SimulationConfig) => {
+            startSimulation(party, enemies, config);
+        },
+        [startSimulation],
+    );
+
     // ─── Render ────────────────────────────────────────────────────────────
 
     const hasResults = results !== null && results.summary.totalRuns > 0;
@@ -156,15 +168,15 @@ export function BalanceLabTab() {
 
                     {!configCollapsed && (
                         <div id={configContentId} className="bl-panel-content">
-                            <div className="bl-config-placeholder">
-                                <Swords size={32} strokeWidth={1.5} className="bl-placeholder-icon" />
-                                <p className="bl-placeholder-text">
-                                    Simulation configuration will be available here.
-                                </p>
-                                <p className="bl-placeholder-hint">
-                                    Configure party, encounter, AI strategies, and run settings.
-                                </p>
-                            </div>
+                            <SimulationConfigPanel
+                                status={status}
+                                progress={progress}
+                                error={error}
+                                isRunning={isRunning}
+                                onRunSimulation={handleRunSimulation}
+                                onCancel={cancelSimulation}
+                                onReset={resetSimulation}
+                            />
                         </div>
                     )}
                 </section>

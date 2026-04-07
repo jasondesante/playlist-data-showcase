@@ -1,0 +1,80 @@
+/* ============================================
+   AI STRATEGY SELECTOR
+   ============================================ */
+
+.ai-strategy-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.ai-strategy-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ai-strategy-options {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.ai-strategy-option {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius, 0.5rem);
+    background: hsl(var(--card));
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    color: hsl(var(--foreground));
+}
+
+.ai-strategy-option:hover:not(:disabled) {
+    border-color: hsl(var(--primary) / 0.5);
+    background: hsl(var(--accent));
+}
+
+.ai-strategy-option:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: -2px;
+}
+
+.ai-strategy-active {
+    border-color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.1);
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.2);
+}
+
+.ai-strategy-active:hover {
+    border-color: hsl(var(--primary));
+}
+
+.ai-strategy-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.ai-strategy-desc {
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.3;
+}
+
+.ai-strategy-option:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .ai-strategy-options {
+        flex-direction: column;
+    }
+}
