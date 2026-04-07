@@ -855,15 +855,14 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Empty combat edge cases handled (returns zeroed data point)
   - Exported from engine `src/index.ts`: `ParameterSweep` class + all type interfaces
   - Engine builds clean (tsc --noEmit + vite build), all 1132 combat tests pass
-- [ ] **4.2.2** Define sweep parameter types
-  ```typescript
-  interface SweepParams {
-    variable: 'cr' | 'enemyCount' | 'partyLevel' | 'difficultyMultiplier' | 'rarity' | 'hpLevel' | 'attackLevel' | 'defenseLevel';
-    range: { min: number; max: number; step: number };
-    simulationsPerPoint: number;  // e.g., 200 simulations per data point
-    aiConfig: AIConfig;
-  }
-  ```
+- [x] **4.2.2** Define sweep parameter types
+  - Already implemented as part of 4.2.1 in `src/core/combat/Analysis/ParameterSweep.ts`
+  - `SweepVariable` type union: `'cr' | 'enemyCount' | 'partyLevel' | 'difficultyMultiplier' | 'rarity' | 'hpLevel' | 'attackLevel' | 'defenseLevel'` (8 variables)
+  - `SweepRange` interface: `{ min: number; max: number; step: number }`
+  - `SweepParams` interface: `{ variable: SweepVariable; range: SweepRange; simulationsPerPoint: number; aiConfig: AIConfig; combatConfig?; baseSeed?; abortSignal? }`
+  - `SweepEnemyConfig` interface: `{ cr?; rarity?; category?; archetype?; templateId?; statLevels?; difficultyMultiplier? }`
+  - All types exported from engine `src/index.ts`: `SweepVariable`, `SweepRange`, `SweepParams`, `SweepDataPoint`, `SweepResults`, `SweepEnemyConfig`
+  - Engine builds clean (tsc --noEmit + vite build pass)
 - [ ] **4.2.3** Implement sweep execution
   - For each value in the range, modify the encounter/party, run simulations, collect summary
   - Return `SweepResults` with data points mapping parameter value → simulation summary
