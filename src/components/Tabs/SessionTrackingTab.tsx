@@ -780,16 +780,6 @@ export function SessionTrackingTab() {
                           </span>
                         </div>
                       )}
-                      {lastSession.environmental_context.light && (
-                        <div className="session-context-item">
-                          <span className="session-context-label">Light Level</span>
-                          <span className="session-context-value">
-                            {typeof lastSession.environmental_context.light === 'number'
-                              ? `${Math.round(lastSession.environmental_context.light)} lux`
-                              : 'Recorded'}
-                          </span>
-                        </div>
-                      )}
                       {lastSession.environmental_context.motion && (
                         <div className="session-context-item">
                           <span className="session-context-label">Motion</span>

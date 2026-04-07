@@ -1,4 +1,4 @@
-import { useState, useCallback, createContext, useContext, useMemo, useEffect } from 'react';
+import { useState, useCallback, createContext, useContext, useMemo } from 'react';
 import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users, Backpack, Database, Drum, Scale } from 'lucide-react';
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
@@ -39,22 +39,6 @@ function App() {
   const navigateToTab = useCallback((tab: Tab) => {
     setActiveTab(tab);
   }, []);
-
-  // Global keyboard shortcuts — skip when user is typing in form fields
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-
-      // Ctrl+Shift+B → open Balance Lab
-      if (e.ctrlKey && e.shiftKey && e.key === 'B') {
-        e.preventDefault();
-        navigateToTab('balance');
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigateToTab]);
 
   // Initialize custom equipment from localStorage on app startup
   // This ensures custom items can be equipped after page refresh

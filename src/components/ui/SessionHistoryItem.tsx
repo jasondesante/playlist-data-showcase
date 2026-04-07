@@ -1,5 +1,5 @@
 import { useState, useMemo, useId, memo } from 'react';
-import { Music, Zap, Gamepad2, MapPin, Sun, Cloud, ChevronDown, ChevronUp, Headphones, Eye, EyeOff } from 'lucide-react';
+import { Music, Zap, Gamepad2, MapPin, Cloud, ChevronDown, ChevronUp, Headphones, Eye, EyeOff } from 'lucide-react';
 import type { ListeningSessionWithTrack } from '@/types';
 import { useAppStore } from '@/store/appStore';
 import { getMaskedCoordinates } from '@/utils/formatters';
@@ -142,7 +142,7 @@ const SessionHistoryItemComponent = memo(function SessionHistoryItem({
     session.environmental_context.biome ||
     session.environmental_context.weather ||
     session.environmental_context.geolocation ||
-    session.environmental_context.light
+    session.environmental_context.biome
   );
 
   const hasGamingBonus = session.gaming_context?.isActivelyGaming;
@@ -318,17 +318,6 @@ const SessionHistoryItemComponent = memo(function SessionHistoryItem({
                             if (w.temperature !== undefined) parts.push(`${Math.round(w.temperature)}°C`);
                             return parts.length > 0 ? parts.join(', ') : 'Recorded';
                           })()}
-                    </span>
-                  </div>
-                )}
-                {session.environmental_context.light !== undefined && (
-                  <div className="session-history-item-context-item">
-                    <Sun size={12} className="session-history-item-context-icon" />
-                    <span className="session-history-item-context-label">Light</span>
-                    <span className="session-history-item-context-value">
-                      {typeof session.environmental_context.light === 'number'
-                        ? `${Math.round(session.environmental_context.light)} lux`
-                        : 'Recorded'}
                     </span>
                   </div>
                 )}

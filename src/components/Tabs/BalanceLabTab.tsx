@@ -190,7 +190,6 @@ export function BalanceLabTab() {
                 </div>
                 <p className="bl-header-subtitle">
                     Monte Carlo combat simulation — configure encounters, run simulations, and analyze balance
-                    <kbd className="bl-shortcut-hint">Ctrl+Shift+B</kbd>
                 </p>
             </div>
 

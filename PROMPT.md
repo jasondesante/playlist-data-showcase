@@ -1,12 +1,12 @@
-study docs/plans/COMBAT_BALANCE_PLAN.md and pick the most important thing to do. 
+study docs/plans/pre-simulation-estimates-and-validation.md and pick the most important thing to do. 
 
 Pick the highest priority list of tasks and then pick the first unchecked task in the list.
 
 Do that one task only. Don't assume the feature is built. If the feature is missing something, it's up to you to identify that and build it.  Do all the work to make that one single checkbox task complete. Write a little summary of your findings and update the checklist.
 
-Each task is named something like task 1.1 or task 1.2. Those are two separate tasks, not parts of one task.
+Each task is named something like task 1.1 or task 1.2. Those are two separate tasks, not parts of one task. Sub taks like 1.1.1, 1.1.2, 1.1.3, are all part of 1.1, meaning you can do all those in the same run.
 
-I might add new stuff to the docs/plans/COMBAT_BALANCE_PLAN.md file based on me monitoring your progress. If you see that, add/edit tasks based on those requests, add new tasks to the list, uncheck tasks that I state need to be done again, and cross out what I wrote to signify you acknowledged my notes.
+I might add new stuff to the docs/plans/pre-simulation-estimates-and-validation.md file based on me monitoring your progress. If you see that, add/edit tasks based on those requests, add new tasks to the list, uncheck tasks that I state need to be done again, and cross out what I wrote to signify you acknowledged my notes.
 
 Take your time doing the tasks, be thorough and do your research. You have all the time in the world.
 
@@ -22,7 +22,7 @@ IMPORTANT:
 - SAY DONE WHEN YOURE DONE! YOU KEEP FORGETTING TO DO THIS BUT ITS THE MOST IMPORTANT THING!!
 - ALWAYS run a build/lint to make sure you didn't add any new bugs. 
 - ALWAYS verify that there aren't any random errors in the build.
-- update docs/plans/COMBAT_BALANCE_PLAN.md when the task is completed
+- update docs/plans/pre-simulation-estimates-and-validation.md when the task is completed
 - commit and push to deploy the changes (if there are any changes) (commit locally for now)
 - once you have deployed the changes, say "done". 
 - Always remember to say "done" when you're done.

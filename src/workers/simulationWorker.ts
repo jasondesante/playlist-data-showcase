@@ -148,10 +148,25 @@ function handleStart(msg: SimulationWorkerStartMessage): void {
             // Clean up
             activeControllers.delete(id);
 
+            // Strip non-cloneable fields from config before posting results
+            const { abortSignal: _as, onProgress: _op, ...cloneableConfig } = results.config as SimulationConfig & {
+                abortSignal?: AbortSignal;
+                onProgress?: (completed: number, total: number) => void;
+            };
+            const cloneableResults: SimulationResults = {
+                ...results,
+                config: cloneableConfig,
+                // Maps are cloneable in modern browsers, but convert to plain
+                // object to be safe across all structured clone contexts
+                perCombatantMetrics: results.perCombatantMetrics
+                    ? Object.fromEntries(results.perCombatantMetrics)
+                    : results.perCombatantMetrics,
+            };
+
             const response: SimulationWorkerCompleteMessage = {
                 type: 'complete',
                 id,
-                results,
+                results: cloneableResults,
                 durationMs: Math.round(durationMs),
             };
             self.postMessage(response);

@@ -395,6 +395,7 @@ const BALANCER_ACTION_LABELS: Record<BalancerAction, string> = {
     shifted_to_downbeat: 'Shifted to downbeat',
     empty_measure_fill: 'Empty measure fill',
     proximity_shift: 'Proximity shift',
+    margin_removal: 'Removed (audio margin)',
 };
 
 /**
