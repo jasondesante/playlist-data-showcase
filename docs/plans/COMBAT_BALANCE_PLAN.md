@@ -652,9 +652,18 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Updated existing test in `combatAI.test.ts`: "returns dodge when no enemies" → "returns skip when no enemies"
   - 18 new tests in `aiCombatRunnerEdgeCases.test.ts` covering: stunned first turn (4), skip action (3), spell slot exhaustion (4), defeated combatants (4), combined scenarios (3)
   - All 848 combat tests pass, engine builds clean (tsc + vite)
-- [ ] **2.3.3** Add combat event tracking for metrics
+- [x] **2.3.3** Add combat event tracking for metrics
   - Track per-combatant: total damage dealt, total damage taken, healing done, spells cast, items used, critical hits, rounds survived
   - Store in a `CombatMetrics` object attached to the `CombatInstance`
+  - Defined `CombatantMetrics` interface in `src/core/types/CombatAI.ts` with all 12 required fields: combatantId, name, side, totalDamageDealt, totalDamageTaken, totalHealingDone, spellsCast, itemsUsed, criticalHits, roundsSurvived, survived, actionsByType, damagePerRound
+  - Added `metrics?: Map<string, CombatantMetrics>` field to `CombatInstance` in `src/core/types/Combat.ts`
+  - Created `src/core/combat/AI/CombatMetricsTracker.ts` — post-hoc analysis class that computes per-combatant metrics from `combat.history` without modifying the engine
+  - Tracker processes all action types: attack (damage dealt/taken, crits), spell (damage + healing via tag detection), legendaryAction (damage), useItem (count), dodge/dash/disengage (count)
+  - Integrated into `AICombatRunner.runFullCombat()` — metrics computed after combat completes and returned in `AICombatResult.metrics`
+  - Added `metrics: Map<string, CombatantMetrics>` to `AICombatResult` interface
+  - Exported `CombatantMetrics` type and `CombatMetricsTracker` class from engine `src/index.ts`
+  - 28 tests in `tests/unit/combat/combatMetricsTracker.test.ts` covering: basic computation (6), damage tracking (4), action type tracking (5), critical hits (2), rounds survived (3), healing (1), edge cases (5), direct usage (2)
+  - All 876 combat tests pass, engine builds clean (tsc + vite)
 
 ### 2.4 AI Tests
 
