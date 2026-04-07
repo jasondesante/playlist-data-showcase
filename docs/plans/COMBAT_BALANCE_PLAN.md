@@ -738,70 +738,21 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 3.2 Result Aggregation
 
-- [ ] **3.2.1** Define `SimulationResults` interface
-  ```typescript
-  interface SimulationResults {
-    config: SimulationConfig;
-    summary: SimulationSummary;
-    party: PartyConfig;
-    encounter: EncounterConfig;
-    perCombatantMetrics: Map<string, CombatantSimulationMetrics>;
-    runDetails?: SimulationRunDetail[];  // Only if collectDetailedLogs
-  }
-
-  interface SimulationSummary {
-    totalRuns: number;
-    playerWins: number;
-    enemyWins: number;
-    draws: number;
-    playerWinRate: number;          // 0-1
-    averageRounds: number;
-    medianRounds: number;
-    averageRoundsOnWin: number;
-    averageRoundsOnLoss: number;
-    averagePlayerHPRemaining: number;  // Across winning runs
-    averagePlayerHPPercentRemaining: number;
-    totalPlayerDeaths: number;          // Across all runs
-    averageRoundsPerPlayerDeath: number;
-    totalEnemyDeaths: number;
-    averageRoundsPerEnemyDeath: number;
-  }
-  ```
-- [ ] **3.2.2** Define `CombatantSimulationMetrics` — per-combatant aggregate stats
-  ```typescript
-  interface CombatantSimulationMetrics {
-    combatantId: string;
-    name: string;
-    side: 'player' | 'enemy';
-    averageDamagePerRound: number;     // DPR
-    medianDamagePerRound: number;
-    averageTotalDamageDealt: number;
-    averageTotalDamageTaken: number;
-    averageHealingDone: number;
-    averageRoundsSurvived: number;
-    survivalRate: number;              // 0-1, how often this combatant survived
-    killRate: number;                  // 0-1, how often this combatant got the final blow on any enemy
-    criticalHitRate: number;           // 0-1
-    averageSpellSlotsUsed: number;
-    mostUsedAction: string;            // 'attack' | 'castSpell' | etc.
-    damageDistribution: HistogramBucket[];  // Damage dealt per round histogram
-    hpRemainingDistribution: HistogramBucket[];  // HP remaining at end histogram
-  }
-  ```
-- [ ] **3.2.3** Define `HistogramBucket` for distributions
-  ```typescript
-  interface HistogramBucket {
-    rangeStart: number;
-    rangeEnd: number;
-    count: number;
-    percent: number;  // 0-100
-  }
-  ```
-- [ ] **3.2.4** Implement `SimulationAggregator` class
-  - `aggregateRun(runResult): void` — accumulate stats from a single run
-  - `getResults(): SimulationResults` — compute final aggregated stats
-  - Handle statistical calculations: mean, median, standard deviation, percentiles
-  - Build histograms with configurable bucket count (default 20)
+- [x] **3.2.1** Define `SimulationResults` interface
+  - Already implemented in `src/core/combat/Simulation/CombatSimulator.ts` (lines 231-252)
+  - All fields present: `config`, `summary`, `party`, `encounter`, `perCombatantMetrics`, `runDetails?`, `wasCancelled`
+- [x] **3.2.2** Define `CombatantSimulationMetrics` — per-combatant aggregate stats
+  - Already implemented in `src/core/combat/Simulation/CombatSimulator.ts` (lines 136-184)
+  - All fields present: `combatantId`, `name`, `side`, `averageDamagePerRound`, `medianDamagePerRound`, `averageTotalDamageDealt`, `averageTotalDamageTaken`, `averageHealingDone`, `averageRoundsSurvived`, `survivalRate`, `killRate`, `criticalHitRate`, `averageSpellSlotsUsed`, `mostUsedAction`, `damageDistribution`, `hpRemainingDistribution`
+- [x] **3.2.3** Define `HistogramBucket` for distributions
+  - Already implemented in `src/core/combat/Simulation/CombatSimulator.ts` (lines 119-128)
+  - All fields present: `rangeStart`, `rangeEnd`, `count`, `percent`
+- [x] **3.2.4** Implement `SimulationAggregator` class
+  - Already implemented as internal class in `src/core/combat/Simulation/CombatSimulator.ts` (lines 344-552)
+  - `aggregateRun(runResult, runIndex, seed)` — accumulates stats from a single run
+  - `getResults(wasCancelled)` — computes final aggregated stats
+  - Statistical helpers: `average()`, `median()`, `buildHistogram()` (default 20 buckets)
+  - Internal `CombatantAccumulator` class tracks per-combatant stats across runs
 
 ### 3.3 Simulation Tests
 
@@ -820,11 +771,16 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - **Statistical properties** (4 tests): stronger party wins >80%; stronger enemy wins <20%; round count variance >1 unique value; survival rate consistent with win rates in no-draw scenarios
   - **Config in results** (1 test): results.config matches input config
   - All 1031 combat tests pass (49 new + 982 existing), engine builds clean (tsc + vite)
-- [ ] **3.3.2** Add simulator integration tests
-  - Test small simulations (10 runs) complete correctly
-  - Test various party/enemy compositions
-  - Test both AI play styles produce reasonable results
-  - Test cancellation returns partial results
+- [x] **3.3.2** Add simulator integration tests
+  - Created `tests/unit/combat/combatSimulatorIntegration.test.ts` with 27 tests organized into 6 sections
+  - **Full Pipeline Validation** (4 tests): generate enemies → simulate → validate all results; minimal 1v1 pipeline; boss fight with legendary actions; detailed logs with per-run structure validation
+  - **Cross-Metric Consistency** (4 tests): per-combatant survival rates consistent with summary win rates in 1v1; total deaths match per-combatant defeat patterns; average rounds survived positive and reasonable; histogram bucket counts and percentages sum correctly
+  - **AI Style Behavioral Differences** (4 tests): normal vs aggressive with different seeds produce different results; aggressive fights resolve differently; aggressive players deal comparable damage; mixed AI styles produce valid different results
+  - **Various Encounter Compositions** (6 tests): all four rarities in one encounter; many weak enemies (mob) vs solo high-level; mirror match (same level vs same CR); uneven party levels (3/5/7); duplicate enemies (same seed); boss with minions
+  - **Cancellation Integration** (2 tests): mid-simulation cancellation with detailed logs; immediate pre-aborted cancellation with zeroed metrics
+  - **Statistical Sanity** (4 tests): determinism (same seed = identical results); different party sizes produce different win rates; round count variance positive; critical hit rate approximately 5%
+  - **Result Structure at Scale** (3 tests): 100 runs with 4v4; detailed logs at 50 runs cross-validate with summary; multiple sequential simulations are independent
+  - All 1062 combat tests pass (27 new + 1035 existing), engine builds clean (tsc + vite)
 - [ ] **3.3.3** Add performance benchmarks
   - Measure simulation throughput (runs/second)
   - Target: 100+ runs/second for standard party vs encounter
