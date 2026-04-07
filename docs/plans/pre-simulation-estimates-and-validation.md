@@ -140,7 +140,7 @@ BalanceLabTab (results area)
   - If enemy generation fails (preview returns null), show "Unable to preview enemy"
   - Shows the encounter multiplier being applied
 
-- [ ] **2.3 Create `PredictedDifficultyBar` component** in `src/components/balance/PredictedDifficultyBar.tsx` + `.css`
+- [x] **2.3 Create `PredictedDifficultyBar` component** in `src/components/balance/PredictedDifficultyBar.tsx` + `.css`
 
   A visual difficulty prediction bar displayed below both estimate cards, above the simulation settings.
 

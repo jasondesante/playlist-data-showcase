@@ -1,0 +1,257 @@
+/* ============================================
+   PREDICTED DIFFICULTY BAR (Task 2.3)
+   ============================================
+   Visual segmented bar showing predicted encounter
+   difficulty with Easy/Medium/Hard/Deadly zones,
+   a position marker, and XP ratio + win rate stats.
+   ============================================ */
+
+/* ─── Card ──────────────────────────────────────────────────────────── */
+
+.pdb-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    background-color: hsl(var(--card) / 0.5);
+}
+
+/* ─── Header ────────────────────────────────────────────────────────── */
+
+.pdb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pdb-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.pdb-icon {
+    color: hsl(var(--muted-foreground));
+    flex-shrink: 0;
+}
+
+.pdb-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ─── Difficulty Badge ──────────────────────────────────────────────── */
+
+.pdb-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: calc(var(--radius, 0.5rem) * 0.5);
+    text-transform: capitalize;
+    letter-spacing: 0.02em;
+}
+
+.pdb-diff-easy {
+    color: hsl(142 76% 36%);
+    background-color: hsl(142 76% 46% / 0.12);
+    border: 1px solid hsl(142 76% 46% / 0.3);
+}
+
+.pdb-diff-medium {
+    color: hsl(48 96% 33%);
+    background-color: hsl(48 96% 53% / 0.12);
+    border: 1px solid hsl(48 96% 53% / 0.3);
+}
+
+.pdb-diff-hard {
+    color: hsl(25 95% 40%);
+    background-color: hsl(25 95% 53% / 0.12);
+    border: 1px solid hsl(25 95% 53% / 0.3);
+}
+
+.pdb-diff-deadly {
+    color: hsl(0 84% 45%);
+    background-color: hsl(0 84% 60% / 0.12);
+    border: 1px solid hsl(0 84% 60% / 0.3);
+}
+
+/* ─── Bar Track ─────────────────────────────────────────────────────── */
+
+.pdb-bar-track {
+    position: relative;
+    display: flex;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border) / 0.5);
+}
+
+.pdb-bar-segment {
+    flex: 1;
+    position: relative;
+    transition: opacity 0.15s ease;
+}
+
+.pdb-bar-segment:first-child {
+    border-radius: 4px 0 0 4px;
+}
+
+.pdb-bar-segment:last-child {
+    border-radius: 0 4px 4px 0;
+}
+
+/* Segment background colors — subtle pastels */
+.pdb-seg-easy {
+    background-color: hsl(142 76% 46% / 0.2);
+}
+
+.pdb-seg-medium {
+    background-color: hsl(48 96% 53% / 0.2);
+}
+
+.pdb-seg-hard {
+    background-color: hsl(25 95% 53% / 0.2);
+}
+
+.pdb-seg-deadly {
+    background-color: hsl(0 84% 60% / 0.2);
+}
+
+/* ─── Marker ────────────────────────────────────────────────────────── */
+
+.pdb-bar-marker {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 3px;
+    background-color: hsl(var(--foreground));
+    border-radius: 2px;
+    transform: translateX(-50%);
+    z-index: 2;
+    box-shadow: 0 0 4px hsl(var(--foreground) / 0.5);
+    transition: left 0.3s ease;
+}
+
+/* ─── Tier Labels ───────────────────────────────────────────────────── */
+
+.pdb-tier-labels {
+    display: flex;
+    margin-top: -0.15rem;
+}
+
+.pdb-tier-label {
+    flex: 1;
+    text-align: center;
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.6;
+}
+
+.pdb-tl-easy {
+    color: hsl(142 76% 46%);
+}
+
+.pdb-tl-medium {
+    color: hsl(48 96% 53%);
+}
+
+.pdb-tl-hard {
+    color: hsl(25 95% 53%);
+}
+
+.pdb-tl-deadly {
+    color: hsl(0 84% 60%);
+}
+
+/* ─── Stats Row ─────────────────────────────────────────────────────── */
+
+.pdb-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding-top: 0.15rem;
+}
+
+.pdb-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+
+.pdb-stat-label {
+    font-weight: 500;
+    color: hsl(var(--muted-foreground) / 0.7);
+}
+
+.pdb-stat-value {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: hsl(var(--foreground));
+}
+
+.pdb-stat-sep {
+    color: hsl(var(--muted-foreground) / 0.4);
+    font-size: 0.68rem;
+}
+
+.pdb-stat-divider {
+    width: 1px;
+    height: 0.75rem;
+    background-color: hsl(var(--border) / 0.6);
+    flex-shrink: 0;
+}
+
+/* Color the ratio and win rate values by difficulty */
+.pdb-diff-easy.pdb-stat-value {
+    color: hsl(142 76% 36%);
+}
+
+.pdb-diff-medium.pdb-stat-value {
+    color: hsl(48 96% 33%);
+}
+
+.pdb-diff-hard.pdb-stat-value {
+    color: hsl(25 95% 40%);
+}
+
+.pdb-diff-deadly.pdb-stat-value {
+    color: hsl(0 84% 45%);
+}
+
+/* ─── Hint ──────────────────────────────────────────────────────────── */
+
+.pdb-hint {
+    margin: 0;
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground) / 0.6);
+    font-style: italic;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    .pdb-stats-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .pdb-stat-divider {
+        display: none;
+    }
+
+    .pdb-hint {
+        font-size: 0.63rem;
+    }
+}
