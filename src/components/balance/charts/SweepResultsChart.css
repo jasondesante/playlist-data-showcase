@@ -1,0 +1,157 @@
+/* ========================================
+   SWEEP RESULTS CHART
+   Line chart with difficulty thresholds
+   and sweet spot highlighting
+   ======================================== */
+
+/* ── Tooltip ────────────────────────────────────────────────────── */
+
+.swrc-tooltip {
+    background-color: hsl(var(--surface-3));
+    border: 1px solid hsl(var(--border));
+    border-radius: 6px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    padding: 0.625rem 0.75rem;
+    min-width: 200px;
+}
+
+.swrc-tooltip-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0.375rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.swrc-tooltip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.125rem 0;
+}
+
+.swrc-tooltip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.swrc-tooltip-label {
+    font-size: 12px;
+    color: hsl(var(--muted-foreground));
+    flex: 1;
+}
+
+.swrc-tooltip-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: ui-monospace, monospace;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.swrc-tooltip-divider {
+    height: 1px;
+    background: hsl(var(--border));
+    margin: 0.375rem 0;
+}
+
+/* ── Sweet Spot Legend ─────────────────────────────────────────── */
+
+.swrc-sweet-spots {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1.25rem 0.625rem;
+    border-top: 1px solid hsl(var(--border));
+    margin-top: 0.25rem;
+}
+
+.swrc-sweet-spots-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-right: 0.25rem;
+}
+
+.swrc-sweet-spot-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+/* ── Empty State ──────────────────────────────────────────────── */
+
+.swrc-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    gap: 0.375rem;
+}
+
+.swrc-empty-text {
+    font-size: 14px;
+    color: hsl(var(--muted-foreground));
+    font-weight: 500;
+}
+
+.swrc-empty-hint {
+    font-size: 12px;
+    color: hsl(var(--muted-foreground));
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* ── Active dot pulse ─────────────────────────────────────────── */
+
+.swrc-chart .recharts-active-dot {
+    filter: drop-shadow(0 0 4px hsl(var(--primary)));
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    .swrc-tooltip {
+        min-width: 160px;
+        padding: 0.5rem 0.625rem;
+    }
+
+    .swrc-tooltip-title {
+        font-size: 11px;
+    }
+
+    .swrc-tooltip-label {
+        font-size: 11px;
+    }
+
+    .swrc-tooltip-value {
+        font-size: 12px;
+    }
+
+    .swrc-sweet-spots {
+        padding: 0.375rem 1rem 0.5rem;
+    }
+
+    .swrc-sweet-spots-label {
+        font-size: 10px;
+    }
+
+    .swrc-sweet-spot-tag {
+        font-size: 10px;
+        padding: 0.1rem 0.375rem;
+    }
+}

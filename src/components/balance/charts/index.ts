@@ -13,3 +13,4 @@ export { HPRemainingDistribution } from './HPRemainingDistribution';
 export { TurnDistributionChart } from './TurnDistributionChart';
 export { SurvivalRateChart } from './SurvivalRateChart';
 export { DamageDistributionChart } from './DamageDistributionChart';
+export { SweepResultsChart } from './SweepResultsChart';

@@ -1742,12 +1742,27 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Integrated into `BalanceLabTab.tsx` — rendered after `SurvivalRateChart` when `perCombatantMetrics` has entries
   - Memoized with `React.memo` for render performance
   - TypeScript check clean (zero new errors), pre-existing build errors unchanged (crypto import in worker)
-- [ ] **9.2.7** Create `src/components/balance/charts/SweepResultsChart.tsx`
+- [x] **9.2.7** Create `src/components/balance/charts/SweepResultsChart.tsx`
   - Line chart showing how win rate changes as a parameter varies (from parameter sweep)
   - X-axis: parameter value (CR, count, etc.)
   - Y-axis: player win rate
   - Reference lines for difficulty thresholds (90%, 75%, 55%, 35%)
   - Highlight the "sweet spot" range for each difficulty
+  - Created `SweepResultsChart.tsx` with recharts `LineChart` showing win rate curve across sweep data points
+  - Created `SweepResultsChart.css` with pure CSS using project HSL variable system
+  - **X-axis**: parameter values with variable-specific formatting (CR as number, rarity as text label, multiplier with 1 decimal)
+  - **Y-axis**: player win rate 0–100% with percentage formatting
+  - **Difficulty reference lines**: 4 dashed reference lines at Easy (90%), Medium (75%), Hard (55%), Deadly (35%) with color-coded labels matching `difficultyReferenceLines` theme
+  - **Sweet spot highlighting**: `findSweetSpots()` algorithm detects contiguous data points where win rate falls within each difficulty tier; rendered as semi-transparent `ReferenceArea` bands behind the line
+  - **Sweet spot legend**: pill tags below chart showing each detected sweet spot range (e.g., "Medium: CR 3–5", "Hard: CR 6–8")
+  - **Custom tooltip**: shows parameter value, win rate (color-coded), avg/median rounds, HP remaining, player/enemy deaths
+  - **Trend detection**: subtitle includes direction indicator (increases/decreases with parameter)
+  - **Variable-aware labels**: `getVariableLabel()` provides human-readable names for all 8 `SweepVariable` types; `getXAxisLabel()` and `formatParamValue()` adapt display per variable
+  - **Empty state**: when no data points, shows guidance message
+  - Uses `ChartContainer` wrapper with responsive `ResponsiveContainer`
+  - Memoized with `React.memo`
+  - Updated barrel export `charts/index.ts` with `SweepResultsChart`
+  - TypeScript check clean (zero new errors), pre-existing errors unchanged
 
 ### 9.3 Comparison Mode
 
