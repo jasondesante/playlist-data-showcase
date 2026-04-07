@@ -1255,10 +1255,14 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Covers: two layers of seeded randomness table (SeededRNG for generation, SeededDiceRoller for combat), seed flow diagram showing `${baseSeed}-${runIndex}` derivation, determinism guarantees with code proof, what changes between seeds, seed strategy for balance testing (parameter sweeps), SeededRNG vs SeededDiceRoller relationship mapping, roller injection into CombatEngine (flows to AttackResolver/InitiativeRoller/SpellCaster), full simulation pipeline example showing independent generation seed vs simulation seed
   - Updated Table of Contents with new section entry
   - Build verified clean (pre-existing TS errors only, no regressions from doc change)
-- [ ] **6.4.2** Document `SeededDiceRoller`
+- [x] **6.4.2** Document `SeededDiceRoller`
   - How to create a seeded roller instance
   - How to inject it into `CombatEngine`
   - How the `CombatSimulator` manages dice roller seeding per run
+  - Added comprehensive "Seeded Dice Roller" section to `docs/engine/docs/ROLLS_AND_SEEDS.md` between Dice Roller and Initiative Roller
+  - Covers: key differences table (static DiceRoller vs instance-based SeededDiceRoller), 3 ways to create instances (factory, constructor with string, constructor with SeededRNG), full API reference table (14 methods), basic deterministic rolling code example, full combat simulation code example, CombatEngine injection with roller flow diagram, CombatSimulator internal seeding logic with per-run isolation explanation, note about enemy generation seed independence
+  - Updated Table of Contents with new section entry (item 3), renumbered Initiative Roller and Seeded RNG sections
+  - Build verified clean (documentation change only, no code changes)
 
 ---
 

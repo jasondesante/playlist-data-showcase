@@ -11,8 +11,9 @@ Complete guide to the dice roller and seeded randomness in the Playlist Data Eng
 
 1. [Hash Utilities and Deterministic Seeding](#hash-utilities-and-deterministic-seeding)
 2. [Dice Roller](#dice-roller)
-3. [Initiative Roller](#initiative-roller)
-4. [Seeded RNG in Combat Simulations](#seeded-rng-in-combat-simulations)
+3. [Seeded Dice Roller](#seeded-dice-roller)
+4. [Initiative Roller](#initiative-roller)
+5. [Seeded RNG in Combat Simulations](#seeded-rng-in-combat-simulations)
 
 ---
 
@@ -214,6 +215,143 @@ if (attack.isCritical) {
 - **Advantage:** If EITHER die shows a 20, it's a critical hit
 - **Disadvantage:** If EITHER die shows a 1, it's a critical miss
 - This follows the official D&D 5e Sage Advice ruling
+
+---
+
+## Seeded Dice Roller
+
+The `SeededDiceRoller` class provides the same API as the static `DiceRoller` but produces **deterministic** results. It wraps `SeededRNG` internally, so the same seed and call sequence always produces identical rolls.
+
+### Key Differences from DiceRoller
+
+| Feature | `DiceRoller` (static) | `SeededDiceRoller` (instance) |
+|---------|----------------------|------------------------------|
+| Usage | Static methods: `DiceRoller.rollD20()` | Instance methods: `roller.rollD20()` |
+| Randomness | `Math.random()` — non-deterministic | `SeededRNG` — deterministic |
+| State | No state (each call independent) | Stateful counter (call order matters) |
+| Use case | Live gameplay, one-off rolls | Simulations, reproducible tests |
+
+### Creating a Seeded Roller
+
+Three ways to create an instance:
+
+```typescript
+import { SeededDiceRoller, createSeededRoller, SeededRNG } from 'playlist-data-engine';
+
+// 1. Factory function (recommended)
+const roller = createSeededRoller('my-simulation-seed');
+
+// 2. Constructor with seed string
+const roller2 = new SeededDiceRoller('another-seed');
+
+// 3. Constructor with existing SeededRNG instance
+const rng = new SeededRNG('pre-configured-rng');
+const roller3 = new SeededDiceRoller(rng);
+```
+
+The factory function `createSeededRoller()` is the standard way to create rollers — it's what `CombatSimulator` and `AICombatRunner` use internally.
+
+### API Reference
+
+All methods mirror the static `DiceRoller` API. The key difference is that results are deterministic given the same seed and call order.
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `rollDie(sides)` | `number` | Roll a single die (1 to sides) |
+| `rollD20()` | `number` | Roll a d20 (1-20) |
+| `rollMultipleDice(count, sides)` | `number[]` | Roll N dice, return individual results |
+| `parseDiceFormula(formula)` | `{ diceCount, diceSides, modifier, rolls, total }` | Parse and roll formulas like `"2d6+3"` |
+| `rollWithAdvantage()` | `{ roll1, roll2, result }` | Roll 2d20, take higher |
+| `rollWithDisadvantage()` | `{ roll1, roll2, result }` | Roll 2d20, take lower |
+| `rollInitiative(dexModifier)` | `number` | d20 + DEX modifier |
+| `calculateDamage(formula, modifier, isCritical?)` | `{ diceFormula, rolls, modifier, total, isCritical }` | Roll damage with optional crit doubling |
+| `rollSavingThrow(abilityMod, proficiency?)` | `number` | d20 + ability mod + proficiency |
+| `rollAbilityCheck(abilityMod, proficiency?)` | `number` | d20 + ability mod + proficiency |
+| `rollPercentile()` | `number` | Roll d100 (1-100) |
+| `isCriticalHit(d20Roll)` | `boolean` | Check if roll is natural 20 |
+| `isCriticalMiss(d20Roll)` | `boolean` | Check if roll is natural 1 |
+| `doubleDamage(rolls)` | `number[]` | Double the dice array (for crits) |
+
+### Usage Examples
+
+**Basic deterministic rolling:**
+
+```typescript
+import { createSeededRoller } from 'playlist-data-engine';
+
+const roller = createSeededRoller('combat-42');
+
+// These are always the same for seed 'combat-42'
+console.log(roller.rollD20());           // e.g., 14
+console.log(roller.rollD20());           // e.g., 7  (next in sequence)
+console.log(roller.rollDie(8));          // e.g., 3
+
+// A different roller with the same seed starts from the beginning
+const roller2 = createSeededRoller('combat-42');
+console.log(roller2.rollD20());          // 14 (same as first call above)
+```
+
+**Full combat simulation with seeded dice:**
+
+```typescript
+import { createSeededRoller } from 'playlist-data-engine';
+
+// Create a roller for this simulation run
+const roller = createSeededRoller('balance-test-1-0');
+
+// Use it for all combat rolls — every roll is deterministic
+const attackRoll = roller.rollD20();                         // Attack: 14
+const damage = roller.calculateDamage('2d6', 3);             // Damage: { total: 11, rolls: [4, 4] }
+const savingThrow = roller.rollSavingThrow(-1, 2);           // Save: 10
+const initiative = roller.rollInitiative(2);                 // Initiative: 16
+```
+
+### Injecting into CombatEngine
+
+Pass a `SeededDiceRoller` to `CombatEngine` to make all combat rolls deterministic:
+
+```typescript
+import { CombatEngine, createSeededRoller } from 'playlist-data-engine';
+
+// Non-deterministic (live gameplay)
+const liveEngine = new CombatEngine({ maxTurnsBeforeDraw: 50 });
+// Uses Math.random() internally
+
+// Deterministic (simulation)
+const simEngine = new CombatEngine({}, createSeededRoller('sim-seed'));
+// All attack rolls, damage, saving throws, and initiative are deterministic
+```
+
+The injected roller flows to all combat subsystems:
+
+```
+CombatEngine (receives roller)
+  ├── AttackResolver   → attack rolls, damage rolls, hit/miss
+  ├── InitiativeRoller → initiative ordering
+  └── SpellCaster      → spell attack rolls, saving throws
+```
+
+### How CombatSimulator Manages Seeding
+
+The `CombatSimulator` creates a fresh `SeededDiceRoller` for each simulation run, ensuring no state leaks between runs. Each run gets a unique seed derived from the base seed:
+
+```typescript
+// Internal logic (simplified):
+for (let i = 0; i < config.runCount; i++) {
+  const runSeed = `${config.baseSeed}-${i}`;
+  const roller = createSeededRoller(runSeed);
+  const runner = new AICombatRunner();
+  const result = runner.runFullCombat(players, enemies, aiConfig, combatConfig, roller);
+  aggregator.aggregateRun(result, i, runSeed);
+}
+```
+
+This means:
+- **Run 0** gets seed `"my-base-seed-0"` — completely independent RNG state
+- **Run 1** gets seed `"my-base-seed-1"` — fresh roller, no carry-over from Run 0
+- Changing `baseSeed` changes all runs; changing `runCount` adds/removes runs without affecting existing ones
+
+> **Note:** The enemy generation seed (used by `EnemyGenerator`) is separate from the simulation seed. Changing the simulation seed does not change which enemies are generated — only how the combat dice fall. See [Seeded RNG in Combat Simulations](#seeded-rng-in-combat-simulations) for the full seeding architecture.
 
 ---
 
