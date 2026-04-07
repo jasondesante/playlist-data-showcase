@@ -1076,13 +1076,25 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Covers: when to use seeded vs random (table), creating a roller (3 options), injecting into CombatEngine, determinism guarantees, full API reference table (14 methods), how CombatSimulator manages per-run seeding
   - Updated Table of Contents with links to new section plus placeholder anchors for 6.1.4/6.1.5 (Legendary Actions, Combat AI, Monte Carlo Simulation)
   - Build verified clean (pre-existing errors only, no regressions from doc change)
-- [ ] **6.1.2** Add **Status Effects** section
+- [x] **6.1.2** Add **Status Effects** section
   - Document the updated `StatusEffect` interface (new optional fields: `damage`, `damageType`, `mechanicalEffects`)
   - Document `applyStatusEffect()` and `removeExpiredStatusEffects()` methods
   - Document the duration tracking lifecycle (applied → tick down each turn → expire → remove)
   - Document concentration tracking
   - Document each mechanically enforced condition: Charmed, Frightened, Burning, Stunned, Prone
   - Include code examples for applying and checking status effects
+  - Replaced the brief stub section in `COMBAT_SYSTEM.md` with comprehensive documentation covering:
+    - Full `StatusEffect` and `StatusEffectMechanics` interface definitions with all fields
+    - Mechanically enforced conditions table (9 conditions with concentration and effects)
+    - Duration tracking lifecycle diagram (Applied → Active → Expired → Removed)
+    - `nextTurn()` processing order (start-of-turn damage → skip check → decrement → expire)
+    - `applyStatusEffect()` code examples (Burning with damage, Charmed with concentration)
+    - Stacking rules (same-name refresh, damage merge, mechanical effects merge, concentration replacement)
+    - Concentration tracking (4 break conditions, `checkConcentration()`, `dropConcentration()`)
+    - `removeExpiredStatusEffects()` usage
+    - Spell-based status effects table (`TAG_STATUS_EFFECTS` — 9 tags mapped to effects)
+    - Advantage/disadvantage from effects (5 flag types, D&D 5e cancellation rule)
+  - Build verified clean (pre-existing TS errors only, no regressions from doc change)
 - [ ] **6.1.3** Add **Legendary Actions** section
   - Document `executeLegendaryAction()` method
   - Document action point tracking (3 per round, reset at start of boss's turn)

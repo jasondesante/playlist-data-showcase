@@ -617,36 +617,192 @@ Action economy enforcement is manual - check flags before executing actions that
 
 ### Status Effects
 
-Combatants can have active conditions applied:
+Status effects are temporary conditions that modify how a combatant functions in combat. They can deal damage, impose advantage/disadvantage, skip turns, and more. The engine tracks durations, enforces mechanical effects, and manages concentration.
+
+#### StatusEffect Interface
 
 ```typescript
-// Access status effects on a combatant
-const combatant = combatInstance.combatants[0];
-combatant.statusEffects;
-// [
-//   { name: 'Burning', duration: 3, source: 'Fireball', concentration: false },
-//   { name: 'Charmed', duration: 1, source: 'Enchant', concentration: true },
-//   ...
-// ]
-
-// StatusEffect interface
 interface StatusEffect {
-  name: string;           // Condition name (e.g., 'Burning', 'Charmed')
-  duration: number;       // Remaining rounds (0 = expires at end of turn)
-  source: string;         // What applied the effect
-  concentration: boolean; // Requires caster concentration
+  name: string;           // e.g., 'Burning', 'Charmed', 'Stunned'
+  description: string;    // Human-readable description
+  duration: number;       // Rounds remaining (decremented each turn)
+  source?: string;        // Combatant ID that applied the effect
+  hasConcentration?: boolean;  // Requires caster to maintain concentration
+
+  icon?: string;          // Optional icon URL for UI display
+  image?: string;         // Optional image URL for larger display
+
+  damage?: number;        // Damage dealt at start of each of the affected combatant's turns
+  damageType?: DamageType; // Damage type for the effect's damage (e.g., 'fire')
+
+  mechanicalEffects?: StatusEffectMechanics;  // Combat rules enforced by the engine
 }
-
-// Example conditions
-'Burning'    // Ongoing fire damage
-'Charmed'    // Cannot attack caster, disadvantage on some checks
-'Frightened' // Disadvantage on attacks while source is visible
-'Prone'      // Disadvantage on melee attacks, advantage on ranged attacks
-'Stunned'    // Incapacitated, disadvantage on Dex saves, speed 0
-
-// Effects are typically applied via spell casting
-// See SpellCaster.applyStatusEffect() for effect application logic
 ```
+
+#### StatusEffectMechanics Interface
+
+The `mechanicalEffects` field controls what the engine enforces automatically:
+
+```typescript
+interface StatusEffectMechanics {
+  disadvantageOnAttackNonSource?: boolean;  // Charmed: disadvantage on attacks vs non-source
+  disadvantageOnAttack?: boolean;           // Frightened/Prone: disadvantage on all attacks
+  disadvantageOnAbilityChecks?: boolean;    // Frightened: disadvantage on ability checks
+  advantageOnMeleeAttackAgainst?: boolean;  // Prone: melee attacks against this target have advantage
+  advantageOnRangedAttackAgainst?: boolean; // Prone: ranged attacks against this target have advantage
+  disadvantageOnDexSaves?: boolean;         // Stunned/Paralyzed/Restrained: disadvantage on DEX saves
+  speedZero?: boolean;                      // Stunned/Paralyzed/Restrained: speed set to 0
+  skipTurn?: boolean;                       // Stunned/Paralyzed: skip turn entirely
+  damageImmunity?: DamageType;              // Immune to a specific damage type
+  damageResistance?: DamageType;            // Resist a specific damage type (half damage)
+  damageVulnerability?: DamageType;         // Vulnerable to a specific damage type (double damage)
+}
+```
+
+#### Mechanically Enforced Conditions
+
+The engine automatically enforces combat rules for the following conditions:
+
+| Condition | Concentration | Mechanical Effects |
+|-----------|:---:|---|
+| **Charmed** | Yes | Disadvantage on attack rolls against targets other than the source |
+| **Frightened** | Yes | Disadvantage on attack rolls and ability checks |
+| **Stunned** | No | Disadvantage on DEX saves, speed 0, skip turn entirely |
+| **Paralyzed** | No | Disadvantage on DEX saves, speed 0, skip turn entirely |
+| **Restrained** | Yes | Disadvantage on DEX saves, speed 0 |
+| **Poisoned** | No | Disadvantage on attack rolls and ability checks |
+| **Blinded** | No | Disadvantage on attack rolls and ability checks |
+| **Deafened** | No | (No mechanical effects — tagged for spell system use) |
+| **Burning** | No | Deals `damage` fire damage at start of each turn |
+
+> **Note:** Prone is listed in D&D 5e rules but is not currently mapped as a tag-based status effect. It can be applied manually with `advantageOnMeleeAttackAgainst`, `advantageOnRangedAttackAgainst`, and `disadvantageOnAttack` flags.
+
+#### Duration Tracking Lifecycle
+
+Status effects follow this lifecycle during combat:
+
+```
+Applied → Active (each turn: damage → skip check → decrement) → Expired → Removed
+```
+
+Each combatant's turn in `nextTurn()` processes in this order:
+
+1. **Start-of-turn damage** — effects with `damage > 0` deal damage (Burning, Poison)
+2. **Skip-turn check** — if any effect has `mechanicalEffects.skipTurn`, the turn is skipped entirely. Incapacitated combatants also lose concentration.
+3. **Duration decrement** — all effect durations are decremented by 1
+4. **Expiration removal** — effects with `duration <= 0` are removed. If a concentrated effect expires, `concentratingOn` is cleared.
+
+A `statusEffectTick` action is recorded in combat history whenever effects expire, damage is dealt, turns are skipped, or concentration is lost.
+
+#### Applying Status Effects
+
+Use `CombatEngine.applyStatusEffect()` to apply effects. This handles stacking, concentration tracking, and one-concentration-per-combatant rules:
+
+```typescript
+// Apply a Burning effect with damage
+combat.applyStatusEffect(target, {
+  name: 'Burning',
+  description: 'On fire from Fireball',
+  duration: 3,
+  source: caster.id,
+  damage: 6,
+  damageType: 'fire',
+  mechanicalEffects: {
+    // Burning has no mechanical effects beyond damage
+  }
+});
+
+// Apply a concentration effect (e.g., Charmed)
+combat.applyStatusEffect(target, {
+  name: 'Charmed',
+  description: `Charmed by ${caster.character.name}`,
+  duration: 1,
+  source: caster.id,
+  hasConcentration: true,
+  mechanicalEffects: {
+    disadvantageOnAttackNonSource: true,
+  }
+});
+```
+
+#### Stacking Rules
+
+When an effect with the **same name** already exists on the combatant:
+
+- **Duration** — refreshed to the higher of the existing and new durations
+- **Damage** — keeps the higher damage value
+- **Mechanical effects** — merged (new flags overwrite existing)
+- **Source** — updated to the new source
+- **Damage type** — updated to the new type
+- **Concentration** — new concentration effect replaces old concentration effect
+
+Different-named effects stack independently — a combatant can be both Charmed and Frightened simultaneously.
+
+#### Concentration Tracking
+
+A combatant can maintain concentration on **one effect at a time**. The `Combatant.concentratingOn` field tracks the name of the concentrated effect.
+
+**Concentration is broken when:**
+- The concentrating combatant takes damage and fails a CON save (DC 10 or half damage, whichever is higher)
+- A new concentration spell is cast (replaces the old one)
+- The combatant becomes incapacitated (Stunned, Paralyzed)
+- The combatant is defeated (HP reaches 0)
+- The concentrated effect expires naturally
+
+```typescript
+// Check if a combatant is concentrating
+combatant.concentratingOn;  // e.g., 'Charmed' or undefined
+
+// Check concentration when damage is taken (automatic via executeAttack)
+// Or check manually:
+const broken = combat.checkConcentration(combatInstance, combatant, 15);
+// Returns true if concentration was broken
+
+// Drop concentration manually
+const dropped = combat.dropConcentration(combatant, 'Voluntarily ended');
+// Returns the dropped StatusEffect or undefined
+```
+
+#### Removing Expired Effects
+
+```typescript
+// Remove effects with duration <= 0
+const expired = combat.removeExpiredStatusEffects(combatant);
+// Returns array of removed StatusEffect objects
+// Also clears combatant.concentratingOn if the concentrated effect expired
+```
+
+This is called automatically by `nextTurn()` during the duration tick-down step. You typically don't need to call it manually.
+
+#### Spell-Based Status Effects
+
+`SpellCaster` maps spell tags to status effects via the `TAG_STATUS_EFFECTS` constant:
+
+| Tag | Effect Name | Concentration |
+|-----|-------------|:---:|
+| `charm` | Charmed | Yes |
+| `frighten` | Frightened | Yes |
+| `stun` | Stunned | No |
+| `paralyze` | Paralyzed | No |
+| `restrain` | Restrained | Yes |
+| `poison` | Poisoned | No |
+| `blind` | Blinded | No |
+| `deafen` | Deafened | No |
+| `burn` | Burning | No |
+
+Spells can also apply status effects via keyword matching on `spell.description` and `spell.effect` text (fallback when no tags are present). Tag-based matching takes priority over text matching to prevent duplicates.
+
+#### Advantage/Disadvantage from Effects
+
+The engine checks status effects automatically during `executeAttack()` and `castSpell()`:
+
+- **`disadvantageOnAttackNonSource`** — attacker has disadvantage if the target is not the source combatant (Charmed)
+- **`disadvantageOnAttack`** — attacker has disadvantage unconditionally (Frightened, Poisoned, Blinded)
+- **`advantageOnMeleeAttackAgainst`** — melee attacks against this target have advantage (Prone)
+- **`advantageOnRangedAttackAgainst`** — ranged attacks against this target have advantage (Prone)
+- **`disadvantageOnDexSaves`** — target rolls DEX saving throws with disadvantage (Stunned, Paralyzed, Restrained)
+
+Per D&D 5e rules, advantage and disadvantage cancel each other out — if a combatant has both advantage and disadvantage on a roll, the roll is made normally.
 
 ### Combat History
 
