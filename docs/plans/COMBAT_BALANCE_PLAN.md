@@ -824,25 +824,37 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - All required fields present: `intendedDifficulty`, `actualDifficulty`, `balanceScore` (0-100), `playerWinRate`, `expectedWinRate` (as `{ min, max }` range), `difficultyVariance`, `confidence`, `recommendations`
   - Additional fields beyond spec: `averagePlayerHPPercentRemaining`, `totalRuns` — useful for UI display
   - `expectedWinRate` uses `{ min: number; max: number }` instead of a single number — more informative than the spec's single value
-- [ ] **4.1.3** Define expected win rates per difficulty tier
+- [x] **4.1.3** Define expected win rates per difficulty tier
   - Easy: ~90%+ player win rate
   - Medium: ~70-80% player win rate
   - Hard: ~50-60% player win rate
   - Deadly: ~30-40% player win rate
   - These are tunable based on what feels right for the game
-- [ ] **4.1.4** Implement balance score calculation
+  - Already implemented as `EXPECTED_WIN_RATES` constant in `BalanceValidator.ts` (lines 90-95) as part of 4.1.1
+- [x] **4.1.4** Implement balance score calculation
   - Compare actual win rate to expected win rate range
   - Score 100 = perfect match, decreasing for larger variance
   - Factor in average HP remaining (a 100% win rate with 1 HP left is different from 100% with full HP)
-- [ ] **4.1.5** Implement `BalanceRecommendation` generation
+  - Already implemented as `calculateBalanceScore()` in `BalanceValidator.ts` (lines 212-237) as part of 4.1.1
+- [x] **4.1.5** Implement `BalanceRecommendation` generation
   - If overpowered: "Reduce enemy CR by 1", "Reduce enemy count by 1", "Remove one extra ability"
   - If underpowered: "Increase enemy CR by 1", "Add one more enemy", "Promote one enemy to higher rarity"
   - Include confidence-adjusted recommendations
+  - Already implemented as `generateRecommendations()` in `BalanceValidator.ts` (lines 280-385) as part of 4.1.1
 
 ### 4.2 Parameter Sweep
 
-- [ ] **4.2.1** Create `src/core/combat/Analysis/ParameterSweep.ts`
+- [x] **4.2.1** Create `src/core/combat/Analysis/ParameterSweep.ts`
   - `sweep(baseParty, baseEncounter, params): SweepResults`
+  - Created `src/core/combat/Analysis/ParameterSweep.ts` with full `ParameterSweep` class
+  - `sweep(players, baseEncounter, params, onProgress?): SweepResults` — main method that iterates over range values, generates modified enemies/party per value, runs simulations, and collects summaries
+  - Supports all 8 sweep variables: `cr`, `enemyCount`, `partyLevel`, `difficultyMultiplier`, `rarity`, `hpLevel`, `attackLevel`, `defenseLevel`
+  - `applyParameter()` dispatches to per-variable handlers that modify encounter/party config
+  - Each data point gets a unique seed: `${baseSeed}-${value}` for determinism
+  - Supports `AbortSignal` for cancellation with partial results
+  - Empty combat edge cases handled (returns zeroed data point)
+  - Exported from engine `src/index.ts`: `ParameterSweep` class + all type interfaces
+  - Engine builds clean (tsc --noEmit + vite build), all 1132 combat tests pass
 - [ ] **4.2.2** Define sweep parameter types
   ```typescript
   interface SweepParams {
