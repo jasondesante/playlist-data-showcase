@@ -820,7 +820,7 @@ combatInstance.history;
 // ]
 
 // CombatAction properties
-action.type;     // 'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'help' | 'hide' | 'ready' | 'flee'
+action.type;     // 'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'help' | 'hide' | 'ready' | 'flee' | 'useItem' | 'legendaryAction' | 'statusEffectTick'
 action.actor;    // Combatant who performed the action
 action.target;   // Single target (for attacks)
 action.targets;  // Multiple targets (for spells)
@@ -883,6 +883,137 @@ combat.executeWeaponAttack(combatInstance, current, target);
 ### Manual Attack Objects
 
 For special cases, you can still manually construct `Attack` objects using `executeAttack()` directly. See `Attack` type in DATA_ENGINE_REFERENCE.md for all available properties.
+
+### Legendary Actions
+
+Legendary actions are special abilities available to boss-tier enemies. Unlike regular actions, legendary actions are taken **outside the boss's own turn** — other creatures can take legendary actions at the end of another creature's turn. A boss starts each round with 3 legendary action points and spends them to use its abilities. The cost of each action varies (1, 2, or 3 points).
+
+#### LegendaryAction Interface
+
+Each legendary action is defined on the boss's `character.legendary_config.actions` array:
+
+```typescript
+interface LegendaryAction {
+  id: string;           // Unique identifier (e.g., 'tail_sweep')
+  name: string;         // Display name (e.g., 'Tail Sweep')
+  description: string;  // What the action does
+  cost: number;         // Action points consumed (1, 2, or 3)
+  effect: string;       // Combat system effect description
+  damage?: string;      // Dice formula if it deals damage (e.g., '2d8 + 5')
+  damageType?: string;  // Damage type (e.g., 'bludgeoning')
+  archetypes: EnemyArchetype[];
+  tags?: string[];      // Tags for AI filtering (e.g., 'damage', 'control', 'healing')
+}
+
+interface LegendaryConfig {
+  resistances: number;       // Legendary resistances per day
+  actions: LegendaryAction[]; // Available legendary actions
+  lairActionHint?: string;    // Optional lair action hint
+}
+```
+
+#### Combatant Legendary Tracking
+
+Boss combatants have two additional fields for tracking legendary resources:
+
+```typescript
+interface Combatant {
+  // ... standard fields ...
+  legendaryActionsRemaining?: number;   // Reset to 3 at the start of each round
+  legendaryResistancesRemaining?: number; // Per-day resource, set from config at combat start
+}
+```
+
+These are initialized automatically by `CombatEngine.createCombatant()` when a character has `legendary_config`.
+
+#### Action Point Tracking
+
+- Each round, all non-defeated boss combatants have their legendary action points reset to **3**
+- Reset happens at the start of each new round (when `nextTurn()` wraps around to turn index 0)
+- Points are spent when `executeLegendaryAction()` is called, deducted by the action's `cost`
+- If a boss doesn't have enough points for an action, the engine throws an error
+
+```
+Round 1 starts → boss gets 3 points
+  Player turn ends → boss uses "Tail Sweep" (cost 2) → 1 point remaining
+  Player turn ends → boss uses "Frightening Presence" (cost 1) → 0 points remaining
+  Player turn ends → boss tries action → throws: not enough points
+Round 2 starts → boss gets 3 points again
+  ...
+```
+
+#### Executing Legendary Actions
+
+Use `CombatEngine.executeLegendaryAction()` to have a boss use a legendary action:
+
+```typescript
+// Find a boss combatant
+const boss = combatInstance.combatants.find(c => c.character.legendary_config);
+const target = combat.getLivingCombatants(combatInstance).find(c => c.id !== boss.id);
+
+// Get a legendary action from the boss's config
+const action = boss.character.legendary_config.actions[0];
+// e.g., { id: 'tail_sweep', name: 'Tail Sweep', cost: 2, damage: '2d8+5', ... }
+
+// Execute the legendary action
+const legendaryAction = combat.executeLegendaryAction(combatInstance, boss, action, target);
+
+console.log(legendaryAction.result.description);
+// "Dragon Lord uses Tail Sweep on Aragorn for 12 bludgeoning damage (2 action points spent, 1 remaining)"
+
+// Check remaining points
+boss.legendaryActionsRemaining; // 1
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `combat` | `CombatInstance` | The active combat instance |
+| `bossCombatant` | `Combatant` | The boss using the legendary action |
+| `action` | `{ id, name, cost, effect, damage?, damage_type?, ... }` | The action to execute (must belong to the boss) |
+| `target?` | `Combatant` | Optional target for damaging actions |
+
+**What the engine does:**
+1. Validates the action exists on the boss's `legendary_config.actions`
+2. Checks that enough action points are available
+3. Spends the action points (deducts `cost` from `legendaryActionsRemaining`)
+4. If the action has a `damage` formula and a target is provided, rolls damage and applies it
+5. Records a `legendaryAction` entry in combat history
+6. Checks if the target was defeated (updates combat status)
+
+#### Legendary Resistances
+
+Legendary resistances allow a boss to automatically succeed on a failed saving throw. This is a **per-day resource** (not per-round).
+
+```typescript
+// Boss fails a saving throw against a spell
+const failedSave = false;
+
+if (!failedSave) {
+  // Use legendary resistance to succeed instead
+  const used = combat.useLegendaryResistance(combatInstance, boss);
+  if (used) {
+    console.log(`${boss.character.name} used legendary resistance!`);
+    console.log(`Remaining today: ${boss.legendaryResistancesRemaining}`);
+  } else {
+    console.log('No legendary resistances remaining — boss suffers the effect');
+  }
+}
+```
+
+- Returns `true` if a resistance was available and consumed
+- Returns `false` if no resistances remain (`legendaryResistancesRemaining` is 0)
+- Resistant count is set from `legendary_config.resistances` at combat start
+- Resistant count does **not** reset between rounds (per-day, not per-round)
+- Usage is recorded in combat history
+
+#### AI and Legendary Actions
+
+The combat AI (`CombatAI`) automatically selects and uses legendary actions for boss enemies via `selectLegendaryAction()`. After each non-boss turn, the `AICombatRunner` checks if any boss has remaining legendary action points and chains actions until the budget is exhausted or no valid actions remain.
+
+- **Normal AI**: prefers lowest-cost damage actions (spread points across the round for sustained pressure)
+- **Aggressive AI**: prefers highest-cost damage actions (maximize immediate impact)
 
 ---
 

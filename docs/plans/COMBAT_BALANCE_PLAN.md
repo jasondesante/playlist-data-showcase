@@ -1095,12 +1095,16 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
     - Spell-based status effects table (`TAG_STATUS_EFFECTS` — 9 tags mapped to effects)
     - Advantage/disadvantage from effects (5 flag types, D&D 5e cancellation rule)
   - Build verified clean (pre-existing TS errors only, no regressions from doc change)
-- [ ] **6.1.3** Add **Legendary Actions** section
+- [x] **6.1.3** Add **Legendary Actions** section
   - Document `executeLegendaryAction()` method
   - Document action point tracking (3 per round, reset at start of boss's turn)
   - Document `useLegendaryResistance()` method
   - Document the `Combatant` type additions (`legendaryActionsRemaining`, `legendaryResistancesRemaining`)
   - Include code examples for executing legendary actions during combat
+  - Added comprehensive "Legendary Actions" section to `docs/engine/docs/COMBAT_SYSTEM.md`
+  - Covers: LegendaryAction and LegendaryConfig interface definitions with all fields, Combatant legendary tracking fields (legendaryActionsRemaining, legendaryResistancesRemaining), action point tracking (3 per round reset at round start via nextTurn()), executing legendary actions with code examples, parameter table, engine behavior steps, legendary resistances (per-day resource, useLegendaryResistance() with code example), AI legendary action behavior (normal vs aggressive selection), point budget exhaustion diagram
+  - Also updated Combat History section to include `'useItem'`, `'legendaryAction'`, and `'statusEffectTick'` in the action type union
+  - Build verified clean (pre-existing TS errors only, no regressions)
 - [ ] **6.1.4** Add **Combat AI** section
   - Document the `AIPlayStyle` enum and what each style means (normal, aggressive)
   - Document the `AIConfig` interface (per-side styles, per-combatant overrides)
