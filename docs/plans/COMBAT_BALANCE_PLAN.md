@@ -924,18 +924,39 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 4.4 Encounter Difficulty Calculator
 
-- [ ] **4.4.1** Create `src/core/combat/Analysis/DifficultyCalculator.ts`
+- [x] **4.4.1** Create `src/core/combat/Analysis/DifficultyCalculator.ts`
   - Given a party and a desired difficulty, suggest enemy configurations
   - Uses simulation data to calibrate suggestions
-- [ ] **4.4.2** Implement binary search approach
+  - Created `src/core/combat/Analysis/DifficultyCalculator.ts` with full `DifficultyCalculator` class
+  - Defined `DifficultyCalculatorOptions` interface — AI config, seed, simulations per probe, max iterations, enemy count, abort signal, progress callback
+  - Defined `DifficultyEnemyTemplate` interface — rarity, category, archetype, templateId, statLevels, difficultyMultiplier
+  - Defined `DifficultySuggestion` interface — recommendedCR, winRate, expectedWinRateRange, confidenceInterval, marginOfError, converged, probes, initialCREstimate, suggestedEnemy, wasCancelled
+  - Defined `DifficultyProbe` interface — cr, winRate, totalRuns, averageRounds, averageHPRemaining
+  - `suggest()` method: XP-budget-based initial CR estimate → simulation-driven binary search refinement
+  - Binary search adjusts CR up (win rate too high) or down (win rate too low) until convergence
+  - CR rounding to standard D&D values (0.125, 0.25, 0.5, integers)
+  - Confidence interval via normal approximation for proportions (z=1.96 for 95%)
+  - Accounts for enemy count via encounter multiplier adjustment
+  - Exported from engine `src/index.ts` alongside BalanceValidator (which was missing)
+  - 53 tests in `tests/unit/combat/difficultyCalculator.test.ts` covering: suggestion structure (5), initial CR estimate (5), confidence interval (3), difficulty targeting (7), binary search behavior (4), convergence (2), enemy template (5), cancellation (2), progress callback (2), AI config variations (3), determinism (2), edge cases (7), CR rounding (1), all difficulty tiers (4), performance (1)
+  - All 1215 combat tests pass, engine type-check clean (tsc --noEmit)
+- [x] **4.4.2** Implement binary search approach
   - `getCRFromXP()` in `EncounterBalance.ts` already implements binary search over CR values — reuse this as the starting point
   - Start with XP-budget-based CR estimate from `getCRFromXP()`
   - Run simulations, check if win rate matches target
   - Adjust CR up or down based on results
   - Iterate until win rate converges on target range
-- [ ] **4.4.3** Return confidence intervals
+  - Already implemented as part of 4.4.1 — `suggest()` method uses two-phase approach:
+    1. XP Budget Estimate: `getXPBudgetForParty()` → adjusted for encounter multiplier → `getCRFromXP()` for initial CR
+    2. Simulation-Driven Refinement: binary search with midpoint CR calculation, min step clamping, convergence detection
+  - Win rate above target max → increase CR (encounter too easy); below target min → decrease CR (too hard)
+  - Stops when converged, max iterations reached, or CR range too narrow (< 0.25 step)
+- [x] **4.4.3** Return confidence intervals
   - "For a Medium encounter, use CR 3 enemies (win rate: 72% ± 5%)"
   - Based on the statistical spread of simulation results
+  - Already implemented as part of 4.4.1 — `marginOfError` calculated via normal approximation for proportions (z=1.96, worst-case p=0.5)
+  - `confidenceInterval` formatted as human-readable string: `"72% ± 5%"`
+  - Margin of error decreases with more simulations per probe (conservative estimate)
 
 ### 4.5 Analysis Tests
 
