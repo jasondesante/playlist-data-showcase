@@ -712,12 +712,19 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - `buildHistogram()` utility for damage/HP distribution visualization
   - Exported `CombatSimulator` and all type interfaces from engine `src/index.ts`
   - Engine build verified clean (vite build succeeds, 982 combat tests pass, no new TypeScript errors)
-- [ ] **3.1.2** Implement `run(party, enemies, config): SimulationResults`
-  - Loop `runCount` times, each with a unique seed (`baseSeed + i`)
-  - Create fresh `SeededDiceRoller` and `AICombatRunner` per run
-  - Aggregate results into `SimulationResults`
-  - Support progress callback for UI integration
-  - Handle early termination if requested
+- [x] **3.1.2** Implement `run(party, enemies, config): SimulationResults`
+  - `run()` method was already scaffolded in 3.1.1; verified and hardened here
+  - Loops `runCount` times with unique seed (`${config.baseSeed}-${i}`)
+  - Creates fresh `SeededDiceRoller` and `AICombatRunner` per run (moved runner inside loop)
+  - Aggregates results into `SimulationResults` via `SimulationAggregator`
+  - Supports progress callback via `config.onProgress`
+  - Added `abortSignal?: AbortSignal` to `SimulationConfig` — checked before each run, returns partial results on cancellation
+  - **Bug fixes discovered during verification:**
+    - Fixed `CombatMetricsTracker.computeMetrics()` — `damagePerRound` array was never populated (roundDamage accumulated but never flushed; history has no round markers). Now computes DPR from aggregate data: `[totalDamageDealt / roundsSurvived]` per run
+    - Fixed `CombatMetricsTracker.computeMetrics()` — `currentRound` was never incremented, causing all defeat rounds to be recorded as 1. Now estimates rounds survived from turn counts: `Math.max(1, Math.round(turns / combatantCount))`
+    - Fixed `SimulationAggregator` combatant ID mismatch — used `enemy_0..N` but `CombatEngine` uses a shared counter (`player_0..P-1`, `enemy_P..P+N-1`). Fixed ID generation to match engine's scheme
+  - Smoke test verified: determinism, abort, progress callback, detailed logs, per-combatant metrics (DPR, survival rate, damage distribution), party+enemy compositions, correct ID mapping
+  - All 982 combat tests pass, engine builds clean (tsc + vite)
 - [ ] **3.1.3** Implement cancellation support
   - `AbortController` pattern for cancelling long-running simulations
   - Clean up resources on cancellation, return partial results
