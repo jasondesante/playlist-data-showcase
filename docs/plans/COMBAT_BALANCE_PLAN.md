@@ -1169,10 +1169,14 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Covers: concept explanation with identical-seed methodology, ComparativeAnalyzer usage with full code example, ComparisonConfig and ComparisonOptions parameter tables, ComparisonResult interface table, DeltaMetrics table (positive=favors A), CombatantDelta table (per-combatant matched by index), SignificanceResult table (normal approximation test), 3 common use cases with code examples (stat changes, party sizes, enemy CR comparison), unmatched combatant handling
   - Updated Table of Contents with new entry (item 12, API Reference renumbered to 13)
   - Build verified (pre-existing TS errors only, no regressions from doc change)
-- [ ] **6.2.4** Add **Difficulty Calculator** subsection
+- [x] **6.2.4** Add **Difficulty Calculator** subsection
   - Document `DifficultyCalculator` — given a party and desired difficulty, suggest enemy config
   - Explain binary search approach and confidence intervals
   - Include code example: "What CR should I use for a Hard encounter with this level 5 party?"
+  - Added comprehensive "Difficulty Calculator" section to `docs/engine/docs/ENEMY_GENERATION.md` between Comparative Analysis and API Reference
+  - Covers: two-phase approach (XP Budget Estimate + Simulation-Driven Refinement), CR rounding to standard D&D steps, confidence interval calculation (normal approximation, z=1.96), full usage code example, DifficultyCalculatorOptions parameter table (8 fields), DifficultyEnemyTemplate parameter table (6 fields), DifficultySuggestion result table (13 fields), DifficultyProbe table (5 fields), multi-enemy encounter usage with encounter multiplier adjustment, cancellation with AbortController, "When to Use" decision table (DifficultyCalculator vs BalanceValidator vs ParameterSweep vs ComparativeAnalyzer)
+  - Updated Table of Contents: added entry 13 (Difficulty Calculator), renumbered API Reference to 14
+  - Build verified (pre-existing TS errors only, no regressions from doc change)
 - [ ] **6.2.5** Add **Recommended Simulation Counts** reference table
   - Quick exploration (100 runs): rough estimate, fast
   - Standard analysis (500 runs): reasonable confidence for most decisions

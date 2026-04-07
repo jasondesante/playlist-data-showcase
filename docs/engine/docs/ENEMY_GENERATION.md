@@ -18,7 +18,8 @@ Complete guide to generating enemies and encounters in the Playlist Data Engine.
 10. [Simulation-Based Balance Validation](#simulation-based-balance-validation)
 11. [Parameter Sweep](#parameter-sweep)
 12. [Comparative Analysis](#comparative-analysis)
-13. [API Reference](#api-reference)
+13. [Difficulty Calculator](#difficulty-calculator)
+14. [API Reference](#api-reference)
 
 ---
 
@@ -1324,6 +1325,174 @@ const result = analyzer.compare(
   { runCount: 500, baseSeed: 'cr-compare', aiConfig: { playerStyle: 'normal', enemyStyle: 'aggressive' } },
 );
 ```
+
+---
+
+## Difficulty Calculator
+
+> **"What CR should I use for a Hard encounter with this level 5 party?"**
+
+The `DifficultyCalculator` answers this question by combining **XP-budget theory** (D&D 5e encounter building math) with **simulation-driven refinement**. It runs actual combats at different CR values and uses binary search to find the CR that produces the target win rate for your desired difficulty.
+
+### How It Works
+
+The search uses a two-phase approach:
+
+1. **XP Budget Estimate** — `getXPBudgetForParty()` calculates the theoretical XP budget for the party at the target difficulty, adjusts for enemy count via encounter multiplier, then converts to a CR estimate via `getCRFromXP()`. This gives a reasonable starting point.
+
+2. **Simulation-Driven Refinement** — binary search over CR values. At each step, the calculator:
+   - Generates enemies from the template at the current CR
+   - Runs N simulations (default: 200 per probe)
+   - Checks if the player win rate falls within the target range
+   - Adjusts CR up (win rate too high → encounter too easy) or down (win rate too low → encounter too hard)
+
+The search converges when the win rate is within the expected range for the target difficulty, or after 10 iterations (whichever comes first).
+
+### CR Rounding
+
+CR values are rounded to standard D&D 5e steps: `0.125`, `0.25`, `0.5`, or integers. The search uses fractional CRs internally but reports rounded values in the final suggestion.
+
+### Confidence Intervals
+
+Each suggestion includes a **margin of error** calculated via normal approximation for proportions (z = 1.96, 95% confidence). This is expressed as a human-readable string:
+
+```
+"72% ± 5%"
+```
+
+The margin of error decreases with more simulations per probe. For higher confidence, increase `simulationsPerProbe`.
+
+### Usage
+
+```typescript
+import { DifficultyCalculator } from 'playlist-data-engine';
+
+const calculator = new DifficultyCalculator();
+
+const suggestion = calculator.suggest(
+  party,                                   // Player CharacterSheet[]
+  { rarity: 'elite', category: 'humanoid', archetype: 'brute' },
+  'hard',                                  // Target difficulty
+  {
+    aiConfig: {
+      playerStyle: 'normal',
+      enemyStyle: 'aggressive',
+    },
+    baseSeed: 'my-search',
+    simulationsPerProbe: 200,
+    enemyCount: 1,
+    onProgress: (iteration, maxIterations, currentCR) => {
+      console.log(`Probe ${iteration}/${maxIterations} — testing CR ${currentCR}`);
+    },
+  },
+);
+
+console.log(suggestion.recommendedCR);      // e.g., 3
+console.log(suggestion.winRate);            // e.g., 0.73
+console.log(suggestion.confidenceInterval); // e.g., "73% ± 5%"
+console.log(suggestion.converged);          // true
+console.log(suggestion.suggestedEnemy);     // Generated CharacterSheet at CR 3
+```
+
+### DifficultyCalculatorOptions
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `aiConfig` | `AIConfig` | *(required)* | AI configuration for simulations |
+| `combatConfig` | `CombatConfig` | `undefined` | Optional combat engine overrides |
+| `baseSeed` | `string` | `'difficulty-calc'` | Base seed — each probe gets a derived seed |
+| `simulationsPerProbe` | `number` | `200` | Simulation runs per CR probe |
+| `maxIterations` | `number` | `10` | Maximum binary search iterations |
+| `enemyCount` | `number` | `1` | Number of enemies in the encounter |
+| `abortSignal` | `AbortSignal` | `undefined` | Cancellation support |
+| `onProgress` | `function` | `undefined` | Callback: `(iteration, maxIterations, currentCR)` |
+
+### DifficultyEnemyTemplate
+
+Defines the "shape" of the enemy. CR is set automatically by the search — all other fields define the template.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `rarity` | `EnemyRarity` | `'elite'` | Rarity tier |
+| `category` | `EnemyCategory` | `'humanoid'` | Enemy category |
+| `archetype` | `EnemyArchetype` | `'brute'` | Combat archetype |
+| `templateId` | `string` | `undefined` | Force a specific template |
+| `statLevels` | `StatLevelOverrides` | `undefined` | HP/attack/defense level overrides |
+| `difficultyMultiplier` | `number` | `undefined` | Fine-tune enemy difficulty |
+
+### DifficultySuggestion
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `targetDifficulty` | `EncounterDifficulty` | The requested difficulty tier |
+| `recommendedCR` | `number` | Suggested CR (rounded to standard D&D step) |
+| `winRate` | `number` | Player win rate at the recommended CR (0–1) |
+| `expectedWinRateRange` | `{ min, max }` | Target win rate range for the difficulty |
+| `confidenceInterval` | `string` | Human-readable, e.g., `"73% ± 5%"` |
+| `marginOfError` | `number` | Statistical margin of error (±) |
+| `converged` | `boolean` | Whether the search found a CR within the target range |
+| `totalSimulationsRun` | `number` | Total simulations across all probes |
+| `iterationsUsed` | `number` | Number of probes actually performed |
+| `probes` | `DifficultyProbe[]` | Full search history (CR, win rate, etc. per probe) |
+| `initialCREstimate` | `number` | XP-budget-based CR estimate (before simulation) |
+| `suggestedEnemy` | `CharacterSheet` | Generated enemy at the recommended CR |
+| `wasCancelled` | `boolean` | Whether the search was cancelled |
+
+### DifficultyProbe
+
+Each entry in the `probes` array records one step of the binary search.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cr` | `number` | CR value tested |
+| `winRate` | `number` | Player win rate from simulation |
+| `totalRuns` | `number` | Number of simulation runs |
+| `averageRounds` | `number` | Average rounds to resolution |
+| `averageHPRemaining` | `number` | Average player HP % remaining on wins |
+
+### Multi-Enemy Encounters
+
+For encounters with multiple enemies, set `enemyCount` to the desired number. The calculator adjusts the XP budget using the encounter multiplier (1 enemy = 1×, 2 enemies = 1.5×, 3–6 = 2×, 7–10 = 2.5×, 11–14 = 3×) and searches for a per-enemy CR that produces the target difficulty.
+
+```typescript
+const suggestion = calculator.suggest(
+  party,
+  { rarity: 'common', archetype: 'archer' },
+  'medium',
+  { aiConfig, enemyCount: 3, baseSeed: 'mob-search' },
+);
+
+// Recommended CR is per-enemy — all 3 enemies use this CR
+console.log(suggestion.recommendedCR); // e.g., 0.5
+```
+
+### Cancellation
+
+Like other long-running tools, the calculator supports `AbortController` for cancellation. Partial results are returned with `wasCancelled: true`.
+
+```typescript
+const controller = new AbortController();
+
+// Cancel after 3 seconds
+setTimeout(() => controller.abort(), 3000);
+
+const suggestion = calculator.suggest(
+  party, template, 'hard',
+  { aiConfig, baseSeed: 'quick', abortSignal: controller.signal },
+);
+
+console.log(suggestion.wasCancelled);  // true
+console.log(suggestion.probes.length); // 1–2 (partial results)
+```
+
+### When to Use
+
+| Scenario | Tool |
+|----------|------|
+| "Is this encounter balanced?" | `BalanceValidator` (validate existing config) |
+| "How does difficulty change across CR 1–10?" | `ParameterSweep` (curve exploration) |
+| "What CR should I use for Medium difficulty?" | **`DifficultyCalculator`** (inverse problem) |
+| "Is +2 AC meaningfully different?" | `ComparativeAnalyzer` (A/B testing) |
 
 ---
 
