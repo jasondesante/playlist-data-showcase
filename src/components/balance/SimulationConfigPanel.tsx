@@ -25,6 +25,7 @@ import {
     type EncounterConfigUI,
     type SimulationSettingsUI,
     type AIPlayStyle,
+    type SimulationEstimateSnapshot,
     DEFAULT_SIMULATION_SETTINGS,
     DEFAULT_ENCOUNTER_CONFIG,
     RUN_COUNT_PRESETS,
@@ -55,7 +56,7 @@ interface SimulationConfigPanelProps {
     /** Called when the internal encounter config changes (for tracking in parent) */
     onEncounterConfigChange?: (config: EncounterConfigUI) => void;
 
-    onRunSimulation: (party: CharacterSheet[], enemies: CharacterSheet[], config: SimulationConfig) => void;
+    onRunSimulation: (party: CharacterSheet[], enemies: CharacterSheet[], config: SimulationConfig, estimateSnapshot: SimulationEstimateSnapshot | null) => void;
     onCancel: () => void;
     onReset: () => void;
 }
@@ -188,8 +189,8 @@ export function SimulationConfigPanel({
             encounterConfig,
         });
 
-        onRunSimulation(selectedParty, generatedEnemies, simConfig.config);
-    }, [selectedParty, encounterConfig, settings, generate, onRunSimulation]);
+        onRunSimulation(selectedParty, generatedEnemies, simConfig.config, estimateSnapshot);
+    }, [selectedParty, encounterConfig, settings, generate, onRunSimulation, estimateSnapshot]);
 
     const handleReset = useCallback(() => {
         onReset();

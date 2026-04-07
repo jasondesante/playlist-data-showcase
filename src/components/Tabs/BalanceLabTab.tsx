@@ -20,7 +20,7 @@ import {
     type SimulationConfig,
     type CharacterSheet,
 } from 'playlist-data-engine';
-import { getWinRateDifficulty, type EncounterConfigUI, DEFAULT_ENCOUNTER_CONFIG } from '@/types/simulation';
+import { getWinRateDifficulty, type EncounterConfigUI, type SimulationEstimateSnapshot, DEFAULT_ENCOUNTER_CONFIG } from '@/types/simulation';
 import { onBalanceConfigTransfer, type BalanceConfigTransferPayload } from '@/utils/balanceConfigTransfer';
 import { logger } from '@/utils/logger';
 import './BalanceLabTab.css';
@@ -56,6 +56,9 @@ export function BalanceLabTab() {
     // Track incoming config transfer from CombatSimulatorTab
     const [partySeedsOverride, setPartySeedsOverride] = useState<string[] | null>(null);
     const pendingTransferRef = useRef<BalanceConfigTransferPayload | null>(null);
+
+    // Store pre-simulation estimate snapshot for post-run validation (Phase 3)
+    const estimateSnapshotRef = useRef<SimulationEstimateSnapshot | null>(null);
 
     // Listen for config transfers from CombatSimulatorTab
     useEffect(() => {
@@ -142,7 +145,8 @@ export function BalanceLabTab() {
 
     // Handle run simulation from config panel
     const handleRunSimulation = useCallback(
-        (party: CharacterSheet[], enemies: CharacterSheet[], config: SimulationConfig) => {
+        (party: CharacterSheet[], enemies: CharacterSheet[], config: SimulationConfig, estimateSnapshot: SimulationEstimateSnapshot | null) => {
+            estimateSnapshotRef.current = estimateSnapshot;
             startSimulation(party, enemies, config);
         },
         [startSimulation],

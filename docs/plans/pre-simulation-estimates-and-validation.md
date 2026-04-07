@@ -172,7 +172,7 @@ BalanceLabTab (results area)
 
   Note: `useEstimateSnapshot` can internally use `usePartyAnalysis` or call `PartyAnalyzer.analyzeParty()` directly — whichever is cleaner. The existing `usePartyAnalysis` hook has a loading delay UX that may not be desired here (we want instant estimates), so prefer calling `PartyAnalyzer.analyzeParty()` directly with `useMemo`.
 
-- [ ] **2.5 Snapshot estimates when simulation starts**
+- [x] **2.5 Snapshot estimates when simulation starts**
 
   In `SimulationConfigPanel.handleRun()`:
   1. Capture the current `estimateSnapshot` from the hook
