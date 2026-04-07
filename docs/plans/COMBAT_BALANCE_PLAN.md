@@ -819,19 +819,11 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Context-aware recommendations: overpowered suggests reducing CR/enemy count/legendary actions; underpowered suggests increasing CR/adding enemies; balanced checks HP remaining for fine-tuning
   - 60 tests in `tests/unit/combat/balanceValidator.test.ts` covering: expected win rate constants (5), difficulty classification (11), balance score (10), difficulty variance (9), confidence (4), report structure (4), recommendations (9), full pipeline (2), edge cases (6), integration scenarios (2)
   - All 1132 combat tests pass, engine builds clean (tsc + vite)
-- [ ] **4.1.2** Define `BalanceReport` interface
-  ```typescript
-  interface BalanceReport {
-    intendedDifficulty: EncounterDifficulty;
-    actualDifficulty: EncounterDifficulty;
-    balanceScore: number;              // 0-100, how well actual matches intended
-    playerWinRate: number;
-    expectedWinRate: number;           // Based on D&D 5e guidelines
-    difficultyVariance: 'underpowered' | 'balanced' | 'overpowered';
-    confidence: number;                // Based on run count (more runs = higher confidence)
-    recommendations: BalanceRecommendation[];
-  }
-  ```
+- [x] **4.1.2** Define `BalanceReport` interface
+  - Already implemented in `BalanceValidator.ts` (lines 54-75) as part of 4.1.1
+  - All required fields present: `intendedDifficulty`, `actualDifficulty`, `balanceScore` (0-100), `playerWinRate`, `expectedWinRate` (as `{ min, max }` range), `difficultyVariance`, `confidence`, `recommendations`
+  - Additional fields beyond spec: `averagePlayerHPPercentRemaining`, `totalRuns` — useful for UI display
+  - `expectedWinRate` uses `{ min: number; max: number }` instead of a single number — more informative than the spec's single value
 - [ ] **4.1.3** Define expected win rates per difficulty tier
   - Easy: ~90%+ player win rate
   - Medium: ~70-80% player win rate
