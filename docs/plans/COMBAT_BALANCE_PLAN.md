@@ -702,18 +702,16 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 3.1 Simulator Core
 
-- [ ] **3.1.1** Create `src/core/combat/Simulation/CombatSimulator.ts`
-  - `class CombatSimulator` with configurable simulation parameters
-  ```typescript
-  interface SimulationConfig {
-    runCount: number;            // Number of simulations (100-10000)
-    baseSeed: string;            // Base seed for determinism (each run gets baseSeed + index)
-    aiConfig: AIConfig;          // AI play styles per side
-    combatConfig?: CombatConfig; // Engine configuration (max turns, etc.)
-    collectDetailedLogs?: boolean; // If true, save full combat log per run (memory-intensive)
-    onProgress?: (completed: number, total: number) => void; // Progress callback
-  }
-  ```
+- [x] **3.1.1** Create `src/core/combat/Simulation/CombatSimulator.ts`
+  - Created `src/core/combat/Simulation/CombatSimulator.ts` with full `CombatSimulator` class and `run()` method
+  - Defined `SimulationConfig` interface with all fields: `runCount`, `baseSeed`, `aiConfig`, `combatConfig?`, `collectDetailedLogs?`, `onProgress?`
+  - Defined complete result type hierarchy: `SimulationResults`, `SimulationSummary`, `CombatantSimulationMetrics`, `HistogramBucket`, `SimulationRunDetail`, `PartyConfig`, `EncounterConfig`
+  - `run(players, enemies, config)` method loops `runCount` times, each with unique seed (`baseSeed-i`), creates fresh `SeededDiceRoller` and `AICombatRunner` per run
+  - Internal `SimulationAggregator` class accumulates per-run results and computes final statistics: win rates, average/median rounds, player HP remaining, death tracking, per-combatant metrics
+  - Internal `CombatantAccumulator` class tracks per-combatant stats across runs (DPR, survival rate, kill rate, crit rate, action counts, histograms)
+  - `buildHistogram()` utility for damage/HP distribution visualization
+  - Exported `CombatSimulator` and all type interfaces from engine `src/index.ts`
+  - Engine build verified clean (vite build succeeds, 982 combat tests pass, no new TypeScript errors)
 - [ ] **3.1.2** Implement `run(party, enemies, config): SimulationResults`
   - Loop `runCount` times, each with a unique seed (`baseSeed + i`)
   - Create fresh `SeededDiceRoller` and `AICombatRunner` per run
