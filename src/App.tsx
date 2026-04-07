@@ -1,5 +1,5 @@
 import { useState, createContext, useContext, useMemo } from 'react';
-import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users, Backpack, Database, Drum } from 'lucide-react';
+import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users, Backpack, Database, Drum, Scale } from 'lucide-react';
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
 import { ToastContainer } from './components/ui/Toast';
@@ -17,6 +17,7 @@ import { EnvironmentalSensorsTab } from './components/Tabs/EnvironmentalSensorsT
 import { GamingPlatformsTab } from './components/Tabs/GamingPlatformsTab';
 import { CombatSimulatorTab } from './components/Tabs/CombatSimulatorTab';
 import { SettingsTab } from './components/Tabs/SettingsTab';
+import { BalanceLabTab } from './components/Tabs/BalanceLabTab';
 import { ItemsTab } from './components/Tabs/ItemsTab';
 import { DataViewerTab } from './components/Tabs/DataViewerTab';
 import { useAutoCharacterSetup } from './hooks/useAutoCharacterSetup';
@@ -25,7 +26,7 @@ import { useCharacterStore } from './store/characterStore';
 import { useDataViewerStore } from './store/dataViewerStore';
 import { useCustomEquipmentInitializer } from './hooks/useItemCreator';
 
-type Tab = 'playlist' | 'audio' | 'beat' | 'character' | 'party' | 'items' | 'dataviewer' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
+type Tab = 'playlist' | 'audio' | 'beat' | 'character' | 'party' | 'items' | 'dataviewer' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'balance' | 'settings';
 
 // Create context for active tab
 const TabContext = createContext<{ activeTab: Tab } | null>(null);
@@ -92,6 +93,7 @@ function App() {
     { id: 'sensors', label: 'Sensors', icon: Activity },
     { id: 'gaming', label: 'Gaming', icon: Gamepad2 },
     { id: 'combat', label: 'Combat', icon: Swords },
+    { id: 'balance', label: 'Balance Lab', icon: Scale },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -110,6 +112,7 @@ function App() {
       case 'sensors': return <EnvironmentalSensorsTab />;
       case 'gaming': return <GamingPlatformsTab />;
       case 'combat': return <CombatSimulatorTab />;
+      case 'balance': return <BalanceLabTab />;
       case 'settings': return <SettingsTab />;
       default: return null;
     }

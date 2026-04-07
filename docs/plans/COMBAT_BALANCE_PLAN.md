@@ -1394,10 +1394,15 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 8.1 Balance Lab Tab
 
-- [ ] **8.1.1** Add `'balance'` tab to the tab system in `App.tsx`
+- [x] **8.1.1** Add `'balance'` tab to the tab system in `App.tsx`
   - Position after `'combat'` and before `'settings'`
   - Icon: `Scale` from lucide-react (balance/scales icon)
   - Label: "Balance Lab"
+  - Added `'balance'` to `Tab` type union, imported `Scale` icon from lucide-react
+  - Added tab entry `{ id: 'balance', label: 'Balance Lab', icon: Scale }` after combat and before settings
+  - Added `case 'balance': return <BalanceLabTab />;` to renderActiveTab switch
+  - Created stub `BalanceLabTab.tsx` and `BalanceLabTab.css` with placeholder UI (Scale icon, heading, description)
+  - TypeScript check clean (no new errors), all pre-existing errors unchanged
 - [ ] **8.1.2** Create `src/components/Tabs/BalanceLabTab.tsx` — main container
   - Two-panel layout: configuration (left) and results (right)
   - Collapsible panels for space management
