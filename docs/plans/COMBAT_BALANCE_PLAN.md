@@ -1273,12 +1273,16 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 7.1 Simulation Hook
 
-- [ ] **7.1.1** Create `src/hooks/useCombatSimulation.ts`
+- [x] **7.1.1** Create `src/hooks/useCombatSimulation.ts`
   - Wraps `CombatSimulator` from the engine
-  - Manages simulation state: idle, running, completed, cancelled
-  - Provides progress updates via React state
-  - Handles cancellation via `AbortController`
-  - Returns: `results`, `isRunning`, `progress`, `error`, `startSimulation()`, `cancelSimulation()`
+  - Manages simulation state: idle, running, completed, cancelled, error
+  - Provides progress updates via React state with ETA estimation
+  - Handles cancellation via `AbortController` with partial results returned
+  - Returns: `status`, `results`, `progress`, `error`, `durationMs`, `startSimulation()`, `cancelSimulation()`, `resetSimulation()`
+  - Input validation: party/enemy must be non-empty, runCount >= 1
+  - Progress tracking: completed/total/fraction/estimatedMsRemaining with sliding window ETA
+  - Exported from `src/hooks/index.ts`
+  - TypeScript check clean (no new errors), build verified
 - [ ] **7.1.2** Implement Web Worker offloading for long simulations
   - Create `src/workers/simulationWorker.ts`
   - Run simulations in a Web Worker to avoid blocking the UI

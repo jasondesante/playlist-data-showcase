@@ -34,3 +34,4 @@ export * from './useTimelineSeek';
 export * from './useTimelinePosition';
 export * from './useLevelGeneration';
 export * from './usePitchAnalyzer';
+export * from './useCombatSimulation';
