@@ -1152,11 +1152,15 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Covers: Why Simulation comparison table (theoretical vs empirical), Expected Win Rates table (4 tiers), BalanceValidator usage (two patterns: validate from scratch vs analyze existing results), BalanceReport interface with field descriptions table, Interpreting Results code example, Recommendations table (7 situations with suggested actions), AI Strategy Impact (Normal vs Aggressive enemy comparison)
   - Updated Table of Contents with new section entry (item 10, API Reference renumbered to 11)
   - Build verified (pre-existing errors only, no regressions from doc change)
-- [ ] **6.2.2** Add **Parameter Sweep** subsection
+- [x] **6.2.2** Add **Parameter Sweep** subsection
   - Document `ParameterSweep` and `SweepParams` (variable, range, simulations per point)
   - Document `SweepResults` and `SweepDataPoint`
   - Include code example: sweep CR from 1-10 to find the sweet spot for Medium difficulty
   - Explain how to interpret sweep results (win rate curves, difficulty thresholds)
+  - Added comprehensive "Parameter Sweep" subsection to `docs/engine/docs/ENEMY_GENERATION.md` after Simulation-Based Balance Validation
+  - Covers: ParameterSweep usage with full CR sweep code example, SweepParams parameter table (7 fields), SweepVariable table (8 variables with descriptions and example ranges), SweepResults and SweepDataPoint interfaces with field tables, interpreting sweep results (CR/enemy count/difficulty multiplier/stat level sweep patterns), finding sweet spots for difficulty tiers with code example, cancellation with AbortController
+  - Updated Table of Contents with new entry (item 11, API Reference renumbered to 12)
+  - Build verified (pre-existing TS errors only, no regressions from doc change)
 - [ ] **6.2.3** Add **Comparative Analysis** subsection
   - Document `ComparativeAnalyzer` — compare two encounter configurations
   - Explain identical-seed methodology for fair comparison

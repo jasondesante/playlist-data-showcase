@@ -16,7 +16,8 @@ Complete guide to generating enemies and encounters in the Playlist Data Engine.
 8. [Audio Integration](#audio-integration)
 9. [Encounter Balance](#encounter-balance)
 10. [Simulation-Based Balance Validation](#simulation-based-balance-validation)
-11. [API Reference](#api-reference)
+11. [Parameter Sweep](#parameter-sweep)
+12. [API Reference](#api-reference)
 
 ---
 
@@ -1000,6 +1001,145 @@ const aggressiveReport = validator.validate(party, enemies, 'medium', {
 - **Aggressive enemies** — maximum effort, burns all spell slots and abilities. Measures difficulty ceiling.
 
 Comparing Normal vs Aggressive enemy results reveals how much enemy resource usage affects the encounter.
+
+### Parameter Sweep
+
+A **parameter sweep** systematically varies a single encounter parameter across a range and runs simulations at each data point. This answers questions like *"What CR makes this a Medium encounter?"* or *"How does adding more enemies change the difficulty curve?"*
+
+```typescript
+import { ParameterSweep } from 'playlist-data-engine';
+
+const sweeper = new ParameterSweep();
+
+// ═══════════════════════════════════════════════════════════════
+// Sweep CR from 1 to 10 to find the sweet spot for Medium
+// ═══════════════════════════════════════════════════════════════
+const results = sweeper.sweep(
+  party,                                    // Player CharacterSheet[]
+  { cr: 3, rarity: 'elite', category: 'humanoid', archetype: 'brute' },
+  {
+    variable: 'cr',
+    range: { min: 1, max: 10, step: 1 },   // 10 data points
+    simulationsPerPoint: 200,
+    aiConfig: {
+      playerStyle: 'normal',
+      enemyStyle: 'aggressive'
+    },
+    baseSeed: 'cr-sweep',
+  },
+  (completed, total) => console.log(`Sweep ${completed}/${total}`)
+);
+
+// Each data point has a parameter value and simulation summary
+for (const point of results.dataPoints) {
+  console.log(
+    `CR ${point.parameterValue}: ` +
+    `${(point.playerWinRate * 100).toFixed(1)}% win rate, ` +
+    `${point.averageRounds.toFixed(1)} avg rounds`
+  );
+}
+```
+
+#### SweepParams
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `variable` | `SweepVariable` | Which parameter to vary (see table below) |
+| `range` | `{ min, max, step }` | Range of values to sweep across |
+| `simulationsPerPoint` | `number` | Number of simulations at each data point |
+| `aiConfig` | `AIConfig` | AI strategy for all simulations in the sweep |
+| `combatConfig?` | `CombatConfig` | Optional combat engine overrides |
+| `baseSeed?` | `string` | Seed prefix — each point gets `baseSeed-value` |
+| `abortSignal?` | `AbortSignal` | Cancel the sweep mid-execution |
+
+#### SweepVariable — What You Can Sweep
+
+| Variable | Effect | Example Range |
+|----------|--------|---------------|
+| `'cr'` | Varies enemy Challenge Rating | `{ min: 1, max: 10, step: 1 }` |
+| `'enemyCount'` | Varies number of enemies generated | `{ min: 1, max: 8, step: 1 }` |
+| `'partyLevel'` | Scales all player levels (simplified) | `{ min: 1, max: 20, step: 1 }` |
+| `'difficultyMultiplier'` | Scales enemy stats proportionally | `{ min: 0.5, max: 2.0, step: 0.1 }` |
+| `'rarity'` | Maps 0–3 to common/uncommon/elite/boss | `{ min: 0, max: 3, step: 1 }` |
+| `'hpLevel'` | Overrides enemy HP to a different effective level | `{ min: 1, max: 20, step: 1 }` |
+| `'attackLevel'` | Overrides enemy attack to a different effective level | `{ min: 1, max: 20, step: 1 }` |
+| `'defenseLevel'` | Overrides enemy defense to a different effective level | `{ min: 1, max: 20, step: 1 }` |
+
+#### SweepResults
+
+The `sweep()` method returns a `SweepResults` object with one `SweepDataPoint` per value in the range, ordered from lowest to highest:
+
+```typescript
+interface SweepResults {
+  variable: SweepVariable;         // Which parameter was swept
+  range: SweepRange;               // The range that was swept
+  simulationsPerPoint: number;     // Sims per data point
+  dataPoints: SweepDataPoint[];    // One per value in the range
+  wasCancelled: boolean;           // True if cancelled before completion
+}
+```
+
+Each `SweepDataPoint` contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `parameterValue` | `number` | The value of the sweep parameter at this point |
+| `playerWinRate` | `number` | Player win rate (0.0–1.0) |
+| `averageRounds` | `number` | Average rounds to combat resolution |
+| `medianRounds` | `number` | Median rounds to combat resolution |
+| `averageHPRemaining` | `number` | Average player HP remaining % on wins |
+| `totalPlayerDeaths` | `number` | Total player deaths across all sims |
+| `totalEnemyDeaths` | `number` | Total enemy deaths across all sims |
+
+#### Interpreting Sweep Results
+
+Plot `playerWinRate` against `parameterValue` to see the difficulty curve. Key patterns:
+
+- **CR sweep**: Win rate should generally decrease as CR increases. The "sweet spot" for a given difficulty is where the win rate falls in the expected range.
+- **Enemy count sweep**: Similar to CR — more enemies means lower win rate. Watch for steep drop-offs (action economy tipping points).
+- **Difficulty multiplier sweep**: Produces the smoothest curves because it scales all enemy stats proportionally. Best for fine-tuning.
+- **Stat level sweeps** (`hpLevel`, `attackLevel`, `defenseLevel`): Reveal which stat axis has the most impact on difficulty. Useful for creating specialized enemies (tanks, glass cannons, brutes).
+
+```typescript
+// Find the CR range that produces Medium difficulty (70-80% win rate)
+const mediumPoints = results.dataPoints.filter(
+  p => p.playerWinRate >= 0.70 && p.playerWinRate <= 0.80
+);
+if (mediumPoints.length > 0) {
+  console.log(
+    `Medium difficulty CR range: ${mediumPoints[0].parameterValue}` +
+    `–${mediumPoints[mediumPoints.length - 1].parameterValue}`
+  );
+}
+
+// Find the exact CR closest to 75% win rate
+const closest = results.dataPoints.reduce((best, p) =>
+  Math.abs(p.playerWinRate - 0.75) < Math.abs(best.playerWinRate - 0.75)
+    ? p : best
+);
+console.log(`Best CR for Medium: ${closest.parameterValue} (${(closest.playerWinRate * 100).toFixed(1)}%)`);
+```
+
+#### Cancellation
+
+Like `CombatSimulator`, parameter sweeps support `AbortSignal` for cancellation. Partial results are returned:
+
+```typescript
+const controller = new AbortController();
+
+// Cancel after 3 seconds
+setTimeout(() => controller.abort(), 3000);
+
+const partialResults = sweeper.sweep(party, encounter, {
+  variable: 'cr',
+  range: { min: 1, max: 20, step: 1 },
+  simulationsPerPoint: 500,
+  aiConfig: { playerStyle: 'normal', enemyStyle: 'aggressive' },
+  abortSignal: controller.signal,
+});
+
+console.log(`Completed ${partialResults.dataPoints.length} of 20 points`);
+```
 
 ---
 
