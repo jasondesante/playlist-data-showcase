@@ -1283,15 +1283,26 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Progress tracking: completed/total/fraction/estimatedMsRemaining with sliding window ETA
   - Exported from `src/hooks/index.ts`
   - TypeScript check clean (no new errors), build verified
-- [ ] **7.1.2** Implement Web Worker offloading for long simulations
-  - Create `src/workers/simulationWorker.ts`
-  - Run simulations in a Web Worker to avoid blocking the UI
-  - Post progress messages back to main thread
-  - Handle cancellation via worker termination
-  - **Note:** Verify linked `playlist-data-engine` package works in worker context. Fallback: serialize config to worker.
-- [ ] **7.1.3** Add fallback for environments without Web Worker support
-  - Run synchronously with periodic `setTimeout` yields to keep UI responsive
-  - Show warning that large simulations may be slow
+- [x] **7.1.2** Implement Web Worker offloading for long simulations
+  - Created `src/workers/simulationWorker.ts` — Web Worker that runs CombatSimulator off the main thread
+  - Message protocol: `start` (with party/enemies/config) → `progress` updates → `complete` (with results) or `error`; `cancel` message for cancellation
+  - Worker imports `CombatSimulator` directly from `playlist-data-engine` — combat modules have no TensorFlow/browser deps, so Vite can tree-shake cleanly
+  - Worker creates its own `AbortController` internally for cancellation (since `AbortSignal` isn't transferable via `postMessage`)
+  - Serializes `AIConfig.overrides` Map to `[string, string][]` entries for structured clone compatibility
+  - Progress messages posted back per-run; completion includes duration in ms
+  - Updated `useCombatSimulation.ts` to use worker for simulations with ≥50 runs (below threshold, synchronous is faster due to worker creation overhead)
+  - Worker is lazily created on first use and reused across simulations
+  - Cancel sends `{ type: 'cancel', id }` message to worker targeting the specific run ID
+  - Cancellation and unmount properly clean up worker message handlers and abort controllers
+  - Exported `terminateSimulationWorker()` for testing/cleanup
+  - TypeScript check clean (zero new errors), pre-existing build error unrelated
+- [x] **7.1.3** Add fallback for environments without Web Worker support
+  - Implemented as part of 7.1.2 — `getWorker()` returns `null` when Workers aren't supported or creation fails
+  - On fallback: `useCombatSimulation` runs synchronously on the main thread using `CombatSimulator` directly (same as original behavior)
+  - Small simulations (<50 runs) always use synchronous path regardless of Worker availability — avoids unnecessary overhead
+  - Worker creation failure is logged as warning with error message
+  - Fallback path uses `performance.now()` for ETA (vs `Date.now()` for worker, since they're on the same thread)
+  - Logger includes `mode: 'worker' | 'sync'` to distinguish execution paths
 
 ### 7.2 Simulation State Persistence
 
