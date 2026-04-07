@@ -44,7 +44,8 @@ type LogCategory =
     | 'PitchAnalyzer'
     | 'SimulationStore'
     | 'SimulationHistory'
-    | 'SimulationComparison';
+    | 'SimulationComparison'
+    | 'BalanceLab';
 
 
 

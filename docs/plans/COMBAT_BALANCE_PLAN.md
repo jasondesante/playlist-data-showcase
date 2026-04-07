@@ -1403,11 +1403,39 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Added `case 'balance': return <BalanceLabTab />;` to renderActiveTab switch
   - Created stub `BalanceLabTab.tsx` and `BalanceLabTab.css` with placeholder UI (Scale icon, heading, description)
   - TypeScript check clean (no new errors), all pre-existing errors unchanged
-- [ ] **8.1.2** Create `src/components/Tabs/BalanceLabTab.tsx` — main container
-  - Two-panel layout: configuration (left) and results (right)
-  - Collapsible panels for space management
-  - Responsive layout for mobile
-- [ ] **8.1.3** Create `src/components/Tabs/BalanceLabTab.css`
+- [x] **8.1.2** Create `src/components/Tabs/BalanceLabTab.tsx` — main container
+  - Replaced stub placeholder with full main container component
+  - Two-panel layout: configuration (left) and results (right) via CSS grid (`grid-template-columns: 1fr 1fr`)
+  - Three collapsible panels: Configuration, Results, and History — each with accessible `aria-expanded`/`aria-controls` and unique IDs via `useId()`
+  - **Results panel** wired to `useSimulationHistory` hook with full state management:
+    - Live progress bar with ETA estimation and cancel button during simulation runs
+    - Error display for failed simulations
+    - Win rate card with 4-tier color coding (high/medium/low/critical)
+    - Metrics grid: avg rounds, median rounds, HP remaining, player deaths, total runs, duration
+    - Balance assessment card using `BalanceValidator.analyze()` — shows difficulty classification, score bar (0-100), and up to 3 recommendations
+    - Cancelled notice for partial results
+    - Save/reset action buttons (save disabled when already saved, shows "Saved" badge)
+  - **History panel** integrates existing `SimulationHistoryPanel` component with load-from-history support
+  - **Configuration panel** shows placeholder for task 8.2.x (SimulationConfigPanel)
+  - Responsive: two-column grid on desktop, single column on mobile (breakpoint at 900px and 640px)
+  - Added `'BalanceLab'` to `LogCategory` in `src/utils/logger.ts`
+  - TypeScript check clean (zero new errors), pre-existing errors unchanged
+- [x] **8.1.3** Create `src/components/Tabs/BalanceLabTab.css`
+  - Pure CSS using project's HSL variable system (`hsl(var(--card))`, `hsl(var(--border))`, `hsl(var(--primary))`, etc.)
+  - Consistent styling patterns matching existing balance components (`SimulationHistoryPanel.css`, `ComparisonPanel.css`)
+  - **Layout**: flexbox column container, CSS grid two-panel layout with `align-items: start`
+  - **Panel styles**: shared `.bl-panel` base with card background, border radius, hover border effect
+  - **Collapsible headers**: button-based with hover background, focus-visible outline, toggle chevron
+  - **Status badges**: 4 variants (running with pulse animation, completed green, cancelled muted, error red)
+  - **Progress bar**: primary-colored fill with smooth transition, info row with label/ETA/cancel
+  - **Win rate card**: 4 color tiers matching `getWinRateColorClass()` thresholds
+  - **Metrics grid**: 3-column responsive grid (2 columns on mobile) with muted background cards
+  - **Balance assessment card**: 3 variance variants (balanced green, underpowered yellow, overpowered red) with score bar
+  - **Action buttons**: primary save button with hover lift effect, muted reset button
+  - **Empty/placeholder states**: centered flex layout with muted icon, text, and hint
+  - **Custom scrollbar**: thin 6px scrollbar matching project patterns
+  - **Responsive breakpoints**: 900px (stack panels), 640px (reduce padding, 2-col metrics, smaller win rate)
+  - ~480 lines of well-organized CSS with section comments
 
 ### 8.2 Simulation Configuration Panel
 

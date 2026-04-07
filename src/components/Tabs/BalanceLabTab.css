@@ -1,27 +1,689 @@
+/* ============================================
+   BALANCE LAB TAB — MAIN CONTAINER
+   ============================================ */
+
 .balance-lab-tab {
-  padding: 1rem;
-  height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem;
+    height: 100%;
+    overflow-y: auto;
 }
 
-.balance-lab-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  min-height: 300px;
-  color: hsl(var(--muted-foreground));
-  gap: 0.75rem;
+.balance-lab-tab::-webkit-scrollbar {
+    width: 6px;
 }
 
-.balance-lab-placeholder h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: hsl(var(--foreground));
+.balance-lab-tab::-webkit-scrollbar-track {
+    background: transparent;
 }
 
-.balance-lab-placeholder p {
-  margin: 0;
-  font-size: 0.875rem;
+.balance-lab-tab::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 3px;
+}
+
+.balance-lab-tab::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.bl-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.bl-header-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bl-header-icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+}
+
+.bl-header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+    margin: 0;
+}
+
+.bl-header-subtitle {
+    font-size: 0.8rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    padding-left: 1.75rem;
+}
+
+/* ============================================
+   MAIN LAYOUT — Two-Panel Grid
+   ============================================ */
+
+.bl-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+/* ============================================
+   PANEL — Shared Styles
+   ============================================ */
+
+.bl-panel {
+    display: flex;
+    flex-direction: column;
+    background-color: hsl(var(--card));
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.bl-panel:hover {
+    border-color: hsl(var(--border) / 1.2);
+}
+
+.bl-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    user-select: none;
+    color: inherit;
+    font: inherit;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+}
+
+.bl-panel-header:hover {
+    background-color: hsl(var(--muted) / 0.2);
+}
+
+.bl-panel-header:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: -2px;
+}
+
+.bl-panel-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bl-panel-icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+}
+
+.bl-panel-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+}
+
+.bl-panel-toggle {
+    color: hsl(var(--muted-foreground));
+    display: flex;
+    align-items: center;
+}
+
+.bl-panel-content {
+    padding: 0 0.75rem 0.75rem;
+}
+
+/* ============================================
+   STATUS BADGES
+   ============================================ */
+
+.bl-status-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.bl-status-running {
+    color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.1);
+    border: 1px solid hsl(var(--primary) / 0.2);
+    animation: bl-pulse 2s ease-in-out infinite;
+}
+
+@keyframes bl-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.bl-status-completed {
+    color: hsl(142 76% 46%);
+    background-color: hsl(142 76% 36% / 0.1);
+    border: 1px solid hsl(142 76% 36% / 0.2);
+}
+
+.bl-status-cancelled {
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted) / 0.3);
+    border: 1px solid hsl(var(--border) / 0.5);
+}
+
+.bl-status-error {
+    color: hsl(0 84% 60%);
+    background-color: hsl(0 84% 60% / 0.1);
+    border: 1px solid hsl(0 84% 60% / 0.2);
+}
+
+/* ============================================
+   COUNT BADGE
+   ============================================ */
+
+.bl-count-badge {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted) / 0.3);
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+}
+
+/* ============================================
+   CONFIG PANEL
+   ============================================ */
+
+.bl-config-panel {
+    min-height: fit-content;
+}
+
+/* ============================================
+   RESULTS PANEL
+   ============================================ */
+
+.bl-results-panel {
+    min-height: fit-content;
+}
+
+/* ─── Progress ───────────────────────────────────── */
+
+.bl-progress-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background-color: hsl(var(--primary) / 0.04);
+    border: 1px solid hsl(var(--primary) / 0.1);
+    border-radius: var(--radius);
+}
+
+.bl-progress-bar {
+    width: 100%;
+    height: 6px;
+    background-color: hsl(var(--muted) / 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.bl-progress-fill {
+    height: 100%;
+    background-color: hsl(var(--primary));
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    min-width: 0;
+}
+
+.bl-progress-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.bl-progress-label {
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.bl-progress-eta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.bl-progress-cancel {
+    margin-left: auto;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.bl-progress-cancel:hover {
+    color: hsl(var(--destructive));
+    border-color: hsl(var(--destructive) / 0.3);
+}
+
+/* ─── Error ─────────────────────────────────────── */
+
+.bl-error {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    color: hsl(var(--destructive));
+    background-color: hsl(var(--destructive) / 0.08);
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--destructive) / 0.15);
+}
+
+.bl-error-icon {
+    flex-shrink: 0;
+}
+
+.bl-error-text {
+    line-height: 1.4;
+}
+
+/* ─── Results Summary ───────────────────────────── */
+
+.bl-results-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Win Rate Card */
+.bl-win-rate-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 1rem;
+    border-radius: var(--radius);
+    border: 1px solid;
+    text-align: center;
+}
+
+.bl-win-rate-high {
+    background-color: hsl(142 76% 36% / 0.08);
+    border-color: hsl(142 76% 36% / 0.2);
+}
+
+.bl-win-rate-medium {
+    background-color: hsl(48 96% 53% / 0.08);
+    border-color: hsl(48 96% 53% / 0.2);
+}
+
+.bl-win-rate-low {
+    background-color: hsl(28 96% 53% / 0.08);
+    border-color: hsl(28 96% 53% / 0.2);
+}
+
+.bl-win-rate-critical {
+    background-color: hsl(0 84% 60% / 0.08);
+    border-color: hsl(0 84% 60% / 0.2);
+}
+
+.bl-win-rate-value {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.bl-win-rate-high .bl-win-rate-value {
+    color: hsl(142 76% 46%);
+}
+
+.bl-win-rate-medium .bl-win-rate-value {
+    color: hsl(48 96% 53%);
+}
+
+.bl-win-rate-low .bl-win-rate-value {
+    color: hsl(28 96% 53%);
+}
+
+.bl-win-rate-critical .bl-win-rate-value {
+    color: hsl(0 84% 60%);
+}
+
+.bl-win-rate-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Metrics Grid */
+.bl-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.bl-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    padding: 0.5rem 0.25rem;
+    background-color: hsl(var(--muted) / 0.1);
+    border-radius: var(--radius-sm);
+    border: 1px solid hsl(var(--border) / 0.5);
+}
+
+.bl-metric-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+    line-height: 1.2;
+}
+
+.bl-metric-deaths {
+    color: hsl(0 84% 60%);
+}
+
+.bl-metric-label {
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Balance Assessment Card */
+.bl-balance-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    border: 1px solid;
+}
+
+.bl-balance-balanced {
+    background-color: hsl(142 76% 36% / 0.05);
+    border-color: hsl(142 76% 36% / 0.2);
+}
+
+.bl-balance-underpowered {
+    background-color: hsl(48 96% 53% / 0.05);
+    border-color: hsl(48 96% 53% / 0.2);
+}
+
+.bl-balance-overpowered {
+    background-color: hsl(0 84% 60% / 0.05);
+    border-color: hsl(0 84% 60% / 0.2);
+}
+
+.bl-balance-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bl-balance-difficulty {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.bl-balance-balanced .bl-balance-difficulty {
+    color: hsl(142 76% 46%);
+}
+
+.bl-balance-underpowered .bl-balance-difficulty {
+    color: hsl(48 96% 53%);
+}
+
+.bl-balance-overpowered .bl-balance-difficulty {
+    color: hsl(0 84% 60%);
+}
+
+.bl-balance-score {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+}
+
+.bl-balance-score-bar {
+    width: 100%;
+    height: 4px;
+    background-color: hsl(var(--muted) / 0.3);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.bl-balance-score-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    min-width: 0;
+}
+
+.bl-balance-balanced .bl-balance-score-fill {
+    background-color: hsl(142 76% 46%);
+}
+
+.bl-balance-underpowered .bl-balance-score-fill {
+    background-color: hsl(48 96% 53%);
+}
+
+.bl-balance-overpowered .bl-balance-score-fill {
+    background-color: hsl(0 84% 60%);
+}
+
+/* Recommendations */
+.bl-balance-recommendations {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.bl-balance-rec-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.bl-balance-rec-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.bl-balance-rec-item {
+    font-size: 0.75rem;
+    color: hsl(var(--foreground));
+    line-height: 1.4;
+    padding-left: 0.75rem;
+    position: relative;
+}
+
+.bl-balance-rec-item::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: hsl(var(--muted-foreground));
+}
+
+/* Cancelled Notice */
+.bl-cancelled-notice {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    padding: 0.4rem 0.6rem;
+    background-color: hsl(var(--muted) / 0.2);
+    border-radius: var(--radius-sm);
+    text-align: center;
+}
+
+/* Results Action Buttons */
+.bl-results-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.25rem;
+}
+
+.bl-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid;
+}
+
+.bl-action-save {
+    color: hsl(var(--background));
+    background-color: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+}
+
+.bl-action-save:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px hsl(var(--primary) / 0.3);
+}
+
+.bl-action-reset {
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border-color: hsl(var(--border));
+}
+
+.bl-action-reset:hover {
+    color: hsl(var(--destructive));
+    border-color: hsl(var(--destructive) / 0.3);
+}
+
+.bl-saved-indicator {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: hsl(142 76% 46%);
+    padding: 0.2rem 0.5rem;
+    background-color: hsl(142 76% 36% / 0.1);
+    border-radius: 999px;
+}
+
+/* ─── Placeholder / Empty States ───────────────────── */
+
+.bl-config-placeholder,
+.bl-results-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.bl-placeholder-icon {
+    color: hsl(var(--muted-foreground) / 0.3);
+}
+
+.bl-placeholder-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+}
+
+.bl-placeholder-hint {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground) / 0.7);
+    margin: 0;
+    max-width: 280px;
+    line-height: 1.4;
+}
+
+/* ============================================
+   HISTORY PANEL
+   ============================================ */
+
+.bl-history-panel {
+    min-height: fit-content;
+}
+
+.bl-history-content {
+    padding: 0 0.75rem 0.75rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 900px) {
+    .bl-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .balance-lab-tab {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .bl-header-title {
+        font-size: 1.1rem;
+    }
+
+    .bl-header-subtitle {
+        padding-left: 1.5rem;
+        font-size: 0.75rem;
+    }
+
+    .bl-panel-header {
+        padding: 0.625rem 0.75rem;
+    }
+
+    .bl-panel-content {
+        padding: 0 0.5rem 0.5rem;
+    }
+
+    .bl-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bl-win-rate-value {
+        font-size: 1.5rem;
+    }
+
+    .bl-progress-section {
+        padding: 0.5rem;
+    }
+
+    .bl-history-content {
+        padding: 0 0.5rem 0.5rem;
+    }
 }
