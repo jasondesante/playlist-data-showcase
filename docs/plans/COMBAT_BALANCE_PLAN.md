@@ -1127,7 +1127,16 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Covers: CombatSimulator class overview with basic usage, SimulationConfig parameter table (7 fields), SimulationResults interface with all nested types, SimulationSummary table (14 fields with invariant note), CombatantSimulationMetrics table (16 fields), HistogramBucket interface definition, Detailed Run Logs (SimulationRunDetail), 3 code examples (basic with progress, AbortController cancellation, detailed log debugging), determinism guarantees with code proof, recommended run counts table (4 tiers from 100–5000+)
   - TOC already had Monte Carlo Simulation entry from prior task — no update needed
   - Build verified clean (documentation change only, no code changes)
-- [ ] **6.1.6** Update Table of Contents to include new sections
+- [x] **6.1.6** Update Table of Contents to include new sections
+  - Updated TOC in `docs/engine/docs/COMBAT_SYSTEM.md` to include all subsections
+  - Added Box Rewards subsections: Awarding Boxes as Treasure, Opening Box Rewards After Combat, Box Behavior in Combat Rewards, Locked Box Rewards, Checking if a Reward Is a Box, Example: Boss Loot Box Configuration
+  - Added Status Effects subsections: StatusEffect Interface, StatusEffectMechanics Interface, Mechanically Enforced Conditions, Duration Tracking Lifecycle, Applying Status Effects, Stacking Rules, Concentration Tracking, Removing Expired Effects, Spell-Based Status Effects, Advantage/Disadvantage from Effects
+  - Added Legendary Actions subsections: LegendaryAction Interface, Combatant Legendary Tracking, Action Point Tracking, Executing Legendary Actions, Legendary Resistances, AI and Legendary Actions
+  - Added Combat AI subsections: AIPlayStyle, AIConfig, AIDecision, Decision-Making Process, Target Selection, Weapon Selection, Spell Selection, Support Archetype AI, AIThreatAssessment, AICombatRunner, CombatantMetrics
+  - Added Monte Carlo Simulation subsections: CombatSimulator, SimulationConfig, SimulationResults, SimulationSummary, CombatantSimulationMetrics, HistogramBucket, Detailed Run Logs, Code Examples, Determinism, Recommended Run Counts
+  - Added Seeded Dice Rolling subsections: When to Use Seeded vs Random Rolling, Creating a Seeded Roller, Injecting into CombatEngine, Determinism Guarantees, API Reference, How CombatSimulator Manages Seeding
+  - Added See Also section to TOC
+  - Build verified clean (pre-existing errors only, no regressions)
 
 ### 6.2 Update ENEMY_GENERATION.md — Balance Analysis Tools
 
