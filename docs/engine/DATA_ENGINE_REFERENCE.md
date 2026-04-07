@@ -4754,6 +4754,14 @@ D&D 5e turn-based combat engine with initiative, attacks, spell casting, and dam
 | `applyTemporaryHP(combatant, tempHP)` | Applies temporary hit points |
 | `getLivingCombatants(combat)` | Returns all non-defeated combatants |
 | `getDefeatedCombatants(combat)` | Returns all defeated combatants |
+| `applyStatusEffect(combatant, effect)` | Applies a status effect to a combatant with stacking rules: same-name effects refresh duration (take max) and merge damage/mechanicalEffects; concentration effects drop previous concentration; returns the active effect on the combatant |
+| `removeExpiredStatusEffects(combatant)` | Removes all effects with `duration <= 0`; clears `concentratingOn` if the concentrated effect expired; returns array of removed effects for logging |
+| `executeLegendaryAction(combat, bossCombatant, action, target?)` | Validates action belongs to boss, spends action points from budget (3/round), resolves damage from dice formula, records in combat history; throws if no legendary config, unknown action, or insufficient points |
+| `useLegendaryResistance(combat, bossCombatant)` | Auto-succeeds a saving throw by spending one legendary resistance (per-day resource); returns `true` if resistance was available and used, `false` if none remain |
+| `checkConcentration(combat, combatant, damage)` | Makes CON save (DC = 10 or half damage, whichever is higher) when a concentrating combatant takes damage; breaks concentration on failure and logs to history; returns `true` if concentration was broken |
+| `dropConcentration(combatant, reason?)` | Manually drops a combatant's concentration, removing the concentrated effect from statusEffects; clears `concentratingOn` tracking; returns the dropped `StatusEffect` or `undefined` |
+| `validateSpellSlots(character)` | Validates `character.spells.spell_slots` for data issues (negative totals, used > total, invalid level keys, non-numeric values); returns array of `SpellSlotValidationIssue` objects with severity ('error'/'warn') |
+| `validateCombatantSpellSlots(combatant)` | Verifies combatant's initialized spell slots match expected remaining slots from source character; returns array of `SpellSlotValidationIssue` objects |
 
 ### InitiativeRoller
 

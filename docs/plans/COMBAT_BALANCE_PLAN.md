@@ -1214,9 +1214,20 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Updated Quick Export Reference table: added 10 new class/function exports, added 3 type group summaries (Combat AI Types, Simulation Types, Analysis Types)
   - Updated Type Exports section: added Combat AI Types, Simulation Types, and Balance Analysis Types groups with all exported interfaces
   - Pre-existing TypeScript errors unchanged (unrelated to documentation)
-- [ ] **6.3.2** Add entries for new CombatEngine methods
+- [x] **6.3.2** Add entries for new CombatEngine methods
   - `applyStatusEffect()`, `removeExpiredStatusEffects()`
   - `executeLegendaryAction()`, `useLegendaryResistance()`
+  - Added 8 new method entries to CombatEngine methods table in `DATA_ENGINE_REFERENCE.md`:
+    - `applyStatusEffect(combatant, effect)` — stacking rules, concentration handling, return type
+    - `removeExpiredStatusEffects(combatant)` — duration filtering, concentration clearing, return type
+    - `executeLegendaryAction(combat, bossCombatant, action, target?)` — validation, point budget, damage resolution, error conditions
+    - `useLegendaryResistance(combat, bossCombatant)` — per-day resource, boolean return
+    - `checkConcentration(combat, combatant, damage)` — CON save DC formula, concentration breaking, history logging
+    - `dropConcentration(combatant, reason?)` — manual concentration drop, effect removal
+    - `validateSpellSlots(character)` — spell slot data validation with severity levels
+    - `validateCombatantSpellSlots(combatant)` — combatant-to-source consistency validation
+  - All descriptions include parameter names, return types, and behavioral notes
+  - Pre-existing TypeScript errors unchanged (unrelated to documentation)
 - [ ] **6.3.3** Add entries for updated types
   - `StatusEffect` (new optional fields)
   - `Combatant` (new legendary tracking fields)
