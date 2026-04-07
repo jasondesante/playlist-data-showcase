@@ -1015,6 +1015,279 @@ The combat AI (`CombatAI`) automatically selects and uses legendary actions for 
 - **Normal AI**: prefers lowest-cost damage actions (spread points across the round for sustained pressure)
 - **Aggressive AI**: prefers highest-cost damage actions (maximize immediate impact)
 
+### Combat AI
+
+The combat AI controls both player characters and enemies during simulated combat. It produces a decision for each combatant's turn based on a threat assessment of the battlefield and a configurable play style. The AI is **deterministic** — given the same combat state, it always makes the same decision. All randomness comes from the dice roller when the `AICombatRunner` executes the decision.
+
+#### AIPlayStyle
+
+Two fundamental strategies drive all AI decisions:
+
+```typescript
+type AIPlayStyle = 'normal' | 'aggressive';
+```
+
+| Style | Philosophy | Targeting | Spells | Resources | Defensive |
+|-------|-----------|-----------|--------|-----------|-----------|
+| **Normal** | Baseline difficulty measurement | Lowest AC (easiest to hit) | Cantrips preferred; leveled only when clearly better | Conserves spell slots; saves for later rounds | Dodges when isolated + low HP |
+| **Aggressive** | Maximum threat ceiling | Lowest HP (finish them off) | Always highest damage; burns all slots | No conservation; proactive healing to maintain max HP | Never dodges, never flees |
+
+Comparing Normal vs Aggressive results reveals the true difficulty range of an encounter.
+
+#### AIConfig
+
+Controls how both sides fight. Each side can have a different style, and individual combatants can be overridden:
+
+```typescript
+import { CombatAI, AICombatRunner } from 'playlist-data-engine';
+
+// Everyone plays the same style
+const balancedConfig = {
+  playerStyle: 'normal',
+  enemyStyle: 'normal',
+};
+
+// Mixed: players are cautious, enemies go all-out
+const threatConfig = {
+  playerStyle: 'normal',
+  enemyStyle: 'aggressive',
+};
+
+// Per-combatant overrides (combatant ID → style)
+const customConfig = {
+  playerStyle: 'normal',
+  enemyStyle: 'normal',
+  overrides: new Map([
+    ['enemy_4', 'aggressive'],  // This specific boss fights aggressively
+  ]),
+};
+
+// Optional: enable class features (Sneak Attack, Divine Smite, etc.)
+const classFeaturesConfig = {
+  playerStyle: 'aggressive',
+  enemyStyle: 'aggressive',
+  enableClassFeatures: true,
+};
+```
+
+#### AIDecision
+
+The output of the AI for each turn. Contains everything needed to execute one combatant's action:
+
+```typescript
+interface AIDecision {
+  action: 'attack' | 'castSpell' | 'dodge' | 'dash' | 'disengage'
+        | 'flee' | 'useItem' | 'legendaryAction' | 'skip';
+  target?: string;           // Single-target combatant ID
+  targetIds?: string[];      // Multi-target spell combatant IDs
+  weaponName?: string;       // Weapon to attack with
+  spellName?: string;        // Spell to cast
+  itemName?: string;         // Consumable to use
+  legendaryActionId?: string; // Legendary action to execute
+  reasoning?: string;        // Human-readable explanation
+}
+```
+
+The `reasoning` field explains why the AI chose its action — useful for debugging and UI tooltips.
+
+#### Decision-Making Process
+
+Each turn, the AI follows a priority chain:
+
+```
+1. Assess Threat
+   └─ Evaluate: HP%, ally/enemy counts, spell slots, items, round number
+
+2. Spell Selection (highest priority)
+   ├─ Healing needed? → Cast heal on lowest-HP ally
+   ├─ Damage spell better than attack? → Cast it
+   ├─ Control spell useful? (2+ enemies, normal style) → Cast it
+   └─ Buff available? (healthy, normal style) → Buff strongest ally
+
+3. Item Usage
+   └─ Low HP + no spell slots? → Use healing item
+
+4. Defensive Actions
+   └─ Isolated + low HP + multiple enemies (normal only)? → Dodge
+
+5. Weapon Attack (fallback)
+   └─ Pick best weapon → Attack selected target
+```
+
+The AI never wastes a turn. If no spell/item/defensive action is warranted, it always falls through to a weapon attack.
+
+#### Target Selection
+
+| Style | Strategy | Rationale |
+|-------|----------|-----------|
+| **Normal** | Lowest AC enemy | Consistent damage output — easier to hit |
+| **Aggressive** | Lowest HP enemy | Action economy — removing enemies reduces incoming damage |
+
+#### Weapon Selection
+
+Evaluates all equipped weapons + unarmed strike. Scores based on expected damage and attack bonus:
+
+```typescript
+// Normal: balanced score (damage + small bonus for attack accuracy)
+score = expectedDamage + attackBonus * 0.1
+
+// Aggressive: pure damage
+score = expectedDamage
+```
+
+Ranged weapons use DEX, melee weapons use STR for attack bonus calculation.
+
+#### Spell Selection
+
+Spells are evaluated by tag (via `SpellCaster` static helpers) and expected damage:
+
+| Category | Tag Detection | Normal Behavior | Aggressive Behavior |
+|----------|--------------|-----------------|-------------------|
+| **Damage** | `damage` | Cantrips preferred; leveled only if 50%+ better | Always highest damage spell |
+| **Healing** | `healing`, `ally`, `self` | Heal allies below 50%; self when below 25% | Heal anyone below 75% |
+| **Control** | `control`, `debuff` | Use when 2+ enemies | Never (wastes damage turns) |
+| **Buff** | `buff` | Buff strongest ally when healthy | Never (wastes damage turns) |
+| **AoE/Multi** | `aoe`, `multi-target` | Damage × target count (cap 4) | Always if available |
+
+AoE and multi-target spells get an expected damage multiplier based on enemy count. Leveled spells get a 1.5× bonus over cantrips to account for their resource cost.
+
+#### Support Archetype AI
+
+The AI detects support combatants (healers/buffers) by checking spell tags:
+
+```typescript
+const ai = new CombatAI(config);
+const isSupport = ai.isSupportArchetype(combatant);
+// true if combatant has healing or buff spells
+```
+
+Support AI differences:
+- Prioritizes healing the lowest-HP ally over dealing damage
+- Normal support only heals allies below 50% HP; aggressive heals everyone below 75%
+- Buff spells target the ally with highest STR/DEX (best damage dealer)
+
+#### AIThreatAssessment
+
+Computed each turn to drive all decisions. Provides a battlefield snapshot:
+
+```typescript
+interface AIThreatAssessment {
+  myHPPercent: number;           // 0.0 – 1.0
+  myAC: number;                 // Armor class
+  lowestAllyHPPercent: number;  // 1.0 if no allies
+  lowestEnemyHP: number;        // Infinity if no enemies
+  highestEnemyDamage: number;   // Estimated enemy DPR
+  partySize: number;            // Living allies (incl. self)
+  enemyCount: number;           // Living enemies
+  roundNumber: number;          // Current round
+  isLowHP: boolean;             // Below 25%
+  isCriticalHP: boolean;        // Below 10%
+  hasHealingItems: boolean;     // Usable items in inventory
+  hasSpellSlots: boolean;       // Remaining leveled spell slots
+  hasRemainingLimitedAbilities: boolean; // Legendary actions/resistances
+}
+```
+
+Access the assessment directly for custom AI logic:
+
+```typescript
+const ai = new CombatAI(config);
+const threat = ai.assessThreat(combatant, combatInstance);
+console.log(`${combatant.character.name}: ${Math.round(threat.myHPPercent * 100)}% HP, ${threat.enemyCount} enemies`);
+```
+
+#### AICombatRunner
+
+The `AICombatRunner` orchestrates full combat encounters. It bridges the gap between `CombatAI` (decisions) and `CombatEngine` (execution):
+
+```typescript
+import { AICombatRunner, createSeededRoller } from 'playlist-data-engine';
+
+const runner = new AICombatRunner();
+
+const { combat, result, metrics } = runner.runFullCombat(
+  players,          // CharacterSheet[]
+  enemies,          // CharacterSheet[]
+  {
+    playerStyle: 'normal',
+    enemyStyle: 'aggressive',
+  },
+  { maxTurnsBeforeDraw: 50 },  // Optional combat config
+  createSeededRoller('sim-seed-42'),  // Optional: deterministic rolls
+);
+
+console.log(result.winnerSide);     // 'player' | 'enemy' | 'draw'
+console.log(result.roundsElapsed);  // Number of rounds
+console.log(result.xpAwarded);      // XP from defeated enemies
+
+// Per-combatant metrics
+for (const [id, m] of metrics) {
+  console.log(`${m.name}: ${m.totalDamageDealt} damage, ${m.roundsSurvived} rounds, survived=${m.survived}`);
+}
+```
+
+**AICombatResult interface:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `combat` | `CombatInstance` | Full combat instance with complete action history |
+| `result` | `CombatResult` | Final result (winner, XP, rounds, treasure) |
+| `metrics` | `Map<string, CombatantMetrics>` | Per-combatant stats computed from history |
+
+**Combat lifecycle inside the runner:**
+
+```
+startCombat()
+  └─ For each turn while combat is active:
+      ├─ Skip defeated combatants
+      ├─ Skip stunned/unconscious combatants (skipTurn effects)
+      ├─ AI decides → executeDecision()
+      │   ├─ attack → executeWeaponAttack()
+      │   ├─ castSpell → executeCastSpell()
+      │   ├─ dodge/dash/disengage → engine methods
+      │   ├─ flee → executeFlee() (fallback to attack if disabled)
+      │   ├─ useItem → log in history (no mechanical effect yet)
+      │   ├─ legendaryAction → executeLegendaryAction()
+      │   └─ skip → log and advance
+      ├─ Process boss legendary actions (chain until budget exhausted)
+      └─ nextTurn()
+  └─ getCombatResult() → computeMetrics()
+```
+
+**Without a seeded roller**, the runner uses `Math.random()` — suitable for live gameplay:
+
+```typescript
+// Random combat (live gameplay)
+const { combat, result } = runner.runFullCombat(players, enemies, {
+  playerStyle: 'normal',
+  enemyStyle: 'normal',
+});
+```
+
+#### CombatantMetrics
+
+Per-combatant statistics computed from combat history by `CombatMetricsTracker`:
+
+```typescript
+interface CombatantMetrics {
+  combatantId: string;
+  name: string;
+  side: 'player' | 'enemy';
+  totalDamageDealt: number;    // All damage sources (attacks + spells + legendary)
+  totalDamageTaken: number;
+  totalHealingDone: number;
+  spellsCast: number;
+  itemsUsed: number;
+  criticalHits: number;
+  roundsSurvived: number;
+  survived: boolean;
+  actionsByType: Record<string, number>;  // e.g., { attack: 12, spell: 3, dodge: 1 }
+  damagePerRound: number[];     // [avg DPR] computed from aggregate
+}
+```
+
+These metrics are the foundation for Monte Carlo simulation aggregation — the simulator averages them across hundreds of runs to produce per-combatant DPR, survival rate, and kill rate.
+
 ---
 
 ## Seeded Dice Rolling

@@ -1105,13 +1105,17 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Covers: LegendaryAction and LegendaryConfig interface definitions with all fields, Combatant legendary tracking fields (legendaryActionsRemaining, legendaryResistancesRemaining), action point tracking (3 per round reset at round start via nextTurn()), executing legendary actions with code examples, parameter table, engine behavior steps, legendary resistances (per-day resource, useLegendaryResistance() with code example), AI legendary action behavior (normal vs aggressive selection), point budget exhaustion diagram
   - Also updated Combat History section to include `'useItem'`, `'legendaryAction'`, and `'statusEffectTick'` in the action type union
   - Build verified clean (pre-existing TS errors only, no regressions)
-- [ ] **6.1.4** Add **Combat AI** section
+- [x] **6.1.4** Add **Combat AI** section
   - Document the `AIPlayStyle` enum and what each style means (normal, aggressive)
   - Document the `AIConfig` interface (per-side styles, per-combatant overrides)
   - Document the `AIDecision` output format (action, target, weapon, spell, reasoning)
   - Document the `AICombatRunner` — how to run a full AI-controlled combat
   - Include code examples for each play style
   - Explain the AI decision-making process: threat assessment → target selection → action selection
+  - Added comprehensive "Combat AI" section to `docs/engine/docs/COMBAT_SYSTEM.md` (274 lines)
+  - Covers: AIPlayStyle comparison table (Normal vs Aggressive across 5 dimensions), AIConfig with per-side styles and per-combatant overrides (4 code examples), AIDecision interface with all 9 action types and reasoning field, decision-making priority chain diagram (5-step: assess → spell → item → defensive → attack), target selection strategies (Normal=lowest AC, Aggressive=lowest HP), weapon selection scoring formulas, spell selection table (5 categories with tag detection and style-dependent behavior), support archetype AI detection and behavior differences, AIThreatAssessment interface with all 13 fields and direct access example, AICombatRunner usage with seeded/random modes, AICombatResult interface table, full combat lifecycle diagram (turn loop with legendary action chaining), CombatantMetrics interface for per-combatant stats
+  - TOC already had Combat AI placeholder entry (line 26) — no update needed
+  - Build verified clean (pre-existing TS errors only, no regressions from doc change)
 - [ ] **6.1.5** Add **Monte Carlo Simulation** section
   - Document `CombatSimulator` class and `SimulationConfig`
   - Document `SimulationResults` and `SimulationSummary` interfaces
