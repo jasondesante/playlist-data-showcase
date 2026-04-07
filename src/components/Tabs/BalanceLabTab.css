@@ -61,6 +61,26 @@
     color: hsl(var(--muted-foreground));
     margin: 0;
     padding-left: 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bl-shortcut-hint {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem 0.4rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 3px;
+    background: hsl(var(--muted) / 0.3);
+    color: hsl(var(--muted-foreground));
+    font-family: inherit;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* ============================================
@@ -393,6 +413,10 @@
     .bl-header-subtitle {
         padding-left: 1.5rem;
         font-size: 0.75rem;
+    }
+
+    .bl-shortcut-hint {
+        display: none;
     }
 
     .bl-panel-header {

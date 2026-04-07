@@ -8,7 +8,7 @@
  * Orchestrates enemy generation and feeds into useSimulationHistory.
  */
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
     type CharacterSheet,
     type SimulationConfig,
@@ -179,6 +179,20 @@ export function SimulationConfigPanel({
         completedTotalRef.current = 0;
     }, [onReset]);
 
+    // Ctrl+Enter → run simulation (when config panel is visible and can run)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                if (canRun) {
+                    handleRun();
+                }
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [canRun, handleRun]);
+
     // ─── Render ─────────────────────────────────────────────────────────
     return (
         <div className="sim-config-panel">
@@ -300,9 +314,11 @@ export function SimulationConfigPanel({
                         className="scp-btn scp-btn-run"
                         onClick={handleRun}
                         disabled={!canRun}
+                        title="Run simulation (Ctrl+Enter)"
                     >
                         <Play size={14} />
                         Run Simulation
+                        <kbd className="scp-shortcut-hint">Ctrl+Enter</kbd>
                     </button>
                 )}
                 {isRunning && (

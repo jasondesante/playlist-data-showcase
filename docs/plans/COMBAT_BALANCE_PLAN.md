@@ -1916,9 +1916,15 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Integrated into `BalanceLabTab.tsx` — `ResultsDashboardSkeleton` renders in results panel when `isRunning` is true, replacing the empty state during simulation execution
   - Responsive: two-column chart grid collapses on mobile (900px), metrics grid becomes 2-column (640px), reduced chart heights
   - TypeScript check clean (zero new errors), pre-existing build errors unchanged (crypto import in worker)
-- [ ] **10.3.3** Add keyboard shortcuts
+- [x] **10.3.3** Add keyboard shortcuts
   - `Ctrl+Shift+B` — open Balance Lab tab
   - `Ctrl+Enter` — run simulation from config panel
+  - Added global `keydown` listener in `App.tsx` — `Ctrl+Shift+B` navigates to Balance Lab tab; skips when user is typing in input/textarea/select fields
+  - Added `keydown` listener in `SimulationConfigPanel.tsx` — `Ctrl+Enter` triggers `handleRun()` when simulation can be started (`canRun` is true)
+  - Added `<kbd>` keyboard shortcut hint badges: "Ctrl+Enter" next to Run Simulation button, "Ctrl+Shift+B" in Balance Lab header subtitle
+  - Pure CSS styling for `kbd` hints using project HSL variable system (border, muted background, small font)
+  - Hints hidden on mobile (max-width 640px) where keyboard shortcuts don't apply
+  - TypeScript check clean (zero new errors), pre-existing build errors unchanged
 - [ ] **10.3.4** Add empty states and guidance
   - First-time user guidance in Balance Lab
   - Explain what each metric means
