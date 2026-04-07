@@ -14,6 +14,7 @@ import { SimulationConfigPanel } from '@/components/balance/SimulationConfigPane
 import { ResultsSummary } from '@/components/balance/ResultsSummary';
 import { PerCombatantMetrics } from '@/components/balance/PerCombatantMetrics';
 import { BalanceRecommendations } from '@/components/balance/BalanceRecommendations';
+import { SimulationLogViewer } from '@/components/balance/SimulationLogViewer';
 import {
     BalanceValidator,
     type EncounterDifficulty,
@@ -299,6 +300,11 @@ export function BalanceLabTab() {
                                 <PerCombatantMetrics
                                     metrics={results.perCombatantMetrics}
                                 />
+                            )}
+
+                            {/* ─── Simulation Log Viewer ────────────── */}
+                            {hasResults && (
+                                <SimulationLogViewer results={results} />
                             )}
 
                             {/* ─── Empty State ──────────────────────── */}

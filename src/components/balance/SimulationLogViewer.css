@@ -1,0 +1,689 @@
+/* ============================================
+   SIMULATION LOG VIEWER COMPONENT
+   ============================================ */
+
+.slv-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ============================================
+   PANEL HEADER
+   ============================================ */
+
+.slv-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background-color: hsl(var(--card) / 0.5);
+    color: hsl(var(--foreground));
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.slv-panel-header:hover {
+    background-color: hsl(var(--card) / 0.8);
+}
+
+.slv-panel-header:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: -2px;
+}
+
+.slv-panel-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.slv-panel-icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+}
+
+.slv-panel-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+}
+
+.slv-panel-toggle {
+    color: hsl(var(--muted-foreground));
+    flex-shrink: 0;
+}
+
+.slv-count-badge {
+    font-size: 0.6rem;
+    font-weight: 600;
+    padding: 0.05rem 0.35rem;
+    border-radius: 999px;
+    background-color: hsl(var(--primary) / 0.15);
+    color: hsl(var(--primary));
+}
+
+/* ============================================
+   CONTENT AREA
+   ============================================ */
+
+.slv-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.slv-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 1.5rem 1rem;
+    background-color: hsl(var(--card) / 0.3);
+    border-radius: var(--radius);
+    border: 1px dashed hsl(var(--border) / 0.5);
+}
+
+.slv-empty-icon {
+    color: hsl(var(--muted-foreground) / 0.5);
+    margin-bottom: 0.25rem;
+}
+
+.slv-empty-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+}
+
+.slv-empty-hint {
+    font-size: 0.65rem;
+    color: hsl(var(--muted-foreground) / 0.7);
+    text-align: center;
+    max-width: 20rem;
+    line-height: 1.4;
+}
+
+/* ============================================
+   RUN SELECTOR
+   ============================================ */
+
+.slv-run-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    background-color: hsl(var(--card) / 0.5);
+    border-radius: var(--radius-sm);
+    border: 1px solid hsl(var(--border) / 0.3);
+    flex-wrap: wrap;
+}
+
+.slv-run-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+}
+
+.slv-run-select {
+    flex: 1;
+    min-width: 10rem;
+    padding: 0.25rem 0.35rem;
+    font-size: 0.7rem;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--background));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.slv-run-select:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: -1px;
+}
+
+.slv-run-seed {
+    font-size: 0.6rem;
+    color: hsl(var(--muted-foreground) / 0.6);
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+/* ============================================
+   RUN SUMMARY BAR
+   ============================================ */
+
+.slv-run-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    background-color: hsl(var(--card) / 0.5);
+    border-radius: var(--radius-sm);
+    border: 1px solid hsl(var(--border) / 0.3);
+    flex-wrap: wrap;
+}
+
+.slv-summary-item {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.65rem;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+}
+
+.slv-summary-item svg {
+    flex-shrink: 0;
+}
+
+.slv-summary-player {
+    color: hsl(200 80% 50%);
+    font-weight: 600;
+}
+
+.slv-summary-enemy {
+    color: hsl(0 84% 60%);
+    font-weight: 600;
+}
+
+.slv-summary-draw {
+    color: hsl(45 93% 47%);
+    font-weight: 600;
+}
+
+/* ============================================
+   METRICS TOGGLE
+   ============================================ */
+
+.slv-metrics-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border: 1px solid hsl(var(--border) / 0.3);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+    width: fit-content;
+}
+
+.slv-metrics-toggle:hover {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--muted) / 0.15);
+}
+
+.slv-metrics-toggle:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: -1px;
+}
+
+/* ============================================
+   METRICS TABLE
+   ============================================ */
+
+.slv-metrics-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.slv-metrics-header {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    padding: 0.1rem 0;
+}
+
+.slv-metrics-table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius-sm);
+    border: 1px solid hsl(var(--border) / 0.3);
+    background-color: hsl(var(--card) / 0.3);
+}
+
+.slv-metrics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.65rem;
+}
+
+.slv-metrics-table th {
+    padding: 0.3rem 0.4rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted) / 0.15);
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    white-space: nowrap;
+}
+
+.slv-metrics-table th:not(:first-child) {
+    text-align: right;
+}
+
+.slv-metrics-row {
+    transition: background-color 0.1s ease;
+}
+
+.slv-metrics-row:hover {
+    background-color: hsl(var(--muted) / 0.1);
+}
+
+.slv-metrics-row-player {
+    border-left: 2px solid hsl(200 80% 50% / 0.4);
+}
+
+.slv-metrics-row-enemy {
+    border-left: 2px solid hsl(0 84% 60% / 0.4);
+}
+
+.slv-metrics-table td {
+    padding: 0.25rem 0.4rem;
+    color: hsl(var(--foreground));
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    border-bottom: 1px solid hsl(var(--border) / 0.2);
+}
+
+.slv-metrics-table td:not(:first-child) {
+    text-align: right;
+}
+
+.slv-metrics-name {
+    font-weight: 600;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.slv-metrics-name-player {
+    color: hsl(200 80% 55%);
+}
+
+.slv-metrics-name-enemy {
+    color: hsl(0 70% 55%);
+}
+
+.slv-metrics-side {
+    color: hsl(var(--muted-foreground));
+}
+
+.slv-metrics-dpr {
+    font-weight: 600;
+}
+
+.slv-metrics-damage {
+    color: hsl(var(--foreground));
+}
+
+.slv-metrics-damage-taken {
+    color: hsl(28 96% 53% / 0.85);
+}
+
+.slv-metrics-healing {
+    color: hsl(142 76% 46%);
+}
+
+.slv-survived-yes {
+    color: hsl(142 76% 46%);
+    font-weight: 600;
+}
+
+.slv-survived-no {
+    color: hsl(0 84% 60%);
+    font-weight: 500;
+}
+
+.slv-metrics-actions {
+    text-align: left !important;
+}
+
+.slv-action-badge {
+    display: inline-block;
+    font-size: 0.55rem;
+    padding: 0.05rem 0.25rem;
+    border-radius: 999px;
+    background-color: hsl(var(--muted) / 0.2);
+    color: hsl(var(--muted-foreground));
+    margin: 0.05rem;
+    white-space: nowrap;
+}
+
+/* ============================================
+   LOG SECTION
+   ============================================ */
+
+.slv-log-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.slv-log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.slv-log-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+}
+
+.slv-log-count {
+    font-size: 0.6rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ─── Log Container ─── */
+
+.slv-log-container {
+    background-color: hsl(var(--muted) / 0.3);
+    border-radius: var(--radius);
+    padding: 0.5rem;
+    max-height: 24rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+.slv-log-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.slv-log-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.slv-log-container::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border) / 0.5);
+    border-radius: 3px;
+}
+
+.slv-log-container::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--border) / 0.8);
+}
+
+/* ============================================
+   ROUND GROUP
+   ============================================ */
+
+.slv-round-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.slv-round-group:not(:first-child) {
+    margin-top: 0.25rem;
+    padding-top: 0.25rem;
+    border-top: 1px solid hsl(var(--border) / 0.3);
+}
+
+.slv-round-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.15rem 0.35rem;
+    background-color: hsl(var(--muted) / 0.15);
+    border-radius: var(--radius-sm);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.slv-round-number {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.slv-round-actions {
+    font-size: 0.55rem;
+    color: hsl(var(--muted-foreground) / 0.6);
+}
+
+/* ============================================
+   LOG ENTRY
+   ============================================ */
+
+.slv-entry {
+    font-size: 0.65rem;
+    border-left-width: 3px;
+    border-left-style: solid;
+    background-color: hsl(var(--background) / 0.8);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 0.3rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+/* ─── Entry Colors ─── */
+
+.slv-entry-hit {
+    border-left-color: hsl(142 76% 46%);
+}
+
+.slv-entry-critical {
+    border-left-color: hsl(48 96% 53%);
+}
+
+.slv-entry-miss {
+    border-left-color: hsl(0 84% 60%);
+}
+
+.slv-entry-spell {
+    border-left-color: hsl(262 83% 58%);
+}
+
+.slv-entry-legendary {
+    border-left-color: hsl(28 96% 53%);
+}
+
+.slv-entry-dodge {
+    border-left-color: hsl(200 80% 50%);
+}
+
+.slv-entry-dash {
+    border-left-color: hsl(200 80% 50% / 0.5);
+}
+
+.slv-entry-disengage {
+    border-left-color: hsl(200 80% 50% / 0.3);
+}
+
+.slv-entry-flee {
+    border-left-color: hsl(0 84% 60% / 0.5);
+}
+
+.slv-entry-item {
+    border-left-color: hsl(142 76% 46% / 0.6);
+}
+
+.slv-entry-status {
+    border-left-color: hsl(var(--muted-foreground) / 0.4);
+}
+
+.slv-entry-neutral {
+    border-left-color: hsl(var(--border));
+}
+
+/* ─── Entry Meta ─── */
+
+.slv-entry-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.slv-entry-actor {
+    font-weight: 600;
+}
+
+.slv-entry-actor-player {
+    color: hsl(200 80% 55%);
+}
+
+.slv-entry-actor-enemy {
+    color: hsl(0 70% 55%);
+}
+
+.slv-entry-action {
+    color: hsl(var(--muted-foreground));
+}
+
+.slv-entry-target {
+    color: hsl(var(--muted-foreground));
+}
+
+.slv-entry-target-name {
+    font-weight: 600;
+}
+
+.slv-entry-target-name-player {
+    color: hsl(200 80% 55%);
+}
+
+.slv-entry-target-name-enemy {
+    color: hsl(0 70% 55%);
+}
+
+/* ─── Entry Details ─── */
+
+.slv-entry-details {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding-left: 0.25rem;
+}
+
+.slv-detail {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    font-size: 0.6rem;
+    white-space: nowrap;
+}
+
+.slv-detail-label {
+    color: hsl(var(--muted-foreground));
+    font-weight: 500;
+}
+
+.slv-detail-hit {
+    color: hsl(142 76% 46%);
+    font-weight: 600;
+}
+
+.slv-detail-miss {
+    color: hsl(0 84% 60%);
+    font-weight: 600;
+}
+
+.slv-detail-crit {
+    color: hsl(48 96% 53%);
+    font-weight: 700;
+    margin-left: 0.15rem;
+    animation: slv-crit-pulse 1s ease-in-out;
+}
+
+@keyframes slv-crit-pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.slv-detail-damage {
+    color: hsl(0 84% 60%);
+    font-weight: 600;
+}
+
+.slv-detail-low-hp {
+    color: hsl(0 84% 60%);
+    font-weight: 600;
+}
+
+.slv-detail-spell {
+    color: hsl(262 83% 58%);
+    font-weight: 600;
+    font-style: italic;
+}
+
+.slv-detail-legendary {
+    color: hsl(28 96% 53%);
+    font-weight: 600;
+}
+
+.slv-detail-desc {
+    color: hsl(var(--muted-foreground) / 0.8);
+    font-style: italic;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+    .slv-run-selector {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .slv-run-select {
+        width: 100%;
+    }
+
+    .slv-run-summary {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .slv-metrics-table {
+        font-size: 0.6rem;
+    }
+
+    .slv-metrics-table th,
+    .slv-metrics-table td {
+        padding: 0.2rem 0.3rem;
+    }
+
+    .slv-log-container {
+        max-height: 18rem;
+    }
+
+    .slv-entry {
+        font-size: 0.6rem;
+        padding: 0.25rem 0.35rem;
+    }
+}

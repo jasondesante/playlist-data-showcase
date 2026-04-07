@@ -1571,11 +1571,24 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 8.4 Detailed Log Viewer
 
-- [ ] **8.4.1** Create `src/components/balance/SimulationLogViewer.tsx`
+- [x] **8.4.1** Create `src/components/balance/SimulationLogViewer.tsx`
   - Select a specific simulation run to view its full combat log
   - Dropdown or list to pick run number
   - Show combat log in same format as CombatSimulatorTab's log
   - Show per-round breakdown with metrics
+  - Updated engine `SimulationRunDetail` to include `combat: CombatInstance` field — previously only stored `result` and `metrics`, missing the full action history needed for log viewing
+  - Modified engine source (`CombatSimulator.ts`): added `CombatInstance` import, added `combat` field to `SimulationRunDetail` interface, updated `aggregateRun()` to destructure and store `combat` from run result, rebuilt engine types
+  - Created `src/components/balance/SimulationLogViewer.tsx` with:
+    - **Run selector**: dropdown listing all runs with winner/rounds preview, seed display
+    - **Run summary bar**: winner side with icon, rounds elapsed, total turns, defeated count, surviving combatants with HP
+    - **Per-combatant metrics table** (collapsible): name, side, DPR, damage dealt/taken, healing, survival (Yes or round defeated), action breakdown badges (Attacks, Spells, Dodges, etc.)
+    - **Full combat action log**: grouped by round with sticky round headers, color-coded entries (hit=green, miss=red, crit=gold, spell=purple, legendary=orange, dodge=blue, status=gray, flee=red, item=green), per-entry details (roll, result, damage, HP, weapon, spell name)
+    - **Empty state**: when `collectDetailedLogs` was not enabled, shows guidance to enable it
+    - **Collapsible panel**: matches Balance Lab tab pattern
+  - Created `src/components/balance/SimulationLogViewer.css` with pure CSS using project HSL variable system — ~450 lines covering panel header, run selector, summary bar, metrics table, round groups, log entries (11 color variants), entry meta/details, custom scrollbar, responsive breakpoints
+  - Integrated into `BalanceLabTab.tsx` — rendered below PerCombatantMetrics when results are available
+  - Sub-components memoized with `React.memo` for performance
+  - TypeScript check clean (zero new errors), pre-existing build error only (crypto import in worker)
 - [ ] **8.4.2** Add export functionality
   - Export simulation results as JSON (full structured data)
   - Export as CSV (summary table for spreadsheets)
