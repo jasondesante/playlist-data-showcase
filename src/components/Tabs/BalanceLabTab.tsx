@@ -12,6 +12,7 @@ import { useSimulationHistory } from '@/hooks/useSimulationHistory';
 import { SimulationHistoryPanel } from '@/components/balance/SimulationHistoryPanel';
 import { SimulationConfigPanel } from '@/components/balance/SimulationConfigPanel';
 import { ResultsSummary } from '@/components/balance/ResultsSummary';
+import { PerCombatantMetrics } from '@/components/balance/PerCombatantMetrics';
 import {
     BalanceValidator,
     type EncounterDifficulty,
@@ -248,6 +249,13 @@ export function BalanceLabTab() {
                                     isSaved={!!activeSavedId}
                                     onSave={isCompleted ? handleSave : undefined}
                                     onReset={handleReset}
+                                />
+                            )}
+
+                            {/* ─── Per-Combatant Metrics ────────────── */}
+                            {hasResults && results.perCombatantMetrics.size > 0 && (
+                                <PerCombatantMetrics
+                                    metrics={results.perCombatantMetrics}
                                 />
                             )}
 

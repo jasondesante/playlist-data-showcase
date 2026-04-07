@@ -1536,11 +1536,22 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - **Integration**: replaced inline score text + thin 4px bar in `ResultsSummary.tsx` with `<BalanceScoreIndicator>` component; removed old `rs-balance-score-bar` and `rs-balance-score-fill` CSS rules from `ResultsSummary.css`
   - **Responsive**: scales down on mobile (max-width 640px) — smaller gauge, smaller text, narrower tooltip
   - TypeScript check clean (zero new errors), pre-existing build error only (crypto import in worker)
-- [ ] **8.3.3** Create `src/components/balance/PerCombatantMetrics.tsx`
+- [x] **8.3.3** Create `src/components/balance/PerCombatantMetrics.tsx`
   - Table showing per-combatant aggregate stats
   - Columns: Name, Side, DPR, Avg Damage Taken, Survival Rate, Kill Rate, Crit Rate
   - Sortable by any column
   - Highlight top performers
+  - Created `src/components/balance/PerCombatantMetrics.tsx` with full sortable metrics table
+  - Created `src/components/balance/PerCombatantMetrics.css` — pure CSS using project HSL variable system
+  - **7 columns**: Name (with side-colored text), Side (Player/Enemy), DPR, Avg Dmg Taken (orange), Survival Rate, Kill Rate, Crit Rate (yellow)
+  - **Sortable**: click any column header to sort ascending/descending; arrow icons show active sort state; toggles direction on re-click
+  - **Top performer highlighting**: green dot indicator on the best value in each numeric column (DPR, Damage Taken, Survival, Kill Rate, Crit Rate)
+  - **Sectioned display**: Players and Enemies shown in separate sections with colored section labels (blue for Players, red for Enemies)
+  - **Side-colored row borders**: left border accent per side for visual grouping
+  - **Responsive**: table wrapper with horizontal scroll on mobile, reduced font sizes and padding at 640px breakpoint
+  - **Memoized** with `React.memo` for render performance
+  - Integrated into `BalanceLabTab.tsx` — rendered below `ResultsSummary` when `perCombatantMetrics` has entries
+  - TypeScript check clean (zero new errors), pre-existing build errors unchanged
 - [ ] **8.3.4** Create `src/components/balance/BalanceRecommendations.tsx`
   - List of actionable recommendations from `BalanceValidator`
   - Each recommendation shows: what to change, expected impact, confidence level

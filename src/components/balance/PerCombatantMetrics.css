@@ -1,0 +1,293 @@
+/* ============================================
+   PER-COMBATANT METRICS COMPONENT
+   ============================================ */
+
+.pcm-per-combatant-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.pcm-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.pcm-header-icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+}
+
+.pcm-header-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+}
+
+.pcm-header-count {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    margin-left: auto;
+}
+
+/* ============================================
+   SECTION (Players / Enemies)
+   ============================================ */
+
+.pcm-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.pcm-section-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.4rem;
+    border-radius: var(--radius-sm);
+    display: inline-block;
+    width: fit-content;
+}
+
+.pcm-section-players {
+    color: hsl(200 80% 50%);
+    background-color: hsl(200 80% 50% / 0.08);
+}
+
+.pcm-section-enemies {
+    color: hsl(0 84% 60%);
+    background-color: hsl(0 84% 60% / 0.08);
+}
+
+/* ============================================
+   TABLE WRAPPER (scrollable)
+   ============================================ */
+
+.pcm-table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border) / 0.5);
+    background-color: hsl(var(--card) / 0.5);
+}
+
+/* ============================================
+   TABLE
+   ============================================ */
+
+.pcm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+}
+
+/* ─── Header ─── */
+
+.pcm-th {
+    padding: 0;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    background-color: hsl(var(--muted) / 0.15);
+    white-space: nowrap;
+}
+
+.pcm-sort-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    font-size: inherit;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+    gap: 0.25rem;
+}
+
+.pcm-sort-btn:hover {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--muted) / 0.2);
+}
+
+.pcm-sort-btn:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: -2px;
+    border-radius: 2px;
+}
+
+.pcm-th-content {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pcm-th-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.pcm-sort-icon {
+    flex-shrink: 0;
+    opacity: 0.4;
+    margin-left: auto;
+}
+
+.pcm-sort-active {
+    opacity: 1;
+    color: hsl(var(--primary));
+}
+
+/* Column-specific widths */
+.pcm-th-name {
+    min-width: 120px;
+    text-align: left;
+}
+
+.pcm-th-side {
+    min-width: 64px;
+    text-align: center;
+}
+
+.pcm-th-dpr,
+.pcm-th-damageTaken,
+.pcm-th-survivalRate,
+.pcm-th-killRate,
+.pcm-th-critRate {
+    min-width: 72px;
+    text-align: right;
+}
+
+/* ─── Rows ─── */
+
+.pcm-row {
+    transition: background-color 0.1s ease;
+}
+
+.pcm-row:hover {
+    background-color: hsl(var(--muted) / 0.15);
+}
+
+.pcm-row-player {
+    border-left: 2px solid hsl(200 80% 50% / 0.4);
+}
+
+.pcm-row-enemy {
+    border-left: 2px solid hsl(0 84% 60% / 0.4);
+}
+
+/* ─── Cells ─── */
+
+.pcm-td {
+    padding: 0.35rem 0.5rem;
+    color: hsl(var(--foreground));
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.pcm-td-name {
+    font-weight: 600;
+    text-align: left;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pcm-row-player .pcm-td-name {
+    color: hsl(200 80% 55%);
+}
+
+.pcm-row-enemy .pcm-td-name {
+    color: hsl(0 70% 55%);
+}
+
+.pcm-td-side {
+    text-align: center;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+}
+
+.pcm-td-dpr {
+    text-align: right;
+    font-weight: 600;
+}
+
+.pcm-td-damageTaken {
+    text-align: right;
+    color: hsl(28 96% 53% / 0.85);
+}
+
+.pcm-td-survivalRate {
+    text-align: right;
+    font-weight: 500;
+}
+
+.pcm-td-killRate {
+    text-align: right;
+    font-weight: 500;
+}
+
+.pcm-td-critRate {
+    text-align: right;
+    color: hsl(48 96% 53%);
+    font-weight: 500;
+}
+
+/* ─── Top Performer Highlight ─── */
+
+.pcm-top-performer {
+    position: relative;
+}
+
+.pcm-top-performer::after {
+    content: '';
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: hsl(142 76% 46%);
+    box-shadow: 0 0 4px hsl(142 76% 46% / 0.5);
+}
+
+/* ─── Row borders ─── */
+
+.pcm-row:not(:last-child) .pcm-td {
+    border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+    .pcm-table {
+        font-size: 0.7rem;
+    }
+
+    .pcm-th-label {
+        font-size: 0.6rem;
+    }
+
+    .pcm-td {
+        padding: 0.3rem 0.35rem;
+    }
+
+    .pcm-th-name,
+    .pcm-td-name {
+        min-width: 80px;
+        max-width: 100px;
+    }
+}
