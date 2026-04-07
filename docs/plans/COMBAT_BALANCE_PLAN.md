@@ -960,10 +960,17 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 4.5 Analysis Tests
 
-- [ ] **4.5.1** Test balance validator with known configurations
+- [x] **4.5.1** Test balance validator with known configurations
   - Trivially easy fight → should report overpowered
   - Trivially hard fight → should report underpowered
   - Balanced fight → should report balanced
+  - Added 6 new tests in `balanceValidator.test.ts` under "known configuration tests" section
+  - **Trivially easy**: level 10 party of 4 (with weapons) vs CR 1 common → asserts win rate >90%, variance='underpowered', actualDifficulty='easy', balance score <70, recommends difficulty increase
+  - **Trivially hard**: level 1 solo (unarmed) vs CR 10 boss → asserts win rate <30%, variance='overpowered', actualDifficulty='deadly', balance score <70, recommends difficulty reduction
+  - **Balanced (all tiers)**: runs real simulation to get authentic `SimulationResults` structure, then sets win rate to midpoint of each tier's expected range (easy=95%, medium=75%, hard=55%, deadly=35%) — asserts variance='balanced', score=100, actualDifficulty matches for all four tiers
+  - **Classification consistency**: runs real simulation, verifies `actualDifficulty` matches win rate range boundaries (>=90% easy, >=70% medium, >=50% hard, <50% deadly), plus validates all report fields
+  - **Boundary behavior**: verifies edge of expected range (70%, 80%) produces balanced with lower score, while just outside (69%, 81%) produces imbalanced
+  - All 1221 combat tests pass, engine builds clean (tsc + vite)
 - [ ] **4.5.2** Test parameter sweep produces reasonable curves
   - Win rate should generally decrease as CR increases
   - Win rate should generally decrease as enemy count increases
