@@ -70,7 +70,7 @@ BalanceLabTab (results area)
   }
   ```
 
-- [ ] **1.2 Create `useEstimateSnapshot()` hook** in `src/hooks/useEstimateSnapshot.ts`
+- [x] **1.2 Create `useEstimateSnapshot()` hook** in `src/hooks/useEstimateSnapshot.ts`
 
   Pure computation hook (no side effects). Takes `selectedParty: CharacterSheet[]` and `encounterConfig: EncounterConfigUI`, returns `SimulationEstimateSnapshot | null`.
 
