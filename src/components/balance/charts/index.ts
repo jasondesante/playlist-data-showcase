@@ -14,3 +14,4 @@ export { TurnDistributionChart } from './TurnDistributionChart';
 export { SurvivalRateChart } from './SurvivalRateChart';
 export { DamageDistributionChart } from './DamageDistributionChart';
 export { SweepResultsChart } from './SweepResultsChart';
+export { ComparisonOverlayChart } from './ComparisonOverlayChart';

@@ -17,6 +17,7 @@ import {
     Info,
 } from 'lucide-react';
 import { useSimulationComparison } from '@/hooks/useSimulationComparison';
+import { ComparisonOverlayChart } from '@/components/balance/charts';
 import type { SavedSimulation } from '@/store/simulationStore';
 import './ComparisonPanel.css';
 
@@ -389,6 +390,18 @@ export function ComparisonPanel({ className = '' }: ComparisonPanelProps) {
                             {comparisonResult.winRateSignificance.interpretation}
                         </span>
                     </div>
+                </div>
+            )}
+
+            {/* Per-Combatant Overlay Chart — show when both slots have results */}
+            {hasBothSlots && slotA && slotB && slotA.results.perCombatantMetrics.size > 0 && slotB.results.perCombatantMetrics.size > 0 && (
+                <div className="comparison-chart-section">
+                    <ComparisonOverlayChart
+                        resultsA={slotA.results}
+                        resultsB={slotB.results}
+                        labelA={slotA.label ?? comparisonResult?.labelA ?? 'Config A'}
+                        labelB={slotB.label ?? comparisonResult?.labelB ?? 'Config B'}
+                    />
                 </div>
             )}
 

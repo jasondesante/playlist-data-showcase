@@ -1766,14 +1766,28 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 9.3 Comparison Mode
 
-- [ ] **9.3.1** Create `src/components/balance/ComparisonPanel.tsx`
+- [x] **9.3.1** Create `src/components/balance/ComparisonPanel.tsx`
   - Side-by-side view of two simulation results
   - Uses `ComparativeAnalyzer` from engine
   - Shows delta metrics with up/down arrows and color coding
-- [ ] **9.3.2** Create `src/components/balance/charts/ComparisonOverlayChart.tsx`
+  - Already implemented in Phase 7.2.3 (task 7.2.3) — full `ComparisonPanel` component with two-column slot layout (A vs B), delta metrics table with directional arrows and color coding (green positive/negative red), quick deltas from saved results, full ComparativeAnalyzer re-simulation with statistical significance, progress bar and cancel support, integrated into `SimulationHistoryPanel` when comparison mode is active
+- [x] **9.3.2** Create `src/components/balance/charts/ComparisonOverlayChart.tsx`
   - Line chart overlaying win rate curves from two configurations
   - Clear legend distinguishing Config A vs Config B
   - Highlight crossover points
+  - Created `src/components/balance/charts/ComparisonOverlayChart.tsx` with recharts `LineChart` overlaying per-combatant metrics from two simulation results
+  - Created `src/components/balance/charts/ComparisonOverlayChart.css` — pure CSS using project HSL variable system
+  - **Metric selector dropdown**: 7 selectable metrics — DPR, Survival Rate, Damage Dealt, Damage Taken, Kill Rate, Critical Hit Rate, Rounds Survived
+  - **Dual line display**: Config A as solid blue line, Config B as dashed amber/gold line, matched by side (players first, then enemies) and index position
+  - **Clear legend**: colored line samples for Config A and Config B, plus crossover indicator
+  - **Crossover detection**: `findCrossovers()` algorithm detects where the two configs swap advantage; crossover points rendered as pulsing gold `ReferenceDot` markers
+  - **Custom tooltip**: shows combatant name, both config values (color-coded), delta with directional color, and side label
+  - **Dynamic Y-axis**: auto-scales with 15% padding for numeric metrics; fixed 0–100% for percent metrics
+  - **Responsive**: angled X-axis labels for many combatants, mobile-friendly layout
+  - **Empty state**: shown when no matching combatants exist
+  - Updated barrel export `charts/index.ts` with `ComparisonOverlayChart`
+  - Integrated into `ComparisonPanel.tsx` — rendered below significance result when both slots have per-combatant metrics
+  - TypeScript check clean (zero new errors), pre-existing build errors unchanged
 
 ### 9.4 Balance Dashboard
 
