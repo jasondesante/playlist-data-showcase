@@ -13,6 +13,7 @@ import { useSimulationHistory } from '@/hooks/useSimulationHistory';
 import { SimulationHistoryPanel } from '@/components/balance/SimulationHistoryPanel';
 import { SimulationConfigPanel } from '@/components/balance/SimulationConfigPanel';
 import { BalanceDashboard } from '@/components/balance/BalanceDashboard';
+import { EstimateValidationPanel } from '@/components/balance/EstimateValidationPanel';
 import { ResultsDashboardSkeleton } from '@/components/balance/BalanceLabSkeleton';
 import {
     BalanceValidator,
@@ -21,6 +22,7 @@ import {
     type CharacterSheet,
 } from 'playlist-data-engine';
 import { getWinRateDifficulty, type EncounterConfigUI, type SimulationEstimateSnapshot, DEFAULT_ENCOUNTER_CONFIG } from '@/types/simulation';
+import { useEstimateValidation } from '@/hooks/useEstimateValidation';
 import { onBalanceConfigTransfer, type BalanceConfigTransferPayload } from '@/utils/balanceConfigTransfer';
 import { logger } from '@/utils/logger';
 import './BalanceLabTab.css';
@@ -58,7 +60,7 @@ export function BalanceLabTab() {
     const pendingTransferRef = useRef<BalanceConfigTransferPayload | null>(null);
 
     // Store pre-simulation estimate snapshot for post-run validation (Phase 3)
-    const estimateSnapshotRef = useRef<SimulationEstimateSnapshot | null>(null);
+    const [estimateSnapshot, setEstimateSnapshot] = useState<SimulationEstimateSnapshot | null>(null);
 
     // Listen for config transfers from CombatSimulatorTab
     useEffect(() => {
@@ -121,6 +123,9 @@ export function BalanceLabTab() {
         }
     }, [results]);
 
+    // Estimate validation: compare pre-simulation estimates against actual results
+    const validation = useEstimateValidation(estimateSnapshot, results);
+
     // Handle save
     const handleSave = useCallback(() => {
         const id = saveCurrentResults();
@@ -132,6 +137,7 @@ export function BalanceLabTab() {
     // Handle reset
     const handleReset = useCallback(() => {
         resetSimulation();
+        setEstimateSnapshot(null);
         logger.info('BalanceLab', 'Simulation reset');
     }, [resetSimulation]);
 
@@ -145,8 +151,8 @@ export function BalanceLabTab() {
 
     // Handle run simulation from config panel
     const handleRunSimulation = useCallback(
-        (party: CharacterSheet[], enemies: CharacterSheet[], config: SimulationConfig, estimateSnapshot: SimulationEstimateSnapshot | null) => {
-            estimateSnapshotRef.current = estimateSnapshot;
+        (party: CharacterSheet[], enemies: CharacterSheet[], config: SimulationConfig, snapshot: SimulationEstimateSnapshot | null) => {
+            setEstimateSnapshot(snapshot);
             startSimulation(party, enemies, config);
         },
         [startSimulation],
@@ -328,6 +334,7 @@ export function BalanceLabTab() {
                                         encounterConfig={encounterConfig}
                                         onApplySuggestion={handleApplyRecommendation}
                                     />
+                                    <EstimateValidationPanel validation={validation} />
                                 </>
                             )}
 

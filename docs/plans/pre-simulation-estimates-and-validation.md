@@ -303,7 +303,7 @@ BalanceLabTab (results area)
   - Code references are plain text (not clickable links) — this is a developer tool
   - Collapsible to avoid cluttering the results view
 
-- [ ] **3.3 Wire validation into `BalanceLabTab`**
+- [x] **3.3 Wire validation into `BalanceLabTab`**
 
   In `src/components/Tabs/BalanceLabTab.tsx`:
 
