@@ -101,7 +101,7 @@ BalanceLabTab (results area)
 
 ## Phase 2: Pre-Simulation Estimate UI in Config Panel
 
-- [ ] **2.1 Create `PartyEstimateCard` component** in `src/components/balance/PartyEstimateCard.tsx` + `.css`
+- [x] **2.1 Create `PartyEstimateCard` component** in `src/components/balance/PartyEstimateCard.tsx` + `.css`
 
   Compact inline card displayed below `PartySelector` inside `SimulationConfigPanel`.
 
