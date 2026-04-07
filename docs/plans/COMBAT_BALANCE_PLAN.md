@@ -971,9 +971,19 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - **Classification consistency**: runs real simulation, verifies `actualDifficulty` matches win rate range boundaries (>=90% easy, >=70% medium, >=50% hard, <50% deadly), plus validates all report fields
   - **Boundary behavior**: verifies edge of expected range (70%, 80%) produces balanced with lower score, while just outside (69%, 81%) produces imbalanced
   - All 1221 combat tests pass, engine builds clean (tsc + vite)
-- [ ] **4.5.2** Test parameter sweep produces reasonable curves
+- [x] **4.5.2** Test parameter sweep produces reasonable curves
   - Win rate should generally decrease as CR increases
   - Win rate should generally decrease as enemy count increases
+  - Created `tests/unit/combat/parameterSweepCurves.test.ts` with 21 tests organized into 7 sections
+  - **CR sweep curve tests** (4 tests): non-increasing trend for elite CR sweep, Spearman correlation ≤ 0.1, rounds vary across CR values, deterministic across runs
+  - **Enemy count sweep curve tests** (6 tests): decreasing win rate, ≤30% increasing pairs, negative Spearman correlation, ≥10% spread, player deaths increase, deterministic
+  - **Difficulty multiplier sweep** (4 tests): monotonic decrease, ≤20% increasing pairs, Spearman ρ < -0.5, ≥30% spread — smoothest curve because multiplier scales all enemy stats proportionally
+  - **Curve smoothness** (2 tests): no wild oscillations (>20pp steps for diffMult, >25pp for enemy count)
+  - **HP remaining curves** (3 tests): decreases with difficulty multiplier, enemy count, and CR (elite)
+  - **Player deaths curves** (1 test): deaths increase with difficulty multiplier
+  - **Rounds to resolution** (1 test): rounds increase with enemy count
+  - Key finding: CR-based sweeps have limited resolution due to template-based enemy generation. Difficulty multiplier sweep produces the cleanest monotonic curves. Enemy count sweeps show clear curves when base enemy strength is calibrated relative to party (e.g., 4×lvl3 vs CR2 uncommon)
+  - All 1247 combat tests pass, engine builds clean (tsc + vite)
 - [ ] **4.5.3** Test comparative analysis detects meaningful differences
   - +2 AC should improve win rate measurably
   - Adding a party member should improve win rate measurably
