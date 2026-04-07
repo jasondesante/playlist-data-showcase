@@ -891,8 +891,21 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 4.3 Comparative Analysis
 
-- [ ] **4.3.1** Create `src/core/combat/Analysis/ComparativeAnalyzer.ts`
+- [x] **4.3.1** Create `src/core/combat/Analysis/ComparativeAnalyzer.ts`
   - `compare(configA, configB): ComparisonResult`
+  - Created `ComparativeAnalyzer` class with `compare(configA, configB, options): ComparisonResult` method
+  - Defined `ComparisonConfig` interface — party, enemies, label, combatConfig override
+  - Defined `ComparisonOptions` interface — runCount, baseSeed, aiConfig, significanceThreshold, abortSignal, onProgress
+  - Defined `ComparisonResult` interface — labels, full results for both sides, deltas, combatant deltas, significance, wasCancelled
+  - Defined `DeltaMetrics` interface — winRateDelta, averageRoundsDelta, averageHPRemainingDelta, totalPlayerDeathsDelta, totalEnemyDeathsDelta, medianRoundsDelta
+  - Defined `CombatantDelta` interface — per-combatant deltas (DPR, damage dealt/taken, survival rate, kill rate, crit rate, healing)
+  - Defined `SignificanceResult` interface — isSignificant, pValue, threshold, interpretation
+  - Both configs simulated with seed prefix `${baseSeed}-A` / `${baseSeed}-B` for deterministic, comparable results
+  - Per-combatant deltas matched by side and index position (handles unmatched combatants)
+  - Statistical significance via normal approximation for difference of proportions (Abramowitz & Stegun CDF)
+  - Human-readable interpretation strings explaining results
+  - Exported from engine `src/index.ts`: `ComparativeAnalyzer` class + all type interfaces
+  - Engine builds clean (tsc --noEmit + vite build pass), all 90 existing analysis tests pass
 - [ ] **4.3.2** Run simulations for both configurations with identical seeds
   - Use same seed sequence for both to isolate the variable being tested
   - Pair-wise comparison where possible
