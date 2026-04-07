@@ -1791,7 +1791,7 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 9.4 Balance Dashboard
 
-- [ ] **9.4.1** Create `src/components/balance/BalanceDashboard.tsx`
+- [x] **9.4.1** Create `src/components/balance/BalanceDashboard.tsx`
   - Main results view that assembles all charts and metrics
   - Grid layout:
     - Top: Win rate + balance score (large, prominent)
@@ -1799,6 +1799,22 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
     - Middle-right: HP remaining distribution, turn distribution
     - Bottom: Recommendations, detailed metrics table
   - Responsive: stacks vertically on mobile
+  - Created `src/components/balance/BalanceDashboard.tsx` with full dashboard layout component
+  - Created `src/components/balance/BalanceDashboard.css` with pure CSS using project HSL variable system
+  - **Layout**: flexbox column with 1rem gap
+  - **Top section**: `ResultsSummary` (win rate card, key metrics grid, balance score gauge, action buttons)
+  - **Full-width chart**: `WinRateChart` with difficulty reference lines
+  - **Two-column chart grid** (`bd-charts-grid`): CSS grid `1fr 1fr`
+    - Left column: `DPRComparisonChart`, `SurvivalRateChart`
+    - Right column: `HPRemainingDistribution`, `TurnDistributionChart`
+  - **Full-width**: `DamageDistributionChart` with per-combatant selector
+  - **Bottom**: `BalanceRecommendations` (with apply-to-config integration), `PerCombatantMetrics` sortable table
+  - **Footer**: `SimulationLogViewer` (collapsible)
+  - **Props**: `BalanceDashboardProps` interface — results, balanceReport, durationMs, isCancelled, isSaved, onSave, onReset, encounterConfig, onApplySuggestion, className
+  - **Responsive**: two-column grid collapses to single column at 900px breakpoint; tighter spacing at 640px
+  - **Integration**: Updated `BalanceLabTab.tsx` — replaced ~50 lines of inline chart rendering with single `<BalanceDashboard>` component; removed unused chart imports (ResultsSummary, PerCombatantMetrics, BalanceRecommendations, SimulationLogViewer, WinRateChart, DPRComparisonChart, HPRemainingDistribution, TurnDistributionChart, SurvivalRateChart, DamageDistributionChart)
+  - Memoized with `React.memo` for render performance
+  - TypeScript check clean (zero new errors), pre-existing errors unchanged
 - [ ] **9.4.2** Add chart interactivity
   - Click on combatant in metrics table → highlight in DPR chart
   - Click on histogram bucket → show runs in that range

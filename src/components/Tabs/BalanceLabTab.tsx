@@ -11,11 +11,7 @@ import {
 import { useSimulationHistory } from '@/hooks/useSimulationHistory';
 import { SimulationHistoryPanel } from '@/components/balance/SimulationHistoryPanel';
 import { SimulationConfigPanel } from '@/components/balance/SimulationConfigPanel';
-import { ResultsSummary } from '@/components/balance/ResultsSummary';
-import { PerCombatantMetrics } from '@/components/balance/PerCombatantMetrics';
-import { BalanceRecommendations } from '@/components/balance/BalanceRecommendations';
-import { SimulationLogViewer } from '@/components/balance/SimulationLogViewer';
-import { WinRateChart, DPRComparisonChart, HPRemainingDistribution, TurnDistributionChart, SurvivalRateChart, DamageDistributionChart } from '@/components/balance/charts';
+import { BalanceDashboard } from '@/components/balance/BalanceDashboard';
 import {
     BalanceValidator,
     type EncounterDifficulty,
@@ -273,9 +269,9 @@ export function BalanceLabTab() {
                                 </div>
                             )}
 
-                            {/* ─── Results Summary ──────────────────── */}
+                            {/* ─── Balance Dashboard ────────────────── */}
                             {hasResults && (
-                                <ResultsSummary
+                                <BalanceDashboard
                                     results={results}
                                     balanceReport={balanceReport}
                                     durationMs={durationMs}
@@ -283,59 +279,9 @@ export function BalanceLabTab() {
                                     isSaved={!!activeSavedId}
                                     onSave={isCompleted ? handleSave : undefined}
                                     onReset={handleReset}
-                                />
-                            )}
-
-                            {/* ─── Win Rate Chart ───────────────────── */}
-                            {hasResults && (
-                                <WinRateChart results={results} />
-                            )}
-
-                            {/* ─── DPR Comparison Chart ────────────── */}
-                            {hasResults && results.perCombatantMetrics.size > 0 && (
-                                <DPRComparisonChart metrics={results.perCombatantMetrics} />
-                            )}
-
-                            {/* ─── HP Remaining Distribution ────────── */}
-                            {hasResults && results.perCombatantMetrics.size > 0 && (
-                                <HPRemainingDistribution metrics={results.perCombatantMetrics} />
-                            )}
-
-                            {/* ─── Turn Distribution ────────────────── */}
-                            {hasResults && (
-                                <TurnDistributionChart results={results} />
-                            )}
-
-                            {/* ─── Survival Rate ────────────────────── */}
-                            {hasResults && results.perCombatantMetrics.size > 0 && (
-                                <SurvivalRateChart metrics={results.perCombatantMetrics} />
-                            )}
-
-                            {/* ─── Damage Distribution ─────────────── */}
-                            {hasResults && results.perCombatantMetrics.size > 0 && (
-                                <DamageDistributionChart metrics={results.perCombatantMetrics} />
-                            )}
-
-                            {/* ─── Balance Recommendations ──────────── */}
-                            {hasResults && balanceReport && balanceReport.recommendations.length > 0 && (
-                                <BalanceRecommendations
-                                    recommendations={balanceReport.recommendations}
                                     encounterConfig={encounterConfig}
-                                    variance={balanceReport.difficultyVariance}
                                     onApplySuggestion={handleApplyRecommendation}
                                 />
-                            )}
-
-                            {/* ─── Per-Combatant Metrics ────────────── */}
-                            {hasResults && results.perCombatantMetrics.size > 0 && (
-                                <PerCombatantMetrics
-                                    metrics={results.perCombatantMetrics}
-                                />
-                            )}
-
-                            {/* ─── Simulation Log Viewer ────────────── */}
-                            {hasResults && (
-                                <SimulationLogViewer results={results} />
                             )}
 
                             {/* ─── Empty State ──────────────────────── */}
