@@ -1831,10 +1831,18 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 10.1 CombatSimulatorTab Integration
 
-- [ ] **10.1.1** Add "Run Balance Simulation" button to CombatSimulatorTab
+- [x] **10.1.1** Add "Run Balance Simulation" button to CombatSimulatorTab
   - Appears in the pre-combat configuration view
   - Transfers current party + enemy config to Balance Lab tab
   - Opens Balance Lab tab with pre-filled configuration
+  - Created `src/utils/balanceConfigTransfer.ts` — event-based config transfer mechanism using `CustomEvent` on `window` with `dispatchBalanceConfigTransfer()` and `onBalanceConfigTransfer()` functions
+  - Extended `TabContext` in `App.tsx` to expose `navigateToTab(tab)` function for cross-tab navigation
+  - Added `handleRunBalanceSimulation` callback to `CombatSimulatorTab` — builds `EncounterConfigUI` from current generation config (CR, count, category, archetype, rarity, seed, difficulty multiplier) and party seeds, dispatches transfer event, navigates to Balance Lab
+  - Added "⚖️ Balance Sim" button to `CombatSimulatorTab` quick-actions row (next to "Generate Enemies" and "Start Combat"), disabled when no enemies generated, with tooltip explaining the action
+  - Added `.combat-config-button-balance` CSS class — card background with border, hover highlights with primary border color
+  - Updated `SimulationConfigPanel` — added `partySeedsOverride` prop with sync logic (same pattern as `encounterConfigOverride`)
+  - Updated `BalanceLabTab` — listens for config transfer events via `onBalanceConfigTransfer`, sets encounter config override and party seeds override, expands config panel on transfer
+  - TypeScript check clean (0 new errors, 8 pre-existing errors unchanged), all pre-existing build errors unchanged
 - [ ] **10.1.2** Add balance indicator to CombatSimulatorTab's encounter summary
   - After running a simulation, show a small badge/indicator on the encounter summary
   - "This encounter is balanced for Medium difficulty (72% win rate)"

@@ -1,4 +1,4 @@
-import { useState, useCallback, useId, useMemo, useRef } from 'react';
+import { useState, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import {
     Scale,
     ChevronDown,
@@ -19,6 +19,7 @@ import {
     type CharacterSheet,
 } from 'playlist-data-engine';
 import { getWinRateDifficulty, type EncounterConfigUI, DEFAULT_ENCOUNTER_CONFIG } from '@/types/simulation';
+import { onBalanceConfigTransfer, type BalanceConfigTransferPayload } from '@/utils/balanceConfigTransfer';
 import { logger } from '@/utils/logger';
 import './BalanceLabTab.css';
 
@@ -49,6 +50,31 @@ export function BalanceLabTab() {
     const [encounterConfig, setEncounterConfig] = useState<EncounterConfigUI>(DEFAULT_ENCOUNTER_CONFIG);
     const [configOverride, setConfigOverride] = useState<EncounterConfigUI | null>(null);
     const configOverrideConsumedRef = useRef(false);
+
+    // Track incoming config transfer from CombatSimulatorTab
+    const [partySeedsOverride, setPartySeedsOverride] = useState<string[] | null>(null);
+    const pendingTransferRef = useRef<BalanceConfigTransferPayload | null>(null);
+
+    // Listen for config transfers from CombatSimulatorTab
+    useEffect(() => {
+        const unsubscribe = onBalanceConfigTransfer((payload) => {
+            logger.info('BalanceLab', 'Received config transfer from Combat tab', {
+                partySize: payload.party.length,
+                enemyCount: payload.enemies.length,
+            });
+            // Set encounter config override for the form
+            setEncounterConfig(payload.encounterConfig);
+            setConfigOverride(payload.encounterConfig);
+            configOverrideConsumedRef.current = false;
+            // Set party seeds for pre-selection
+            setPartySeedsOverride(payload.partySeeds);
+            // Store the transfer for auto-running simulation
+            pendingTransferRef.current = payload;
+            // Expand config panel so user sees the pre-filled form
+            setConfigCollapsed(false);
+        });
+        return unsubscribe;
+    }, []);
 
     // Simulation hook with persistence
     const {
@@ -191,6 +217,7 @@ export function BalanceLabTab() {
                                 error={error}
                                 isRunning={isRunning}
                                 encounterConfigOverride={configOverride}
+                                partySeedsOverride={partySeedsOverride}
                                 onEncounterConfigChange={handleEncounterConfigChange}
                                 onRunSimulation={handleRunSimulation}
                                 onCancel={cancelSimulation}

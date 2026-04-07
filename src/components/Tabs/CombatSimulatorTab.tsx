@@ -7,6 +7,9 @@ import { usePlaylistStore } from '../../store/playlistStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { CharacterCard } from '../ui/CharacterCard';
+import { useTabContext } from '../../App';
+import { dispatchBalanceConfigTransfer } from '../../utils/balanceConfigTransfer';
+import { type EncounterConfigUI } from '../../types/simulation';
 import {
     SPELL_DATABASE,
     ExtensionManager,
@@ -1855,6 +1858,70 @@ export function CombatSimulatorTab() {
     selectedHeroSeeds
   ]);
 
+  // Navigate to Balance Lab tab
+  const tabContext = useTabContext();
+
+  /**
+   * Handle "Run Balance Simulation" button click.
+   * Transfers current party + enemy config to Balance Lab tab and navigates there.
+   */
+  const handleRunBalanceSimulation = useCallback(() => {
+    if (generatedEnemies.length === 0) return;
+
+    // Determine party members
+    let partyMembers: CharacterSheet[] = [];
+    let partySeeds: string[] = [];
+
+    if (partyMode === 'party') {
+      partyMembers = characters
+        .filter(c => selectedHeroSeeds.includes(c.seed))
+        .slice(0, 4);
+      partySeeds = partyMembers.map(c => c.seed);
+    } else {
+      const activeChar = getActiveCharacter();
+      if (!activeChar) return;
+      partyMembers = [activeChar];
+      partySeeds = [activeChar.seed];
+    }
+
+    if (partyMembers.length === 0) return;
+
+    // Build EncounterConfigUI from current generation config
+    const firstEnemy = generatedEnemies[0];
+    const encounterConfig: EncounterConfigUI = {
+      cr: firstEnemy.cr ?? firstEnemy.level ?? generationConfig.targetCR,
+      enemyCount: generatedEnemies.length,
+      category: generationConfig.category ?? firstEnemy.race?.toLowerCase() as any ?? 'humanoid',
+      archetype: generationConfig.archetype ?? 'brute',
+      rarity: generationConfig.baseRarity,
+      seed: generationConfig.seed || '',
+      difficultyMultiplier: generationConfig.difficultyMultiplier,
+    };
+
+    // Transfer config and navigate
+    dispatchBalanceConfigTransfer({
+      party: partyMembers,
+      enemies: generatedEnemies,
+      encounterConfig,
+      partySeeds,
+    });
+
+    tabContext?.navigateToTab('balance');
+
+    logger.info('CombatSimulator', 'Transferred config to Balance Lab', {
+      partySize: partyMembers.length,
+      enemyCount: generatedEnemies.length,
+    });
+  }, [
+    generatedEnemies,
+    partyMode,
+    characters,
+    selectedHeroSeeds,
+    getActiveCharacter,
+    generationConfig,
+    tabContext,
+  ]);
+
   const handleNextTurn = () => {
     if (!combat) return;
 
@@ -2426,6 +2493,14 @@ export function CombatSimulatorTab() {
                   className={`combat-config-button combat-config-button-primary ${generatedEnemies.length === 0 ? 'combat-config-button-disabled' : ''}`}
                 >
                   Start Combat
+                </button>
+                <button
+                  onClick={handleRunBalanceSimulation}
+                  disabled={generatedEnemies.length === 0}
+                  className={`combat-config-button combat-config-button-balance ${generatedEnemies.length === 0 ? 'combat-config-button-disabled' : ''}`}
+                  title="Transfer this encounter to Balance Lab for Monte Carlo simulation"
+                >
+                  ⚖️ Balance Sim
                 </button>
               </div>
             </div>

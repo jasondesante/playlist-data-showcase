@@ -1,4 +1,4 @@
-import { useState, createContext, useContext, useMemo } from 'react';
+import { useState, useCallback, createContext, useContext, useMemo } from 'react';
 import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users, Backpack, Database, Drum, Scale } from 'lucide-react';
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
@@ -29,12 +29,16 @@ import { useCustomEquipmentInitializer } from './hooks/useItemCreator';
 type Tab = 'playlist' | 'audio' | 'beat' | 'character' | 'party' | 'items' | 'dataviewer' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'balance' | 'settings';
 
 // Create context for active tab
-const TabContext = createContext<{ activeTab: Tab } | null>(null);
+const TabContext = createContext<{ activeTab: Tab; navigateToTab: (tab: Tab) => void } | null>(null);
 
 export const useTabContext = () => useContext(TabContext);
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('playlist');
+
+  const navigateToTab = useCallback((tab: Tab) => {
+    setActiveTab(tab);
+  }, []);
 
   // Initialize custom equipment from localStorage on app startup
   // This ensures custom items can be equipped after page refresh
@@ -119,7 +123,7 @@ function App() {
   };
 
   return (
-    <TabContext.Provider value={{ activeTab }}>
+    <TabContext.Provider value={{ activeTab, navigateToTab }}>
       <div className="app-root">
         <AppHeader tabs={tabs} activeTab={activeTab} onTabChange={(tabId) => setActiveTab(tabId as Tab)} />
 

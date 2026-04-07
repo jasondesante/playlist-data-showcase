@@ -44,6 +44,8 @@ interface SimulationConfigPanelProps {
 
     /** Optional external encounter config override (e.g., from applying a recommendation) */
     encounterConfigOverride?: EncounterConfigUI | null;
+    /** Optional party seed override (e.g., from CombatSimulatorTab transfer) */
+    partySeedsOverride?: string[] | null;
     /** Called when the internal encounter config changes (for tracking in parent) */
     onEncounterConfigChange?: (config: EncounterConfigUI) => void;
 
@@ -58,6 +60,7 @@ export function SimulationConfigPanel({
     error,
     isRunning,
     encounterConfigOverride,
+    partySeedsOverride,
     onEncounterConfigChange,
     onRunSimulation,
     onCancel,
@@ -76,6 +79,15 @@ export function SimulationConfigPanel({
             setEncounterConfig(encounterConfigOverride);
         }
         prevOverrideRef.current = encounterConfigOverride;
+    }
+
+    // Sync external party seeds override into internal state
+    const prevPartySeedsRef = useRef<string[] | null | undefined>(undefined);
+    if (partySeedsOverride !== prevPartySeedsRef.current) {
+        if (partySeedsOverride != null && partySeedsOverride.length > 0) {
+            setSelectedPartySeeds(partySeedsOverride);
+        }
+        prevPartySeedsRef.current = partySeedsOverride;
     }
 
     // Notify parent of encounter config changes
