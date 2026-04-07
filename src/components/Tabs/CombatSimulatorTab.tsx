@@ -1318,16 +1318,47 @@ export function CombatSimulatorTab() {
   // State for auto-play functionality (task 4.9.7)
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [aiPlayStyle, setAiPlayStyle] = useState<AIPlayStyle>('normal');
+  // Per-combatant AI strategy overrides (task 10.2.2)
+  const [aiOverrides, setAiOverrides] = useState<Map<string, AIPlayStyle>>(new Map());
   const autoPlayIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const combatLogRef = useRef<HTMLDivElement>(null);
   const aiReasoningRef = useRef<Map<number, { reasoning: string; style: AIPlayStyle }>>(new Map());
 
   // CombatAI instance for intelligent auto-play (task 10.2.1)
-  // Recreated when AI play style changes
+  // Recreated when AI play style or per-combatant overrides change
   const combatAI = useMemo(() => new CombatAI({
     playerStyle: aiPlayStyle,
     enemyStyle: aiPlayStyle,
-  }), [aiPlayStyle]);
+    overrides: aiOverrides.size > 0 ? aiOverrides : undefined,
+  }), [aiPlayStyle, aiOverrides]);
+
+  // Toggle per-combatant AI override (task 10.2.2)
+  // Cycles: default → normal → aggressive → default
+  const toggleCombatantAIOverride = useCallback((combatantId: string, side: 'player' | 'enemy') => {
+    setAiOverrides(prev => {
+      const next = new Map(prev);
+      const currentOverride = next.get(combatantId);
+      const sideDefault = side === 'player' ? aiPlayStyle : aiPlayStyle;
+      if (currentOverride === undefined) {
+        // No override → set to opposite of global style
+        next.set(combatantId, sideDefault === 'normal' ? 'aggressive' : 'normal');
+      } else if (currentOverride === 'normal') {
+        // Normal override → aggressive
+        next.set(combatantId, 'aggressive');
+      } else {
+        // Aggressive override → remove (revert to global)
+        next.delete(combatantId);
+      }
+      return next;
+    });
+  }, [aiPlayStyle]);
+
+  // Clear AI overrides when combat is reset
+  useEffect(() => {
+    if (!combat) {
+      setAiOverrides(new Map());
+    }
+  }, [combat]);
 
   // ============================================================
   // Phase 7.1: Party Mode Toggle State
@@ -2055,13 +2086,14 @@ export function CombatSimulatorTab() {
     // Use CombatAI to decide the best action for this combatant
     const decision = combatAI.decide(current, combat);
 
-    // Record AI reasoning for display in combat log (task 10.2.1)
+    // Record AI reasoning for display in combat log (task 10.2.1, updated 10.2.2)
     if (decision.reasoning) {
-      console.log(`[AI: ${aiPlayStyle}] ${current.character.name} — ${decision.reasoning}`);
+      const effectiveStyle = aiOverrides.get(current.id) ?? aiPlayStyle;
+      console.log(`[AI: ${effectiveStyle}] ${current.character.name} — ${decision.reasoning}`);
       const historyIndex = combat.history.length;
       aiReasoningRef.current.set(historyIndex, {
         reasoning: decision.reasoning,
-        style: aiPlayStyle,
+        style: effectiveStyle,
       });
     }
 
@@ -4388,6 +4420,22 @@ export function CombatSimulatorTab() {
                   return (
                     <div
                       key={combatant.id}
+                      role={isActive && !isAutoPlaying && !combatant.isDefeated ? 'button' : undefined}
+                      tabIndex={isActive && !isAutoPlaying && !combatant.isDefeated ? 0 : undefined}
+                      onClick={() => {
+                        if (isActive && !isAutoPlaying && !combatant.isDefeated) {
+                          toggleCombatantAIOverride(combatant.id, enemyIsEnemy ? 'enemy' : 'player');
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if ((e.key === 'Enter' || e.key === ' ') && isActive && !isAutoPlaying && !combatant.isDefeated) {
+                          e.preventDefault();
+                          toggleCombatantAIOverride(combatant.id, enemyIsEnemy ? 'enemy' : 'player');
+                        }
+                      }}
+                      title={isActive && !isAutoPlaying && !combatant.isDefeated
+                        ? `Click to set AI strategy (current: ${aiOverrides.get(combatant.id) ?? aiPlayStyle})`
+                        : undefined}
                       className={`combat-combatant-card ${
                         isCurrentPartyMember
                           ? 'combat-combatant-card-current-party'
@@ -4479,6 +4527,17 @@ export function CombatSimulatorTab() {
                         {/* Phase 7.4: Enhanced "Your Turn" badge for party members */}
                         {isCurrentPartyMember && <span className="combat-combatant-badge-your-turn">Your Turn</span>}
                         {isCurrentTurn && enemyIsEnemy && <span className="combat-combatant-badge">Current</span>}
+                        {/* AI strategy override indicator (task 10.2.2) */}
+                        {aiOverrides.has(combatant.id) && (
+                          <button
+                            className={`combat-ai-override-badge combat-ai-override-badge-${aiOverrides.get(combatant.id)}`}
+                            onClick={(e) => { e.stopPropagation(); toggleCombatantAIOverride(combatant.id, enemyIsEnemy ? 'enemy' : 'player'); }}
+                            disabled={isAutoPlaying}
+                            title={`AI override: ${aiOverrides.get(combatant.id)} (click to change)`}
+                          >
+                            {aiOverrides.get(combatant.id) === 'normal' ? '🛡️' : '⚔️'} AI: {aiOverrides.get(combatant.id)}
+                          </button>
+                        )}
                       </div>
 
                       <div className="combat-combatant-hp-section">
@@ -4981,7 +5040,7 @@ export function CombatSimulatorTab() {
                 Reset Combat
               </button>
 
-              {/* AI strategy selector (task 10.2.1) */}
+              {/* AI strategy selector (task 10.2.1, updated 10.2.2) */}
               <div className="combat-ai-strategy-selector">
                 <span className="combat-ai-strategy-label">AI:</span>
                 <button
@@ -5000,6 +5059,16 @@ export function CombatSimulatorTab() {
                 >
                   Aggressive
                 </button>
+                {aiOverrides.size > 0 && (
+                  <button
+                    className="combat-ai-overrides-badge"
+                    onClick={() => setAiOverrides(new Map())}
+                    disabled={isAutoPlaying}
+                    title={`${aiOverrides.size} combatant(s) with custom AI strategy — click to clear all`}
+                  >
+                    {aiOverrides.size} override{aiOverrides.size !== 1 ? 's' : ''} ×
+                  </button>
+                )}
               </div>
 
               {/* Auto-play status indicator (task 4.9.7, updated 10.2.1) */}

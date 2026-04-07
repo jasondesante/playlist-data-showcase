@@ -1874,9 +1874,21 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Added AI strategy selector CSS (`.combat-ai-strategy-*` styles)
   - Added AI reasoning CSS (`.combat-log-ai-reasoning-*` styles with per-style color coding)
   - TypeScript check clean (0 new errors), build pre-existing errors unchanged
-- [ ] **10.2.2** Add per-combatant AI strategy override
+- [x] **10.2.2** Add per-combatant AI strategy override
   - Allow setting different AI strategies for individual combatants
   - Useful for testing specific scenarios
+  - Added `aiOverrides` state (`Map<string, AIPlayStyle>`) to `CombatSimulatorTab` — tracks per-combatant override style
+  - Updated `combatAI` useMemo to pass `overrides` to `CombatAI` constructor when any overrides are active
+  - Added `toggleCombatantAIOverride()` — cycles through: no override → opposite of global → other style → clear (revert to global)
+  - Combatant cards are clickable (when combat is active, not auto-playing, and combatant is alive) to toggle AI override
+  - Keyboard accessible: `Enter`/`Space` on focused card triggers toggle
+  - Override badge shown on combatant card header: shield icon for normal, sword icon for aggressive, color-coded border
+  - Clicking the override badge directly cycles to next style
+  - Overrides count badge shown in AI strategy selector: "N override(s) ×" — click to clear all overrides
+  - AI reasoning in combat log now shows per-combatant effective style (override or global)
+  - All overrides automatically cleared when combat is reset (via `useEffect` on `combat` becoming null)
+  - Pure CSS styling: clickable card cursor/hover/focus-visible, override badge variants (normal=blue, aggressive=red), overrides count badge (amber)
+  - TypeScript check clean (zero new errors), pre-existing build errors unchanged
 
 ### 10.3 Performance & UX
 
