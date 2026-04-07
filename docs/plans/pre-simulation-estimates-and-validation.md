@@ -121,7 +121,7 @@ BalanceLabTab (results area)
   - Shows loading skeleton while `isLoading` is true
   - XP budget values color-coded: green if encounter XP is below, yellow if near, red if above
 
-- [ ] **2.2 Create `EnemyEstimateCard` component** in `src/components/balance/EnemyEstimateCard.tsx` + `.css`
+- [x] **2.2 Create `EnemyEstimateCard` component** in `src/components/balance/EnemyEstimateCard.tsx` + `.css`
 
   Compact inline card displayed below `EncounterConfigForm` inside `SimulationConfigPanel`.
 
