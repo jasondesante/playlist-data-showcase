@@ -906,12 +906,21 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - Human-readable interpretation strings explaining results
   - Exported from engine `src/index.ts`: `ComparativeAnalyzer` class + all type interfaces
   - Engine builds clean (tsc --noEmit + vite build pass), all 90 existing analysis tests pass
-- [ ] **4.3.2** Run simulations for both configurations with identical seeds
+- [x] **4.3.2** Run simulations for both configurations with identical seeds
   - Use same seed sequence for both to isolate the variable being tested
   - Pair-wise comparison where possible
-- [ ] **4.3.3** Calculate delta metrics
+  - Already implemented in `ComparativeAnalyzer.compare()` (4.3.1) — `runSimulations()` uses deterministic seed prefixes (`${baseSeed}-A`, `${baseSeed}-B`) for reproducible, comparable results
+  - Both configs receive the same seed sequence structure; only the prefix differs to keep results independent yet deterministic
+  - Verified: engine builds clean, exported from `src/index.ts`
+- [x] **4.3.3** Calculate delta metrics
   - Win rate delta, average rounds delta, average HP remaining delta, DPR delta per combatant
   - Statistical significance (is the difference meaningful given the sample size?)
+  - Already implemented in `ComparativeAnalyzer` (4.3.1):
+    - `calculateDeltas()` — win rate, rounds, HP remaining, deaths, median rounds
+    - `calculateCombatantDeltas()` — per-combatant DPR, damage dealt/taken, survival rate, kill rate, crit rate, healing (matched by side + index)
+    - `testSignificance()` — normal approximation for difference of proportions with Abramowitz & Stegun CDF, returns p-value and interpretation
+  - All delta types defined: `DeltaMetrics`, `CombatantDelta`, `SignificanceResult`
+  - Verified: engine builds clean, all types exported from `src/index.ts`
 
 ### 4.4 Encounter Difficulty Calculator
 
