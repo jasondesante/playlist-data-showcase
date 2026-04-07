@@ -8,7 +8,7 @@
  * (Task 9.2.2)
  */
 
-import { useMemo, memo } from 'react';
+import { useMemo, useCallback, memo } from 'react';
 import {
     BarChart,
     Bar,
@@ -30,6 +30,10 @@ import './DPRComparisonChart.css';
 export interface DPRComparisonChartProps {
     /** Per-combatant metrics from simulation results (Map keyed by combatant ID) */
     metrics: Map<string, CombatantSimulationMetrics>;
+    /** Currently highlighted combatant ID (from metrics table click) */
+    highlightedCombatantId?: string | null;
+    /** Callback when a bar is clicked */
+    onCombatantClick?: (combatantId: string | null) => void;
     /** Additional CSS class */
     className?: string;
 }
@@ -181,6 +185,8 @@ function DPRTooltip({ active, payload }: { active?: boolean; payload?: TooltipPa
 
 function DPRComparisonChartComponent({
     metrics,
+    highlightedCombatantId,
+    onCombatantClick,
     className = '',
 }: DPRComparisonChartProps) {
     const chartData = useMemo(() => buildChartData(metrics), [metrics]);
@@ -204,6 +210,14 @@ function DPRComparisonChartComponent({
         const enemies = entries.filter(m => m.side === 'enemy').length;
         return `${players} players, ${enemies} enemies`;
     }, [metrics]);
+
+    const hasHighlight = highlightedCombatantId !== undefined && highlightedCombatantId !== null;
+
+    const handleClick = useCallback((data: unknown) => {
+        const entry = data as { payload?: ChartRow };
+        if (!entry.payload || entry.payload.id === '__separator__') return;
+        onCombatantClick?.(entry.payload.id);
+    }, [onCombatantClick]);
 
     return (
         <ChartContainer
@@ -263,6 +277,8 @@ function DPRComparisonChartComponent({
                         maxBarSize={36}
                         isAnimationActive={true}
                         animationDuration={500}
+                        cursor={onCombatantClick ? 'pointer' : undefined}
+                        onClick={(data) => handleClick(data)}
                     >
                         {chartData.map((entry, index) => {
                             // Separator row: invisible
@@ -275,11 +291,16 @@ function DPRComparisonChartComponent({
                                     />
                                 );
                             }
+                            const isHighlighted = highlightedCombatantId === entry.id;
+                            const isDimmed = hasHighlight && !isHighlighted;
                             return (
                                 <Cell
                                     key={index}
                                     fill={getSideColor(entry.side)}
-                                    opacity={0.85}
+                                    opacity={isHighlighted ? 1 : isDimmed ? 0.3 : 0.85}
+                                    stroke={isHighlighted ? getSideColor(entry.side) : 'none'}
+                                    strokeWidth={isHighlighted ? 2 : 0}
+                                    className={isHighlighted ? 'dpr-bar-highlighted' : ''}
                                 />
                             );
                         })}

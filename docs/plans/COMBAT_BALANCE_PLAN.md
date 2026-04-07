@@ -1815,10 +1815,12 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - **Integration**: Updated `BalanceLabTab.tsx` — replaced ~50 lines of inline chart rendering with single `<BalanceDashboard>` component; removed unused chart imports (ResultsSummary, PerCombatantMetrics, BalanceRecommendations, SimulationLogViewer, WinRateChart, DPRComparisonChart, HPRemainingDistribution, TurnDistributionChart, SurvivalRateChart, DamageDistributionChart)
   - Memoized with `React.memo` for render performance
   - TypeScript check clean (zero new errors), pre-existing errors unchanged
-- [ ] **9.4.2** Add chart interactivity
-  - Click on combatant in metrics table → highlight in DPR chart
-  - Click on histogram bucket → show runs in that range
-  - Hover effects with tooltips
+- [x] **9.4.2** Add chart interactivity
+  - **Combatant highlight linking** (metrics table ↔ charts): `BalanceDashboard` manages `highlightedCombatantId` state, passed to `PerCombatantMetrics` (clickable rows with highlighted state), `DPRComparisonChart` (dimmed non-highlighted bars, glow on highlighted), `SurvivalRateChart` (same highlight treatment), and `DamageDistributionChart` (auto-selects highlighted combatant in dropdown). Clicking same combatant or empty area clears highlight. Toggle behavior.
+  - **Histogram bucket → log viewer filtering**: `TurnDistributionChart` bars are clickable, calling `onBucketClick(rangeStart, rangeEnd, label)` which sets `roundRangeFilter` state in `BalanceDashboard`. Selected bucket highlighted with `ReferenceArea` overlay. `SimulationLogViewer` accepts `roundRangeFilter` prop, filters `runDetails` to only show runs matching the round range, displays filter bar with clear button, shows "X of Y" badge in header, resets selected run index when filter changes.
+  - **Hover effects**: Clickable chart bars get `cursor: pointer`. Metrics table rows get hover background intensification. Highlighted rows get `focus-visible` outline for keyboard accessibility. Chart bars use `brightness(1.3) drop-shadow(0 0 6px currentColor)` glow filter for highlighted state. Non-highlighted bars dimmed to 0.3 opacity when highlight active.
+  - Files modified: `BalanceDashboard.tsx` (shared state), `PerCombatantMetrics.tsx` + `.css` (clickable/highlighted rows), `DPRComparisonChart.tsx` + `.css` (highlight + click), `SurvivalRateChart.tsx` + `.css` (highlight + click), `DamageDistributionChart.tsx` (auto-select), `TurnDistributionChart.tsx` (clickable buckets + ReferenceArea highlight), `SimulationLogViewer.tsx` + `.css` (round range filter)
+  - All pre-existing TypeScript errors unchanged, zero new errors
 
 ---
 

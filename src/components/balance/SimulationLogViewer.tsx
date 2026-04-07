@@ -27,6 +27,7 @@ import {
     Zap,
     Heart,
     Target,
+    X,
 } from 'lucide-react';
 import type {
     SimulationResults,
@@ -40,6 +41,10 @@ import './SimulationLogViewer.css';
 
 interface SimulationLogViewerProps {
     results: SimulationResults;
+    /** Optional round range filter — only show runs within this range */
+    roundRangeFilter?: { min: number; max: number; label: string } | null;
+    /** Callback to clear the round range filter */
+    onClearRoundFilter?: () => void;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
@@ -358,7 +363,7 @@ const RoundHeader = memo(function RoundHeader({
  * Allows selecting a specific simulation run and viewing its full combat log,
  * per-round breakdown, and per-combatant metrics.
  */
-export function SimulationLogViewer({ results }: SimulationLogViewerProps) {
+export function SimulationLogViewer({ results, roundRangeFilter, onClearRoundFilter }: SimulationLogViewerProps) {
     const [selectedRunIndex, setSelectedRunIndex] = useState(0);
     const [showMetrics, setShowMetrics] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
@@ -367,11 +372,24 @@ export function SimulationLogViewer({ results }: SimulationLogViewerProps) {
     const runDetails = results.runDetails;
     const hasDetailedLogs = runDetails !== undefined && runDetails.length > 0;
 
-    // Get the selected run's data
+    // Filter run details by round range when a filter is active
+    const filteredRunDetails = useMemo(() => {
+        if (!hasDetailedLogs) return runDetails;
+        if (!roundRangeFilter) return runDetails;
+        return runDetails.filter(rd => {
+            const rounds = rd.result.roundsElapsed;
+            return rounds >= roundRangeFilter.min && rounds < roundRangeFilter.max;
+        });
+    }, [runDetails, hasDetailedLogs, roundRangeFilter]);
+
+    const isFiltered = filteredRunDetails !== runDetails && roundRangeFilter !== null && roundRangeFilter !== undefined;
+
+    // Get the selected run's data (from filtered list)
     const selectedRun = useMemo((): SimulationRunDetail | null => {
-        if (!runDetails || selectedRunIndex >= runDetails.length) return null;
-        return runDetails[selectedRunIndex];
-    }, [runDetails, selectedRunIndex]);
+        const source = filteredRunDetails;
+        if (!source || selectedRunIndex >= source.length) return null;
+        return source[selectedRunIndex];
+    }, [filteredRunDetails, selectedRunIndex]);
 
     // Group actions by round
     const roundGroups = useMemo(() => {
@@ -380,12 +398,17 @@ export function SimulationLogViewer({ results }: SimulationLogViewerProps) {
         return groupByRound(selectedRun.combat.history, combatantCount);
     }, [selectedRun]);
 
-    // Scroll to top when changing runs
+    // Scroll to top when changing runs or filter
     useEffect(() => {
         if (logContainerRef.current) {
             logContainerRef.current.scrollTop = 0;
         }
-    }, [selectedRunIndex]);
+    }, [selectedRunIndex, roundRangeFilter]);
+
+    // Reset selected index when filter changes
+    useEffect(() => {
+        setSelectedRunIndex(0);
+    }, [roundRangeFilter]);
 
     const handleRunChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedRunIndex(Number(e.target.value));
@@ -439,7 +462,14 @@ export function SimulationLogViewer({ results }: SimulationLogViewerProps) {
                 <div className="slv-panel-title-row">
                     <FileText size={16} className="slv-panel-icon" />
                     <span className="slv-panel-title">Combat Log Viewer</span>
-                    <span className="slv-count-badge">{runDetails.length}</span>
+                    {isFiltered && (
+                        <span className="slv-filter-badge">
+                            {filteredRunDetails!.length} of {runDetails!.length}
+                        </span>
+                    )}
+                    {!isFiltered && (
+                        <span className="slv-count-badge">{runDetails!.length}</span>
+                    )}
                 </div>
                 <span className="slv-panel-toggle">
                     {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
@@ -448,6 +478,24 @@ export function SimulationLogViewer({ results }: SimulationLogViewerProps) {
 
             {!collapsed && (
                 <div className="slv-content">
+                    {/* ─── Round Range Filter Indicator ─────────────────── */}
+                    {isFiltered && (
+                        <div className="slv-filter-bar">
+                            <span className="slv-filter-label">
+                                Showing runs: {roundRangeFilter!.label} rounds
+                            </span>
+                            <button
+                                className="slv-filter-clear"
+                                onClick={onClearRoundFilter}
+                                type="button"
+                                title="Clear filter"
+                            >
+                                <X size={12} />
+                                Clear
+                            </button>
+                        </div>
+                    )}
+
                     {/* ─── Run Selector ──────────────────────────────────── */}
                     <div className="slv-run-selector">
                         <label className="slv-run-label" htmlFor="slv-run-select">
@@ -460,8 +508,8 @@ export function SimulationLogViewer({ results }: SimulationLogViewerProps) {
                             value={selectedRunIndex}
                             onChange={handleRunChange}
                         >
-                            {runDetails!.map((rd) => (
-                                <option key={rd.runIndex} value={rd.runIndex}>
+                            {(filteredRunDetails ?? runDetails)!.map((rd, idx) => (
+                                <option key={rd.runIndex} value={idx}>
                                     Run {rd.runIndex + 1} —{' '}
                                     {rd.result.winnerSide === 'player'
                                         ? `Player win (${rd.result.roundsElapsed}R)`

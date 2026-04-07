@@ -11,7 +11,7 @@
  * (Task 9.2.4)
  */
 
-import { useMemo, memo } from 'react';
+import { useMemo, useCallback, memo } from 'react';
 import {
     BarChart,
     Bar,
@@ -22,6 +22,7 @@ import {
     ReferenceLine,
     ResponsiveContainer,
     Legend,
+    ReferenceArea,
 } from 'recharts';
 import type { SimulationResults } from 'playlist-data-engine';
 import ChartContainer from './ChartContainer';
@@ -33,6 +34,10 @@ import './TurnDistributionChart.css';
 export interface TurnDistributionChartProps {
     /** Simulation results containing run details and summary */
     results: SimulationResults;
+    /** Currently selected round range filter (from bucket click) */
+    selectedRoundRange?: { min: number; max: number; label: string } | null;
+    /** Callback when a histogram bucket is clicked */
+    onBucketClick?: (rangeStart: number, rangeEnd: number, label: string) => void;
     /** Additional CSS class */
     className?: string;
 }
@@ -266,6 +271,8 @@ function legendFormatter(value: string): React.ReactNode {
 
 function TurnDistributionChartComponent({
     results,
+    selectedRoundRange,
+    onBucketClick,
     className = '',
 }: TurnDistributionChartProps) {
     const { buckets, mean, median, totalRuns } = useMemo(
@@ -274,13 +281,27 @@ function TurnDistributionChartComponent({
     );
 
     const hasDetailedLogs = !!results.runDetails && results.runDetails.length > 0;
+    const isFilterActive = selectedRoundRange !== undefined && selectedRoundRange !== null;
 
     const subtitle = useMemo(() => {
         if (!hasDetailedLogs) {
             return `Mean ${mean.toFixed(1)} / Median ${median.toFixed(1)} (enable detailed logs for histogram)`;
         }
-        return `${totalRuns.toLocaleString()} runs — Mean ${mean.toFixed(1)} / Median ${median.toFixed(1)}`;
-    }, [hasDetailedLogs, totalRuns, mean, median]);
+        const filterLabel = isFilterActive ? ` — Filtered: ${selectedRoundRange!.label} rounds` : '';
+        return `${totalRuns.toLocaleString()} runs — Mean ${mean.toFixed(1)} / Median ${median.toFixed(1)}${filterLabel}`;
+    }, [hasDetailedLogs, totalRuns, mean, median, isFilterActive, selectedRoundRange]);
+
+    const handleBarClick = useCallback((data: unknown) => {
+        const entry = data as { payload?: RoundBucket };
+        if (!onBucketClick || !entry.payload || entry.payload.total === 0) return;
+        onBucketClick(entry.payload.rangeStart, entry.payload.rangeEnd, entry.payload.label);
+    }, [onBucketClick]);
+
+    // Determine if a bucket matches the selected round range
+    const isBucketSelected = useCallback((bucket: RoundBucket): boolean => {
+        if (!isFilterActive || !selectedRoundRange) return false;
+        return bucket.rangeStart === selectedRoundRange.min && bucket.rangeEnd === selectedRoundRange.max;
+    }, [isFilterActive, selectedRoundRange]);
 
     // Reference line position — snap to nearest bucket midpoint
     const meanBucketMid = useMemo(() => {
@@ -415,6 +436,20 @@ function TurnDistributionChartComponent({
                             }}
                         />
 
+                        {/* Highlight selected bucket with reference area */}
+                        {isFilterActive && selectedRoundRange && (
+                            <ReferenceArea
+                                x1={buckets.find(b => isBucketSelected(b))?.label}
+                                x2={buckets.find(b => isBucketSelected(b))?.label}
+                                fill={CHART_COLORS.player}
+                                fillOpacity={0.12}
+                                stroke={CHART_COLORS.player}
+                                strokeOpacity={0.4}
+                                strokeWidth={1}
+                                ifOverflow="extendDomain"
+                            />
+                        )}
+
                         {/* Stacked bars: wins + losses + draws */}
                         <Bar
                             dataKey="playerWins"
@@ -425,6 +460,7 @@ function TurnDistributionChartComponent({
                             isAnimationActive={true}
                             animationDuration={500}
                             name="Player Wins"
+                            cursor={onBucketClick ? 'pointer' : undefined}
                         />
                         <Bar
                             dataKey="enemyWins"
@@ -435,6 +471,7 @@ function TurnDistributionChartComponent({
                             isAnimationActive={true}
                             animationDuration={500}
                             name="Enemy Wins"
+                            cursor={onBucketClick ? 'pointer' : undefined}
                         />
                         <Bar
                             dataKey="draws"
@@ -445,6 +482,8 @@ function TurnDistributionChartComponent({
                             isAnimationActive={true}
                             animationDuration={500}
                             name="Draws"
+                            cursor={onBucketClick ? 'pointer' : undefined}
+                            onClick={(data) => handleBarClick(data)}
                         />
                     </BarChart>
                 </ResponsiveContainer>

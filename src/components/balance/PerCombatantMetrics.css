@@ -178,12 +178,42 @@
     background-color: hsl(var(--muted) / 0.15);
 }
 
+.pcm-row-clickable {
+    cursor: pointer;
+}
+
+.pcm-row-clickable:hover {
+    background-color: hsl(var(--muted) / 0.25);
+}
+
+.pcm-row-clickable:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: -2px;
+    background-color: hsl(var(--muted) / 0.25);
+}
+
+.pcm-row-highlighted {
+    background-color: hsl(var(--primary) / 0.12);
+}
+
+.pcm-row-highlighted:hover {
+    background-color: hsl(var(--primary) / 0.18);
+}
+
 .pcm-row-player {
     border-left: 2px solid hsl(200 80% 50% / 0.4);
 }
 
+.pcm-row-player.pcm-row-highlighted {
+    border-left-color: hsl(200 80% 70%);
+}
+
 .pcm-row-enemy {
     border-left: 2px solid hsl(0 84% 60% / 0.4);
+}
+
+.pcm-row-enemy.pcm-row-highlighted {
+    border-left-color: hsl(0 84% 70%);
 }
 
 /* ─── Cells ─── */

@@ -64,6 +64,12 @@
     min-height: 200px;
 }
 
+/* ── Highlighted bar glow ──────────────────────────────────────── */
+
+.dpr-bar-highlighted {
+    filter: brightness(1.3) drop-shadow(0 0 6px currentColor);
+}
+
 /* ── Side color legend in chart title ──────────────────────────── */
 
 .dpr-chart .chart-container-subtitle::before {

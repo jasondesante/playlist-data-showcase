@@ -8,7 +8,7 @@
  * (Task 9.2.6)
  */
 
-import { useMemo, useState, memo, useCallback } from 'react';
+import { useMemo, useState, useRef, memo, useCallback } from 'react';
 import {
     BarChart,
     Bar,
@@ -30,6 +30,8 @@ import './DamageDistributionChart.css';
 export interface DamageDistributionChartProps {
     /** Per-combatant metrics from simulation results (Map keyed by combatant ID) */
     metrics: Map<string, CombatantSimulationMetrics>;
+    /** Currently highlighted combatant ID — auto-selects in dropdown */
+    highlightedCombatantId?: string | null;
     /** Additional CSS class */
     className?: string;
 }
@@ -152,6 +154,7 @@ function DamageDistTooltip({ active, payload }: { active?: boolean; payload?: To
 
 function DamageDistributionChartComponent({
     metrics,
+    highlightedCombatantId,
     className = '',
 }: DamageDistributionChartProps) {
     const options = useMemo(() => buildCombatantOptions(metrics), [metrics]);
@@ -160,6 +163,15 @@ function DamageDistributionChartComponent({
     const [selectedId, setSelectedId] = useState<string>(() =>
         options.length > 0 ? options[0].id : ''
     );
+
+    // Auto-select when highlighted combatant changes (from metrics table click)
+    const prevHighlightRef = useRef<string | null | undefined>(undefined);
+    if (highlightedCombatantId !== prevHighlightRef.current) {
+        prevHighlightRef.current = highlightedCombatantId;
+        if (highlightedCombatantId && options.some(o => o.id === highlightedCombatantId)) {
+            setSelectedId(highlightedCombatantId);
+        }
+    }
 
     // Keep selection valid when options change
     const validId = useMemo(() => {

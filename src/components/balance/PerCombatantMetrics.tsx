@@ -18,6 +18,10 @@ import './PerCombatantMetrics.css';
 export interface PerCombatantMetricsProps {
     /** Per-combatant metrics from simulation results (Map keyed by combatant ID) */
     metrics: Map<string, CombatantSimulationMetrics>;
+    /** Currently highlighted combatant ID (from chart interactivity) */
+    highlightedCombatantId?: string | null;
+    /** Callback when a combatant row is clicked */
+    onCombatantClick?: (combatantId: string | null) => void;
     className?: string;
 }
 
@@ -145,6 +149,8 @@ function getSortIcon(
 
 function PerCombatantMetricsComponent({
     metrics,
+    highlightedCombatantId,
+    onCombatantClick,
     className = '',
 }: PerCombatantMetricsProps) {
     const [sort, setSort] = useState<SortState>({ key: 'dpr', direction: 'desc' });
@@ -188,6 +194,12 @@ function PerCombatantMetricsComponent({
         }));
     }, []);
 
+    const handleRowClick = useCallback((combatantId: string) => {
+        onCombatantClick?.(combatantId);
+    }, [onCombatantClick]);
+
+    const isClickable = !!onCombatantClick;
+
     // Split into players and enemies for section display
     const players = useMemo(() => sorted.filter((m) => m.side === 'player'), [sorted]);
     const enemies = useMemo(() => sorted.filter((m) => m.side === 'enemy'), [sorted]);
@@ -208,7 +220,7 @@ function PerCombatantMetricsComponent({
                     {label}
                 </div>
                 <div className="pcm-table-wrapper">
-                    <table className="pcm-table">
+                    <table className={`pcm-table ${isClickable ? 'pcm-table-clickable' : ''}`}>
                         <thead>
                             <tr>
                                 {COLUMNS.map((col) => (
@@ -233,25 +245,33 @@ function PerCombatantMetricsComponent({
                             </tr>
                         </thead>
                         <tbody>
-                            {data.map((m) => (
-                                <tr
-                                    key={m.combatantId}
-                                    className={`pcm-row pcm-row-${m.side}`}
-                                >
-                                    {COLUMNS.map((col) => {
-                                        const isTop = topPerformers.get(col.key) === m.combatantId;
-                                        return (
-                                            <td
-                                                key={col.key}
-                                                className={`pcm-td pcm-td-${col.key} ${isTop ? 'pcm-top-performer' : ''}`}
-                                                title={col.format(m)}
-                                            >
-                                                {col.format(m)}
-                                            </td>
-                                        );
-                                    })}
-                                </tr>
-                            ))}
+                            {data.map((m) => {
+                                const isHighlighted = highlightedCombatantId === m.combatantId;
+                                return (
+                                    <tr
+                                        key={m.combatantId}
+                                        className={`pcm-row pcm-row-${m.side} ${isHighlighted ? 'pcm-row-highlighted' : ''} ${isClickable ? 'pcm-row-clickable' : ''}`}
+                                        onClick={isClickable ? () => handleRowClick(m.combatantId) : undefined}
+                                        tabIndex={isClickable ? 0 : undefined}
+                                        onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRowClick(m.combatantId); } } : undefined}
+                                        role={isClickable ? 'button' : undefined}
+                                        aria-pressed={isClickable ? isHighlighted : undefined}
+                                    >
+                                        {COLUMNS.map((col) => {
+                                            const isTop = topPerformers.get(col.key) === m.combatantId;
+                                            return (
+                                                <td
+                                                    key={col.key}
+                                                    className={`pcm-td pcm-td-${col.key} ${isTop ? 'pcm-top-performer' : ''}`}
+                                                    title={col.format(m)}
+                                                >
+                                                    {col.format(m)}
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>

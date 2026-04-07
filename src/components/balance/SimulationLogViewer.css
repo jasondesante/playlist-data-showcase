@@ -66,6 +66,17 @@
     color: hsl(var(--primary));
 }
 
+/* ─── Filter Badge (in header) ─── */
+
+.slv-filter-badge {
+    font-size: 0.6rem;
+    font-weight: 600;
+    padding: 0.05rem 0.35rem;
+    border-radius: 999px;
+    background-color: hsl(174 65% 55% / 0.15);
+    color: hsl(174 65% 55%);
+}
+
 /* ============================================
    CONTENT AREA
    ============================================ */
@@ -74,6 +85,49 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+}
+
+/* ─── Round Range Filter Bar ─── */
+
+.slv-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.6rem;
+    border-radius: var(--radius-sm);
+    background-color: hsl(174 65% 55% / 0.08);
+    border: 1px solid hsl(174 65% 55% / 0.2);
+}
+
+.slv-filter-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: hsl(174 65% 65%);
+}
+
+.slv-filter-clear {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted) / 0.3);
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.slv-filter-clear:hover {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--muted) / 0.5);
+}
+
+.slv-filter-clear:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 1px;
 }
 
 /* ============================================

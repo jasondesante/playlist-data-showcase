@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { useState, useCallback, memo } from 'react';
 import type { SimulationResults, BalanceReport } from 'playlist-data-engine';
 import { ResultsSummary } from './ResultsSummary';
 import { PerCombatantMetrics } from './PerCombatantMetrics';
@@ -40,6 +40,13 @@ export interface BalanceDashboardProps {
     className?: string;
 }
 
+/** Round range filter for log viewer — set by clicking histogram buckets */
+export interface RoundRangeFilter {
+    min: number;
+    max: number;
+    label: string;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 /**
@@ -73,6 +80,29 @@ function BalanceDashboardComponent({
     const hasCombatantMetrics = results.perCombatantMetrics.size > 0;
     const hasRecommendations = balanceReport !== null && balanceReport.recommendations.length > 0;
 
+    // ─── Interactive state: combatant highlighting ────────────────────────
+    const [highlightedCombatantId, setHighlightedCombatantId] = useState<string | null>(null);
+
+    const handleCombatantClick = useCallback((combatantId: string | null) => {
+        setHighlightedCombatantId(prev => prev === combatantId ? null : combatantId);
+    }, []);
+
+    // ─── Interactive state: round range filtering ─────────────────────────
+    const [roundRangeFilter, setRoundRangeFilter] = useState<RoundRangeFilter | null>(null);
+
+    const handleBucketClick = useCallback((rangeStart: number, rangeEnd: number, label: string) => {
+        setRoundRangeFilter(prev => {
+            if (prev && prev.min === rangeStart && prev.max === rangeEnd) {
+                return null; // toggle off
+            }
+            return { min: rangeStart, max: rangeEnd, label };
+        });
+    }, []);
+
+    const handleClearRoundFilter = useCallback(() => {
+        setRoundRangeFilter(null);
+    }, []);
+
     return (
         <div className={`bd-dashboard ${className}`}>
             {/* ─── Top: Win Rate + Balance Score + Key Metrics ─── */}
@@ -96,10 +126,18 @@ function BalanceDashboardComponent({
                 {/* Left Column */}
                 <div className="bd-chart-column">
                     {hasCombatantMetrics && (
-                        <DPRComparisonChart metrics={results.perCombatantMetrics} />
+                        <DPRComparisonChart
+                            metrics={results.perCombatantMetrics}
+                            highlightedCombatantId={highlightedCombatantId}
+                            onCombatantClick={handleCombatantClick}
+                        />
                     )}
                     {hasCombatantMetrics && (
-                        <SurvivalRateChart metrics={results.perCombatantMetrics} />
+                        <SurvivalRateChart
+                            metrics={results.perCombatantMetrics}
+                            highlightedCombatantId={highlightedCombatantId}
+                            onCombatantClick={handleCombatantClick}
+                        />
                     )}
                 </div>
 
@@ -108,13 +146,21 @@ function BalanceDashboardComponent({
                     {hasCombatantMetrics && (
                         <HPRemainingDistribution metrics={results.perCombatantMetrics} />
                     )}
-                    <TurnDistributionChart results={results} />
+                    <TurnDistributionChart
+                        results={results}
+                        selectedRoundRange={roundRangeFilter}
+                        onBucketClick={handleBucketClick}
+                    />
                 </div>
             </div>
 
             {/* ─── Damage Distribution (full width) ─── */}
             {hasCombatantMetrics && (
-                <DamageDistributionChart metrics={results.perCombatantMetrics} className="bd-chart-full" />
+                <DamageDistributionChart
+                    metrics={results.perCombatantMetrics}
+                    highlightedCombatantId={highlightedCombatantId}
+                    className="bd-chart-full"
+                />
             )}
 
             {/* ─── Recommendations ─── */}
@@ -129,11 +175,19 @@ function BalanceDashboardComponent({
 
             {/* ─── Per-Combatant Metrics Table ─── */}
             {hasCombatantMetrics && (
-                <PerCombatantMetrics metrics={results.perCombatantMetrics} />
+                <PerCombatantMetrics
+                    metrics={results.perCombatantMetrics}
+                    highlightedCombatantId={highlightedCombatantId}
+                    onCombatantClick={handleCombatantClick}
+                />
             )}
 
             {/* ─── Simulation Log Viewer ─── */}
-            <SimulationLogViewer results={results} />
+            <SimulationLogViewer
+                results={results}
+                roundRangeFilter={roundRangeFilter}
+                onClearRoundFilter={handleClearRoundFilter}
+            />
         </div>
     );
 }
