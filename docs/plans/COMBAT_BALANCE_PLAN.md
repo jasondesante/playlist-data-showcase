@@ -1247,10 +1247,14 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 ### 6.4 Update ROLLS_AND_SEEDS.md
 
-- [ ] **6.4.1** Document how seeded RNG is used in simulations
+- [x] **6.4.1** Document how seeded RNG is used in simulations
   - Explain that each simulation run gets a unique seed derived from `baseSeed + runIndex`
   - Explain determinism guarantees (same base seed + same config = identical results)
   - Document the relationship between `SeededRNG` (enemy generation) and `SeededDiceRoller` (combat rolls)
+  - Added comprehensive "Seeded RNG in Combat Simulations" section to `docs/engine/docs/ROLLS_AND_SEEDS.md`
+  - Covers: two layers of seeded randomness table (SeededRNG for generation, SeededDiceRoller for combat), seed flow diagram showing `${baseSeed}-${runIndex}` derivation, determinism guarantees with code proof, what changes between seeds, seed strategy for balance testing (parameter sweeps), SeededRNG vs SeededDiceRoller relationship mapping, roller injection into CombatEngine (flows to AttackResolver/InitiativeRoller/SpellCaster), full simulation pipeline example showing independent generation seed vs simulation seed
+  - Updated Table of Contents with new section entry
+  - Build verified clean (pre-existing TS errors only, no regressions from doc change)
 - [ ] **6.4.2** Document `SeededDiceRoller`
   - How to create a seeded roller instance
   - How to inject it into `CombatEngine`

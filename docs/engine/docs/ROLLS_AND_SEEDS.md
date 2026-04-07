@@ -12,6 +12,7 @@ Complete guide to the dice roller and seeded randomness in the Playlist Data Eng
 1. [Hash Utilities and Deterministic Seeding](#hash-utilities-and-deterministic-seeding)
 2. [Dice Roller](#dice-roller)
 3. [Initiative Roller](#initiative-roller)
+4. [Seeded RNG in Combat Simulations](#seeded-rng-in-combat-simulations)
 
 ---
 
@@ -356,6 +357,186 @@ while (combatants.length > 1) {
   currentTurnIndex = index;
 }
 ```
+
+---
+
+## Seeded RNG in Combat Simulations
+
+Combat simulations use seeded RNG at two layers: **enemy generation** (via `SeededRNG`) and **combat dice rolls** (via `SeededDiceRoller`). Understanding how seeds flow through the system is essential for writing reproducible balance tests and simulation pipelines.
+
+### Two Layers of Seeded Randomness
+
+| Layer | Class | Purpose | Seed Source |
+|-------|-------|---------|-------------|
+| Enemy generation | `SeededRNG` | Deterministic character stats, equipment, spell selection | User-provided seed string |
+| Combat dice rolls | `SeededDiceRoller` | Deterministic attack rolls, damage, saving throws, initiative | Derived per simulation run |
+
+These are independent — the combat roller does not share state with the generation RNG. A single `SeededRNG` instance is used during enemy generation (stats, spells, equipment), then discarded. A fresh `SeededDiceRoller` is created for each simulation run.
+
+### How Seeds Flow in a Simulation
+
+The `CombatSimulator` manages seeding across multiple runs. Given a `baseSeed` and `runCount`, each run gets a unique deterministic seed:
+
+```
+baseSeed: "balance-test-1"
+runCount: 1000
+
+Run 0  → seed: "balance-test-1-0"
+Run 1  → seed: "balance-test-1-1"
+Run 2  → seed: "balance-test-1-2"
+...
+Run 999 → seed: "balance-test-1-999"
+```
+
+The seed is formatted as `${baseSeed}-${runIndex}`. Each seed produces a completely independent `SeededDiceRoller` instance, ensuring no state leaks between runs.
+
+### Determinism Guarantees
+
+**Same base seed + same config = identical results, always.**
+
+This holds because the entire system is deterministic:
+- `SeededRNG` uses MurmurHash V3 via `deriveSeed()` + `hashSeedToFloat()` with a stateful counter
+- `SeededDiceRoller` wraps `SeededRNG` — same seed, same call sequence = same rolls
+- `CombatEngine` receives the roller via constructor injection, passing it to `AttackResolver`, `InitiativeRoller`, and `SpellCaster`
+- `AICombatRunner` creates a fresh `CombatEngine` per run with the run-specific roller
+- AI decisions are deterministic given the same combatant states (no random AI choices)
+
+```typescript
+// Proof of determinism
+const simulator = new CombatSimulator();
+const resultsA = simulator.run(party, enemies, { runCount: 500, baseSeed: 'test-42', aiConfig });
+const resultsB = simulator.run(party, enemies, { runCount: 500, baseSeed: 'test-42', aiConfig });
+
+// These are identical — same summary, same per-combatant metrics, same histograms
+console.log(resultsA.summary.playerWinRate === resultsB.summary.playerWinRate); // true
+```
+
+### What Changes Between Seeds
+
+Changing any of these produces different results:
+- **`baseSeed`** — different random rolls across all runs
+- **`runCount`** — more/fewer data points, different aggregate statistics
+- **`aiConfig`** — different AI decisions change combat flow
+- **`combatConfig.maxTurnsBeforeDraw`** — changes how stalemates resolve
+
+```typescript
+// Different seed → different results
+const results1 = simulator.run(party, enemies, { runCount: 500, baseSeed: 'seed-A', aiConfig });
+const results2 = simulator.run(party, enemies, { runCount: 500, baseSeed: 'seed-B', aiConfig });
+console.log(results1.summary.playerWinRate === results2.summary.playerWinRate); // almost certainly false
+```
+
+### Seed Strategy for Balance Testing
+
+When testing balance across multiple configurations (e.g., parameter sweeps), use a shared base seed so the only variable is the parameter being tested:
+
+```typescript
+import { CombatSimulator, ParameterSweep } from 'playlist-data-engine';
+
+// ParameterSweep uses this strategy internally:
+// Each data point gets seed `${baseSeed}-${parameterValue}`
+// This ensures each CR level is tested with independent but reproducible RNG
+
+const sweep = new ParameterSweep();
+const results = sweep.sweep(
+  party, baseEnemy,
+  {
+    variable: 'cr',
+    range: { min: 1, max: 10, step: 1 },
+    simulationsPerPoint: 500,
+    aiConfig: { playerStyle: 'normal', enemyStyle: 'aggressive' },
+    baseSeed: 'cr-sweep-v1',
+  }
+);
+// Each CR value (1 through 10) gets 500 runs with deterministic seeds
+```
+
+### Relationship Between SeededRNG and SeededDiceRoller
+
+`SeededRNG` is the low-level PRNG (pseudorandom number generator). `SeededDiceRoller` is a D&D-specific wrapper that translates RNG output into game mechanics:
+
+```
+SeededRNG                    SeededDiceRoller
+─────────                    ─────────────────
+random()        → 0.0-1.0    rollDie(20)        → 1-20
+randomInt(a,b)  → integer    rollD20()           → 1-20
+randomChoice()  → element    rollWithAdvantage() → {roll1, roll2, result}
+weightedChoice()→ element    calculateDamage()   → {total, rolls, modifier}
+shuffle()       → shuffled   rollSavingThrow()   → d20 + mod + prof
+```
+
+`SeededDiceRoller` is **instance-based** (not static like `DiceRoller`). Each simulation run creates its own instance with its own `SeededRNG` state. This is what makes per-run isolation possible.
+
+### Injecting a Seeded Roller into CombatEngine
+
+For live combat (random dice), use `CombatEngine` with no roller — it uses `Math.random()` via the static `DiceRoller`:
+
+```typescript
+const engine = new CombatEngine({ maxTurnsBeforeDraw: 50 });
+// Uses Math.random() — non-deterministic
+```
+
+For simulation combat (deterministic dice), inject a `SeededDiceRoller`:
+
+```typescript
+import { createSeededRoller } from 'playlist-data-engine';
+
+const engine = new CombatEngine({}, createSeededRoller('my-seed'));
+// Every d20 roll, damage roll, and saving throw is deterministic
+```
+
+The injected roller flows to all combat subsystems:
+
+```
+CombatEngine
+  ├── AttackResolver (receives roller)  → attack rolls, damage rolls
+  ├── InitiativeRoller (receives roller) → initiative rolls
+  └── SpellCaster (receives roller)      → spell attack rolls, saving throws
+```
+
+### Full Simulation Pipeline with Seeding
+
+```typescript
+import {
+  CombatSimulator,
+  createSeededRoller,
+  SeededRNG,
+  EnemyGenerator,
+} from 'playlist-data-engine';
+
+// Step 1: Generate enemies deterministically (SeededRNG for generation)
+const enemyGen = new EnemyGenerator();
+const enemy = enemyGen.generate({
+  seed: 'encounter-v3',
+  cr: 5,
+  rarity: 'elite',
+  category: 'humanoid',
+  archetype: 'brute',
+});
+
+// Step 2: Run simulations (SeededDiceRoller per run, managed by CombatSimulator)
+const simulator = new CombatSimulator();
+const results = simulator.run(
+  party, [enemy],
+  {
+    runCount: 1000,
+    baseSeed: 'balance-test-3',  // Each run gets "balance-test-3-0" through "balance-test-3-999"
+    aiConfig: {
+      playerStyle: 'normal',
+      enemyStyle: 'aggressive',
+    },
+    onProgress: (done, total) => {
+      console.log(`Progress: ${done}/${total} (${((done/total)*100).toFixed(1)}%)`);
+    },
+  }
+);
+
+console.log(`Win rate: ${(results.summary.playerWinRate * 100).toFixed(1)}%`);
+console.log(`Avg rounds: ${results.summary.averageRounds.toFixed(1)}`);
+console.log(`Player deaths: ${results.summary.totalPlayerDeaths} across ${results.summary.totalRuns} runs`);
+```
+
+**Key point:** The enemy generation seed (`encounter-v3`) and the simulation base seed (`balance-test-3`) are independent. Changing the simulation seed does not change which enemies are generated — only how the combat dice fall. This separation lets you test the same encounter composition across many different combat scenarios.
 
 ---
 
