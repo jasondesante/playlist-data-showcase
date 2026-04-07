@@ -22,7 +22,11 @@ Complete guide to the combat system in the Playlist Data Engine.
    - [Multiple Equipped Weapons](#multiple-equipped-weapons)
    - [Unarmed Combat](#unarmed-combat)
    - [Manual Attack Objects](#manual-attack-objects)
-2. [Dice Roller](#dice-roller)
+   - [Legendary Actions](#legendary-actions)
+   - [Combat AI](#combat-ai)
+   - [Monte Carlo Simulation](#monte-carlo-simulation)
+2. [Seeded Dice Rolling](#seeded-dice-rolling)
+3. [Dice Roller](#dice-roller)
 
 ---
 
@@ -723,6 +727,132 @@ combat.executeWeaponAttack(combatInstance, current, target);
 ### Manual Attack Objects
 
 For special cases, you can still manually construct `Attack` objects using `executeAttack()` directly. See `Attack` type in DATA_ENGINE_REFERENCE.md for all available properties.
+
+---
+
+## Seeded Dice Rolling
+
+For reproducible combat simulations, the engine provides `SeededDiceRoller` — a deterministic alternative to the standard `DiceRoller`. Both classes expose the same API, but `SeededDiceRoller` uses `SeededRNG` (MurmurHash V3) internally instead of `Math.random()`.
+
+### When to Use Seeded vs Random Rolling
+
+| Use Case | Roller | Why |
+|----------|--------|-----|
+| Live gameplay (UI combat) | `DiceRoller` (default) | Unpredictable outcomes, no need for reproducibility |
+| Monte Carlo simulation | `SeededDiceRoller` | Same seed + same config = identical results every time |
+| Unit tests | Either | Seeded for exact assertions, random for statistical sampling |
+| Balance analysis | `SeededDiceRoller` | Compare configurations fairly with identical RNG sequences |
+
+### Creating a Seeded Roller
+
+```typescript
+import { SeededDiceRoller, createSeededRoller } from 'playlist-data-engine';
+
+// Option 1: Factory function (recommended)
+const roller = createSeededRoller('my-simulation-seed');
+
+// Option 2: Direct constructor with a seed string
+const roller = new SeededDiceRoller('my-simulation-seed');
+
+// Option 3: Direct constructor with an existing SeededRNG instance
+import { SeededRNG } from 'playlist-data-engine';
+const rng = new SeededRNG('shared-seed');
+const roller = new SeededDiceRoller(rng);
+```
+
+Each `SeededDiceRoller` instance maintains its own internal counter. Two instances created from the same seed produce identical sequences of rolls — this is what makes simulation results reproducible.
+
+### Injecting into CombatEngine
+
+Pass a `SeededDiceRoller` (or any object implementing `DiceRollerAPI`) as the second argument to the `CombatEngine` constructor. All attack rolls, damage rolls, initiative, saving throws, and spell rolls will use it.
+
+```typescript
+import { CombatEngine, createSeededRoller } from 'playlist-data-engine';
+
+// Deterministic combat — every roll is reproducible
+const roller = createSeededRoller('combat-run-42');
+const combat = new CombatEngine({}, roller);
+
+const instance = combat.startCombat(party, enemies);
+
+// Every subsequent call uses the seeded roller:
+// - Initiative rolls
+// - Attack rolls (d20 + bonus)
+// - Damage rolls (dice formula + modifier)
+// - Critical hit/miss detection
+// - Saving throws
+// - Spell attack rolls
+```
+
+Without a roller, `CombatEngine` falls back to the static `DiceRoller` (uses `Math.random()`). This is backward compatible — existing code works unchanged.
+
+### Determinism Guarantees
+
+Given the same seed and the same call sequence, `SeededDiceRoller` always produces identical results:
+
+```typescript
+const a = createSeededRoller('test-seed');
+const b = createSeededRoller('test-seed');
+
+a.rollD20() === b.rollD20();  // true — first roll always the same
+a.rollD20() === b.rollD20();  // true — second roll always the same
+a.rollD20() === b.rollD20();  // true — and so on
+
+// Different seeds produce different sequences
+const c = createSeededRoller('other-seed');
+a.rollD20() !== c.rollD20();  // true (almost certainly)
+```
+
+This extends to full combat: the same party, enemies, seed, and AI config will produce an identical combat history entry-by-entry.
+
+### API Reference
+
+`SeededDiceRoller` mirrors the static API of `DiceRoller` but as instance methods:
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `rollDie(sides)` | `number` | Single die roll (1–sides) |
+| `rollD20()` | `number` | d20 roll |
+| `rollWithAdvantage()` | `{ roll1, roll2, result }` | Two d20s, take higher |
+| `rollWithDisadvantage()` | `{ roll1, roll2, result }` | Two d20s, take lower |
+| `rollMultipleDice(count, sides)` | `number[]` | N dice, returns all results |
+| `parseDiceFormula(formula)` | `{ diceCount, diceSides, modifier, rolls, total }` | Parse and roll `"2d6+3"` |
+| `calculateDamage(formula, modifier, isCritical?)` | `{ diceFormula, rolls, modifier, total, isCritical }` | Damage with crit doubling |
+| `rollSavingThrow(abilityMod, profBonus?)` | `number` | d20 + modifiers |
+| `rollAbilityCheck(abilityMod, profBonus?)` | `number` | d20 + modifiers |
+| `rollInitiative(dexMod)` | `number` | d20 + DEX modifier |
+| `rollPercentile()` | `number` | d100 roll |
+| `isCriticalHit(roll)` | `boolean` | True if roll is 20 |
+| `isCriticalMiss(roll)` | `boolean` | True if roll is 1 |
+| `doubleDamage(rolls)` | `number[]` | Double dice for crits |
+
+### How CombatSimulator Manages Seeding
+
+The `CombatSimulator` creates a fresh `SeededDiceRoller` per simulation run, deriving each seed from the base seed and run index:
+
+```typescript
+import { CombatSimulator } from 'playlist-data-engine';
+
+const simulator = new CombatSimulator();
+
+const results = simulator.run(party, enemies, {
+  runCount: 1000,
+  baseSeed: 'encounter-analysis',
+  aiConfig: { playerStyle: 'normal', enemyStyle: 'normal' },
+  onProgress: (completed, total) => {
+    console.log(`${completed}/${total} runs complete`);
+  }
+});
+
+// Internally, each run uses:
+// Run 0: seed = "encounter-analysis-0"
+// Run 1: seed = "encounter-analysis-1"
+// Run 2: seed = "encounter-analysis-2"
+// ...
+// This ensures every run is independent and the full simulation is reproducible.
+```
+
+Running the same `simulator.run()` call again with the same inputs produces byte-identical `SimulationResults`.
 
 ---
 

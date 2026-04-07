@@ -1067,11 +1067,15 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
 
 > This doc covers "how combat executes." Add sections for all new combat mechanics and the AI system.
 
-- [ ] **6.1.1** Add **Seeded Dice Rolling** section
+- [x] **6.1.1** Add **Seeded Dice Rolling** section
   - Document `SeededDiceRoller` class and its relationship to `DiceRoller`
   - Explain when to use seeded vs random rolling
   - Document `CombatEngine` roller injection
   - Include code examples for deterministic combat
+  - Added comprehensive "Seeded Dice Rolling" section to `docs/engine/docs/COMBAT_SYSTEM.md`
+  - Covers: when to use seeded vs random (table), creating a roller (3 options), injecting into CombatEngine, determinism guarantees, full API reference table (14 methods), how CombatSimulator manages per-run seeding
+  - Updated Table of Contents with links to new section plus placeholder anchors for 6.1.4/6.1.5 (Legendary Actions, Combat AI, Monte Carlo Simulation)
+  - Build verified clean (pre-existing errors only, no regressions from doc change)
 - [ ] **6.1.2** Add **Status Effects** section
   - Document the updated `StatusEffect` interface (new optional fields: `damage`, `damageType`, `mechanicalEffects`)
   - Document `applyStatusEffect()` and `removeExpiredStatusEffects()` methods
