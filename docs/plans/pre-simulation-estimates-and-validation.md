@@ -160,7 +160,7 @@ BalanceLabTab (results area)
   - Displays the XP ratio and estimated win rate
   - Only renders when both party and enemy estimates are available
 
-- [ ] **2.4 Wire estimates into `SimulationConfigPanel`**
+- [x] **2.4 Wire estimates into `SimulationConfigPanel`**
 
   In `src/components/balance/SimulationConfigPanel.tsx`:
 

@@ -15,9 +15,12 @@ import {
     type EnemyRarity,
     type EnemyCategory,
     type EnemyArchetype,
+    type PartyAnalysis,
+    PartyAnalyzer,
 } from 'playlist-data-engine';
 import { useCharacterStore } from '@/store/characterStore';
 import { useEnemyGenerator } from '@/hooks/useEnemyGenerator';
+import { useEstimateSnapshot } from '@/hooks/useEstimateSnapshot';
 import {
     type EncounterConfigUI,
     type SimulationSettingsUI,
@@ -32,6 +35,9 @@ import { PartySelector } from './PartySelector';
 import { EncounterConfigForm } from './EncounterConfigForm';
 import { AIStrategySelector } from './AIStrategySelector';
 import { SimulationProgressBar } from './SimulationProgressBar';
+import { PartyEstimateCard } from './PartyEstimateCard';
+import { EnemyEstimateCard } from './EnemyEstimateCard';
+import { PredictedDifficultyBar } from './PredictedDifficultyBar';
 import { Play, X, AlertCircle } from 'lucide-react';
 import { logger } from '@/utils/logger';
 import './SimulationConfigPanel.css';
@@ -113,6 +119,19 @@ export function SimulationConfigPanel({
     );
 
     const canRun = selectedParty.length > 0 && !isRunning;
+
+    // ─── Pre-Simulation Estimates ────────────────────────────────────────
+    const estimateSnapshot = useEstimateSnapshot(selectedParty, encounterConfig);
+
+    // Instant party analysis (no loading delay) for PartyEstimateCard
+    const partyAnalysis: PartyAnalysis | null = useMemo(() => {
+        if (selectedParty.length === 0) return null;
+        try {
+            return PartyAnalyzer.analyzeParty(selectedParty);
+        } catch {
+            return null;
+        }
+    }, [selectedParty]);
 
     // ─── Handlers ───────────────────────────────────────────────────────
     const handleRun = useCallback(() => {
@@ -203,6 +222,11 @@ export function SimulationConfigPanel({
                     onChange={setSelectedPartySeeds}
                     disabled={isRunning}
                 />
+                <PartyEstimateCard
+                    analysis={partyAnalysis}
+                    isLoading={false}
+                    encounterXP={estimateSnapshot?.enemy.totalAdjustedXP}
+                />
             </section>
 
             {/* Encounter Configuration */}
@@ -215,6 +239,15 @@ export function SimulationConfigPanel({
                     onChange={updateEncounterConfig}
                     disabled={isRunning}
                 />
+                <EnemyEstimateCard
+                    snapshot={estimateSnapshot?.enemy ?? null}
+                    isLoading={false}
+                />
+            </section>
+
+            {/* Predicted Difficulty Bar */}
+            <section className="scp-section">
+                <PredictedDifficultyBar snapshot={estimateSnapshot} />
             </section>
 
             {/* Simulation Settings */}
