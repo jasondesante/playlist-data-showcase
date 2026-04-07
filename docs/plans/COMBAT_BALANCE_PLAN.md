@@ -863,22 +863,31 @@ Current `CombatResult.winner` returns the first surviving combatant (misleading 
   - `SweepEnemyConfig` interface: `{ cr?; rarity?; category?; archetype?; templateId?; statLevels?; difficultyMultiplier? }`
   - All types exported from engine `src/index.ts`: `SweepVariable`, `SweepRange`, `SweepParams`, `SweepDataPoint`, `SweepResults`, `SweepEnemyConfig`
   - Engine builds clean (tsc --noEmit + vite build pass)
-- [ ] **4.2.3** Implement sweep execution
+- [x] **4.2.3** Implement sweep execution
   - For each value in the range, modify the encounter/party, run simulations, collect summary
   - Return `SweepResults` with data points mapping parameter value → simulation summary
-- [ ] **4.2.4** Define `SweepResults` for visualization
-  ```typescript
-  interface SweepResults {
-    variable: string;
-    dataPoints: SweepDataPoint[];
-  }
-  interface SweepDataPoint {
-    parameterValue: number;
-    playerWinRate: number;
-    averageRounds: number;
-    averageHPRemaining: number;
-  }
-  ```
+  - Already implemented in `ParameterSweep.sweep()` method (created as part of 4.2.1)
+  - Verified with 30 tests in `tests/unit/combat/parameterSweep.test.ts` covering:
+    - **Value generation** (4 tests): integer range, fractional CR range, min===max single point, step>1
+    - **SweepResults structure** (4 tests): metadata fields, ascending order, required fields, valid ranges
+    - **Determinism** (2 tests): same seed = identical results, different seeds = different results
+    - **CR sweep** (2 tests): win rate decreases as CR increases, different enemies per CR
+    - **Enemy count sweep** (2 tests): win rate decreases with more enemies, correct point count
+    - **Party level sweep** (1 test): win rate increases with higher party level
+    - **Rarity sweep** (1 test): sweeps all 4 tiers, boss harder than common
+    - **Stat level sweeps** (3 tests): hpLevel/attackLevel/defenseLevel all affect difficulty correctly
+    - **Difficulty multiplier sweep** (1 test): higher multiplier = harder encounter
+    - **Progress callback** (2 tests): called per data point with correct (completed, total) args
+    - **Cancellation** (2 tests): partial results on abort, wasCancelled=false when not aborted
+    - **AI config variations** (1 test): normal vs aggressive produce different results
+    - **Edge cases** (4 tests): single point, 1 sim per point, missing seed, fractional step
+    - **Performance** (1 test): 10-point × 100-sim sweep completes in <5s
+  - All 1189 combat tests pass (30 new + 1159 existing), engine builds clean (tsc + vite)
+- [x] **4.2.4** Define `SweepResults` for visualization
+  - Already defined as part of 4.2.1 in `src/core/combat/Analysis/ParameterSweep.ts`
+  - `SweepResults` interface includes: `variable`, `range`, `simulationsPerPoint`, `dataPoints[]`, `wasCancelled`
+  - `SweepDataPoint` interface includes: `parameterValue`, `playerWinRate`, `averageRounds`, `averageHPRemaining`, `totalPlayerDeaths`, `totalEnemyDeaths`, `medianRounds` (more fields than original spec)
+  - All types exported from engine `src/index.ts`
 
 ### 4.3 Comparative Analysis
 
