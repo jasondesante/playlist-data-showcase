@@ -388,6 +388,7 @@ export function BalanceLabTab() {
                                     />
                                     <EstimateValidationPanel
                                         validation={validation}
+                                        balanceReport={balanceReport}
                                         hasResultsWithoutEstimate={hasResults && !estimateSnapshot}
                                     />
                                 </>

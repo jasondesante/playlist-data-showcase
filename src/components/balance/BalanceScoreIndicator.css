@@ -33,7 +33,7 @@
 /* ─── Background Arc ──────────────────────────────── */
 
 .bsi-gauge-bg {
-    stroke: hsl(var(--muted) / 0.25);
+    stroke: hsl(var(--muted) / 0.4);
 }
 
 /* ─── Filled Arc ─────────────────────────────────── */

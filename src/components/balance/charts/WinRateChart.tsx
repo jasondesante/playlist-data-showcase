@@ -17,6 +17,7 @@ import {
     CartesianGrid,
     Tooltip,
     ReferenceLine,
+    ReferenceArea,
     ResponsiveContainer,
     Cell,
     ErrorBar,
@@ -203,49 +204,64 @@ function WinRateChartComponent({
                         cursor={false}
                     />
 
-                    {/* Difficulty threshold reference lines */}
+                    {/* Difficulty zone bands — thresholds match getWinRateDifficulty */}
+                    <ReferenceArea y1={90} y2={100} fill={CHART_COLORS.positive} fillOpacity={0.06} />
+                    <ReferenceArea y1={70} y2={90} fill={CHART_COLORS.accent} fillOpacity={0.06} />
+                    <ReferenceArea y1={50} y2={70} fill={CHART_COLORS.critical} fillOpacity={0.06} />
+                    <ReferenceArea y1={0} y2={50} fill={CHART_COLORS.negative} fillOpacity={0.06} />
+
+                    {/* Threshold lines */}
+                    <ReferenceLine y={90} {...difficultyReferenceLines.easy} />
+                    <ReferenceLine y={70} {...difficultyReferenceLines.medium} />
+                    <ReferenceLine y={50} {...difficultyReferenceLines.hard} />
+
+                    {/* Band labels — centered in each zone */}
                     <ReferenceLine
-                        y={90}
-                        {...difficultyReferenceLines.easy}
+                        y={95}
+                        stroke="none"
                         label={{
                             value: 'Easy',
                             position: 'insideTopRight',
                             fill: CHART_COLORS.positive,
                             fontSize: 10,
                             fontWeight: 600,
+                            opacity: 0.7,
                         }}
                     />
                     <ReferenceLine
-                        y={75}
-                        {...difficultyReferenceLines.medium}
+                        y={80}
+                        stroke="none"
                         label={{
                             value: 'Medium',
                             position: 'insideTopRight',
                             fill: CHART_COLORS.accent,
                             fontSize: 10,
                             fontWeight: 600,
+                            opacity: 0.7,
                         }}
                     />
                     <ReferenceLine
-                        y={55}
-                        {...difficultyReferenceLines.hard}
+                        y={60}
+                        stroke="none"
                         label={{
                             value: 'Hard',
                             position: 'insideTopRight',
                             fill: CHART_COLORS.critical,
                             fontSize: 10,
                             fontWeight: 600,
+                            opacity: 0.7,
                         }}
                     />
                     <ReferenceLine
-                        y={35}
-                        {...difficultyReferenceLines.deadly}
+                        y={25}
+                        stroke="none"
                         label={{
                             value: 'Deadly',
                             position: 'insideTopRight',
                             fill: CHART_COLORS.negative,
                             fontSize: 10,
                             fontWeight: 600,
+                            opacity: 0.7,
                         }}
                     />
 

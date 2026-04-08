@@ -79,6 +79,8 @@
     padding: 0 2px;
     cursor: pointer;
     margin-left: auto;
+    width: auto;
+    flex-shrink: 0;
 }
 
 /* ─── Stat Pills ────────────────────────────────────────────────────── */

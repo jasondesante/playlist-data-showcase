@@ -6,11 +6,9 @@ import {
     Skull,
     Swords,
     Clock,
-    ShieldAlert,
 } from 'lucide-react';
 import type { SimulationResults, BalanceReport } from 'playlist-data-engine';
 import type { EncounterConfigUI, SimulationEstimateSnapshot, EstimateValidation } from '@/types/simulation';
-import { BalanceScoreIndicator } from './BalanceScoreIndicator';
 import { SimulationExportButton } from './SimulationExportButton';
 import './ResultsSummary.css';
 
@@ -25,19 +23,6 @@ function getWinRateColorClass(winRate: number): string {
     if (winRate >= 0.5) return 'rs-win-rate-medium';
     if (winRate >= 0.3) return 'rs-win-rate-low';
     return 'rs-win-rate-critical';
-}
-
-function getDifficultyIcon(variance: string): React.ReactNode {
-    switch (variance) {
-        case 'balanced':
-            return <ShieldAlert size={14} />;
-        case 'underpowered':
-            return <Target size={14} />;
-        case 'overpowered':
-            return <Skull size={14} />;
-        default:
-            return null;
-    }
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -173,24 +158,6 @@ function ResultsSummaryComponent({
                     </div>
                 ))}
             </div>
-
-            {/* Difficulty Assessment */}
-            {balanceReport && (
-                <div className={`rs-balance-card rs-balance-${balanceReport.difficultyVariance}`} title={`Balance Score: ${balanceReport.balanceScore}/100 — ${balanceReport.confidence >= 0.95 ? 'High' : balanceReport.confidence >= 0.90 ? 'Moderate' : 'Low'} confidence based on ${balanceReport.totalRuns} runs`}>
-                    <div className="rs-balance-header">
-                        <div className="rs-balance-difficulty-row">
-                            <span className="rs-balance-difficulty">
-                                {getDifficultyIcon(balanceReport.difficultyVariance)}
-                                {balanceReport.actualDifficulty}
-                            </span>
-                            <span className="rs-balance-intended">
-                                intended: {balanceReport.intendedDifficulty}
-                            </span>
-                        </div>
-                    </div>
-                    <BalanceScoreIndicator report={balanceReport} />
-                </div>
-            )}
 
             {/* Cancelled Notice */}
             {isCancelled && (

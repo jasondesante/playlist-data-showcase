@@ -166,10 +166,12 @@ function BalanceScoreIndicatorComponent({
     const scoreLabel = useMemo(() => getScoreLabel(score), [score]);
 
     // Build the colored arc path (from left to the score position)
+    // Extend 2° past the start to ensure the round cap fully overlaps the background arc
     const filledArcAngle = valueToAngle(score);
     const filledArcPath = useMemo(
         () => describeArc(GAUGE_CENTER, GAUGE_CENTER, GAUGE_RADIUS, ARC_START_ANGLE, filledArcAngle),
-        [filledArcAngle],
+        // [filledArcAngle],
+        [],
     );
 
     // Background arc (full semicircle)
@@ -237,7 +239,7 @@ function BalanceScoreIndicatorComponent({
                         stroke="url(#bsi-gradient)"
                         strokeWidth={GAUGE_STROKE}
                         strokeLinecap="round"
-                        opacity={0.15}
+                        opacity={0.3}
                     />
 
                     {/* Filled arc to score position */}
@@ -248,7 +250,6 @@ function BalanceScoreIndicatorComponent({
                             stroke={scoreColor}
                             strokeWidth={GAUGE_STROKE}
                             strokeLinecap="round"
-                            filter="url(#bsi-glow)"
                             className="bsi-gauge-fill"
                         />
                     )}

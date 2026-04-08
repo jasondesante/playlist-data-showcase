@@ -27,7 +27,9 @@ import {
     ArrowDown,
     Minus,
 } from 'lucide-react';
+import type { BalanceReport } from 'playlist-data-engine';
 import type { EstimateValidation } from '@/types/simulation';
+import { BalanceScoreIndicator } from './BalanceScoreIndicator';
 import './EstimateValidationPanel.css';
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -35,6 +37,8 @@ import './EstimateValidationPanel.css';
 export interface EstimateValidationPanelProps {
     /** Validation data comparing estimates vs actuals. Null if not yet computed. */
     validation: EstimateValidation | null;
+    /** Balance report containing the score gauge. Null if analysis failed. */
+    balanceReport?: BalanceReport | null;
     /** True when results exist but no pre-simulation estimate snapshot is available
      *  (e.g., simulation loaded from history). Shows a notice instead of hiding. */
     hasResultsWithoutEstimate?: boolean;
@@ -100,6 +104,7 @@ function SeverityIcon({ severity }: { severity: 'info' | 'warning' | 'error' }) 
 
 function EstimateValidationPanelComponent({
     validation,
+    balanceReport,
     hasResultsWithoutEstimate = false,
     className = '',
 }: EstimateValidationPanelProps) {
@@ -181,6 +186,17 @@ function EstimateValidationPanelComponent({
 
             {!collapsed && (
                 <div className="evp-content">
+                    {/* ─── Prediction Accuracy Gauge ─── */}
+                    {balanceReport && (
+                        <div className="evp-gauge-section">
+                            <BalanceScoreIndicator report={balanceReport} />
+                            <div className="evp-difficulty-text">
+                                <span className="evp-difficulty-actual">{balanceReport.actualDifficulty}</span>
+                                <span className="evp-difficulty-intended">intended: {balanceReport.intendedDifficulty}</span>
+                            </div>
+                        </div>
+                    )}
+
                     {/* ─── Comparison Table ─── */}
                     <div className="evp-table-wrapper">
                         <table className="evp-table">

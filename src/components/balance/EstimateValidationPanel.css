@@ -94,6 +94,33 @@
     padding: 0 0.25rem;
 }
 
+.evp-gauge-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0;
+}
+
+.evp-difficulty-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.evp-difficulty-actual {
+    font-weight: 600;
+    text-transform: capitalize;
+    color: hsl(var(--foreground));
+}
+
+.evp-difficulty-intended {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
 /* ============================================
    COMPARISON TABLE
    ============================================ */

@@ -102,7 +102,7 @@ function buildDistribution(metrics: Map<string, CombatantSimulationMetrics>): {
                 const dispEnd = (i + 1) * BUCKET_SIZE;
                 const overlapStart = Math.max(bucket.rangeStart, dispStart);
                 const overlapEnd = Math.min(bucket.rangeEnd, dispEnd);
-                if (overlapStart < overlapEnd) {
+                if (overlapStart <= overlapEnd) {
                     // Proportional split based on overlap
                     const engineBucketWidth = bucket.rangeEnd - bucket.rangeStart;
                     const overlapFraction = engineBucketWidth > 0
