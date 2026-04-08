@@ -15,6 +15,7 @@ import {
 } from 'playlist-data-engine';
 import { EncounterConfigUI, STAT_LEVEL_PRESETS } from '@/types/simulation';
 import { ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
+import { Tooltip } from '../ui/Tooltip';
 import './EncounterConfigForm.css';
 
 const CATEGORIES: { value: EnemyCategory; label: string }[] = [
@@ -190,6 +191,7 @@ export function EncounterConfigForm({
                 <div className="ecf-field">
                     <label className="ecf-label" htmlFor="ecf-diff-mult">
                         Diff Mult
+                        <Tooltip content="Scales enemy HP and the XP budget used to pick enemy CRs. 1.0 = normal, 1.5 = 50% harder, 0.5 = easier." />
                     </label>
                     <input
                         id="ecf-diff-mult"

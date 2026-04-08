@@ -77,6 +77,7 @@ export function SimulationConfigPanel({
     // ─── State ──────────────────────────────────────────────────────────
     const [selectedPartySeeds, setSelectedPartySeeds] = useState<string[]>([]);
     const [encounterConfig, setEncounterConfig] = useState<EncounterConfigUI>(DEFAULT_ENCOUNTER_CONFIG);
+    const [enemySampleCount, setEnemySampleCount] = useState<number>(10);
     const [settings, setSettings] = useState<SimulationSettingsUI>(DEFAULT_SIMULATION_SETTINGS);
     const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -123,7 +124,7 @@ export function SimulationConfigPanel({
     const canRun = selectedParty.length > 0 && !isRunning;
 
     // ─── Pre-Simulation Estimates ────────────────────────────────────────
-    const estimateSnapshot = useEstimateSnapshot(selectedParty, encounterConfig);
+    const estimateSnapshot = useEstimateSnapshot(selectedParty, encounterConfig, enemySampleCount);
 
     // Instant party analysis (no loading delay) for PartyEstimateCard
     const partyAnalysis: PartyAnalysis | null = useMemo(() => {
@@ -257,6 +258,8 @@ export function SimulationConfigPanel({
                 <EnemyEstimateCard
                     snapshot={estimateSnapshot?.enemy ?? null}
                     isLoading={false}
+                    selectedSampleCount={enemySampleCount}
+                    onSampleCountChange={setEnemySampleCount}
                 />
             </section>
 

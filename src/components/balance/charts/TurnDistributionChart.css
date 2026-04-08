@@ -104,6 +104,21 @@
     font-style: italic;
 }
 
+/* ── Detailed Stats Row (shown above histogram) ──────────────── */
+
+.tdc-detailed-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    padding-bottom: 0.5rem;
+}
+
+.tdc-detailed-stats strong {
+    color: hsl(var(--foreground));
+}
+
 /* ── Legend Overrides ────────────────────────────────────────────── */
 
 .tdc-chart .recharts-legend-item-text {

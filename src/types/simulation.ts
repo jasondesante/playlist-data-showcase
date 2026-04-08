@@ -591,16 +591,16 @@ export interface SimulationEstimateSnapshot {
         };
     };
 
-    /** Enemy statistics from preview generation + formula parsing */
+    /** Enemy statistics from multi-sample preview generation + formula parsing */
     enemy: {
         /** Number of enemies in the encounter */
         count: number;
-        /** Average HP per enemy */
-        perEnemyHP: number;
-        /** Average armor class per enemy */
-        perEnemyAC: number;
-        /** Estimated damage per round per enemy */
-        perEnemyEstDPR: number;
+        /** HP per enemy — min/avg/max across generated samples */
+        perEnemyHP: { min: number; avg: number; max: number };
+        /** Armor class per enemy — min/avg/max across generated samples */
+        perEnemyAC: { min: number; avg: number; max: number };
+        /** Estimated damage per round per enemy — min/avg/max across generated samples */
+        perEnemyEstDPR: { min: number; avg: number; max: number };
         /** Total adjusted XP for the encounter (accounts for enemy count multiplier) */
         totalAdjustedXP: number;
         /** Challenge rating of the enemy template */
@@ -609,6 +609,8 @@ export interface SimulationEstimateSnapshot {
         archetype: string;
         /** Rarity tier (e.g. 'common', 'uncommon') */
         rarity: string;
+        /** Number of enemy samples rolled to compute the ranges */
+        sampleCount: number;
     };
 
     /** Derived difficulty prediction */

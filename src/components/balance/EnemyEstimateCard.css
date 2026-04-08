@@ -69,6 +69,18 @@
     text-transform: capitalize;
 }
 
+.eec-sample-select {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground) / 0.7);
+    background: transparent;
+    border: 1px solid hsl(var(--border) / 0.4);
+    border-radius: 4px;
+    padding: 0 2px;
+    cursor: pointer;
+    margin-left: auto;
+}
+
 /* ─── Stat Pills ────────────────────────────────────────────────────── */
 
 .eec-stats-row {

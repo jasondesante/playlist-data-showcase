@@ -15,7 +15,10 @@
       "Bash(ls /Users/jasondesante/playlist-data-engine/src/core/generation/../utils/hash*)",
       "Bash(npx vite:*)",
       "Read(//Users/jasondesante/playlist-data-engine/**)",
-      "Bash(npx jest:*)"
+      "Bash(npx jest:*)",
+      "Bash(ls /Users/jasondesante/playlist-data-engine/dist/index.*)",
+      "Bash(node -e \"console.log\\(JSON.parse\\(require\\(''fs''\\).readFileSync\\(''/Users/jasondesante/playlist-data-engine/package.json'',''utf8''\\)\\).main\\)\")",
+      "Bash(node -e \":*)"
     ],
     "deny": [],
     "ask": []

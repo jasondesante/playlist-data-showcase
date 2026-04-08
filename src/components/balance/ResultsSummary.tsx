@@ -122,7 +122,7 @@ function ResultsSummaryComponent({
         {
             icon: <Heart size={14} />,
             label: 'HP Remaining',
-            value: formatPercent(summary.averagePlayerHPPercentRemaining),
+            value: `${summary.averagePlayerHPPercentRemaining.toFixed(1)}%`,
             tooltip: 'Average HP percentage remaining on surviving players at combat end',
         },
         {

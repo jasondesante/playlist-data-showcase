@@ -68,9 +68,9 @@
 
 .bsi-score-center {
     position: absolute;
-    bottom: 0;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -97,7 +97,6 @@
     color: var(--bsi-score-color, hsl(var(--muted-foreground)));
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    margin-top: 0.15rem;
     opacity: 0.85;
 }
 

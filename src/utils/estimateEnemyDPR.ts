@@ -26,11 +26,17 @@ export function estimateEnemyDPR(enemy: CharacterSheet): number {
     for (const weapon of weapons) {
         if (!weapon.equipped) continue;
 
-        const damageFormula = weapon.damage?.dice;
+        // Enemy generator puts damage_dice at top level (cast as any),
+        // while EnhancedInventoryItem uses damage?.dice. Check both.
+        // Prefer the full damage string (includes modifier like "d8 + 3")
+        // over the bare dice string (just "d8").
+        const damageFormula = (weapon as any).damage ?? weapon.damage?.dice ?? (weapon as any).damage_dice;
         if (!damageFormula) continue;
 
         try {
-            const avgDamage = ai.averageDamageFromFormula(damageFormula);
+            // Normalize bare dice like "d8" to "1d8" and strip spaces
+            const normalized = damageFormula.replace(/\s/g, '').replace(/^d(\d+)/, '1d$1');
+            const avgDamage = ai.averageDamageFromFormula(normalized);
             if (avgDamage > bestWeaponDPR) {
                 bestWeaponDPR = avgDamage;
             }
@@ -54,7 +60,9 @@ export function estimateEnemyDPR(enemy: CharacterSheet): number {
         if (!damageFormula) continue;
 
         try {
-            let avgDamage = ai.averageDamageFromFormula(damageFormula);
+            // Normalize bare dice like "d8" to "1d8" and strip spaces
+            const normalized = damageFormula.replace(/\s/g, '').replace(/^d(\d+)/, '1d$1');
+            let avgDamage = ai.averageDamageFromFormula(normalized);
 
             // AoE spells are less reliable per-target
             if (tags.includes('aoe')) {
@@ -92,4 +100,14 @@ export function estimateEnemyDPR(enemy: CharacterSheet): number {
     const baseDPR = Math.max(bestWeaponDPR, bestSpellDPR);
 
     return baseDPR * attackCount;
+}
+
+/**
+ * Format a stat range as "min–avg–max" (integers by default, or with decimals).
+ * If min === max, just shows the single value.
+ */
+export function formatRange(range: { min: number; avg: number; max: number }, decimals = 0): string {
+    const f = (n: number) => decimals > 0 ? n.toFixed(decimals) : Math.round(n).toString();
+    if (range.min === range.max) return f(range.avg);
+    return `${f(range.min)}\u2013${f(range.avg)}\u2013${f(range.max)}`;
 }

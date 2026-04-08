@@ -3,7 +3,8 @@
  *
  * Compact inline card displaying pre-simulation enemy estimates.
  * Shows per-enemy stats (HP, AC, DPR, CR, XP) as horizontal pills
- * and total adjusted XP with encounter multiplier info.
+ * with min/avg/max ranges across generated samples, and total adjusted
+ * XP with encounter multiplier info.
  *
  * Rendered below EncounterConfigForm inside SimulationConfigPanel.
  */
@@ -11,13 +12,20 @@
 import type { SimulationEstimateSnapshot } from '@/types/simulation';
 import { getXPForCR, getEncounterMultiplier } from 'playlist-data-engine';
 import { Heart, Shield, Crosshair, Star, Skull, TrendingUp, AlertCircle } from 'lucide-react';
+import { formatRange } from '@/utils/estimateEnemyDPR';
 import './EnemyEstimateCard.css';
+
+const SAMPLE_OPTIONS = [10, 100, 1000] as const;
 
 export interface EnemyEstimateCardProps {
     /** Enemy portion of the estimate snapshot (null if preview failed) */
     snapshot: SimulationEstimateSnapshot['enemy'] | null;
     /** Whether estimate is still computing */
     isLoading: boolean;
+    /** Current sample count */
+    selectedSampleCount: number;
+    /** Callback to change sample count */
+    onSampleCountChange: (count: number) => void;
 }
 
 /**
@@ -43,11 +51,13 @@ function Skeleton() {
 }
 
 /**
- * Compact enemy estimate card with stat pills and adjusted XP display.
+ * Compact enemy estimate card with stat pills (showing ranges) and adjusted XP display.
  */
 export function EnemyEstimateCard({
     snapshot,
     isLoading,
+    selectedSampleCount,
+    onSampleCountChange,
 }: EnemyEstimateCardProps) {
     if (isLoading) {
         return <Skeleton />;
@@ -68,7 +78,7 @@ export function EnemyEstimateCard({
         );
     }
 
-    const { count, perEnemyHP, perEnemyAC, perEnemyEstDPR, totalAdjustedXP, enemyCR, archetype, rarity } = snapshot;
+    const { count, perEnemyHP, perEnemyAC, perEnemyEstDPR, totalAdjustedXP, enemyCR, archetype, rarity, sampleCount } = snapshot;
 
     const multiplier = getEncounterMultiplier(count);
     const xpPerEnemy = getXPForCR(enemyCR);
@@ -87,24 +97,34 @@ export function EnemyEstimateCard({
                 <span className="eec-meta">
                     {rarity} {archetype}
                 </span>
+                <select
+                    className="eec-sample-select"
+                    value={selectedSampleCount}
+                    onChange={(e) => onSampleCountChange(Number(e.target.value))}
+                    title="Number of enemy generations to sample for stat ranges"
+                >
+                    {SAMPLE_OPTIONS.map((n) => (
+                        <option key={n} value={n}>{n} samples</option>
+                    ))}
+                </select>
             </div>
 
             {/* Stat Pills */}
             <div className="eec-stats-row">
-                <div className="eec-pill" data-tooltip="Hit Points per enemy — total health before defeat">
+                <div className="eec-pill" data-tooltip="Hit Points per enemy — min / avg / max across generated samples">
                     <Heart size={11} />
                     <span className="eec-pill-label">HP</span>
-                    <span className="eec-pill-value">{Math.round(perEnemyHP)}</span>
+                    <span className="eec-pill-value">{formatRange(perEnemyHP)}</span>
                 </div>
-                <div className="eec-pill" data-tooltip="Armor Class per enemy — higher = harder for players to hit">
+                <div className="eec-pill" data-tooltip="Armor Class per enemy — min / avg / max across generated samples">
                     <Shield size={11} />
                     <span className="eec-pill-label">AC</span>
-                    <span className="eec-pill-value">{perEnemyAC}</span>
+                    <span className="eec-pill-value">{formatRange(perEnemyAC)}</span>
                 </div>
-                <div className="eec-pill" data-tooltip="Damage Per Round — estimated average damage this enemy deals per round">
+                <div className="eec-pill" data-tooltip="Damage Per Round — estimated min / avg / max across generated samples">
                     <Crosshair size={11} />
                     <span className="eec-pill-label">DPR</span>
-                    <span className="eec-pill-value">~{perEnemyEstDPR.toFixed(1)}</span>
+                    <span className="eec-pill-value">~{formatRange(perEnemyEstDPR, 1)}</span>
                 </div>
                 <div className="eec-pill" data-tooltip="Challenge Rating — D&D 5e measure of enemy power (1 = 1st-level party, scales with level)">
                     <Star size={11} />

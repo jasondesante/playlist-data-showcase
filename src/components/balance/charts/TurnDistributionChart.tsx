@@ -337,7 +337,7 @@ function TurnDistributionChartComponent({
             title="Turn Distribution"
             subtitle={subtitle}
             className={`tdc-chart ${className}`}
-            minHeight={260}
+            minHeight={hasDetailedLogs ? 120 : 260}
             maxHeight={380}
         >
             {!hasDetailedLogs ? (
@@ -363,6 +363,26 @@ function TurnDistributionChartComponent({
                     </p>
                 </div>
             ) : (
+                <div className="tdc-summary">
+                    <div className="tdc-summary-row">
+                        <span className="tdc-summary-label">Average Rounds</span>
+                        <span className="tdc-summary-value">{mean.toFixed(1)}</span>
+                    </div>
+                    <div className="tdc-summary-row">
+                        <span className="tdc-summary-label">Median Rounds</span>
+                        <span className="tdc-summary-value">{median.toFixed(1)}</span>
+                    </div>
+                    <div className="tdc-summary-row">
+                        <span className="tdc-summary-label">Avg on Win</span>
+                        <span className="tdc-summary-value">{results.summary.averageRoundsOnWin.toFixed(1)}</span>
+                    </div>
+                    <div className="tdc-summary-row">
+                        <span className="tdc-summary-label">Avg on Loss</span>
+                        <span className="tdc-summary-value">{results.summary.averageRoundsOnLoss.toFixed(1)}</span>
+                    </div>
+                </div>
+            )}
+            {hasDetailedLogs && (
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={buckets}

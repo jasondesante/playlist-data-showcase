@@ -1,5 +1,5 @@
 import { useState, useCallback, memo } from 'react';
-import type { SimulationResults, BalanceReport } from 'playlist-data-engine';
+import type { SimulationResults, BalanceReport, CharacterSheet } from 'playlist-data-engine';
 import { ResultsSummary } from './ResultsSummary';
 import { PerCombatantMetrics } from './PerCombatantMetrics';
 import { BalanceRecommendations } from './BalanceRecommendations';
@@ -40,6 +40,8 @@ export interface BalanceDashboardProps {
     estimateSnapshot?: SimulationEstimateSnapshot | null;
     /** Post-simulation validation (for export) */
     validation?: EstimateValidation | null;
+    /** Actual enemies used in the simulation (null when regenerate per run is on) */
+    simEnemies?: CharacterSheet[] | null;
     /** Additional CSS class */
     className?: string;
 }
@@ -81,6 +83,7 @@ function BalanceDashboardComponent({
     onApplySuggestion,
     estimateSnapshot,
     validation,
+    simEnemies,
     className = '',
 }: BalanceDashboardProps) {
     const hasCombatantMetrics = results.perCombatantMetrics.size > 0;
@@ -126,6 +129,39 @@ function BalanceDashboardComponent({
                     validation={validation}
                 />
             </div>
+
+            {/* ─── Enemies Fought ── */}
+            {simEnemies && simEnemies.length > 0 && (
+                <div className="bd-enemies-section">
+                    <div className="bd-enemies-header">Enemies Fought</div>
+                    <div className="bd-enemies-list">
+                        {simEnemies.map((enemy, i) => {
+                            const weapons = enemy.equipment?.weapons?.filter(w => w.equipped) ?? [];
+                            const mainWeapon = weapons[0];
+                            const spells = enemy.combat_spells ?? [];
+                            return (
+                                <div key={i} className="bd-enemy-card">
+                                    <div className="bd-enemy-name">
+                                        {enemy.name}
+                                        {enemy.cr != null && <span className="bd-enemy-cr">CR {enemy.cr}</span>}
+                                        {enemy.level != null && <span className="bd-enemy-level">Lv {enemy.level}</span>}
+                                    </div>
+                                    <div className="bd-enemy-stats">
+                                        <span>HP {enemy.hp.max}</span>
+                                        <span>AC {enemy.armor_class}</span>
+                                        {mainWeapon && <span>{mainWeapon.name ?? mainWeapon.damage?.dice ?? 'Weapon'}</span>}
+                                    </div>
+                                    {spells.length > 0 && (
+                                        <div className="bd-enemy-spells">
+                                            Spells: {spells.map(s => s.name).join(', ')}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* ─── Win Rate Chart (full width) ─── */}
             <WinRateChart results={results} className="bd-chart-full" />

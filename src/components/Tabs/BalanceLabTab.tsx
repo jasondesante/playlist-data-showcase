@@ -62,6 +62,9 @@ export function BalanceLabTab() {
     // Store pre-simulation estimate snapshot for post-run validation (Phase 3)
     const [estimateSnapshot, setEstimateSnapshot] = useState<SimulationEstimateSnapshot | null>(null);
 
+    // Store the actual enemies used in the simulation (for display in results)
+    const [simEnemies, setSimEnemies] = useState<CharacterSheet[] | null>(null);
+
     // Listen for config transfers from CombatSimulatorTab
     useEffect(() => {
         const unsubscribe = onBalanceConfigTransfer((payload) => {
@@ -140,6 +143,7 @@ export function BalanceLabTab() {
     const handleReset = useCallback(() => {
         resetSimulation();
         setEstimateSnapshot(null);
+        setSimEnemies(null);
         logger.info('BalanceLab', 'Simulation reset');
     }, [resetSimulation]);
 
@@ -159,6 +163,7 @@ export function BalanceLabTab() {
         (party: CharacterSheet[], enemies: CharacterSheet[], config: SimulationConfig, snapshot: SimulationEstimateSnapshot | null) => {
             setEstimateSnapshot(snapshot);
             setHistoryEstimateSnapshot(snapshot);
+            setSimEnemies(enemies);
             startSimulation(party, enemies, config);
         },
         [startSimulation, setHistoryEstimateSnapshot],
@@ -341,6 +346,7 @@ export function BalanceLabTab() {
                                         onApplySuggestion={handleApplyRecommendation}
                                         estimateSnapshot={estimateSnapshot}
                                         validation={validation}
+                                        simEnemies={simEnemies}
                                     />
                                     <EstimateValidationPanel
                                         validation={validation}

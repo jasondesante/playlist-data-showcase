@@ -11,8 +11,9 @@
 
 import { useState, useCallback, memo } from 'react';
 import { Download, Copy, FileJson, FileSpreadsheet } from 'lucide-react';
-import type { SimulationResults, BalanceReport } from 'playlist-data-engine';
+import type { SimulationResults, BalanceReport, CharacterSheet } from 'playlist-data-engine';
 import type { EncounterConfigUI, SimulationEstimateSnapshot, EstimateValidation } from '@/types/simulation';
+import { formatRange } from '@/utils/estimateEnemyDPR';
 import { showToast } from '@/components/ui/Toast';
 import './SimulationExportButton.css';
 
@@ -27,6 +28,8 @@ export interface SimulationExportButtonProps {
     estimateSnapshot?: SimulationEstimateSnapshot | null;
     /** Post-simulation validation results */
     validation?: EstimateValidation | null;
+    /** Actual enemies used in the simulation */
+    simEnemies?: CharacterSheet[] | null;
     className?: string;
 }
 
@@ -148,6 +151,7 @@ function buildClipboardSummary(
     encounterConfig?: EncounterConfigUI | null,
     estimateSnapshot?: SimulationEstimateSnapshot | null,
     validation?: EstimateValidation | null,
+    simEnemies?: CharacterSheet[] | null,
 ): string {
     const s = results.summary;
     const lines: string[] = [];
@@ -194,12 +198,28 @@ function buildClipboardSummary(
     }
     lines.push('');
 
+    // ─── Actual Enemy Details ──────────────────────────────────────────
+    if (simEnemies && simEnemies.length > 0) {
+        lines.push('── Enemy Details ──');
+        for (const enemy of simEnemies) {
+            const weapons = enemy.equipment?.weapons?.filter(w => w.equipped) ?? [];
+            const mainWeapon = weapons[0];
+            const spells = enemy.combat_spells ?? [];
+            lines.push(`  ${enemy.name}  (CR ${enemy.cr ?? '?'}  Lv ${enemy.level ?? '?'})`);
+            lines.push(`    HP: ${enemy.hp.max}  |  AC: ${enemy.armor_class}${mainWeapon ? `  |  Weapon: ${mainWeapon.name ?? mainWeapon.damage?.dice ?? 'unknown'}` : ''}`);
+            if (spells.length > 0) {
+                lines.push(`    Spells: ${spells.map(s => s.name).join(', ')}`);
+            }
+        }
+        lines.push('');
+    }
+
     // ─── Pre-Simulation Estimates ──────────────────────────────────────
     if (estimateSnapshot) {
         const est = estimateSnapshot;
         lines.push('── Pre-Simulation Estimates ──');
         lines.push(`  Party — Lv ${est.party.averageLevel.toFixed(1)}, AC ${est.party.averageAC.toFixed(1)}, HP ${Math.round(est.party.averageHP)}, DPR ~${est.party.estimatedDPR.toFixed(1)}`);
-        lines.push(`  Enemy — HP ${Math.round(est.enemy.perEnemyHP)}, AC ${est.enemy.perEnemyAC}, DPR ~${est.enemy.perEnemyEstDPR.toFixed(1)}, CR ${est.enemy.enemyCR}`);
+        lines.push(`  Enemy — HP ${formatRange(est.enemy.perEnemyHP)}, AC ${formatRange(est.enemy.perEnemyAC)}, DPR ~${formatRange(est.enemy.perEnemyEstDPR, 1)}, CR ${est.enemy.enemyCR} (${est.enemy.sampleCount} samples)`);
         lines.push(`  Predicted: ${est.prediction.predictedDifficulty} (XP ratio ${est.prediction.xpRatio.toFixed(2)}×, est. win rate ${(est.prediction.predictedWinRate * 100).toFixed(0)}%)`);
         lines.push('');
     }
@@ -221,7 +241,8 @@ function buildClipboardSummary(
         if (balanceReport.recommendations.length > 0) {
             lines.push('  Recommendations:');
             for (const rec of balanceReport.recommendations) {
-                lines.push(`    - ${rec.description} (${rec.expectedImpact})`);
+                lines.push(`    - ${rec.description}`);
+                lines.push(`      Impact: ${rec.expectedImpact}  |  Confidence: ${(rec.confidence * 100).toFixed(0)}%`);
             }
         }
         lines.push('');
@@ -229,20 +250,36 @@ function buildClipboardSummary(
 
     // ─── Estimate Validation ───────────────────────────────────────────
     if (validation) {
-        lines.push('── Estimate vs Actual ──');
+        lines.push('── Estimate Validation ──');
+
+        // Comparison table
         for (const cmp of validation.comparisons) {
             const sign = cmp.delta >= 0 ? '+' : '';
-            const marker = cmp.isSignificant ? ' ⚠' : '';
-            lines.push(`  ${cmp.label}: est ${cmp.estimated.toFixed(1)} → actual ${cmp.actual.toFixed(1)}  (${sign}${cmp.delta.toFixed(1)}, ${sign}${cmp.deltaPercent.toFixed(0)}%)${marker}`);
+            const isWinRate = cmp.label === 'Win Rate';
+            const estStr = isWinRate ? `${cmp.estimated.toFixed(0)}%` : cmp.estimated.toFixed(1);
+            const actStr = isWinRate ? `${cmp.actual.toFixed(0)}%` : cmp.actual.toFixed(1);
+            const status = cmp.isSignificant ? '⚠ SIGNIFICANT' : 'OK';
+            lines.push(`  ${cmp.label}:  est ${estStr}  →  actual ${actStr}  (delta ${sign}${cmp.delta.toFixed(1)}, ${sign}${cmp.deltaPercent.toFixed(0)}%)  [${status}]`);
         }
+
+        // Difficulty row
         const dc = validation.difficultyComparison;
-        lines.push(`  Difficulty: predicted ${dc.predicted} → actual ${dc.actual} (${dc.tierDelta > 0 ? '+' : ''}${dc.tierDelta} tier${dc.tierDelta !== 1 ? 's' : ''})`);
+        const tierSign = dc.tierDelta > 0 ? '+' : '';
+        const dirLabel = dc.tierDelta > 0 ? 'harder' : dc.tierDelta < 0 ? 'easier' : 'exact';
+        lines.push(`  Difficulty:  predicted ${dc.predicted}  →  actual ${dc.actual}  (${tierSign}${dc.tierDelta} tier${dc.tierDelta !== 1 ? 's' : ''}, ${dirLabel})`);
+
+        // Suggestions
         if (validation.suggestions.length > 0) {
+            lines.push('');
             lines.push('  Suggestions:');
             for (const sug of validation.suggestions) {
-                lines.push(`    [${sug.severity}] ${sug.message}`);
-                lines.push(`      → ${sug.suggestedFix}`);
+                lines.push(`    [${sug.severity.toUpperCase()}] ${sug.message}`);
+                lines.push(`      File: ${sug.codeReference.file}`);
+                lines.push(`      Function: ${sug.codeReference.function}${sug.codeReference.line != null ? ` (line ${sug.codeReference.line})` : ''}`);
+                lines.push(`      Fix: ${sug.suggestedFix}`);
             }
+        } else {
+            lines.push('  All estimates within acceptable range.');
         }
         lines.push('');
     }
@@ -310,6 +347,7 @@ export function SimulationExportButton({
     encounterConfig,
     estimateSnapshot,
     validation,
+    simEnemies,
     className = '',
 }: SimulationExportButtonProps) {
     const [activeMenu, setActiveMenu] = useState(false);
@@ -347,7 +385,7 @@ export function SimulationExportButton({
 
     const handleCopySummary = useCallback(async () => {
         try {
-            const text = buildClipboardSummary(results, balanceReport, encounterConfig, estimateSnapshot, validation);
+            const text = buildClipboardSummary(results, balanceReport, encounterConfig, estimateSnapshot, validation, simEnemies);
             await navigator.clipboard.writeText(text);
             showToast('Copied summary to clipboard', 'success', 1500);
         } catch (err) {
@@ -355,7 +393,7 @@ export function SimulationExportButton({
             showToast('Failed to copy to clipboard', 'error', 2000);
         }
         closeMenu();
-    }, [results, balanceReport, encounterConfig, estimateSnapshot, validation, closeMenu]);
+    }, [results, balanceReport, encounterConfig, estimateSnapshot, validation, simEnemies, closeMenu]);
 
     return (
         <div className={`seb-container ${className}`}>

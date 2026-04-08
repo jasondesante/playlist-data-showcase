@@ -214,7 +214,7 @@ export function useEstimateValidation(
             // Enemy DPR: estimated from estimateEnemyDPR vs actual from enemy combatants
             const actualEnemyDPR = averageField(enemyMetrics, 'averageDamagePerRound');
             comparisons.push(
-                makeComparison('Enemy DPR', estimateSnapshot.enemy.perEnemyEstDPR, actualEnemyDPR),
+                makeComparison('Enemy DPR', estimateSnapshot.enemy.perEnemyEstDPR.avg, actualEnemyDPR),
             );
 
             // ── Difficulty comparison ──
@@ -271,7 +271,7 @@ export function useEstimateValidation(
                 if (enemyDPRComp.deltaPercent < 0) {
                     // Overestimate
                     suggestions.push(
-                        suggestEnemyDPROverestimate(enemyDPRComp, estimateSnapshot.enemy.perEnemyAC),
+                        suggestEnemyDPROverestimate(enemyDPRComp, estimateSnapshot.enemy.perEnemyAC.avg),
                     );
                 } else {
                     // Underestimate

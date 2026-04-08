@@ -17,6 +17,85 @@
     width: 100%;
 }
 
+/* ─── Enemies Fought Section ─────────────────────────────────────────── */
+
+.bd-enemies-section {
+    padding: 0.625rem 0.75rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    background-color: hsl(var(--card) / 0.5);
+}
+
+.bd-enemies-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+}
+
+.bd-enemies-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.bd-enemy-card {
+    flex: 1 1 200px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid hsl(var(--border) / 0.6);
+    border-radius: calc(var(--radius, 0.5rem) * 0.6);
+    background-color: hsl(var(--background));
+}
+
+.bd-enemy-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.bd-enemy-cr {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+}
+
+.bd-enemy-level {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+}
+
+.bd-enemy-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.2rem;
+    font-size: 0.72rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.bd-enemy-stats span {
+    white-space: nowrap;
+}
+
+.bd-enemy-spells {
+    font-size: 0.68rem;
+    color: hsl(var(--muted-foreground) / 0.7);
+    margin-top: 0.15rem;
+    font-style: italic;
+}
+
+@media (max-width: 640px) {
+    .bd-enemies-list {
+        flex-direction: column;
+    }
+}
+
 /* ─── Full-Width Charts ─────────────────────────────────────────────── */
 
 .bd-chart-full {

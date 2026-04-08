@@ -268,9 +268,11 @@ function BalanceScoreIndicatorComponent({
                 <div className="bsi-score-center">
                     <span className="bsi-score-value">{score}</span>
                     <span className="bsi-score-max">/100</span>
-                    <span className="bsi-score-label">{scoreLabel}</span>
                 </div>
             </div>
+
+            {/* Score label below the gauge */}
+            <span className="bsi-score-label">{scoreLabel}</span>
 
             {/* Info tooltip trigger */}
             <div className="bsi-info-row">

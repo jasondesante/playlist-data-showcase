@@ -36,19 +36,32 @@ function derivePredictedDifficulty(
 }
 
 /**
+ * Compute min/avg/max across an array of numbers.
+ */
+function statRange(values: number[]): { min: number; avg: number; max: number } {
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    return { min, avg, max };
+}
+
+/**
  * React hook for computing pre-simulation estimates from party + encounter config.
  *
- * Pure computation hook (no side effects). Returns a SimulationEstimateSnapshot
- * with party stats, enemy preview stats, and derived difficulty predictions.
+ * Generates multiple enemy samples to show the spread of possible enemy stats
+ * (min/avg/max for HP, AC, DPR). Returns a SimulationEstimateSnapshot with party
+ * stats, enemy preview ranges, and derived difficulty predictions.
  * All computation is memoized with useMemo.
  *
  * @param selectedParty - Array of selected party member CharacterSheets
  * @param encounterConfig - Current encounter configuration
+ * @param sampleCount - Number of enemy samples to generate (default 10)
  * @returns SimulationEstimateSnapshot if both party and config are valid, null otherwise
  */
 export function useEstimateSnapshot(
     selectedParty: CharacterSheet[],
-    encounterConfig: EncounterConfigUI
+    encounterConfig: EncounterConfigUI,
+    sampleCount: number = 10
 ): SimulationEstimateSnapshot | null {
     const { generateEncounterByCR } = useEnemyGenerator();
 
@@ -79,34 +92,43 @@ export function useEstimateSnapshot(
             return null;
         }
 
-        // --- Generate a preview enemy ---
-        // Use generateEncounterByCR which correctly targets the requested CR,
-        // unlike generate() which ignores CR and produces template-default stats.
-        // Seed is derived deterministically from config fields (not random)
-        // so the same config always produces the same preview enemy.
-        const previewSeed = `preview-${cr}-${archetype}-${rarity}-${category}`;
-        const previewEnemies = generateEncounterByCR({
-            seed: previewSeed,
-            count: 1,
-            targetCR: cr,
-            category: category as import('playlist-data-engine').EnemyCategory,
-            archetype: archetype as import('playlist-data-engine').EnemyArchetype,
-            baseRarity: rarity as import('playlist-data-engine').EnemyRarity,
-            difficultyMultiplier,
-            statLevels,
-        });
+        // --- Generate multiple enemy samples for range estimation ---
+        // Roll ENEMY_SAMPLE_COUNT enemies with different seeds to show the spread
+        // of possible stats at this CR/archetype/rarity/category combination.
+        const sampleHPs: number[] = [];
+        const sampleACs: number[] = [];
+        const sampleDPRs: number[] = [];
 
-        if (!previewEnemies || previewEnemies.length === 0) {
-            logger.warn('BalanceLab', 'Failed to generate preview enemy');
+        for (let i = 0; i < sampleCount; i++) {
+            const sampleSeed = `preview-${cr}-${archetype}-${rarity}-${category}-${i}`;
+            const sampleEnemies = generateEncounterByCR({
+                seed: sampleSeed,
+                count: 1,
+                targetCR: cr,
+                category: category as import('playlist-data-engine').EnemyCategory,
+                archetype: archetype as import('playlist-data-engine').EnemyArchetype,
+                baseRarity: rarity as import('playlist-data-engine').EnemyRarity,
+                difficultyMultiplier,
+                statLevels,
+            });
+
+            if (sampleEnemies && sampleEnemies.length > 0) {
+                const enemy = sampleEnemies[0];
+                sampleHPs.push(enemy.hp.max);
+                sampleACs.push(enemy.armor_class);
+                sampleDPRs.push(estimateEnemyDPR(enemy));
+            }
+        }
+
+        if (sampleHPs.length === 0) {
+            logger.warn('BalanceLab', 'Failed to generate any preview enemy samples');
             return null;
         }
 
-        const previewEnemy = previewEnemies[0];
-
-        // --- Enemy stats ---
-        const perEnemyHP = previewEnemy.hp.max;
-        const perEnemyAC = previewEnemy.armor_class;
-        const perEnemyEstDPR = estimateEnemyDPR(previewEnemy);
+        // --- Enemy stats (ranges) ---
+        const perEnemyHP = statRange(sampleHPs);
+        const perEnemyAC = statRange(sampleACs);
+        const perEnemyEstDPR = statRange(sampleDPRs);
         const enemyCR = cr; // Use the requested CR, not the generated enemy's CR
 
         // --- Adjusted XP calculation ---
@@ -152,6 +174,7 @@ export function useEstimateSnapshot(
                 enemyCR,
                 archetype,
                 rarity,
+                sampleCount: sampleHPs.length,
             },
             prediction: {
                 predictedDifficulty,
@@ -170,5 +193,5 @@ export function useEstimateSnapshot(
         });
 
         return snapshot;
-    }, [selectedParty, generateEncounterByCR, cr, enemyCount, category, archetype, rarity, difficultyMultiplier, statLevels]);
+    }, [selectedParty, generateEncounterByCR, cr, enemyCount, category, archetype, rarity, difficultyMultiplier, statLevels, sampleCount]);
 }
