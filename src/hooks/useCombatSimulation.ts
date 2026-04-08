@@ -3,6 +3,7 @@ import {
     CombatSimulator,
     type SimulationConfig,
     type SimulationResults,
+    type CombatantSimulationMetrics,
     type CharacterSheet,
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
@@ -11,6 +12,22 @@ import { simulationCache } from '@/utils/simulationCache';
 import type {
     SimulationWorkerOutgoingMessage,
 } from '@/workers/simulationWorker';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * The simulation worker serializes perCombatantMetrics as a plain object
+ * (via Object.fromEntries) for postMessage. This helper converts it back
+ * to a Map so downstream code can use .size, .get(), .forEach(), etc.
+ */
+function ensureMetricsMap(results: SimulationResults): void {
+    const m = results.perCombatantMetrics;
+    if (m && !(m instanceof Map)) {
+        (results as any).perCombatantMetrics = new Map(
+            Object.entries(m) as [string, CombatantSimulationMetrics][]
+        );
+    }
+}
 
 // ─── Hook State Types ────────────────────────────────────────────────────────
 
@@ -308,6 +325,7 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
             if (cached) {
                 setStatus('completed');
                 setResults(cached.results);
+                ensureMetricsMap(cached.results);
                 setDurationMs(cached.durationMs);
                 setFromCache(true);
                 setError(null);
@@ -449,6 +467,8 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
     const handleWorkerComplete = useCallback(
         (simResults: SimulationResults, workerDurationMs: number, requestedRuns: number) => {
             abortControllerRef.current = null;
+
+            ensureMetricsMap(simResults);
 
             if (simResults.wasCancelled) {
                 setStatus('cancelled');
@@ -596,6 +616,7 @@ export const useCombatSimulation = (): UseCombatSimulationReturn => {
         (loadedResults: SimulationResults, loadedDurationMs: number) => {
             setStatus('completed');
             setResults(loadedResults);
+            ensureMetricsMap(loadedResults);
             setDurationMs(loadedDurationMs);
             setFromCache(false);
             setError(null);

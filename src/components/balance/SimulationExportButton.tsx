@@ -104,7 +104,7 @@ function buildCsvExport(results: SimulationResults): string {
 
     // Per-combatant metrics section
     lines.push('=== Per-Combatant Metrics ===');
-    lines.push('Name,Side,Avg DPR,Median DPR,Avg Damage Dealt,Avg Damage Taken,Avg Healing,Avg Rounds Survived,Survival Rate,Kill Rate,Crit Rate,Most Used Action');
+    lines.push('Name,Side,Avg DPR,Median DPR,Avg Damage Dealt,Avg Damage Taken,Avg Healing,Avg Rounds Survived,Survival Rate,Kill Rate,Crit Rate,Hit Rate,Hits Per Run,Misses Per Run,Most Used Action');
     for (const [, m] of results.perCombatantMetrics) {
         lines.push([
             `"${m.name}"`,
@@ -118,6 +118,9 @@ function buildCsvExport(results: SimulationResults): string {
             (m.survivalRate * 100).toFixed(1) + '%',
             (m.killRate * 100).toFixed(1) + '%',
             (m.criticalHitRate * 100).toFixed(1) + '%',
+            (m.averageHitRate * 100).toFixed(1) + '%',
+            m.averageHitsPerRun.toFixed(2),
+            m.averageMissesPerRun.toFixed(2),
             `"${m.mostUsedAction}"`,
         ].join(','));
     }
@@ -296,6 +299,7 @@ function buildClipboardSummary(
             for (const m of players) {
                 lines.push(
                     `    ${m.name}: DPR ${m.averageDamagePerRound.toFixed(1)}, ` +
+                    `Hit Rate ${(m.averageHitRate * 100).toFixed(0)}% (${m.averageHitsPerRun.toFixed(1)} hits / ${m.averageMissesPerRun.toFixed(1)} misses per run), ` +
                     `DMG dealt ${m.averageTotalDamageDealt.toFixed(0)}, ` +
                     `DMG taken ${m.averageTotalDamageTaken.toFixed(0)}, ` +
                     `Survival ${(m.survivalRate * 100).toFixed(0)}%, ` +
@@ -309,6 +313,7 @@ function buildClipboardSummary(
             for (const m of enemies) {
                 lines.push(
                     `    ${m.name}: DPR ${m.averageDamagePerRound.toFixed(1)}, ` +
+                    `Hit Rate ${(m.averageHitRate * 100).toFixed(0)}% (${m.averageHitsPerRun.toFixed(1)} hits / ${m.averageMissesPerRun.toFixed(1)} misses per run), ` +
                     `DMG dealt ${m.averageTotalDamageDealt.toFixed(0)}, ` +
                     `DMG taken ${m.averageTotalDamageTaken.toFixed(0)}, ` +
                     `Survival ${(m.survivalRate * 100).toFixed(0)}%, ` +

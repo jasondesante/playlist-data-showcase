@@ -29,6 +29,7 @@ type SortKey =
     | 'name'
     | 'side'
     | 'dpr'
+    | 'hitRate'
     | 'damageTaken'
     | 'survivalRate'
     | 'killRate'
@@ -83,6 +84,15 @@ const COLUMNS: ColumnDef[] = [
         tooltip: 'Average Damage Per Round — total damage dealt divided by rounds survived',
         getValue: (m) => m.averageDamagePerRound,
         format: (m) => m.averageDamagePerRound.toFixed(1),
+        higherIsBetter: true,
+    },
+    {
+        key: 'hitRate',
+        label: 'Hit Rate',
+        icon: <Crosshair size={12} />,
+        tooltip: 'Percentage of attack/spell attempts that hit (hits / (hits + misses))',
+        getValue: (m) => m.averageHitRate,
+        format: (m) => `${(m.averageHitRate * 100).toFixed(0)}%`,
         higherIsBetter: true,
     },
     {

@@ -11,6 +11,7 @@ import {
     TurnDistributionChart,
     SurvivalRateChart,
     DamageDistributionChart,
+    HitMissChart,
 } from './charts';
 import type { EncounterConfigUI, SimulationEstimateSnapshot, EstimateValidation } from '@/types/simulation';
 import './BalanceDashboard.css';
@@ -166,6 +167,11 @@ function BalanceDashboardComponent({
             {/* ─── Win Rate Chart (full width) ─── */}
             <WinRateChart results={results} className="bd-chart-full" />
 
+            {/* ─── HP Remaining Distribution (full width) ─── */}
+            {hasCombatantMetrics && (
+                <HPRemainingDistribution metrics={results.perCombatantMetrics} className="bd-chart-full" />
+            )}
+
             {/* ─── Middle: Two-Column Chart Grid ─── */}
             <div className="bd-charts-grid">
                 {/* Left Column */}
@@ -189,7 +195,11 @@ function BalanceDashboardComponent({
                 {/* Right Column */}
                 <div className="bd-chart-column">
                     {hasCombatantMetrics && (
-                        <HPRemainingDistribution metrics={results.perCombatantMetrics} />
+                        <HitMissChart
+                            metrics={results.perCombatantMetrics}
+                            highlightedCombatantId={highlightedCombatantId}
+                            onCombatantClick={handleCombatantClick}
+                        />
                     )}
                     <TurnDistributionChart
                         results={results}

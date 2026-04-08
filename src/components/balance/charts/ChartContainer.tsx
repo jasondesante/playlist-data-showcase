@@ -22,6 +22,8 @@ interface ChartContainerProps {
   maxHeight?: number;
   /** Additional CSS class */
   className?: string;
+  /** Mouse event handler (passed to outer container for tooltip positioning) */
+  onMouseMove?: React.MouseEventHandler<HTMLDivElement>;
 }
 
 const ChartContainer: React.FC<ChartContainerProps> = ({
@@ -31,11 +33,13 @@ const ChartContainer: React.FC<ChartContainerProps> = ({
   minHeight = 280,
   maxHeight = 400,
   className = '',
+  onMouseMove,
 }) => {
   return (
     <div
       className={`chart-container ${className}`}
       style={{ '--chart-min-h': `${minHeight}px`, '--chart-max-h': `${maxHeight}px` } as React.CSSProperties}
+      onMouseMove={onMouseMove}
     >
       {(title || subtitle) && (
         <div className="chart-container-header">
@@ -43,7 +47,7 @@ const ChartContainer: React.FC<ChartContainerProps> = ({
           {subtitle && <p className="chart-container-subtitle">{subtitle}</p>}
         </div>
       )}
-      <div className="chart-container-body">
+      <div className="chart-container-body" style={{ height: `${minHeight}px` }}>
         {children}
       </div>
     </div>
