@@ -173,6 +173,42 @@ function suggestDifficultyTierOff(
     };
 }
 
+function suggestHighMissRate(
+    side: 'player' | 'enemy',
+    metrics: CombatantSimulationMetrics[],
+): EstimateSuggestion | null {
+    if (metrics.length === 0) return null;
+    const avgHitRate = averageField(metrics, 'averageHitRate');
+    const missRate = 1 - avgHitRate;
+    const label = side === 'player' ? 'Player' : 'Enemy';
+
+    if (missRate >= 0.50) {
+        return {
+            severity: 'error',
+            metric: `${label} Hit Rate`,
+            message: `${label} miss rate is critically high at ${(missRate * 100).toFixed(0)}% (hit rate ${(avgHitRate * 100).toFixed(0)}%)`,
+            codeReference: {
+                file: 'playlist-data-engine/src/core/combat/AttackResolver.ts',
+                function: 'resolveAttack()',
+            },
+            suggestedFix: `${label} attack bonus may be too low relative to target AC, or AC values are inflated. Check stat scaling, equipment, and proficiency bonuses for the ${side.toLowerCase()} side.`,
+        };
+    }
+    if (missRate >= 0.25) {
+        return {
+            severity: 'warning',
+            metric: `${label} Hit Rate`,
+            message: `${label} miss rate is elevated at ${(missRate * 100).toFixed(0)}% (hit rate ${(avgHitRate * 100).toFixed(0)}%)`,
+            codeReference: {
+                file: 'playlist-data-engine/src/core/combat/AttackResolver.ts',
+                function: 'resolveAttack()',
+            },
+            suggestedFix: `Review ${side.toLowerCase()} attack bonuses vs target AC. Consider whether ability scores, proficiency, or magic weapons need adjustment.`,
+        };
+    }
+    return null;
+}
+
 // ─── Main hook ──────────────────────────────────────────────────────────────
 
 /**
@@ -287,6 +323,13 @@ export function useEstimateValidation(
                     suggestDifficultyTierOff(difficultyComparison, estimateSnapshot.prediction.xpRatio),
                 );
             }
+
+            // Hit/miss rate suggestions
+            const playerMissSuggestion = suggestHighMissRate('player', playerMetrics);
+            if (playerMissSuggestion) suggestions.push(playerMissSuggestion);
+
+            const enemyMissSuggestion = suggestHighMissRate('enemy', enemyMetrics);
+            if (enemyMissSuggestion) suggestions.push(enemyMissSuggestion);
 
             logger.debug('BalanceLab', 'Estimate validation computed', {
                 significantComparisons: comparisons.filter((c) => c.isSignificant).length,

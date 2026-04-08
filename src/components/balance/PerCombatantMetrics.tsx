@@ -29,6 +29,7 @@ type SortKey =
     | 'name'
     | 'side'
     | 'dpr'
+    | 'avgDmgDealt'
     | 'hitRate'
     | 'damageTaken'
     | 'survivalRate'
@@ -84,6 +85,15 @@ const COLUMNS: ColumnDef[] = [
         tooltip: 'Average Damage Per Round — total damage dealt divided by rounds survived',
         getValue: (m) => m.averageDamagePerRound,
         format: (m) => m.averageDamagePerRound.toFixed(1),
+        higherIsBetter: true,
+    },
+    {
+        key: 'avgDmgDealt',
+        label: 'Avg DMG/Run',
+        icon: <Swords size={12} />,
+        tooltip: 'Average total damage dealt per simulation run',
+        getValue: (m) => m.averageTotalDamageDealt,
+        format: (m) => m.averageTotalDamageDealt.toFixed(0),
         higherIsBetter: true,
     },
     {

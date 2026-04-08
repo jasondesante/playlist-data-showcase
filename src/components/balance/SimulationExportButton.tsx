@@ -68,6 +68,8 @@ function buildJsonExport(results: SimulationResults, balanceReport: BalanceRepor
             averagePlayerHPPercentRemaining: results.summary.averagePlayerHPPercentRemaining,
             totalPlayerDeaths: results.summary.totalPlayerDeaths,
             totalEnemyDeaths: results.summary.totalEnemyDeaths,
+            averageRoundsPerPlayerDeath: results.summary.averageRoundsPerPlayerDeath,
+            averageRoundsPerEnemyDeath: results.summary.averageRoundsPerEnemyDeath,
         },
         balanceReport: balanceReport ? {
             intendedDifficulty: balanceReport.intendedDifficulty,
@@ -91,7 +93,7 @@ function buildCsvExport(results: SimulationResults): string {
 
     // Summary section
     lines.push('=== Simulation Summary ===');
-    lines.push('Total Runs,Player Wins,Enemy Wins,Draws,Player Win Rate,Avg Rounds,Median Rounds,Avg Rounds On Win,Avg Rounds On Loss,Avg HP Remaining %,Player Deaths,Enemy Deaths');
+    lines.push('Total Runs,Player Wins,Enemy Wins,Draws,Player Win Rate,Avg Rounds,Median Rounds,Avg Rounds On Win,Avg Rounds On Loss,Avg HP Remaining %,Player Deaths,Avg Rounds Per Player Death,Enemy Deaths,Avg Rounds Per Enemy Death');
     const s = results.summary;
     lines.push([
         s.totalRuns,
@@ -105,14 +107,16 @@ function buildCsvExport(results: SimulationResults): string {
         s.averageRoundsOnLoss.toFixed(2),
         s.averagePlayerHPPercentRemaining.toFixed(1),
         s.totalPlayerDeaths,
+        s.averageRoundsPerPlayerDeath.toFixed(2),
         s.totalEnemyDeaths,
+        s.averageRoundsPerEnemyDeath.toFixed(2),
     ].join(','));
 
     lines.push('');
 
     // Per-combatant metrics section
     lines.push('=== Per-Combatant Metrics ===');
-    lines.push('Name,Side,Avg DPR,Median DPR,Avg Damage Dealt,Avg Damage Taken,Avg Healing,Avg Rounds Survived,Survival Rate,Kill Rate,Crit Rate,Hit Rate,Hits Per Run,Misses Per Run,Most Used Action');
+    lines.push('Name,Side,Avg DPR,Median DPR,Avg Damage Dealt,Avg Damage Taken,Avg Healing,Avg Rounds Survived,Survival Rate,Kill Rate,Crit Rate,Hit Rate,Hits Per Run,Misses Per Run,Avg Spell Slots Used,Most Used Action');
     for (const [, m] of results.perCombatantMetrics) {
         lines.push([
             `"${m.name}"`,
@@ -129,6 +133,7 @@ function buildCsvExport(results: SimulationResults): string {
             (m.averageHitRate * 100).toFixed(1) + '%',
             m.averageHitsPerRun.toFixed(2),
             m.averageMissesPerRun.toFixed(2),
+            m.averageSpellSlotsUsed.toFixed(2),
             `"${m.mostUsedAction}"`,
         ].join(','));
     }
@@ -281,7 +286,7 @@ function buildClipboardSummary(
     lines.push(`  Win Rate: ${(s.playerWinRate * 100).toFixed(1)}%  (${s.playerWins}W / ${s.enemyWins}L / ${s.draws}D of ${s.totalRuns} runs)`);
     lines.push(`  Rounds: avg ${s.averageRounds.toFixed(1)}, median ${s.medianRounds.toFixed(1)} (on win: ${s.averageRoundsOnWin.toFixed(1)}, on loss: ${s.averageRoundsOnLoss.toFixed(1)})`);
     lines.push(`  HP Remaining: ${s.averagePlayerHPPercentRemaining.toFixed(1)}%`);
-    lines.push(`  Deaths — Players: ${s.totalPlayerDeaths}  |  Enemies: ${s.totalEnemyDeaths}`);
+    lines.push(`  Deaths — Players: ${s.totalPlayerDeaths} (avg round ${s.averageRoundsPerPlayerDeath.toFixed(1)})  |  Enemies: ${s.totalEnemyDeaths} (avg round ${s.averageRoundsPerEnemyDeath.toFixed(1)})`);
     lines.push('');
 
     // ─── Balance Report ────────────────────────────────────────────────
@@ -347,13 +352,14 @@ function buildClipboardSummary(
             lines.push('  Players:');
             for (const m of players) {
                 lines.push(
-                    `    ${m.name}: DPR ${m.averageDamagePerRound.toFixed(1)}, ` +
+                    `    ${m.name}: DPR ${m.averageDamagePerRound.toFixed(1)} (median ${m.medianDamagePerRound.toFixed(1)}), ` +
                     `Hit Rate ${(m.averageHitRate * 100).toFixed(0)}% (${m.averageHitsPerRun.toFixed(1)} hits / ${m.averageMissesPerRun.toFixed(1)} misses per run), ` +
-                    `DMG dealt ${m.averageTotalDamageDealt.toFixed(0)}, ` +
-                    `DMG taken ${m.averageTotalDamageTaken.toFixed(0)}, ` +
-                    `Survival ${(m.survivalRate * 100).toFixed(0)}%, ` +
-                    `Kill Rate ${(m.killRate * 100).toFixed(0)}%, ` +
-                    `Crit ${(m.criticalHitRate * 100).toFixed(1)}%`,
+                    `DMG dealt ${m.averageTotalDamageDealt.toFixed(0)}, DMG taken ${m.averageTotalDamageTaken.toFixed(0)}, ` +
+                    `Healing ${m.averageHealingDone.toFixed(0)}, ` +
+                    `Rounds survived ${m.averageRoundsSurvived.toFixed(1)}, ` +
+                    `Survival ${(m.survivalRate * 100).toFixed(0)}%, Kill Rate ${(m.killRate * 100).toFixed(0)}%, ` +
+                    `Crit ${(m.criticalHitRate * 100).toFixed(1)}%, Spell Slots ${m.averageSpellSlotsUsed.toFixed(1)}/run, ` +
+                    `Most used: ${m.mostUsedAction}`,
                 );
             }
         }
@@ -361,12 +367,11 @@ function buildClipboardSummary(
             lines.push('  Enemies:');
             for (const m of enemies) {
                 lines.push(
-                    `    ${m.name}: DPR ${m.averageDamagePerRound.toFixed(1)}, ` +
+                    `    ${m.name}: DPR ${m.averageDamagePerRound.toFixed(1)} (median ${m.medianDamagePerRound.toFixed(1)}), ` +
                     `Hit Rate ${(m.averageHitRate * 100).toFixed(0)}% (${m.averageHitsPerRun.toFixed(1)} hits / ${m.averageMissesPerRun.toFixed(1)} misses per run), ` +
-                    `DMG dealt ${m.averageTotalDamageDealt.toFixed(0)}, ` +
-                    `DMG taken ${m.averageTotalDamageTaken.toFixed(0)}, ` +
-                    `Survival ${(m.survivalRate * 100).toFixed(0)}%, ` +
-                    `Kill Rate ${(m.killRate * 100).toFixed(0)}%`,
+                    `DMG dealt ${m.averageTotalDamageDealt.toFixed(0)}, DMG taken ${m.averageTotalDamageTaken.toFixed(0)}, ` +
+                    `Rounds survived ${m.averageRoundsSurvived.toFixed(1)}, ` +
+                    `Survival ${(m.survivalRate * 100).toFixed(0)}%, Kill Rate ${(m.killRate * 100).toFixed(0)}%`,
                 );
             }
         }

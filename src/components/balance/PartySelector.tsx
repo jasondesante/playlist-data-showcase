@@ -89,8 +89,10 @@ export function PartySelector({
                                         {char.hp.max}
                                     </span>
                                 </div>
-                                <span className="party-card-class">{char.class}</span>
-                                {isSelected && <span className="party-card-check">Selected</span>}
+                                <div className="party-card-footer">
+                                    <span className="party-card-class">{char.class}</span>
+                                    {isSelected && <span className="party-card-check">Selected</span>}
+                                </div>
                             </button>
                         );
                     })}

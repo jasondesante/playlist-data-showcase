@@ -54,10 +54,10 @@ function getScoreExplanation(report: BalanceReport): string {
             explanation += `The "${actualDifficulty}" outcome matches the intended "${intendedDifficulty}" difficulty.`;
             break;
         case 'underpowered':
-            explanation += `Encounter is easier than intended (${actualDifficulty} vs "${intendedDifficulty}"). The party wins more often than expected.`;
+            explanation += `Encounter is easier than predicted (${actualDifficulty} vs "${intendedDifficulty}"). The party wins more often than expected.`;
             break;
         case 'overpowered':
-            explanation += `Encounter is harder than intended (${actualDifficulty} vs "${intendedDifficulty}"). The party struggles more than expected.`;
+            explanation += `Encounter is harder than predicted (${actualDifficulty} vs "${intendedDifficulty}"). The party struggles more than expected.`;
             break;
     }
 
@@ -277,7 +277,7 @@ function BalanceScoreIndicatorComponent({
             {/* Info tooltip trigger */}
             <div className="bsi-info-row">
                 <span className="bsi-variance-badge" data-variance={report.difficultyVariance}>
-                    {report.difficultyVariance}
+                    {report.difficultyVariance === 'underpowered' ? 'Easier Than Predicted' : report.difficultyVariance === 'overpowered' ? 'Harder Than Predicted' : 'As Predicted'}
                 </span>
                 <button
                     className="bsi-info-btn"

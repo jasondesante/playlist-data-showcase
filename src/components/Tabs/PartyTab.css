@@ -909,6 +909,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  padding-top: 1.5rem;
 }
 
 .party-card-avatar {
@@ -2176,6 +2177,11 @@
   opacity: 0.8;
   /* Don't change border color on hover for unselected cards */
   border-color: var(--color-border);
+}
+
+/* When selection mode is active, push XP label right to avoid checkbox overlap */
+.party-card-selection-mode .party-xp-label {
+  padding-left: 1.75rem;
 }
 
 /* When selection mode is active, adjust the game mode badge position */

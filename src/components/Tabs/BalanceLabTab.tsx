@@ -135,20 +135,30 @@ export function BalanceLabTab() {
     const resultsContentId = `bl-results-content-${resultsId}`;
     const historyContentId = `bl-history-content-${historyId}`;
 
-    // Balance analysis from results — uses win-rate-derived difficulty as intended
+    // Balance analysis from results — uses predicted difficulty as intended target
     const balanceReport = useMemo(() => {
         if (!results || results.summary.totalRuns === 0) return null;
         try {
             const validator = new BalanceValidator();
-            const { difficulty } = getWinRateDifficulty(results.summary.playerWinRate);
-            return validator.analyze(results, difficulty as EncounterDifficulty);
+            // Use the predicted difficulty from the pre-simulation estimate as the
+            // intended target, so the score measures how close the result is to
+            // what was expected — not to what actually happened (circular).
+            // Fall back to win-rate-derived difficulty if no estimate exists.
+            let intended: EncounterDifficulty;
+            if (estimateSnapshot) {
+                intended = estimateSnapshot.prediction.predictedDifficulty;
+            } else {
+                const { difficulty } = getWinRateDifficulty(results.summary.playerWinRate);
+                intended = difficulty as EncounterDifficulty;
+            }
+            return validator.analyze(results, intended);
         } catch (err) {
             logger.warn('BalanceLab', 'Failed to generate balance report', {
                 error: err instanceof Error ? err.message : 'Unknown error',
             });
             return null;
         }
-    }, [results]);
+    }, [results, estimateSnapshot]);
 
     // Estimate validation: compare pre-simulation estimates against actual results
     const validation = useEstimateValidation(estimateSnapshot, results);
