@@ -44,6 +44,13 @@ function mapToObject<K extends string, V>(map: Map<K, V>): Record<string, V> {
     return obj;
 }
 
+type EnemyGenRecord = { name: string; count: number; hpRange: { min: number; max: number; avg: number }; acRange: { min: number; max: number; avg: number }; crRange: { min: number; max: number; avg: number } };
+
+/** Extract enemy generation stats from results (present when enemyRegeneration was enabled) */
+function getEnemyGenStats(results: SimulationResults): EnemyGenRecord[] | undefined {
+    return (results as any).enemyGenerationStats;
+}
+
 /** Build the full JSON export payload */
 function buildJsonExport(results: SimulationResults, balanceReport: BalanceReport | null): object {
     return {
@@ -73,6 +80,7 @@ function buildJsonExport(results: SimulationResults, balanceReport: BalanceRepor
         party: results.party,
         encounter: results.encounter,
         perCombatantMetrics: mapToObject(results.perCombatantMetrics),
+        enemyGenerationStats: (results as any).enemyGenerationStats ?? null,
         wasCancelled: results.wasCancelled,
     };
 }
@@ -126,6 +134,31 @@ function buildCsvExport(results: SimulationResults): string {
     }
 
     lines.push('');
+
+    // Enemy generation stats (when enemies were regenerated each run)
+    const enemyGenStats = getEnemyGenStats(results);
+    if (enemyGenStats && enemyGenStats.length > 0) {
+        lines.push('=== Enemy Generation Stats (regenerated each run) ===');
+        lines.push('Name,Occurrences,% of Runs,HP Min,HP Avg,HP Max,AC Min,AC Avg,AC Max,CR Min,CR Avg,CR Max');
+        const totalRuns = results.summary.totalRuns || 1;
+        for (const e of enemyGenStats) {
+            lines.push([
+                `"${e.name}"`,
+                e.count,
+                (e.count / totalRuns * 100).toFixed(1) + '%',
+                e.hpRange.min,
+                e.hpRange.avg.toFixed(0),
+                e.hpRange.max,
+                e.acRange.min,
+                e.acRange.avg.toFixed(0),
+                e.acRange.max,
+                e.crRange.min,
+                e.crRange.avg.toFixed(1),
+                e.crRange.max,
+            ].join(','));
+        }
+        lines.push('');
+    }
 
     // Party config
     lines.push('=== Party ===');
@@ -213,6 +246,22 @@ function buildClipboardSummary(
             if (spells.length > 0) {
                 lines.push(`    Spells: ${spells.map(s => s.name).join(', ')}`);
             }
+        }
+        lines.push('');
+    }
+
+    // ─── Enemy Generation Stats ───────────────────────────────────────
+    const enemyGenStats = getEnemyGenStats(results);
+    if (enemyGenStats && enemyGenStats.length > 0) {
+        lines.push('── Enemy Spectrum (regenerated each run) ──');
+        const totalRuns = results.summary.totalRuns || 1;
+        for (const e of enemyGenStats) {
+            lines.push(
+                `  ${e.name}: ${e.count} runs (${(e.count / totalRuns * 100).toFixed(0)}%), ` +
+                `HP ${e.hpRange.min}–${e.hpRange.avg.toFixed(0)}–${e.hpRange.max}, ` +
+                `AC ${e.acRange.min}–${e.acRange.avg.toFixed(0)}–${e.acRange.max}, ` +
+                `CR ${e.crRange.min}–${e.crRange.avg.toFixed(1)}–${e.crRange.max}`,
+            );
         }
         lines.push('');
     }

@@ -64,6 +64,28 @@ export function BalanceLabTab() {
 
     // Store the actual enemies used in the simulation (for display in results)
     const [simEnemies, setSimEnemies] = useState<CharacterSheet[] | null>(null);
+    // Whether enemies were regenerated each run (affects how enemies are displayed)
+    const [enemyRegenPerRun, setEnemyRegenPerRun] = useState(false);
+
+    // Locked enemies: user-pinned enemies that persist across simulation runs
+    const [lockedEnemies, setLockedEnemies] = useState<CharacterSheet[]>([]);
+
+    const handleToggleLockEnemy = useCallback((index: number) => {
+        setLockedEnemies(prev => {
+            const isLocked = prev.some(e => e === simEnemies?.[index]);
+            if (isLocked) {
+                return prev.filter(e => e !== simEnemies?.[index]);
+            }
+            if (simEnemies?.[index]) {
+                return [...prev, simEnemies[index]];
+            }
+            return prev;
+        });
+    }, [simEnemies]);
+
+    const handleClearLockedEnemies = useCallback(() => {
+        setLockedEnemies([]);
+    }, []);
 
     // Listen for config transfers from CombatSimulatorTab
     useEffect(() => {
@@ -164,6 +186,7 @@ export function BalanceLabTab() {
             setEstimateSnapshot(snapshot);
             setHistoryEstimateSnapshot(snapshot);
             setSimEnemies(enemies);
+            setEnemyRegenPerRun(!!config.enemyRegeneration);
             startSimulation(party, enemies, config);
         },
         [startSimulation, setHistoryEstimateSnapshot],
@@ -246,6 +269,8 @@ export function BalanceLabTab() {
                                 onRunSimulation={handleRunSimulation}
                                 onCancel={cancelSimulation}
                                 onReset={resetSimulation}
+                                lockedEnemies={lockedEnemies}
+                                onClearLockedEnemies={handleClearLockedEnemies}
                             />
                         </div>
                     )}
@@ -347,6 +372,9 @@ export function BalanceLabTab() {
                                         estimateSnapshot={estimateSnapshot}
                                         validation={validation}
                                         simEnemies={simEnemies}
+                                        enemyRegenPerRun={enemyRegenPerRun}
+                                        lockedEnemies={lockedEnemies}
+                                        onToggleLockEnemy={handleToggleLockEnemy}
                                     />
                                     <EstimateValidationPanel
                                         validation={validation}

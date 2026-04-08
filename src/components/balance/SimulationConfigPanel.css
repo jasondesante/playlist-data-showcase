@@ -126,6 +126,38 @@
     opacity: 0.5;
 }
 
+/* ─── Locked Enemies Indicator ─────────────── */
+
+.scp-locked-enemies {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.72rem;
+    color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.08);
+    border: 1px solid hsl(var(--primary) / 0.25);
+    border-radius: calc(var(--radius, 0.5rem) * 0.6);
+}
+
+.scp-locked-clear-btn {
+    margin-left: auto;
+    padding: 0.1rem 0.4rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border: 1px solid hsl(var(--border) / 0.6);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.scp-locked-clear-btn:hover {
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--foreground));
+}
+
 /* ─── Error ─────────────────────────────────── */
 
 .scp-error {

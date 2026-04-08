@@ -337,8 +337,8 @@ function TurnDistributionChartComponent({
             title="Turn Distribution"
             subtitle={subtitle}
             className={`tdc-chart ${className}`}
-            minHeight={hasDetailedLogs ? 120 : 260}
-            maxHeight={380}
+            minHeight={hasDetailedLogs ? 420 : 260}
+            maxHeight={520}
         >
             {!hasDetailedLogs ? (
                 <div className="tdc-summary">
@@ -383,7 +383,7 @@ function TurnDistributionChartComponent({
                 </div>
             )}
             {hasDetailedLogs && (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={280}>
                     <BarChart
                         data={buckets}
                         margin={{ top: 20, right: 20, bottom: 8, left: 8 }}
@@ -451,8 +451,10 @@ function TurnDistributionChartComponent({
                         <Legend
                             formatter={legendFormatter}
                             wrapperStyle={{
-                                paddingTop: 8,
+                                marginTop: 12,
+                                paddingTop: 0,
                                 borderTop: `1px solid ${CHART_COLORS.neutral}`,
+                                bottom: 0
                             }}
                         />
 

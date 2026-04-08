@@ -36,13 +36,14 @@
   line-height: 1.4;
 }
 
-/* Body — constrains chart height */
+/* Body — provides space for chart content */
 .chart-container-body {
   padding: 0.5rem;
   min-height: var(--chart-min-h, 280px);
-  max-height: var(--chart-max-h, 400px);
   width: 100%;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 /* recharts responsive container fills the body */
@@ -80,6 +81,5 @@
   .chart-container-body {
     padding: 0.25rem;
     min-height: calc(var(--chart-min-h, 280px) * 0.75);
-    max-height: calc(var(--chart-max-h, 400px) * 0.85);
   }
 }

@@ -40,7 +40,7 @@ import { SimulationProgressBar } from './SimulationProgressBar';
 import { PartyEstimateCard } from './PartyEstimateCard';
 import { EnemyEstimateCard } from './EnemyEstimateCard';
 import { PredictedDifficultyBar } from './PredictedDifficultyBar';
-import { Play, X, AlertCircle } from 'lucide-react';
+import { Play, X, AlertCircle, Lock } from 'lucide-react';
 import { logger } from '@/utils/logger';
 import './SimulationConfigPanel.css';
 
@@ -60,6 +60,10 @@ interface SimulationConfigPanelProps {
     onRunSimulation: (party: CharacterSheet[], enemies: CharacterSheet[], config: SimulationConfig, estimateSnapshot: SimulationEstimateSnapshot | null) => void;
     onCancel: () => void;
     onReset: () => void;
+    /** Pre-locked enemies to reuse instead of generating new ones */
+    lockedEnemies?: CharacterSheet[];
+    /** Clear all locked enemies */
+    onClearLockedEnemies?: () => void;
 }
 
 export function SimulationConfigPanel({
@@ -73,6 +77,8 @@ export function SimulationConfigPanel({
     onRunSimulation,
     onCancel,
     onReset,
+    lockedEnemies = [],
+    onClearLockedEnemies,
 }: SimulationConfigPanelProps) {
     // ─── State ──────────────────────────────────────────────────────────
     const [selectedPartySeeds, setSelectedPartySeeds] = useState<string[]>([]);
@@ -145,19 +151,30 @@ export function SimulationConfigPanel({
             return;
         }
 
-        // Generate enemies from encounter config using CR-based generation
-        // which correctly targets the requested CR (unlike generate() which ignores it).
-        const seed = encounterConfig.seed || `balance-${Date.now()}`;
-        const generatedEnemies = generateEncounterByCR({
-            seed,
-            count: encounterConfig.enemyCount,
-            targetCR: encounterConfig.cr,
-            category: encounterConfig.category as EnemyCategory,
-            archetype: encounterConfig.archetype as EnemyArchetype,
-            baseRarity: encounterConfig.rarity as EnemyRarity,
-            difficultyMultiplier: encounterConfig.difficultyMultiplier,
-            statLevels: encounterConfig.statLevels,
-        });
+        // Use locked enemies if available, otherwise generate new ones
+        let generatedEnemies: CharacterSheet[];
+        let seed: string;
+
+        if (lockedEnemies.length > 0) {
+            generatedEnemies = lockedEnemies;
+            seed = settings.baseSeed || `balance-${Date.now()}`;
+            logger.info('BalanceLab', 'Using locked enemies', {
+                enemyCount: generatedEnemies.length,
+                enemies: generatedEnemies.map(e => e.name),
+            });
+        } else {
+            seed = encounterConfig.seed || `balance-${Date.now()}`;
+            generatedEnemies = generateEncounterByCR({
+                seed,
+                count: encounterConfig.enemyCount,
+                targetCR: encounterConfig.cr,
+                category: encounterConfig.category as EnemyCategory,
+                archetype: encounterConfig.archetype as EnemyArchetype,
+                baseRarity: encounterConfig.rarity as EnemyRarity,
+                difficultyMultiplier: encounterConfig.difficultyMultiplier,
+                statLevels: encounterConfig.statLevels,
+            });
+        }
 
         if (generatedEnemies.length === 0) {
             setValidationError('Failed to generate enemies. Check configuration.');
@@ -201,11 +218,12 @@ export function SimulationConfigPanel({
             playerStyle: settings.playerStyle,
             enemyStyle: settings.enemyStyle,
             regenerateEnemiesPerRun: settings.regenerateEnemiesPerRun,
+            usingLockedEnemies: lockedEnemies.length > 0,
             encounterConfig,
         });
 
         onRunSimulation(selectedParty, generatedEnemies, simConfig.config, estimateSnapshot);
-    }, [selectedParty, encounterConfig, settings, generateEncounterByCR, onRunSimulation, estimateSnapshot]);
+    }, [selectedParty, encounterConfig, settings, generateEncounterByCR, onRunSimulation, estimateSnapshot, lockedEnemies]);
 
     const handleReset = useCallback(() => {
         onReset();
@@ -347,6 +365,24 @@ export function SimulationConfigPanel({
                     <span className="scp-toggle-label">Regenerate enemies each run</span>
                     <span className="scp-toggle-hint">(captures variance in enemy generation across runs)</span>
                 </label>
+
+                {/* Locked Enemies Indicator */}
+                {lockedEnemies.length > 0 && (
+                    <div className="scp-locked-enemies">
+                        <Lock size={12} />
+                        <span>{lockedEnemies.length} enemy{lockedEnemies.length > 1 ? 's' : ''} locked — will reuse instead of generating</span>
+                        {onClearLockedEnemies && (
+                            <button
+                                className="scp-locked-clear-btn"
+                                onClick={onClearLockedEnemies}
+                                disabled={isRunning}
+                                type="button"
+                            >
+                                Clear
+                            </button>
+                        )}
+                    </div>
+                )}
             </section>
 
             {/* Progress Bar (during simulation) */}

@@ -70,6 +70,116 @@
     color: hsl(var(--muted-foreground));
 }
 
+.bd-enemy-lock-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    padding: 0.15rem;
+    border: 1px solid hsl(var(--border) / 0.6);
+    border-radius: 4px;
+    background: none;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    opacity: 0.4;
+    transition: all 0.15s ease;
+}
+
+.bd-enemy-lock-btn:hover {
+    opacity: 1;
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+}
+
+.bd-enemy-lock-btn-active {
+    opacity: 1;
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.1);
+}
+
+.bd-enemy-card-locked {
+    border-color: hsl(var(--primary) / 0.5);
+}
+
+/* ─── Enemy Spectrum (regenerated per run) ────────────────────────── */
+
+.bd-enemies-spectrum .bd-enemies-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.bd-spectrum-summary {
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground));
+    margin-top: 0.3rem;
+}
+
+.bd-spectrum-sep {
+    margin: 0 0.3rem;
+    opacity: 0.4;
+}
+
+.bd-spectrum-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.bd-spectrum-slot {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid hsl(var(--border) / 0.6);
+    border-radius: calc(var(--radius, 0.5rem) * 0.6);
+    background-color: hsl(var(--background));
+}
+
+.bd-spectrum-slot-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.2rem;
+}
+
+.bd-spectrum-slot-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.bd-spectrum-slot-count {
+    font-size: 0.68rem;
+    font-family: ui-monospace, monospace;
+    color: hsl(var(--muted-foreground));
+}
+
+.bd-spectrum-slot-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.bd-spectrum-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+}
+
+.bd-spectrum-label {
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+    min-width: 60px;
+}
+
+.bd-spectrum-value {
+    color: hsl(var(--foreground));
+    font-family: ui-monospace, monospace;
+    font-weight: 500;
+    font-size: 0.7rem;
+}
+
 .bd-enemy-stats {
     display: flex;
     flex-wrap: wrap;
