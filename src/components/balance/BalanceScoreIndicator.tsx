@@ -232,16 +232,6 @@ function BalanceScoreIndicatorComponent({
                         strokeLinecap="round"
                     />
 
-                    {/* Gradient background (thin track showing full spectrum) */}
-                    <path
-                        d={bgArcPath}
-                        fill="none"
-                        stroke="url(#bsi-gradient)"
-                        strokeWidth={GAUGE_STROKE}
-                        strokeLinecap="round"
-                        opacity={0.3}
-                    />
-
                     {/* Filled arc to score position */}
                     {score > 0 && (
                         <path

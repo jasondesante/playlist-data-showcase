@@ -400,6 +400,14 @@
     color: hsl(142 76% 46%);
 }
 
+.slv-metrics-hits {
+    color: hsl(142 76% 46%);
+}
+
+.slv-metrics-misses {
+    color: hsl(0 84% 60%);
+}
+
 .slv-survived-yes {
     color: hsl(142 76% 46%);
     font-weight: 600;

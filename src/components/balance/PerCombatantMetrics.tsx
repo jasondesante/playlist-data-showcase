@@ -237,76 +237,35 @@ function PerCombatantMetricsComponent({
         return null;
     }
 
-    const renderSection = (
-        label: string,
-        data: CombatantSimulationMetrics[],
-    ) => {
-        if (data.length === 0) return null;
-
+    const renderRow = (m: CombatantSimulationMetrics) => {
+        const isHighlighted = highlightedCombatantId === m.combatantId;
         return (
-            <div className="pcm-section">
-                <div className={`pcm-section-label pcm-section-${label.toLowerCase()}`}>
-                    {label}
-                </div>
-                <div className="pcm-table-wrapper">
-                    <table className={`pcm-table ${isClickable ? 'pcm-table-clickable' : ''}`}>
-                        <thead>
-                            <tr>
-                                {COLUMNS.map((col) => (
-                                    <th
-                                        key={col.key}
-                                        className={`pcm-th pcm-th-${col.key}`}
-                                    >
-                                        <button
-                                            className="pcm-sort-btn"
-                                            onClick={() => handleSort(col.key)}
-                                            type="button"
-                                            title={`${col.tooltip} — click to sort`}
-                                        >
-                                            <span className="pcm-th-content">
-                                                {col.icon}
-                                                <span className="pcm-th-label">{col.label}</span>
-                                                {getSortIcon(col.key, sort)}
-                                            </span>
-                                        </button>
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.map((m) => {
-                                const isHighlighted = highlightedCombatantId === m.combatantId;
-                                return (
-                                    <tr
-                                        key={m.combatantId}
-                                        className={`pcm-row pcm-row-${m.side} ${isHighlighted ? 'pcm-row-highlighted' : ''} ${isClickable ? 'pcm-row-clickable' : ''}`}
-                                        onClick={isClickable ? () => handleRowClick(m.combatantId) : undefined}
-                                        tabIndex={isClickable ? 0 : undefined}
-                                        onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRowClick(m.combatantId); } } : undefined}
-                                        role={isClickable ? 'button' : undefined}
-                                        aria-pressed={isClickable ? isHighlighted : undefined}
-                                    >
-                                        {COLUMNS.map((col) => {
-                                            const isTop = topPerformers.get(col.key) === m.combatantId;
-                                            return (
-                                                <td
-                                                    key={col.key}
-                                                    className={`pcm-td pcm-td-${col.key} ${isTop ? 'pcm-top-performer' : ''}`}
-                                                    title={col.format(m)}
-                                                >
-                                                    {col.format(m)}
-                                                </td>
-                                            );
-                                        })}
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <tr
+                key={m.combatantId}
+                className={`pcm-row pcm-row-${m.side} ${isHighlighted ? 'pcm-row-highlighted' : ''} ${isClickable ? 'pcm-row-clickable' : ''}`}
+                onClick={isClickable ? () => handleRowClick(m.combatantId) : undefined}
+                tabIndex={isClickable ? 0 : undefined}
+                onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRowClick(m.combatantId); } } : undefined}
+                role={isClickable ? 'button' : undefined}
+                aria-pressed={isClickable ? isHighlighted : undefined}
+            >
+                {COLUMNS.map((col) => {
+                    const isTop = topPerformers.get(col.key) === m.combatantId;
+                    return (
+                        <td
+                            key={col.key}
+                            className={`pcm-td pcm-td-${col.key} ${isTop ? 'pcm-top-performer' : ''}`}
+                            title={col.format(m)}
+                        >
+                            {col.format(m)}
+                        </td>
+                    );
+                })}
+            </tr>
         );
     };
+
+    const colCount = COLUMNS.length;
 
     return (
         <div className={`pcm-per-combatant-metrics ${className}`}>
@@ -315,8 +274,57 @@ function PerCombatantMetricsComponent({
                 <span className="pcm-header-title">Per-Combatant Metrics</span>
                 <span className="pcm-header-count">{metricsArray.length} combatants</span>
             </div>
-            {renderSection('Players', players)}
-            {renderSection('Enemies', enemies)}
+            <div className="pcm-table-wrapper">
+                <table className={`pcm-table ${isClickable ? 'pcm-table-clickable' : ''}`}>
+                    <thead>
+                        <tr>
+                            {COLUMNS.map((col) => (
+                                <th
+                                    key={col.key}
+                                    className={`pcm-th pcm-th-${col.key}`}
+                                >
+                                    <button
+                                        className="pcm-sort-btn"
+                                        onClick={() => handleSort(col.key)}
+                                        type="button"
+                                        title={`${col.tooltip} — click to sort`}
+                                    >
+                                        <span className="pcm-th-content">
+                                            {col.icon}
+                                            <span className="pcm-th-label">{col.label}</span>
+                                            {getSortIcon(col.key, sort)}
+                                        </span>
+                                    </button>
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {players.length > 0 && (
+                            <>
+                                <tr className="pcm-section-row">
+                                    <td colSpan={colCount} className="pcm-section-cell pcm-section-cell-players">
+                                        <Swords size={12} className="pcm-section-icon" />
+                                        Players
+                                    </td>
+                                </tr>
+                                {players.map(renderRow)}
+                            </>
+                        )}
+                        {enemies.length > 0 && (
+                            <>
+                                <tr className="pcm-section-row">
+                                    <td colSpan={colCount} className="pcm-section-cell pcm-section-cell-enemies">
+                                        <Skull size={12} className="pcm-section-icon" />
+                                        Enemies
+                                    </td>
+                                </tr>
+                                {enemies.map(renderRow)}
+                            </>
+                        )}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }

@@ -291,6 +291,8 @@ const RunMetricsTable = memo(function RunMetricsTable({
                             <th>Dmg Dealt</th>
                             <th>Dmg Taken</th>
                             <th>Healing</th>
+                            <th>Hits</th>
+                            <th>Misses</th>
                             <th>Survived</th>
                             <th>Actions</th>
                         </tr>
@@ -312,6 +314,8 @@ const RunMetricsTable = memo(function RunMetricsTable({
                                 <td className="slv-metrics-damage">{m.totalDamageDealt}</td>
                                 <td className="slv-metrics-damage-taken">{m.totalDamageTaken}</td>
                                 <td className="slv-metrics-healing">{m.totalHealingDone}</td>
+                                <td className="slv-metrics-hits">{m.hits}</td>
+                                <td className="slv-metrics-misses">{m.misses}</td>
                                 <td className="slv-metrics-survived">
                                     {m.survived ? (
                                         <span className="slv-survived-yes">Yes</span>
@@ -562,6 +566,20 @@ export function SimulationLogViewer({ results, roundRangeFilter, onClearRoundFil
                                         .join(', ') || 'None'}
                                 </span>
                             </div>
+                            {metrics && (() => {
+                                let totalHits = 0;
+                                let totalMisses = 0;
+                                for (const m of metrics.values()) {
+                                    totalHits += m.hits;
+                                    totalMisses += m.misses;
+                                }
+                                return (
+                                    <div className="slv-summary-item">
+                                        <Target size={12} />
+                                        <span>{totalHits} hits / {totalMisses} misses</span>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     )}
 
