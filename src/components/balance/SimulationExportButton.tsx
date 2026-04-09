@@ -1,17 +1,19 @@
 /**
  * SimulationExportButton Component
  *
- * Provides export options for simulation results:
- * - Download as JSON (full structured data)
- * - Download as CSV (summary table for spreadsheets)
- * - Copy summary to clipboard
+ * Provides export options for simulation results with a 3-stage content toggle:
+ * - Analysis: summary, metrics, balance report, damage spreads
+ * - Logs: per-run combat action history (only when collected)
+ * - All: analysis + combat logs combined
+ *
+ * The toggle applies to all three export methods: JSON, CSV, and clipboard.
  *
  * (Task 8.4.2)
  */
 
-import { useState, useCallback, memo } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { Download, Copy, FileJson, FileSpreadsheet } from 'lucide-react';
-import { AttackResolver, type SimulationResults, type BalanceReport, type CharacterSheet, type AttackSimulationResult } from 'playlist-data-engine';
+import { AttackResolver, type SimulationResults, type BalanceReport, type CharacterSheet, type AttackSimulationResult, type SimulationRunDetail } from 'playlist-data-engine';
 import type { EncounterConfigUI, SimulationEstimateSnapshot, EstimateValidation } from '@/types/simulation';
 import { formatRange } from '@/utils/estimateEnemyDPR';
 import { showToast } from '@/components/ui/Toast';
@@ -560,6 +562,127 @@ function buildClipboardSummary(
     return lines.join('\n');
 }
 
+/** Format a single combat action as a readable log line */
+function formatLogAction(action: any, getSide: (id: string) => string): string {
+    const actorName = action.actor?.character?.name ?? action.actor?.name ?? 'Unknown';
+    const actorSide = getSide(action.actor?.id ?? '');
+    const tag = actorSide === 'player' ? '[P]' : '[E]';
+
+    if (action.type === 'attack' && action.result) {
+        const targetName = action.target?.character?.name ?? action.target?.name ?? '?';
+        const weaponName = action.attack?.name ?? 'attack';
+        const roll = action.result.roll;
+        const crit = action.result.isCritical ? ' CRIT!' : '';
+        const hit = action.result.success;
+        const dmg = action.result.damage;
+        const dmgType = action.result.damageType ? ` ${action.result.damageType}` : '';
+        const hp = action.result.targetHP;
+        const hpMax = action.target?.character?.hp?.max;
+
+        let line = `  ${tag} ${actorName} uses ${weaponName} on ${targetName}`;
+        if (roll !== undefined) line += ` (roll ${roll}${crit})`;
+        if (hit === false) line += ' — MISS';
+        else if (dmg !== undefined) line += ` — HIT for ${dmg}${dmgType} damage`;
+        if (hp !== undefined && hpMax !== undefined) line += ` → ${hp}/${hpMax} HP`;
+        return line;
+    }
+
+    if (action.type === 'spell' && action.result) {
+        const spellName = action.spell?.name ?? 'spell';
+        const desc = action.result.description ?? '';
+        const dmg = action.result.damage;
+        let line = `  ${tag} ${actorName} casts ${spellName}`;
+        if (dmg !== undefined && action.result.success) line += ` — ${dmg} damage`;
+        if (desc) line += ` (${desc})`;
+        return line;
+    }
+
+    if (action.type === 'legendaryAction' && action.result) {
+        const laName = action.legendaryAction?.name ?? 'legendary action';
+        const desc = action.result.description ?? '';
+        const dmg = action.result.damage;
+        let line = `  ${tag} ${actorName} uses ${laName}`;
+        if (dmg !== undefined && dmg > 0) line += ` — ${dmg} damage`;
+        if (desc) line += ` (${desc})`;
+        return line;
+    }
+
+    if (action.type === 'dodge') return `  ${tag} ${actorName} dodges`;
+    if (action.type === 'dash') return `  ${tag} ${actorName} dashes`;
+    if (action.type === 'hide') return `  ${tag} ${actorName} hides`;
+    if (action.type === 'flee') return `  ${tag} ${actorName} flees`;
+    if (action.type === 'useItem') return `  ${tag} ${actorName} uses an item`;
+    if (action.type === 'statusEffectTick') {
+        const desc = action.result?.description ?? 'status effect tick';
+        return `  ${tag} ${actorName} — ${desc}`;
+    }
+
+    return `  ${tag} ${actorName} — ${action.type}`;
+}
+
+/** Build a human-readable combat log text file from runDetails */
+function buildCombatLogExport(results: SimulationResults, runDetails: SimulationRunDetail[]): string {
+    const lines: string[] = [];
+
+    lines.push('═══ Combat Logs ═══');
+    lines.push(`Simulation: ${results.summary.totalRuns} runs | Seed: ${results.config.baseSeed || '(random)'}`);
+    lines.push(`Exported: ${new Date().toISOString()}`);
+    lines.push('');
+
+    // Build a side lookup from the combatants of the first run
+    const firstCombat = runDetails[0]?.combat;
+    const sideMap = new Map<string, 'player' | 'enemy'>();
+    if (firstCombat) {
+        // Players come first in the combatants array per engine convention
+        const partyCount = results.party.memberCount;
+        firstCombat.combatants.forEach((c: any, i: number) => {
+            sideMap.set(c.id, i < partyCount ? 'player' : 'enemy');
+        });
+    }
+    const getSide = (id: string) => sideMap.get(id) ?? 'unknown';
+
+    for (const run of runDetails) {
+        const { combat, result } = run;
+        const winner = result.winnerSide;
+        const rounds = result.roundsElapsed;
+        const winnerName = result.winner?.character?.name ?? winner ?? '?';
+
+        lines.push(`── Run ${run.runIndex + 1} (seed: ${run.seed}) ──`);
+        lines.push(`  Winner: ${winnerName} | Rounds: ${rounds} | Turns: ${result.totalTurns}`);
+        if (result.description) lines.push(`  ${result.description}`);
+        lines.push('');
+
+        // Group actions by round
+        const history = combat.history ?? [];
+        let currentRound = 0;
+        for (const action of history) {
+            // Detect round boundaries: roundNumber increments in CombatInstance
+            const actionRound = (action as any).roundNumber ?? 0;
+            if (actionRound > currentRound) {
+                currentRound = actionRound;
+                lines.push(`  --- Round ${currentRound} ---`);
+            }
+            lines.push(formatLogAction(action, getSide));
+        }
+
+        // Per-run combatant summary
+        if (run.metrics && run.metrics.size > 0) {
+            lines.push('');
+            lines.push('  Combatant Summary:');
+            for (const [, m] of run.metrics) {
+                lines.push(
+                    `    ${m.name}: ${m.totalDamageDealt} dealt, ${m.totalDamageTaken} taken, ` +
+                    `${m.hits} hits / ${m.misses} misses, ${m.criticalHits} crits`,
+                );
+            }
+        }
+
+        lines.push('');
+    }
+
+    return lines.join('\n');
+}
+
 /** Trigger a file download */
 function downloadFile(content: string, filename: string, mimeType: string): void {
     const blob = new Blob([content], { type: mimeType });
@@ -575,6 +698,14 @@ function downloadFile(content: string, filename: string, mimeType: string): void
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
+type ExportScope = 'analysis' | 'logs' | 'all';
+
+const SCOPE_OPTIONS: { value: ExportScope; label: string }[] = [
+    { value: 'analysis', label: 'Analysis' },
+    { value: 'logs', label: 'Logs' },
+    { value: 'all', label: 'All' },
+];
+
 export function SimulationExportButton({
     results,
     balanceReport,
@@ -586,41 +717,133 @@ export function SimulationExportButton({
     className = '',
 }: SimulationExportButtonProps) {
     const [activeMenu, setActiveMenu] = useState(false);
+    const [scope, setScope] = useState<ExportScope>('analysis');
 
     const closeMenu = useCallback(() => setActiveMenu(false), []);
 
+    const hasCombatLogs = results.runDetails !== undefined && results.runDetails.length > 0;
+
+    // When no combat logs exist, force analysis scope
+    const effectiveScope = hasCombatLogs ? scope : 'analysis';
+
     const handleExportJson = useCallback(() => {
         try {
-            const data = buildJsonExport(results, balanceReport, party, simEnemies);
+            let data: object;
+            if (effectiveScope === 'logs') {
+                data = {
+                    exportedAt: new Date().toISOString(),
+                    config: {
+                        runCount: results.config.runCount,
+                        baseSeed: results.config.baseSeed,
+                    },
+                    runCount: results.runDetails!.length,
+                    combatLogs: results.runDetails!.map((rd: SimulationRunDetail) => ({
+                        runIndex: rd.runIndex,
+                        seed: rd.seed,
+                        winnerSide: rd.result.winnerSide,
+                        roundsElapsed: rd.result.roundsElapsed,
+                        totalTurns: rd.result.totalTurns,
+                        description: rd.result.description,
+                        combatants: rd.combat.combatants.map((c: any) => ({
+                            id: c.id,
+                            name: c.character?.name,
+                            side: c.character ? 'unknown' : undefined,
+                            hp: { current: c.currentHP, max: c.character?.hp?.max },
+                            defeated: c.isDefeated,
+                        })),
+                        history: rd.combat.history.map((a: any) => ({
+                            type: a.type,
+                            actor: a.actor?.character?.name ?? a.actor?.name,
+                            target: a.target?.character?.name ?? a.target?.name,
+                            attack: a.attack?.name,
+                            spell: a.spell?.name,
+                            roll: a.result?.roll,
+                            hit: a.result?.success,
+                            crit: a.result?.isCritical,
+                            damage: a.result?.damage,
+                            damageType: a.result?.damageType,
+                            targetHP: a.result?.targetHP,
+                            description: a.result?.description,
+                        })),
+                        perCombatantMetrics: mapToObject(rd.metrics),
+                    })),
+                };
+            } else if (effectiveScope === 'all') {
+                const analysis = buildJsonExport(results, balanceReport, party, simEnemies);
+                data = {
+                    ...analysis,
+                    combatLogs: results.runDetails!.map((rd: SimulationRunDetail) => ({
+                        runIndex: rd.runIndex,
+                        seed: rd.seed,
+                        winnerSide: rd.result.winnerSide,
+                        roundsElapsed: rd.result.roundsElapsed,
+                        description: rd.result.description,
+                        history: rd.combat.history.map((a: any) => ({
+                            type: a.type,
+                            actor: a.actor?.character?.name ?? a.actor?.name,
+                            target: a.target?.character?.name ?? a.target?.name,
+                            attack: a.attack?.name,
+                            spell: a.spell?.name,
+                            roll: a.result?.roll,
+                            hit: a.result?.success,
+                            crit: a.result?.isCritical,
+                            damage: a.result?.damage,
+                            damageType: a.result?.damageType,
+                            targetHP: a.result?.targetHP,
+                            description: a.result?.description,
+                        })),
+                    })),
+                };
+            } else {
+                data = buildJsonExport(results, balanceReport, party, simEnemies);
+            }
+
             const json = JSON.stringify(data, null, 2);
             const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
             const wr = (results.summary.playerWinRate * 100).toFixed(0);
-            downloadFile(json, `simulation-${ts}-${wr}pct.json`, 'application/json');
+            const suffix = effectiveScope === 'analysis' ? '' : effectiveScope === 'logs' ? '-logs' : '-full';
+            downloadFile(json, `simulation${suffix}-${ts}-${wr}pct.json`, 'application/json');
             showToast('Downloaded simulation JSON', 'success', 1500);
         } catch (err) {
             console.error('Failed to export JSON:', err);
             showToast('Failed to export JSON', 'error', 2000);
         }
         closeMenu();
-    }, [results, balanceReport, party, simEnemies, closeMenu]);
+    }, [results, balanceReport, party, simEnemies, effectiveScope, closeMenu]);
 
     const handleExportCsv = useCallback(() => {
         try {
-            const csv = buildCsvExport(results, party, simEnemies);
+            let csv: string;
+            if (effectiveScope === 'logs') {
+                csv = buildCombatLogExport(results, results.runDetails!);
+            } else if (effectiveScope === 'all') {
+                csv = buildCsvExport(results, party, simEnemies) + '\n\n' + buildCombatLogExport(results, results.runDetails!);
+            } else {
+                csv = buildCsvExport(results, party, simEnemies);
+            }
             const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
             const wr = (results.summary.playerWinRate * 100).toFixed(0);
-            downloadFile(csv, `simulation-${ts}-${wr}pct.csv`, 'text/csv');
+            const suffix = effectiveScope === 'analysis' ? '' : effectiveScope === 'logs' ? '-logs' : '-full';
+            downloadFile(csv, `simulation${suffix}-${ts}-${wr}pct.csv`, 'text/csv');
             showToast('Downloaded simulation CSV', 'success', 1500);
         } catch (err) {
             console.error('Failed to export CSV:', err);
             showToast('Failed to export CSV', 'error', 2000);
         }
         closeMenu();
-    }, [results, party, simEnemies, closeMenu]);
+    }, [results, party, simEnemies, effectiveScope, closeMenu]);
 
     const handleCopySummary = useCallback(async () => {
         try {
-            const text = buildClipboardSummary(results, balanceReport, encounterConfig, estimateSnapshot, validation, simEnemies, party);
+            const analysis = buildClipboardSummary(results, balanceReport, encounterConfig, estimateSnapshot, validation, simEnemies, party);
+            let text: string;
+            if (effectiveScope === 'logs') {
+                text = buildCombatLogExport(results, results.runDetails!);
+            } else if (effectiveScope === 'all') {
+                text = analysis + '\n\n' + buildCombatLogExport(results, results.runDetails!);
+            } else {
+                text = analysis;
+            }
             await navigator.clipboard.writeText(text);
             showToast('Copied summary to clipboard', 'success', 1500);
         } catch (err) {
@@ -628,17 +851,27 @@ export function SimulationExportButton({
             showToast('Failed to copy to clipboard', 'error', 2000);
         }
         closeMenu();
-    }, [results, balanceReport, encounterConfig, estimateSnapshot, validation, simEnemies, party, closeMenu]);
+    }, [results, balanceReport, encounterConfig, estimateSnapshot, validation, simEnemies, party, effectiveScope, closeMenu]);
+
+    const scopeDescriptions: Record<ExportScope, string> = useMemo(() => ({
+        analysis: 'Summary, metrics & balance',
+        logs: `${results.runDetails?.length ?? 0} run combat logs`,
+        all: 'Analysis + combat logs',
+    }), [results.runDetails?.length]);
 
     return (
-        <div className={`seb-container ${className}`}>
+        <div
+            className={`seb-container ${className}`}
+            onBlur={(e) => {
+                // Only close when focus leaves the entire container
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                    setTimeout(closeMenu, 150);
+                }
+            }}
+        >
             <button
                 className="seb-trigger"
                 onClick={() => setActiveMenu(!activeMenu)}
-                onBlur={() => {
-                    // Delay close to allow click on menu items
-                    setTimeout(closeMenu, 150);
-                }}
                 type="button"
                 aria-haspopup="true"
                 aria-expanded={activeMenu}
@@ -649,6 +882,25 @@ export function SimulationExportButton({
 
             {activeMenu && (
                 <div className="seb-menu" role="menu">
+                    {/* Scope toggle */}
+                    {hasCombatLogs && (
+                        <div className="seb-scope-toggle" role="radiogroup" aria-label="Export content scope">
+                            {SCOPE_OPTIONS.map(opt => (
+                                <button
+                                    key={opt.value}
+                                    className={`seb-scope-btn ${scope === opt.value ? 'seb-scope-active' : ''}`}
+                                    onClick={() => setScope(opt.value)}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={scope === opt.value}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                            <span className="seb-scope-desc">{scopeDescriptions[scope]}</span>
+                        </div>
+                    )}
+
                     <button
                         className="seb-menu-item"
                         onClick={handleExportJson}

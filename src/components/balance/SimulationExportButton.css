@@ -137,3 +137,45 @@
 .seb-menu-item:hover .seb-menu-desc {
     color: hsl(var(--muted-foreground) / 0.8);
 }
+
+/* ─── Scope Toggle ───────────────────────────── */
+
+.seb-scope-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid hsl(var(--border));
+    margin-bottom: 0.15rem;
+}
+
+.seb-scope-btn {
+    padding: 0.2rem 0.55rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.seb-scope-btn:hover {
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--foreground) / 0.3);
+}
+
+.seb-scope-active {
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.08);
+}
+
+.seb-scope-desc {
+    margin-left: auto;
+    font-size: 0.6rem;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+    padding-left: 0.35rem;
+}
