@@ -13,7 +13,9 @@ import { useSimulationHistory } from '@/hooks/useSimulationHistory';
 import { SimulationHistoryPanel } from '@/components/balance/SimulationHistoryPanel';
 import { SimulationConfigPanel } from '@/components/balance/SimulationConfigPanel';
 import { BalanceDashboard } from '@/components/balance/BalanceDashboard';
+import type { RoundRangeFilter } from '@/components/balance/BalanceDashboard';
 import { EstimateValidationPanel } from '@/components/balance/EstimateValidationPanel';
+import { SimulationLogViewer } from '@/components/balance/SimulationLogViewer';
 import { ResultsDashboardSkeleton } from '@/components/balance/BalanceLabSkeleton';
 import {
     BalanceValidator,
@@ -49,6 +51,9 @@ export function BalanceLabTab() {
     const [configCollapsed, setConfigCollapsed] = useState(false);
     const [resultsCollapsed, setResultsCollapsed] = useState(false);
     const [historyCollapsed, setHistoryCollapsed] = useState(false);
+
+    // Round range filter shared between TurnDistributionChart and SimulationLogViewer
+    const [roundRangeFilter, setRoundRangeFilter] = useState<RoundRangeFilter | null>(null);
 
     // Track encounter config for recommendation "apply" integration
     const [encounterConfig, setEncounterConfig] = useState<EncounterConfigUI>(DEFAULT_ENCOUNTER_CONFIG);
@@ -226,6 +231,18 @@ export function BalanceLabTab() {
         [encounterConfig],
     );
 
+    // Round range filter handlers (shared between dashboard and log viewer)
+    const handleBucketClick = useCallback((rangeStart: number, rangeEnd: number, label: string) => {
+        setRoundRangeFilter(prev => {
+            if (prev && prev.min === rangeStart && prev.max === rangeEnd) return null;
+            return { min: rangeStart, max: rangeEnd, label };
+        });
+    }, []);
+
+    const handleClearRoundFilter = useCallback(() => {
+        setRoundRangeFilter(null);
+    }, []);
+
     // ─── Render ────────────────────────────────────────────────────────────
 
     const hasResults = results !== null && results.summary.totalRuns > 0;
@@ -249,42 +266,63 @@ export function BalanceLabTab() {
 
             {/* ─── Main Layout ─────────────────────────────────────────── */}
             <div className="bl-layout">
-                {/* ─── Left Panel: Configuration ─────────────────────── */}
-                <section className="bl-panel bl-config-panel">
-                    <button
-                        className="bl-panel-header"
-                        onClick={() => setConfigCollapsed(!configCollapsed)}
-                        aria-expanded={!configCollapsed}
-                        aria-controls={configContentId}
-                    >
-                        <div className="bl-panel-title-row">
-                            <Swords size={16} className="bl-panel-icon" />
-                            <h2 className="bl-panel-title">Configuration</h2>
-                        </div>
-                        <span className="bl-panel-toggle">
-                            {configCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-                        </span>
-                    </button>
+                {/* ─── Left Column ────────────────────────────────────── */}
+                <div className="bl-left-column">
+                    {/* Configuration Panel */}
+                    <section className="bl-panel bl-config-panel">
+                        <button
+                            className="bl-panel-header"
+                            onClick={() => setConfigCollapsed(!configCollapsed)}
+                            aria-expanded={!configCollapsed}
+                            aria-controls={configContentId}
+                        >
+                            <div className="bl-panel-title-row">
+                                <Swords size={16} className="bl-panel-icon" />
+                                <h2 className="bl-panel-title">Configuration</h2>
+                            </div>
+                            <span className="bl-panel-toggle">
+                                {configCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+                            </span>
+                        </button>
 
-                    {!configCollapsed && (
-                        <div id={configContentId} className="bl-panel-content">
-                            <SimulationConfigPanel
-                                status={status}
-                                progress={progress}
-                                error={error}
-                                isRunning={isRunning}
-                                encounterConfigOverride={configOverride}
-                                partySeedsOverride={partySeedsOverride}
-                                onEncounterConfigChange={handleEncounterConfigChange}
-                                onRunSimulation={handleRunSimulation}
-                                onCancel={cancelSimulation}
-                                onReset={resetSimulation}
-                                lockedEnemies={lockedEnemies}
-                                onClearLockedEnemies={handleClearLockedEnemies}
-                            />
-                        </div>
+                        {!configCollapsed && (
+                            <div id={configContentId} className="bl-panel-content">
+                                <SimulationConfigPanel
+                                    status={status}
+                                    progress={progress}
+                                    error={error}
+                                    isRunning={isRunning}
+                                    encounterConfigOverride={configOverride}
+                                    partySeedsOverride={partySeedsOverride}
+                                    onEncounterConfigChange={handleEncounterConfigChange}
+                                    onRunSimulation={handleRunSimulation}
+                                    onCancel={cancelSimulation}
+                                    onReset={resetSimulation}
+                                    lockedEnemies={lockedEnemies}
+                                    onClearLockedEnemies={handleClearLockedEnemies}
+                                />
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Estimate Validation (appears when results exist) */}
+                    {hasResults && (
+                        <EstimateValidationPanel
+                            validation={validation ?? null}
+                            balanceReport={balanceReport}
+                            hasResultsWithoutEstimate={hasResults && !estimateSnapshot}
+                        />
                     )}
-                </section>
+
+                    {/* Combat Log Viewer (appears when results exist) */}
+                    {hasResults && results && (
+                        <SimulationLogViewer
+                            results={results}
+                            roundRangeFilter={roundRangeFilter}
+                            onClearRoundFilter={handleClearRoundFilter}
+                        />
+                    )}
+                </div>
 
                 {/* ─── Right Panel: Results ───────────────────────────── */}
                 <section className="bl-panel bl-results-panel">
@@ -385,11 +423,8 @@ export function BalanceLabTab() {
                                         enemyRegenPerRun={enemyRegenPerRun}
                                         lockedEnemies={lockedEnemies}
                                         onToggleLockEnemy={handleToggleLockEnemy}
-                                    />
-                                    <EstimateValidationPanel
-                                        validation={validation}
-                                        balanceReport={balanceReport}
-                                        hasResultsWithoutEstimate={hasResults && !estimateSnapshot}
+                                        roundRangeFilter={roundRangeFilter}
+                                        onBucketClick={handleBucketClick}
                                     />
                                 </>
                             )}

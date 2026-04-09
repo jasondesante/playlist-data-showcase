@@ -20,7 +20,7 @@ export interface PerCombatantMetricsProps {
     metrics: Map<string, CombatantSimulationMetrics>;
     /** Currently highlighted combatant ID (from chart interactivity) */
     highlightedCombatantId?: string | null;
-    /** Callback when a combatant row is clicked */
+    /** Callback when a combatant column is clicked */
     onCombatantClick?: (combatantId: string | null) => void;
     className?: string;
 }
@@ -43,37 +43,25 @@ interface SortState {
     direction: SortDirection;
 }
 
-interface ColumnDef {
+// ─── Row Definitions (formerly columns — now the vertical axis) ───────────────
+
+interface RowDef {
     key: SortKey;
     label: string;
     icon: React.ReactNode;
-    /** Tooltip explaining what this metric means */
     tooltip: string;
-    /** Extract the comparable value from a metric */
     getValue: (m: CombatantSimulationMetrics) => number | string;
-    /** Format the value for display */
     format: (m: CombatantSimulationMetrics) => string;
-    /** Higher values are "better" for highlighting purposes */
+    /** Higher values are "better" for top-performer highlighting */
     higherIsBetter: boolean;
 }
 
-// ─── Column Definitions ───────────────────────────────────────────────────────
-
-const COLUMNS: ColumnDef[] = [
-    {
-        key: 'name',
-        label: 'Name',
-        icon: <Swords size={12} />,
-        tooltip: 'Combatant name',
-        getValue: (m) => m.name,
-        format: (m) => m.name,
-        higherIsBetter: false,
-    },
+const ROWS: RowDef[] = [
     {
         key: 'side',
         label: 'Side',
         icon: <Shield size={12} />,
-        tooltip: 'Whether this combatant is on the player or enemy side',
+        tooltip: 'Player or Enemy',
         getValue: (m) => m.side,
         format: (m) => m.side === 'player' ? 'Player' : 'Enemy',
         higherIsBetter: false,
@@ -82,7 +70,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'dpr',
         label: 'DPR',
         icon: <Crosshair size={12} />,
-        tooltip: 'Average Damage Per Round — total damage dealt divided by rounds survived',
+        tooltip: 'Average Damage Per Round',
         getValue: (m) => m.averageDamagePerRound,
         format: (m) => m.averageDamagePerRound.toFixed(1),
         higherIsBetter: true,
@@ -91,7 +79,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'avgDmgDealt',
         label: 'Avg DMG/Run',
         icon: <Swords size={12} />,
-        tooltip: 'Average total damage dealt per simulation run',
+        tooltip: 'Average total damage dealt per run',
         getValue: (m) => m.averageTotalDamageDealt,
         format: (m) => m.averageTotalDamageDealt.toFixed(0),
         higherIsBetter: true,
@@ -100,7 +88,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'hitRate',
         label: 'Hit Rate',
         icon: <Crosshair size={12} />,
-        tooltip: 'Percentage of attack/spell attempts that hit (hits / (hits + misses))',
+        tooltip: 'Percentage of attacks that hit',
         getValue: (m) => m.averageHitRate,
         format: (m) => `${(m.averageHitRate * 100).toFixed(0)}%`,
         higherIsBetter: true,
@@ -109,7 +97,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'damageTaken',
         label: 'Avg Dmg Taken',
         icon: <Heart size={12} />,
-        tooltip: 'Average total damage taken per simulation run across all runs',
+        tooltip: 'Average total damage taken per run',
         getValue: (m) => m.averageTotalDamageTaken,
         format: (m) => m.averageTotalDamageTaken.toFixed(0),
         higherIsBetter: false,
@@ -118,7 +106,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'survivalRate',
         label: 'Survival',
         icon: <Shield size={12} />,
-        tooltip: 'Percentage of simulation runs where this combatant was still alive at combat end',
+        tooltip: 'Percentage of runs survived',
         getValue: (m) => m.survivalRate,
         format: (m) => `${(m.survivalRate * 100).toFixed(0)}%`,
         higherIsBetter: true,
@@ -127,7 +115,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'killRate',
         label: 'Kill Rate',
         icon: <Skull size={12} />,
-        tooltip: 'Percentage of simulation runs where this combatant scored the killing blow on at least one enemy',
+        tooltip: 'Percentage of runs with a kill',
         getValue: (m) => m.killRate,
         format: (m) => `${(m.killRate * 100).toFixed(0)}%`,
         higherIsBetter: true,
@@ -136,7 +124,7 @@ const COLUMNS: ColumnDef[] = [
         key: 'critRate',
         label: 'Crit Rate',
         icon: <Zap size={12} />,
-        tooltip: 'Percentage of attack rolls that were natural 20 critical hits (expected ~5%)',
+        tooltip: 'Critical hit rate (expected ~5%)',
         getValue: (m) => m.criticalHitRate,
         format: (m) => `${(m.criticalHitRate * 100).toFixed(1)}%`,
         higherIsBetter: true,
@@ -147,15 +135,15 @@ const COLUMNS: ColumnDef[] = [
 
 function getTopPerformerKey(
     metrics: CombatantSimulationMetrics[],
-    column: ColumnDef,
+    row: RowDef,
 ): string | null {
     if (metrics.length === 0) return null;
 
     let best: CombatantSimulationMetrics | null = null;
     for (const m of metrics) {
-        if (!best || (column.higherIsBetter
-            ? column.getValue(m) > column.getValue(best)
-            : column.getValue(m) < column.getValue(best))) {
+        if (!best || (row.higherIsBetter
+            ? row.getValue(m) > row.getValue(best)
+            : row.getValue(m) < row.getValue(best))) {
             best = m;
         }
     }
@@ -163,15 +151,15 @@ function getTopPerformerKey(
 }
 
 function getSortIcon(
-    columnKey: SortKey,
+    rowKey: SortKey,
     sort: SortState,
 ): React.ReactNode {
-    if (sort.key !== columnKey) {
-        return <ArrowUpDown size={12} className="pcm-sort-icon pcm-sort-inactive" />;
+    if (sort.key !== rowKey) {
+        return <ArrowUpDown size={10} className="pcm-sort-icon pcm-sort-inactive" />;
     }
     return sort.direction === 'asc'
-        ? <ArrowUp size={12} className="pcm-sort-icon pcm-sort-active" />
-        : <ArrowDown size={12} className="pcm-sort-icon pcm-sort-active" />;
+        ? <ArrowUp size={10} className="pcm-sort-icon pcm-sort-active" />
+        : <ArrowDown size={10} className="pcm-sort-icon pcm-sort-active" />;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -184,31 +172,30 @@ function PerCombatantMetricsComponent({
 }: PerCombatantMetricsProps) {
     const [sort, setSort] = useState<SortState>({ key: 'dpr', direction: 'desc' });
 
-    // Convert Map to array
     const metricsArray = useMemo(
         () => Array.from(metrics.values()),
         [metrics],
     );
 
-    // Pre-compute top performers per numeric column
+    // Pre-compute top performers per numeric row
     const topPerformers = useMemo(() => {
         const map = new Map<string, string | null>();
-        for (const col of COLUMNS) {
-            if (col.key === 'name' || col.key === 'side') continue;
-            map.set(col.key, getTopPerformerKey(metricsArray, col));
+        for (const row of ROWS) {
+            if (row.key === 'name' || row.key === 'side') continue;
+            map.set(row.key, getTopPerformerKey(metricsArray, row));
         }
         return map;
     }, [metricsArray]);
 
-    // Sort metrics
+    // Sort combatants (controls column order)
     const sorted = useMemo(() => {
-        const col = COLUMNS.find((c) => c.key === sort.key);
-        if (!col) return metricsArray;
+        const row = ROWS.find((r) => r.key === sort.key);
+        if (!row) return metricsArray;
 
         const dir = sort.direction === 'asc' ? 1 : -1;
         return [...metricsArray].sort((a, b) => {
-            const va = col.getValue(a);
-            const vb = col.getValue(b);
+            const va = row.getValue(a);
+            const vb = row.getValue(b);
             if (typeof va === 'string' && typeof vb === 'string') {
                 return va.localeCompare(vb) * dir;
             }
@@ -223,49 +210,15 @@ function PerCombatantMetricsComponent({
         }));
     }, []);
 
-    const handleRowClick = useCallback((combatantId: string) => {
+    const handleColumnClick = useCallback((combatantId: string) => {
         onCombatantClick?.(combatantId);
     }, [onCombatantClick]);
 
     const isClickable = !!onCombatantClick;
 
-    // Split into players and enemies for section display
-    const players = useMemo(() => sorted.filter((m) => m.side === 'player'), [sorted]);
-    const enemies = useMemo(() => sorted.filter((m) => m.side === 'enemy'), [sorted]);
-
     if (metricsArray.length === 0) {
         return null;
     }
-
-    const renderRow = (m: CombatantSimulationMetrics) => {
-        const isHighlighted = highlightedCombatantId === m.combatantId;
-        return (
-            <tr
-                key={m.combatantId}
-                className={`pcm-row pcm-row-${m.side} ${isHighlighted ? 'pcm-row-highlighted' : ''} ${isClickable ? 'pcm-row-clickable' : ''}`}
-                onClick={isClickable ? () => handleRowClick(m.combatantId) : undefined}
-                tabIndex={isClickable ? 0 : undefined}
-                onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRowClick(m.combatantId); } } : undefined}
-                role={isClickable ? 'button' : undefined}
-                aria-pressed={isClickable ? isHighlighted : undefined}
-            >
-                {COLUMNS.map((col) => {
-                    const isTop = topPerformers.get(col.key) === m.combatantId;
-                    return (
-                        <td
-                            key={col.key}
-                            className={`pcm-td pcm-td-${col.key} ${isTop ? 'pcm-top-performer' : ''}`}
-                            title={col.format(m)}
-                        >
-                            {col.format(m)}
-                        </td>
-                    );
-                })}
-            </tr>
-        );
-    };
-
-    const colCount = COLUMNS.length;
 
     return (
         <div className={`pcm-per-combatant-metrics ${className}`}>
@@ -275,53 +228,68 @@ function PerCombatantMetricsComponent({
                 <span className="pcm-header-count">{metricsArray.length} combatants</span>
             </div>
             <div className="pcm-table-wrapper">
-                <table className={`pcm-table ${isClickable ? 'pcm-table-clickable' : ''}`}>
+                <table className={`pcm-table pcm-table-transposed ${isClickable ? 'pcm-table-clickable' : ''}`}>
                     <thead>
+                        {/* Header row: empty label cell + one column per combatant */}
                         <tr>
-                            {COLUMNS.map((col) => (
-                                <th
-                                    key={col.key}
-                                    className={`pcm-th pcm-th-${col.key}`}
-                                >
-                                    <button
-                                        className="pcm-sort-btn"
-                                        onClick={() => handleSort(col.key)}
-                                        type="button"
-                                        title={`${col.tooltip} — click to sort`}
+                            <th className="pcm-th pcm-th-label-cell">
+                                <span className="pcm-th-content">
+                                    <Swords size={12} />
+                                    <span className="pcm-th-label">Name</span>
+                                </span>
+                            </th>
+                            {sorted.map((m) => {
+                                const isHighlighted = highlightedCombatantId === m.combatantId;
+                                return (
+                                    <th
+                                        key={m.combatantId}
+                                        className={`pcm-th pcm-th-combatant pcm-th-combatant-${m.side} ${isHighlighted ? 'pcm-th-combatant-highlighted' : ''}`}
                                     >
-                                        <span className="pcm-th-content">
-                                            {col.icon}
-                                            <span className="pcm-th-label">{col.label}</span>
-                                            {getSortIcon(col.key, sort)}
-                                        </span>
-                                    </button>
-                                </th>
-                            ))}
+                                        <button
+                                            className="pcm-combatant-header"
+                                            onClick={isClickable ? () => handleColumnClick(m.combatantId) : undefined}
+                                            type="button"
+                                            title={m.name}
+                                        >
+                                            <span className="pcm-combatant-name">{m.name}</span>
+                                        </button>
+                                    </th>
+                                );
+                            })}
                         </tr>
                     </thead>
                     <tbody>
-                        {players.length > 0 && (
-                            <>
-                                <tr className="pcm-section-row">
-                                    <td colSpan={colCount} className="pcm-section-cell pcm-section-cell-players">
-                                        <Swords size={12} className="pcm-section-icon" />
-                                        Players
-                                    </td>
-                                </tr>
-                                {players.map(renderRow)}
-                            </>
-                        )}
-                        {enemies.length > 0 && (
-                            <>
-                                <tr className="pcm-section-row">
-                                    <td colSpan={colCount} className="pcm-section-cell pcm-section-cell-enemies">
-                                        <Skull size={12} className="pcm-section-icon" />
-                                        Enemies
-                                    </td>
-                                </tr>
-                                {enemies.map(renderRow)}
-                            </>
-                        )}
+                        {ROWS.map((row) => (
+                            <tr key={row.key} className="pcm-row">
+                                <td className="pcm-td pcm-td-label">
+                                    <button
+                                        className="pcm-sort-btn pcm-sort-btn-row"
+                                        onClick={() => handleSort(row.key)}
+                                        type="button"
+                                        title={`${row.tooltip} — click to sort columns`}
+                                    >
+                                        <span className="pcm-th-content">
+                                            {row.icon}
+                                            <span className="pcm-th-label">{row.label}</span>
+                                            {getSortIcon(row.key, sort)}
+                                        </span>
+                                    </button>
+                                </td>
+                                {sorted.map((m) => {
+                                    const isTop = topPerformers.get(row.key) === m.combatantId;
+                                    const isHighlighted = highlightedCombatantId === m.combatantId;
+                                    return (
+                                        <td
+                                            key={m.combatantId}
+                                            className={`pcm-td pcm-td-value pcm-td-value-${m.side} ${isTop ? 'pcm-top-performer' : ''} ${isHighlighted ? 'pcm-td-highlighted' : ''}`}
+                                            title={`${m.name}: ${row.format(m)}`}
+                                        >
+                                            {row.format(m)}
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>

@@ -1,5 +1,8 @@
 /* ============================================
-   PER-COMBATANT METRICS COMPONENT
+   PER-COMBATANT METRICS COMPONENT (Transposed)
+   ============================================
+   Columns = combatants, Rows = metrics.
+   Fits vertically without horizontal scrolling.
    ============================================ */
 
 .pcm-per-combatant-metrics {
@@ -39,40 +42,6 @@
 }
 
 /* ============================================
-   SECTION (Players / Enemies)
-   ============================================ */
-
-.pcm-section-row {
-    border: none;
-}
-
-.pcm-section-cell {
-    font-size: 0.65rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.3rem 0.5rem;
-    border-bottom: 1px solid hsl(var(--border) / 0.3);
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-}
-
-.pcm-section-icon {
-    flex-shrink: 0;
-}
-
-.pcm-section-cell-players {
-    color: hsl(200 80% 50%);
-    background-color: hsl(200 80% 50% / 0.08);
-}
-
-.pcm-section-cell-enemies {
-    color: hsl(0 84% 60%);
-    background-color: hsl(0 84% 60% / 0.08);
-}
-
-/* ============================================
    TABLE WRAPPER (scrollable)
    ============================================ */
 
@@ -94,7 +63,7 @@
     table-layout: auto;
 }
 
-/* ─── Header ─── */
+/* ─── Header Row (combatant names) ─── */
 
 .pcm-th {
     padding: 0;
@@ -102,6 +71,69 @@
     background-color: hsl(var(--muted) / 0.15);
     white-space: nowrap;
 }
+
+.pcm-th-label-cell {
+    text-align: left;
+    min-width: 100px;
+    padding-left: 0.5rem;
+}
+
+.pcm-th-combatant {
+    text-align: center;
+    min-width: 80px;
+}
+
+.pcm-th-combatant-player {
+    border-bottom: 2px solid hsl(200 80% 50% / 0.5);
+}
+
+.pcm-th-combatant-enemy {
+    border-bottom: 2px solid hsl(0 84% 60% / 0.5);
+}
+
+.pcm-th-combatant-highlighted {
+    background-color: hsl(var(--primary) / 0.1);
+}
+
+.pcm-combatant-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    background: none;
+    border: none;
+    cursor: default;
+    transition: background-color 0.15s ease;
+    gap: 0.25rem;
+}
+
+.pcm-table-clickable .pcm-combatant-header {
+    cursor: pointer;
+}
+
+.pcm-table-clickable .pcm-combatant-header:hover {
+    background-color: hsl(var(--muted) / 0.2);
+}
+
+.pcm-combatant-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+.pcm-th-combatant-player .pcm-combatant-name {
+    color: hsl(200 80% 55%);
+}
+
+.pcm-th-combatant-enemy .pcm-combatant-name {
+    color: hsl(0 70% 55%);
+}
+
+/* ─── Sort Button (in metric label cells) ─── */
 
 .pcm-sort-btn {
     display: flex;
@@ -116,18 +148,21 @@
     cursor: pointer;
     transition: color 0.15s ease, background-color 0.15s ease;
     gap: 0.25rem;
-    overflow: visible;
 }
 
 .pcm-sort-btn:hover {
     color: hsl(var(--foreground));
-    background-color: hsl(var(--muted) / 0.2);
+    background-color: hsl(var(--muted) / 0.15);
 }
 
 .pcm-sort-btn:focus-visible {
     outline: 2px solid hsl(var(--primary));
     outline-offset: -2px;
     border-radius: 2px;
+}
+
+.pcm-sort-btn-row {
+    text-align: left;
 }
 
 .pcm-th-content {
@@ -153,25 +188,6 @@
     color: hsl(var(--primary));
 }
 
-/* Column-specific alignment */
-.pcm-th-name {
-    text-align: left;
-}
-
-.pcm-th-side {
-    text-align: center;
-}
-
-.pcm-th-dpr,
-.pcm-th-avgDmgDealt,
-.pcm-th-hitRate,
-.pcm-th-damageTaken,
-.pcm-th-survivalRate,
-.pcm-th-killRate,
-.pcm-th-critRate {
-    text-align: right;
-}
-
 /* ─── Rows ─── */
 
 .pcm-row {
@@ -179,108 +195,52 @@
 }
 
 .pcm-row:hover {
-    background-color: hsl(var(--muted) / 0.15);
+    background-color: hsl(var(--muted) / 0.1);
 }
 
-.pcm-row-clickable {
-    cursor: pointer;
+/* ─── Label Cell (left column — metric names) ─── */
+
+.pcm-td-label {
+    padding: 0.35rem 0.5rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+    background-color: hsl(var(--muted) / 0.08);
+    border-right: 1px solid hsl(var(--border) / 0.3);
 }
 
-.pcm-row-clickable:hover {
-    background-color: hsl(var(--muted) / 0.25);
-}
-
-.pcm-row-clickable:focus-visible {
-    outline: 2px solid hsl(var(--primary));
-    outline-offset: -2px;
-    background-color: hsl(var(--muted) / 0.25);
-}
-
-.pcm-row-highlighted {
-    background-color: hsl(var(--primary) / 0.12);
-}
-
-.pcm-row-highlighted:hover {
-    background-color: hsl(var(--primary) / 0.18);
-}
-
-.pcm-row-player {
-    border-left: 2px solid hsl(200 80% 50% / 0.4);
-}
-
-.pcm-row-player.pcm-row-highlighted {
-    border-left-color: hsl(200 80% 70%);
-}
-
-.pcm-row-enemy {
-    border-left: 2px solid hsl(0 84% 60% / 0.4);
-}
-
-.pcm-row-enemy.pcm-row-highlighted {
-    border-left-color: hsl(0 84% 70%);
-}
-
-/* ─── Cells ─── */
+/* ─── Value Cells ─── */
 
 .pcm-td {
     padding: 0.35rem 0.5rem;
     color: hsl(var(--foreground));
     font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-}
-
-.pcm-td-name {
-    font-weight: 600;
-    text-align: left;
-    max-width: 160px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.pcm-row-player .pcm-td-name {
-    color: hsl(200 80% 55%);
-}
-
-.pcm-row-enemy .pcm-td-name {
-    color: hsl(0 70% 55%);
-}
-
-.pcm-td-side {
     text-align: center;
-    font-weight: 500;
-    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+    transition: background-color 0.1s ease;
 }
 
-.pcm-td-dpr {
-    text-align: right;
-    font-weight: 600;
+.pcm-td-value {
+    text-align: center;
 }
 
-.pcm-td-damageTaken {
-    text-align: right;
-    color: hsl(28 96% 53% / 0.85);
+.pcm-td-value-player {
+    border-left: 2px solid hsl(200 80% 50% / 0.2);
 }
 
-.pcm-td-survivalRate {
-    text-align: right;
-    font-weight: 500;
+.pcm-td-value-enemy {
+    border-left: 2px solid hsl(0 84% 60% / 0.2);
 }
 
-.pcm-td-killRate {
-    text-align: right;
-    font-weight: 500;
-}
-
-.pcm-td-critRate {
-    text-align: right;
-    color: hsl(48 96% 53%);
-    font-weight: 500;
+.pcm-td-highlighted {
+    background-color: hsl(var(--primary) / 0.1);
 }
 
 /* ─── Top Performer Highlight ─── */
 
 .pcm-top-performer {
     position: relative;
+    font-weight: 600;
 }
 
 .pcm-top-performer::after {
@@ -317,11 +277,5 @@
 
     .pcm-td {
         padding: 0.3rem 0.35rem;
-    }
-
-    .pcm-th-name,
-    .pcm-td-name {
-        min-width: 80px;
-        max-width: 100px;
     }
 }

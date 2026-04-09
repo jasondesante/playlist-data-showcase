@@ -249,6 +249,33 @@ export function SimulationConfigPanel({
     // ─── Render ─────────────────────────────────────────────────────────
     return (
         <div className="sim-config-panel">
+            {/* Top Action Buttons */}
+            <div className="scp-actions scp-actions-top">
+                {!isRunning && status !== 'completed' && (
+                    <button
+                        className="scp-btn scp-btn-run"
+                        onClick={handleRun}
+                        disabled={!canRun}
+                        title="Run simulation (Ctrl+Enter)"
+                    >
+                        <Play size={14} />
+                        Run Simulation
+                        <kbd className="scp-shortcut-hint">Ctrl+Enter</kbd>
+                    </button>
+                )}
+                {isRunning && (
+                    <button className="scp-btn scp-btn-cancel" onClick={onCancel}>
+                        <X size={14} />
+                        Cancel
+                    </button>
+                )}
+                {status === 'completed' && (
+                    <button className="scp-btn scp-btn-reset" onClick={handleReset}>
+                        New Simulation
+                    </button>
+                )}
+            </div>
+
             {/* Party Selection */}
             <section className="scp-section">
                 <PartySelector

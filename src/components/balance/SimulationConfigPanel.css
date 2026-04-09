@@ -179,6 +179,10 @@
     gap: 0.5rem;
 }
 
+.scp-actions-top {
+    margin-bottom: 0.5rem;
+}
+
 .scp-btn {
     display: flex;
     align-items: center;

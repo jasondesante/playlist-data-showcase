@@ -132,7 +132,7 @@ function EstimateValidationPanelComponent({
                 >
                     <div className="evp-panel-title-row">
                         <GitCompareArrows size={16} className="evp-panel-icon" />
-                        <span className="evp-panel-title">Estimate Validation</span>
+                        <span className="evp-panel-title">Results - Estimate Validation</span>
                         <span className="evp-badge evp-badge-warning">No estimate</span>
                     </div>
                     <span className="evp-panel-toggle">
@@ -169,7 +169,7 @@ function EstimateValidationPanelComponent({
             >
                 <div className="evp-panel-title-row">
                     <GitCompareArrows size={16} className="evp-panel-icon" />
-                    <span className="evp-panel-title">Estimate Validation</span>
+                    <span className="evp-panel-title">Results - Estimate Validation</span>
                     {significantCount > 0 && (
                         <span className="evp-badge evp-badge-warning">
                             {significantCount} discrepancy{significantCount !== 1 ? 'ies' : 'y'}

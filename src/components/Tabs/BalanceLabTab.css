@@ -94,6 +94,15 @@
     align-items: start;
 }
 
+/* ─── Left Column: Config + split-out result panels ──────────────── */
+
+.bl-left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
 /* ============================================
    PANEL — Shared Styles
    ============================================ */

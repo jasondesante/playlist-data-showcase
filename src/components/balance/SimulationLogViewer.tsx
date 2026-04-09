@@ -15,6 +15,7 @@
  */
 
 import { useState, useMemo, useRef, useEffect, useCallback, memo } from 'react';
+import { List } from 'react-window';
 import {
     FileText,
     ChevronDown,
@@ -28,6 +29,7 @@ import {
     Heart,
     Target,
     X,
+    Search,
 } from 'lucide-react';
 import type {
     SimulationResults,
@@ -114,6 +116,160 @@ function getSide(combatantId: string): 'player' | 'enemy' {
 }
 
 // ─── Sub-components ─────────────────────────────────────────────────────────────
+
+/** Format a run detail as display text */
+function formatRunOption(rd: SimulationRunDetail): string {
+    const result = rd.result.winnerSide === 'player'
+        ? `Player win (${rd.result.roundsElapsed}R)`
+        : rd.result.winnerSide === 'enemy'
+            ? `Enemy win (${rd.result.roundsElapsed}R)`
+            : `Draw (${rd.result.roundsElapsed}R)`;
+    return `Run ${rd.runIndex + 1} — ${result}`;
+}
+
+const ROW_HEIGHT = 28;
+const MAX_DROPDOWN_HEIGHT = 300;
+
+interface VirtualRunSelectorProps {
+    runs: SimulationRunDetail[];
+    selectedIndex: number;
+    onChange: (index: number) => void;
+}
+
+/** Virtualized run selector with search for large run counts */
+const VirtualRunSelector = memo(function VirtualRunSelector({
+    runs,
+    selectedIndex,
+    onChange,
+}: VirtualRunSelectorProps) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const containerRef = useRef<HTMLDivElement>(null);
+    const searchRef = useRef<HTMLInputElement>(null);
+    const listRef = useRef<{ element: HTMLDivElement | null; scrollToRow: (config: { index: number; align?: string }) => void } | null>(null);
+
+    // Close on click outside
+    useEffect(() => {
+        if (!isOpen) return;
+        const handler = (e: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setIsOpen(false);
+                setSearch('');
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [isOpen]);
+
+    // Focus search when opening
+    useEffect(() => {
+        if (isOpen) {
+            searchRef.current?.focus();
+        }
+    }, [isOpen]);
+
+    // Scroll to selected item when opening
+    useEffect(() => {
+        if (isOpen && listRef.current) {
+            listRef.current.scrollToRow({ index: selectedIndex, align: 'center' });
+        }
+    }, [isOpen, selectedIndex]);
+
+    const filteredIndices = useMemo(() => {
+        if (!search.trim()) return runs.map((_, i) => i);
+        const q = search.toLowerCase();
+        return runs.reduce<number[]>((acc, rd, i) => {
+            if (formatRunOption(rd).toLowerCase().includes(q)) {
+                acc.push(i);
+            }
+            return acc;
+        }, []);
+    }, [runs, search]);
+
+    const selectedRun = runs[selectedIndex];
+    const displayText = selectedRun ? formatRunOption(selectedRun) : '—';
+
+    const handleSelect = useCallback((index: number) => {
+        onChange(index);
+        setIsOpen(false);
+        setSearch('');
+    }, [onChange]);
+
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            setIsOpen(false);
+            setSearch('');
+        } else if (e.key === 'ArrowDown' && !isOpen) {
+            e.preventDefault();
+            setIsOpen(true);
+        }
+    }, [isOpen]);
+
+    const RowComponent = useCallback(({ index, style }: { index: number; style: React.CSSProperties }) => {
+        const runIndex = filteredIndices[index];
+        const rd = runs[runIndex];
+        const isSelected = runIndex === selectedIndex;
+        return (
+            <div
+                className={`slv-vrun-option ${isSelected ? 'slv-vrun-option-selected' : ''}`}
+                style={style}
+                onClick={() => handleSelect(runIndex)}
+            >
+                {formatRunOption(rd)}
+            </div>
+        );
+    }, [filteredIndices, runs, selectedIndex, handleSelect]);
+
+    const listHeight = Math.min(filteredIndices.length * ROW_HEIGHT, MAX_DROPDOWN_HEIGHT);
+
+    return (
+        <div className="slv-vrun-container" ref={containerRef}>
+            <button
+                className="slv-vrun-trigger"
+                onClick={() => setIsOpen(!isOpen)}
+                onKeyDown={handleKeyDown}
+                type="button"
+            >
+                <span className="slv-vrun-trigger-text">{displayText}</span>
+                <ChevronDown size={12} className={`slv-vrun-chevron ${isOpen ? 'slv-vrun-chevron-open' : ''}`} />
+            </button>
+            {isOpen && (
+                <div className="slv-vrun-dropdown">
+                    <div className="slv-vrun-search">
+                        <Search size={12} />
+                        <input
+                            ref={searchRef}
+                            className="slv-vrun-search-input"
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder={`Search ${runs.length} runs...`}
+                        />
+                    </div>
+                    {filteredIndices.length === 0 ? (
+                        <div className="slv-vrun-empty">No matching runs</div>
+                    ) : (
+                        <List
+                            listRef={listRef}
+                            rowComponent={RowComponent}
+                            rowProps={{} as any}
+                            rowCount={filteredIndices.length}
+                            rowHeight={ROW_HEIGHT}
+                            style={{ height: listHeight, overflow: 'auto' }}
+                            overscanCount={5}
+                            className="slv-vrun-list"
+                        />
+                    )}
+                    <div className="slv-vrun-footer">
+                        {search
+                            ? `${filteredIndices.length} of ${runs.length} runs`
+                            : `${runs.length} runs`}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+});
 
 /** Single combat log entry */
 const LogEntry = memo(function LogEntry({ action }: { action: CombatAction }) {
@@ -414,10 +570,6 @@ export function SimulationLogViewer({ results, roundRangeFilter, onClearRoundFil
         setSelectedRunIndex(0);
     }, [roundRangeFilter]);
 
-    const handleRunChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedRunIndex(Number(e.target.value));
-    }, []);
-
     // ─── No detailed logs state ──────────────────────────────────────────────
     if (!hasDetailedLogs) {
         return (
@@ -429,7 +581,7 @@ export function SimulationLogViewer({ results, roundRangeFilter, onClearRoundFil
                 >
                     <div className="slv-panel-title-row">
                         <FileText size={16} className="slv-panel-icon" />
-                        <span className="slv-panel-title">Combat Log Viewer</span>
+                        <span className="slv-panel-title">Results - Combat Log Viewer</span>
                     </div>
                     <span className="slv-panel-toggle">
                         {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
@@ -465,7 +617,7 @@ export function SimulationLogViewer({ results, roundRangeFilter, onClearRoundFil
             >
                 <div className="slv-panel-title-row">
                     <FileText size={16} className="slv-panel-icon" />
-                    <span className="slv-panel-title">Combat Log Viewer</span>
+                    <span className="slv-panel-title">Results - Combat Log Viewer</span>
                     {isFiltered && (
                         <span className="slv-filter-badge">
                             {filteredRunDetails!.length} of {runDetails!.length}
@@ -502,27 +654,15 @@ export function SimulationLogViewer({ results, roundRangeFilter, onClearRoundFil
 
                     {/* ─── Run Selector ──────────────────────────────────── */}
                     <div className="slv-run-selector">
-                        <label className="slv-run-label" htmlFor="slv-run-select">
+                        <label className="slv-run-label">
                             <Swords size={12} />
                             Select Run
                         </label>
-                        <select
-                            id="slv-run-select"
-                            className="slv-run-select"
-                            value={selectedRunIndex}
-                            onChange={handleRunChange}
-                        >
-                            {(filteredRunDetails ?? runDetails)!.map((rd, idx) => (
-                                <option key={rd.runIndex} value={idx}>
-                                    Run {rd.runIndex + 1} —{' '}
-                                    {rd.result.winnerSide === 'player'
-                                        ? `Player win (${rd.result.roundsElapsed}R)`
-                                        : rd.result.winnerSide === 'enemy'
-                                            ? `Enemy win (${rd.result.roundsElapsed}R)`
-                                            : `Draw (${rd.result.roundsElapsed}R)`}
-                                </option>
-                            ))}
-                        </select>
+                        <VirtualRunSelector
+                            runs={(filteredRunDetails ?? runDetails)!}
+                            selectedIndex={selectedRunIndex}
+                            onChange={(index) => setSelectedRunIndex(index)}
+                        />
                         <span className="slv-run-seed">Seed: {run?.seed ?? '—'}</span>
                     </div>
 

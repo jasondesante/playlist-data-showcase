@@ -4,7 +4,6 @@ import { Lock, Unlock, Shuffle } from 'lucide-react';
 import { ResultsSummary } from './ResultsSummary';
 import { PerCombatantMetrics } from './PerCombatantMetrics';
 import { BalanceRecommendations } from './BalanceRecommendations';
-import { SimulationLogViewer } from './SimulationLogViewer';
 import {
     WinRateChart,
     DPRComparisonChart,
@@ -50,6 +49,10 @@ export interface BalanceDashboardProps {
     lockedEnemies?: CharacterSheet[];
     /** Callback to toggle lock on an enemy by index in simEnemies */
     onToggleLockEnemy?: (index: number) => void;
+    /** Round range filter (shared with log viewer panel) */
+    roundRangeFilter?: RoundRangeFilter | null;
+    /** Callback when user clicks a turn distribution bucket */
+    onBucketClick?: (rangeStart: number, rangeEnd: number, label: string) => void;
     /** Additional CSS class */
     className?: string;
 }
@@ -127,7 +130,6 @@ function EnemySpectrum({ enemyStats, totalRuns }: EnemySpectrumProps) {
  *   Middle-right:   HP remaining distribution, turn distribution
  *   Full width:     Damage distribution (per-combatant selector)
  *   Bottom:         Recommendations, per-combatant metrics table
- *   Footer:         Simulation log viewer (collapsible)
  *
  * Responsive: stacks vertically on mobile.
  */
@@ -147,6 +149,8 @@ function BalanceDashboardComponent({
     enemyRegenPerRun = false,
     lockedEnemies = [],
     onToggleLockEnemy,
+    roundRangeFilter,
+    onBucketClick,
     className = '',
 }: BalanceDashboardProps) {
     const hasCombatantMetrics = results.perCombatantMetrics.size > 0;
@@ -157,22 +161,6 @@ function BalanceDashboardComponent({
 
     const handleCombatantClick = useCallback((combatantId: string | null) => {
         setHighlightedCombatantId(prev => prev === combatantId ? null : combatantId);
-    }, []);
-
-    // ─── Interactive state: round range filtering ─────────────────────────
-    const [roundRangeFilter, setRoundRangeFilter] = useState<RoundRangeFilter | null>(null);
-
-    const handleBucketClick = useCallback((rangeStart: number, rangeEnd: number, label: string) => {
-        setRoundRangeFilter(prev => {
-            if (prev && prev.min === rangeStart && prev.max === rangeEnd) {
-                return null; // toggle off
-            }
-            return { min: rangeStart, max: rangeEnd, label };
-        });
-    }, []);
-
-    const handleClearRoundFilter = useCallback(() => {
-        setRoundRangeFilter(null);
     }, []);
 
     return (
@@ -282,7 +270,7 @@ function BalanceDashboardComponent({
                     <TurnDistributionChart
                         results={results}
                         selectedRoundRange={roundRangeFilter}
-                        onBucketClick={handleBucketClick}
+                        onBucketClick={onBucketClick}
                     />
                 </div>
             </div>
@@ -314,13 +302,6 @@ function BalanceDashboardComponent({
                     onCombatantClick={handleCombatantClick}
                 />
             )}
-
-            {/* ─── Simulation Log Viewer ─── */}
-            <SimulationLogViewer
-                results={results}
-                roundRangeFilter={roundRangeFilter}
-                onClearRoundFilter={handleClearRoundFilter}
-            />
         </div>
     );
 }
