@@ -7,7 +7,7 @@ import {
     Swords,
     Clock,
 } from 'lucide-react';
-import type { SimulationResults, BalanceReport } from 'playlist-data-engine';
+import type { SimulationResults, BalanceReport, CharacterSheet } from 'playlist-data-engine';
 import type { EncounterConfigUI, SimulationEstimateSnapshot, EstimateValidation } from '@/types/simulation';
 import { SimulationExportButton } from './SimulationExportButton';
 import './ResultsSummary.css';
@@ -48,6 +48,10 @@ export interface ResultsSummaryProps {
     estimateSnapshot?: SimulationEstimateSnapshot | null;
     /** Post-simulation validation (for export) */
     validation?: EstimateValidation | null;
+    /** Actual enemies used in the simulation (for export) */
+    simEnemies?: CharacterSheet[] | null;
+    /** Player party characters (for damage spread export) */
+    party?: CharacterSheet[] | null;
     className?: string;
 }
 
@@ -64,6 +68,8 @@ function ResultsSummaryComponent({
     encounterConfig,
     estimateSnapshot,
     validation,
+    simEnemies,
+    party,
     className = '',
 }: ResultsSummaryProps) {
     const { summary } = results;
@@ -189,6 +195,8 @@ function ResultsSummaryComponent({
                         encounterConfig={encounterConfig}
                         estimateSnapshot={estimateSnapshot}
                         validation={validation}
+                        simEnemies={simEnemies}
+                        party={party}
                     />
                 </div>
             )}

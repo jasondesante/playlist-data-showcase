@@ -75,6 +75,9 @@ export function BalanceLabTab() {
     // Locked enemies: user-pinned enemies that persist across simulation runs
     const [lockedEnemies, setLockedEnemies] = useState<CharacterSheet[]>([]);
 
+    // Store the party characters used in the last simulation (for damage spread calculator)
+    const [lastParty, setLastParty] = useState<CharacterSheet[] | null>(null);
+
     const handleToggleLockEnemy = useCallback((index: number) => {
         setLockedEnemies(prev => {
             const isLocked = prev.some(e => e === simEnemies?.[index]);
@@ -202,6 +205,7 @@ export function BalanceLabTab() {
             setHistoryEstimateSnapshot(snapshot);
             setSimEnemies(enemies);
             setEnemyRegenPerRun(!!config.enemyRegeneration);
+            setLastParty(party);
             startSimulation(party, enemies, config);
         },
         [startSimulation, setHistoryEstimateSnapshot],
@@ -423,6 +427,7 @@ export function BalanceLabTab() {
                                         enemyRegenPerRun={enemyRegenPerRun}
                                         lockedEnemies={lockedEnemies}
                                         onToggleLockEnemy={handleToggleLockEnemy}
+                                        party={lastParty}
                                         roundRangeFilter={roundRangeFilter}
                                         onBucketClick={handleBucketClick}
                                     />

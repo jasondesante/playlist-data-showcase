@@ -11,7 +11,7 @@
 
 import { useState, useCallback, memo } from 'react';
 import { Download, Copy, FileJson, FileSpreadsheet } from 'lucide-react';
-import type { SimulationResults, BalanceReport, CharacterSheet } from 'playlist-data-engine';
+import { AttackResolver, type SimulationResults, type BalanceReport, type CharacterSheet, type AttackSimulationResult } from 'playlist-data-engine';
 import type { EncounterConfigUI, SimulationEstimateSnapshot, EstimateValidation } from '@/types/simulation';
 import { formatRange } from '@/utils/estimateEnemyDPR';
 import { showToast } from '@/components/ui/Toast';
@@ -30,6 +30,8 @@ export interface SimulationExportButtonProps {
     validation?: EstimateValidation | null;
     /** Actual enemies used in the simulation */
     simEnemies?: CharacterSheet[] | null;
+    /** Player party characters (for damage spread export) */
+    party?: CharacterSheet[] | null;
     className?: string;
 }
 
@@ -51,8 +53,134 @@ function getEnemyGenStats(results: SimulationResults): EnemyGenRecord[] | undefi
     return (results as any).enemyGenerationStats;
 }
 
+// ─── Damage Spread Helpers ─────────────────────────────────────────────────────
+
+interface WeaponInfo {
+    name: string;
+    damageDice: string;
+    attackBonus: number;
+    type: 'melee' | 'ranged';
+    properties: string[];
+}
+
+interface DamageSpreadEntry {
+    hero: string;
+    enemy: string;
+    weapon: string;
+    attackBonus: number;
+    targetAC: number;
+    rollTable: Array<{ d20: number; total: number; result: string; damageRange: { min: number; max: number } | null }>;
+    simulation: AttackSimulationResult;
+}
+
+/** Parse dice formula without rolling (unlike engine's DiceRoller.parseDiceFormula) */
+function parseDiceFormula(formula: string): { diceCount: number; diceSides: number; modifier: number } {
+    const match = formula.match(/^(\d+)d(\d+)([+-]\d+)?$/);
+    if (!match) return { diceCount: 1, diceSides: 6, modifier: 0 };
+    return {
+        diceCount: parseInt(match[1], 10),
+        diceSides: parseInt(match[2], 10),
+        modifier: match[3] ? parseInt(match[3], 10) : 0,
+    };
+}
+
+/** Get equipped weapons from a character sheet */
+function getWeapons(character: CharacterSheet): WeaponInfo[] {
+    const weapons = character.equipment?.weapons?.filter(w => w.equipped) ?? [];
+    if (weapons.length === 0) {
+        const strMod = Math.floor((character.ability_scores.STR - 10) / 2);
+        return [{
+            name: 'Unarmed Strike',
+            damageDice: '1',
+            attackBonus: strMod + character.proficiency_bonus,
+            type: 'melee' as const,
+            properties: [],
+        }];
+    }
+    return weapons.map(w => {
+        const isRanged = w.weaponProperties?.includes('ranged') || false;
+        const isFinesse = w.weaponProperties?.includes('finesse') || false;
+        const ability = isRanged || isFinesse ? 'DEX' : 'STR';
+        const abilityMod = Math.floor((character.ability_scores[ability] - 10) / 2);
+        return {
+            name: w.name,
+            damageDice: w.damage?.dice || '1d6',
+            attackBonus: abilityMod + character.proficiency_bonus,
+            type: isRanged ? 'ranged' as const : 'melee' as const,
+            properties: w.weaponProperties || [],
+        };
+    });
+}
+
+/** Compute damage spreads for all hero/weapon/enemy combos */
+function computeDamageSpreads(
+    party: CharacterSheet[],
+    enemies: CharacterSheet[],
+    simIterations: number = 1000,
+): DamageSpreadEntry[] {
+    const entries: DamageSpreadEntry[] = [];
+
+    for (const hero of party) {
+        const weapons = getWeapons(hero);
+        for (const enemy of enemies) {
+            const targetAC = enemy.armor_class;
+            for (const weapon of weapons) {
+                // Build the 20-roll spread table
+                const rollTable: DamageSpreadEntry['rollTable'] = [];
+                const { diceCount, diceSides } = parseDiceFormula(weapon.damageDice);
+                for (let d20 = 1; d20 <= 20; d20++) {
+                    const isCrit = d20 === 20;
+                    const isFumble = d20 === 1;
+                    const totalRoll = d20 + weapon.attackBonus;
+                    const hits = isCrit || (!isFumble && totalRoll >= targetAC);
+                    let damageRange: { min: number; max: number } | null = null;
+                    if (hits) {
+                        const dice = isCrit ? diceCount * 2 : diceCount;
+                        const mod = Math.floor((hero.ability_scores[
+                            weapon.type === 'ranged' || weapon.properties.includes('finesse') ? 'DEX' : 'STR'
+                        ] - 10) / 2);
+                        damageRange = {
+                            min: dice + mod,
+                            max: dice * diceSides + mod,
+                        };
+                    }
+                    const label = isCrit ? 'CRIT!' : isFumble ? 'MISS!' : hits ? 'Hit' : 'Miss';
+                    rollTable.push({ d20, total: totalRoll, result: label, damageRange });
+                }
+
+                // Run simulation using the engine
+                const attack = {
+                    name: weapon.name,
+                    damage_dice: weapon.damageDice,
+                    attack_bonus: weapon.attackBonus,
+                    type: weapon.type,
+                    properties: weapon.properties,
+                };
+                const simulation = AttackResolver.simulateAttacks(hero, enemy, attack, simIterations);
+
+                entries.push({
+                    hero: hero.name,
+                    enemy: enemy.name,
+                    weapon: weapon.name,
+                    attackBonus: weapon.attackBonus,
+                    targetAC,
+                    rollTable,
+                    simulation,
+                });
+            }
+        }
+    }
+
+    return entries;
+}
+
 /** Build the full JSON export payload */
-function buildJsonExport(results: SimulationResults, balanceReport: BalanceReport | null): object {
+function buildJsonExport(
+    results: SimulationResults,
+    balanceReport: BalanceReport | null,
+    party?: CharacterSheet[] | null,
+    simEnemies?: CharacterSheet[] | null,
+): object {
     return {
         exportedAt: new Date().toISOString(),
         summary: {
@@ -84,11 +212,18 @@ function buildJsonExport(results: SimulationResults, balanceReport: BalanceRepor
         perCombatantMetrics: mapToObject(results.perCombatantMetrics),
         enemyGenerationStats: (results as any).enemyGenerationStats ?? null,
         wasCancelled: results.wasCancelled,
+        ...(party && simEnemies && simEnemies.length > 0
+            ? { damageSpreads: computeDamageSpreads(party, simEnemies) }
+            : {}),
     };
 }
 
 /** Build a CSV string from simulation results */
-function buildCsvExport(results: SimulationResults): string {
+function buildCsvExport(
+    results: SimulationResults,
+    party?: CharacterSheet[] | null,
+    simEnemies?: CharacterSheet[] | null,
+): string {
     const lines: string[] = [];
 
     // Summary section
@@ -182,6 +317,28 @@ function buildCsvExport(results: SimulationResults): string {
     lines.push('Enemy Count,Average CR');
     lines.push(`${results.encounter.enemyCount},${results.encounter.averageCR.toFixed(2)}`);
 
+    // Damage spreads
+    if (party && simEnemies && simEnemies.length > 0) {
+        lines.push('');
+        lines.push('=== Damage Spreads (1,000 attack simulations) ===');
+        lines.push('Hero,Enemy,Weapon,Attack Bonus,Target AC,Hit Rate %,Crit Rate %,Miss Rate %,Avg Damage,Max Damage');
+        const spreads = computeDamageSpreads(party, simEnemies);
+        for (const ds of spreads) {
+            lines.push([
+                `"${ds.hero}"`,
+                `"${ds.enemy}"`,
+                `"${ds.weapon}"`,
+                `+${ds.attackBonus}`,
+                ds.targetAC,
+                ds.simulation.hitRate.toFixed(1),
+                ds.simulation.critRate.toFixed(1),
+                ds.simulation.missRate.toFixed(1),
+                ds.simulation.averageDamage.toFixed(1),
+                ds.simulation.maxDamage,
+            ].join(','));
+        }
+    }
+
     return lines.join('\n');
 }
 
@@ -193,6 +350,7 @@ function buildClipboardSummary(
     estimateSnapshot?: SimulationEstimateSnapshot | null,
     validation?: EstimateValidation | null,
     simEnemies?: CharacterSheet[] | null,
+    party?: CharacterSheet[] | null,
 ): string {
     const s = results.summary;
     const lines: string[] = [];
@@ -378,6 +536,23 @@ function buildClipboardSummary(
         lines.push('');
     }
 
+    // ─── Damage Spreads ─────────────────────────────────────────────────
+    if (party && simEnemies && simEnemies.length > 0) {
+        lines.push('── Damage Spreads (1,000 attack simulations per combo) ──');
+        const spreads = computeDamageSpreads(party, simEnemies);
+        for (const ds of spreads) {
+            lines.push(`  ${ds.hero} → ${ds.enemy} (${ds.weapon}, +${ds.attackBonus} vs AC ${ds.targetAC})`);
+            lines.push(`    Hit: ${ds.simulation.hitRate.toFixed(0)}%  |  Crit: ${ds.simulation.critRate.toFixed(0)}%  |  Miss: ${ds.simulation.missRate.toFixed(0)}%  |  Avg DMG: ${ds.simulation.averageDamage.toFixed(1)}  |  Max DMG: ${ds.simulation.maxDamage}`);
+            // Show top damage buckets from simulation
+            const topBuckets = ds.simulation.distribution
+                .filter(b => b.damage > 0)
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 5);
+            lines.push(`    Top damage: ${topBuckets.map(b => `${b.damage} dmg (${b.percentage.toFixed(1)}%)`).join(', ')}`);
+        }
+        lines.push('');
+    }
+
     if (results.wasCancelled) {
         lines.push('(Simulation was cancelled — partial results)');
     }
@@ -407,6 +582,7 @@ export function SimulationExportButton({
     estimateSnapshot,
     validation,
     simEnemies,
+    party,
     className = '',
 }: SimulationExportButtonProps) {
     const [activeMenu, setActiveMenu] = useState(false);
@@ -415,7 +591,7 @@ export function SimulationExportButton({
 
     const handleExportJson = useCallback(() => {
         try {
-            const data = buildJsonExport(results, balanceReport);
+            const data = buildJsonExport(results, balanceReport, party, simEnemies);
             const json = JSON.stringify(data, null, 2);
             const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
             const wr = (results.summary.playerWinRate * 100).toFixed(0);
@@ -426,11 +602,11 @@ export function SimulationExportButton({
             showToast('Failed to export JSON', 'error', 2000);
         }
         closeMenu();
-    }, [results, balanceReport, closeMenu]);
+    }, [results, balanceReport, party, simEnemies, closeMenu]);
 
     const handleExportCsv = useCallback(() => {
         try {
-            const csv = buildCsvExport(results);
+            const csv = buildCsvExport(results, party, simEnemies);
             const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
             const wr = (results.summary.playerWinRate * 100).toFixed(0);
             downloadFile(csv, `simulation-${ts}-${wr}pct.csv`, 'text/csv');
@@ -440,11 +616,11 @@ export function SimulationExportButton({
             showToast('Failed to export CSV', 'error', 2000);
         }
         closeMenu();
-    }, [results, closeMenu]);
+    }, [results, party, simEnemies, closeMenu]);
 
     const handleCopySummary = useCallback(async () => {
         try {
-            const text = buildClipboardSummary(results, balanceReport, encounterConfig, estimateSnapshot, validation, simEnemies);
+            const text = buildClipboardSummary(results, balanceReport, encounterConfig, estimateSnapshot, validation, simEnemies, party);
             await navigator.clipboard.writeText(text);
             showToast('Copied summary to clipboard', 'success', 1500);
         } catch (err) {
@@ -452,7 +628,7 @@ export function SimulationExportButton({
             showToast('Failed to copy to clipboard', 'error', 2000);
         }
         closeMenu();
-    }, [results, balanceReport, encounterConfig, estimateSnapshot, validation, simEnemies, closeMenu]);
+    }, [results, balanceReport, encounterConfig, estimateSnapshot, validation, simEnemies, party, closeMenu]);
 
     return (
         <div className={`seb-container ${className}`}>

@@ -14,6 +14,7 @@ import {
     HitMissChart,
 } from './charts';
 import type { EncounterConfigUI, SimulationEstimateSnapshot, EstimateValidation } from '@/types/simulation';
+import { DamageSpreadCalculator } from './DamageSpreadCalculator';
 import './BalanceDashboard.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -49,6 +50,8 @@ export interface BalanceDashboardProps {
     lockedEnemies?: CharacterSheet[];
     /** Callback to toggle lock on an enemy by index in simEnemies */
     onToggleLockEnemy?: (index: number) => void;
+    /** Player party characters (for damage spread calculator) */
+    party?: CharacterSheet[] | null;
     /** Round range filter (shared with log viewer panel) */
     roundRangeFilter?: RoundRangeFilter | null;
     /** Callback when user clicks a turn distribution bucket */
@@ -149,6 +152,7 @@ function BalanceDashboardComponent({
     enemyRegenPerRun = false,
     lockedEnemies = [],
     onToggleLockEnemy,
+    party = null,
     roundRangeFilter,
     onBucketClick,
     className = '',
@@ -178,6 +182,8 @@ function BalanceDashboardComponent({
                     encounterConfig={encounterConfig}
                     estimateSnapshot={estimateSnapshot}
                     validation={validation}
+                    simEnemies={simEnemies}
+                    party={party}
                 />
             </div>
 
@@ -222,6 +228,9 @@ function BalanceDashboardComponent({
                                         <div className="bd-enemy-spells">
                                             Spells: {spells.map(s => s.name).join(', ')}
                                         </div>
+                                    )}
+                                    {party && (
+                                        <DamageSpreadCalculator enemy={enemy} party={party} />
                                     )}
                                 </div>
                             );

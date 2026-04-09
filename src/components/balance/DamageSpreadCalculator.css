@@ -1,0 +1,281 @@
+/* ============================================
+   DAMAGE SPREAD CALCULATOR
+   ============================================ */
+
+.dsc-container {
+    margin-top: 0.35rem;
+    border: 1px solid hsl(var(--border) / 0.6);
+    border-radius: calc(var(--radius, 0.5rem) * 0.6);
+    background-color: hsl(var(--background));
+    overflow: hidden;
+}
+
+.dsc-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    width: 100%;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: hsl(var(--primary));
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.dsc-toggle:hover {
+    background-color: hsl(var(--muted) / 0.15);
+}
+
+.dsc-toggle-open {
+    border-bottom: 1px solid hsl(var(--border) / 0.4);
+}
+
+.dsc-toggle-label {
+    flex: 1;
+    text-align: left;
+}
+
+.dsc-content {
+    padding: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+/* ─── Selectors ─── */
+
+.dsc-selectors {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.dsc-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.dsc-select {
+    padding: 0.2rem 0.3rem;
+    font-size: 0.7rem;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--background));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+/* ─── Summary Stats ─── */
+
+.dsc-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.6rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.dsc-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+}
+
+.dsc-stat-label {
+    font-size: 0.58rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.dsc-stat-value {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: ui-monospace, monospace;
+}
+
+/* ─── Roll Spread Table ─── */
+
+.dsc-table-wrapper {
+    overflow-x: auto;
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+.dsc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.68rem;
+    font-family: ui-monospace, monospace;
+}
+
+.dsc-table th {
+    position: sticky;
+    top: 0;
+    padding: 0.25rem 0.35rem;
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted) / 0.15);
+    border-bottom: 1px solid hsl(var(--border) / 0.3);
+    white-space: nowrap;
+    text-align: center;
+}
+
+.dsc-table td {
+    padding: 0.2rem 0.35rem;
+    text-align: center;
+    color: hsl(var(--foreground));
+    border-bottom: 1px solid hsl(var(--border) / 0.15);
+    white-space: nowrap;
+}
+
+.dsc-td-roll {
+    font-weight: 700;
+    color: hsl(var(--muted-foreground));
+}
+
+.dsc-td-total {
+    color: hsl(var(--muted-foreground));
+}
+
+.dsc-td-result {
+    font-weight: 600;
+}
+
+.dsc-hit {
+    color: hsl(142 76% 46%);
+}
+
+.dsc-miss {
+    color: hsl(0 84% 60% / 0.7);
+}
+
+.dsc-td-damage {
+    font-weight: 600;
+}
+
+.dsc-td-prob {
+    color: hsl(var(--muted-foreground) / 0.7);
+}
+
+.dsc-row-crit {
+    background-color: hsl(48 96% 53% / 0.1);
+}
+
+.dsc-row-crit .dsc-td-roll {
+    color: hsl(48 96% 53%);
+}
+
+.dsc-row-crit .dsc-td-damage {
+    color: hsl(48 96% 53%);
+}
+
+.dsc-row-fumble {
+    background-color: hsl(0 84% 60% / 0.06);
+}
+
+.dsc-row-fumble .dsc-td-roll {
+    color: hsl(0 84% 60% / 0.6);
+}
+
+.dsc-row-miss .dsc-td-damage {
+    color: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* ─── Mini Simulation ─── */
+
+.dsc-sim {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.dsc-sim-btn {
+    align-self: flex-start;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--muted) / 0.2);
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.dsc-sim-btn:hover {
+    background-color: hsl(var(--muted) / 0.3);
+    border-color: hsl(var(--border));
+}
+
+.dsc-sim-label {
+    font-size: 0.58rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.dsc-sim-bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.dsc-sim-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.65rem;
+    font-family: ui-monospace, monospace;
+}
+
+.dsc-sim-bar-label {
+    width: 2.5rem;
+    text-align: right;
+    color: hsl(var(--muted-foreground));
+    flex-shrink: 0;
+}
+
+.dsc-sim-bar-track {
+    flex: 1;
+    height: 12px;
+    background-color: hsl(var(--muted) / 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.dsc-sim-bar-fill {
+    height: 100%;
+    min-width: 1px;
+    background-color: hsl(var(--primary) / 0.6);
+    border-radius: 2px;
+    transition: width 0.2s ease;
+}
+
+.dsc-sim-bar-pct {
+    width: 3rem;
+    text-align: right;
+    color: hsl(var(--muted-foreground) / 0.7);
+    flex-shrink: 0;
+    font-size: 0.6rem;
+}
+
+/* Zero damage row (misses) */
+.dsc-sim-bar-row:first-child .dsc-sim-bar-fill {
+    background-color: hsl(0 84% 60% / 0.4);
+}
