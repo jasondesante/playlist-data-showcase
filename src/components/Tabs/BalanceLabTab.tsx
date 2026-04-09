@@ -58,7 +58,6 @@ export function BalanceLabTab() {
     // Track encounter config for recommendation "apply" integration
     const [encounterConfig, setEncounterConfig] = useState<EncounterConfigUI>(DEFAULT_ENCOUNTER_CONFIG);
     const [configOverride, setConfigOverride] = useState<EncounterConfigUI | null>(null);
-    const configOverrideConsumedRef = useRef(false);
 
     // Track incoming config transfer from CombatSimulatorTab
     const [partySeedsOverride, setPartySeedsOverride] = useState<string[] | null>(null);
@@ -105,7 +104,6 @@ export function BalanceLabTab() {
             // Set encounter config override for the form
             setEncounterConfig(payload.encounterConfig);
             setConfigOverride(payload.encounterConfig);
-            configOverrideConsumedRef.current = false;
             // Set party seeds for pre-selection
             setPartySeedsOverride(payload.partySeeds);
             // Store the transfer for auto-running simulation
@@ -214,12 +212,11 @@ export function BalanceLabTab() {
     // Track encounter config changes from SimulationConfigPanel
     const handleEncounterConfigChange = useCallback((config: EncounterConfigUI) => {
         setEncounterConfig(config);
-        // Clear override after it's been consumed by the config panel
-        if (configOverrideConsumedRef.current) {
+        // Clear override once the config panel has applied it
+        if (configOverride !== null) {
             setConfigOverride(null);
-            configOverrideConsumedRef.current = false;
         }
-    }, []);
+    }, [configOverride]);
 
     // Handle applying a recommendation — updates encounter config in config panel
     const handleApplyRecommendation = useCallback(
@@ -227,10 +224,9 @@ export function BalanceLabTab() {
             const newConfig = { ...encounterConfig, ...changes };
             setEncounterConfig(newConfig);
             setConfigOverride(newConfig);
-            configOverrideConsumedRef.current = false;
             // Expand config panel so user sees the change
             setConfigCollapsed(false);
-            logger.info('BalanceLab', 'Applied recommendation', { changes });
+            logger.info('BalanceLab', 'Applied recommendation', { changes, newConfig });
         },
         [encounterConfig],
     );

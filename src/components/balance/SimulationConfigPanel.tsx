@@ -88,22 +88,18 @@ export function SimulationConfigPanel({
     const [validationError, setValidationError] = useState<string | null>(null);
 
     // Sync external encounter config override into internal state
-    const prevOverrideRef = useRef<EncounterConfigUI | null | undefined>(undefined);
-    if (encounterConfigOverride !== prevOverrideRef.current) {
+    useEffect(() => {
         if (encounterConfigOverride != null) {
             setEncounterConfig(encounterConfigOverride);
         }
-        prevOverrideRef.current = encounterConfigOverride;
-    }
+    }, [encounterConfigOverride]);
 
     // Sync external party seeds override into internal state
-    const prevPartySeedsRef = useRef<string[] | null | undefined>(undefined);
-    if (partySeedsOverride !== prevPartySeedsRef.current) {
+    useEffect(() => {
         if (partySeedsOverride != null && partySeedsOverride.length > 0) {
             setSelectedPartySeeds(partySeedsOverride);
         }
-        prevPartySeedsRef.current = partySeedsOverride;
-    }
+    }, [partySeedsOverride]);
 
     // Notify parent of encounter config changes
     const updateEncounterConfig = useCallback(
