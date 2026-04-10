@@ -167,7 +167,7 @@ function DamageSpreadCalculatorComponent({ enemy, party, hitMode }: DamageSpread
                 label = 'MISS!';
             } else if (isScaled && totalRoll < targetAC) {
                 const deficit = targetAC - totalRoll;
-                const scale = Math.max(5, 100 - deficit * 5);
+                const scale = Math.max(10, 100 - deficit * 10);
                 label = `Scaled ${scale.toFixed(0)}%`;
             } else if (hits) {
                 label = 'Hit';
