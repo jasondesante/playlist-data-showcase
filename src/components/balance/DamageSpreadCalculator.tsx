@@ -12,7 +12,7 @@
 
 import { useState, useMemo, useCallback, memo } from 'react';
 import { Swords, ChevronRight, ChevronDown } from 'lucide-react';
-import { AttackResolver, DiceRoller, type CharacterSheet, type AttackSimulationResult } from 'playlist-data-engine';
+import { AttackResolver, DiceRoller, type CharacterSheet, type AttackSimulationResult, type HitMode } from 'playlist-data-engine';
 import './DamageSpreadCalculator.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -20,6 +20,7 @@ import './DamageSpreadCalculator.css';
 interface DamageSpreadCalculatorProps {
     enemy: CharacterSheet;
     party: CharacterSheet[];
+    hitMode?: HitMode;
 }
 
 interface WeaponOption {
@@ -66,7 +67,7 @@ function getWeapons(character: CharacterSheet): WeaponOption[] {
         const strMod = Math.floor((character.ability_scores.STR - 10) / 2);
         return [{
             name: 'Unarmed Strike',
-            damageDice: '1',
+            damageDice: '1d1',
             damageType: 'bludgeoning',
             attackBonus: strMod + character.proficiency_bonus,
             damageModifier: strMod,
@@ -99,6 +100,7 @@ function runMiniSim(
     target: CharacterSheet,
     weapon: WeaponOption,
     iterations: number,
+    hitMode?: HitMode,
 ): AttackSimulationResult {
     const attack = {
         name: weapon.name,
@@ -108,7 +110,7 @@ function runMiniSim(
         properties: weapon.properties,
     };
 
-    const result = AttackResolver.simulateAttacks(attacker, target, attack, iterations);
+    const result = AttackResolver.simulateAttacks(attacker, target, attack, iterations, undefined, hitMode);
 
     // eslint-disable-next-line no-console
     console.log(`[DamageSpread] ${iterations} attack simulation — ${weapon.name} vs AC ${target.armor_class}`, {
@@ -130,7 +132,7 @@ function runMiniSim(
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-function DamageSpreadCalculatorComponent({ enemy, party }: DamageSpreadCalculatorProps) {
+function DamageSpreadCalculatorComponent({ enemy, party, hitMode }: DamageSpreadCalculatorProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [selectedHeroIdx, setSelectedHeroIdx] = useState(0);
     const [selectedWeaponIdx, setSelectedWeaponIdx] = useState(0);
@@ -148,18 +150,34 @@ function DamageSpreadCalculatorComponent({ enemy, party }: DamageSpreadCalculato
     // Build the 20-roll spread table
     const rollOutcomes = useMemo((): RollOutcome[] => {
         if (!selectedWeapon) return [];
+        const isScaled = hitMode !== 'dnd';
         const outcomes: RollOutcome[] = [];
         for (let d20 = 1; d20 <= 20; d20++) {
             const isCrit = DiceRoller.isCriticalHit(d20);
             const isFumble = DiceRoller.isCriticalMiss(d20);
             const totalRoll = d20 + selectedWeapon.attackBonus;
-            const hits = isCrit || (!isFumble && totalRoll >= targetAC);
+            const hits = isScaled
+                ? !isFumble
+                : isCrit || (!isFumble && totalRoll >= targetAC);
             const damageRange = hits ? calcDamageRange(selectedWeapon, isCrit) : null;
-            const label = isCrit ? 'CRIT!' : isFumble ? 'MISS!' : hits ? 'Hit' : 'Miss';
+            let label: string;
+            if (isCrit) {
+                label = 'CRIT!';
+            } else if (isFumble) {
+                label = 'MISS!';
+            } else if (isScaled && totalRoll < targetAC) {
+                const deficit = targetAC - totalRoll;
+                const scale = Math.max(5, 100 - deficit * 5);
+                label = `Scaled ${scale.toFixed(0)}%`;
+            } else if (hits) {
+                label = 'Hit';
+            } else {
+                label = 'Miss';
+            }
             outcomes.push({ d20Roll: d20, totalRoll, hits, isCrit, isFumble, damageRange, damageDice: selectedWeapon.damageDice, label });
         }
         return outcomes;
-    }, [selectedWeapon, targetAC]);
+    }, [selectedWeapon, targetAC, hitMode]);
 
     // Stats
     const stats = useMemo(() => {
@@ -179,7 +197,7 @@ function DamageSpreadCalculatorComponent({ enemy, party }: DamageSpreadCalculato
 
     const handleRunSim = useCallback(() => {
         if (!selectedWeapon || !party[selectedHeroIdx]) return;
-        setSimResults(runMiniSim(party[selectedHeroIdx], enemy, selectedWeapon, simIterations));
+        setSimResults(runMiniSim(party[selectedHeroIdx], enemy, selectedWeapon, simIterations, hitMode));
     }, [selectedWeapon, selectedHeroIdx, party, enemy]);
 
     // Reset weapon index when hero changes

@@ -46,6 +46,38 @@ function statRange(values: number[]): { min: number; avg: number; max: number } 
 }
 
 /**
+ * Estimate the party's average attack bonus from equipped weapons.
+ *
+ * For each party member, finds the first equipped weapon and computes
+ * attack bonus = ability modifier + proficiency bonus. Returns the
+ * average across all party members.
+ */
+function estimatePartyAttackBonus(party: CharacterSheet[]): number {
+    if (party.length === 0) return 0;
+
+    let totalBonus = 0;
+    for (const character of party) {
+        const stats = character.ability_scores;
+        const equippedWeapon = character.equipment?.weapons?.find(w => w.equipped);
+
+        let abilityMod: number;
+        if (equippedWeapon) {
+            const isRanged = equippedWeapon.weaponProperties?.includes('ranged') ?? false;
+            const isFinesse = equippedWeapon.weaponProperties?.includes('finesse') ?? false;
+            const ability = isRanged || isFinesse ? 'DEX' : 'STR';
+            abilityMod = Math.floor(((stats?.[ability] ?? 10) - 10) / 2);
+        } else {
+            abilityMod = Math.floor(((stats?.STR ?? 10) - 10) / 2);
+        }
+
+        const proficiency = character.proficiency_bonus ?? Math.ceil(1 + ((character.level || 1) - 1) / 4);
+        totalBonus += abilityMod + proficiency;
+    }
+
+    return totalBonus / party.length;
+}
+
+/**
  * React hook for computing pre-simulation estimates from party + encounter config.
  *
  * Generates multiple enemy samples to show the spread of possible enemy stats
@@ -137,12 +169,26 @@ export function useEstimateSnapshot(
         const totalAdjustedXP = calculateAdjustedXP(enemyCRs, multiplier);
 
         // --- Party stats mapping ---
+        // Compute actual DPR: damage per hit × hit rate vs average enemy AC
+        const avgEnemyAC = perEnemyAC.avg;
+        const damagePerHit = partyAnalysis.averageDamage;
+
+        // Calculate party attack bonus from equipped weapons
+        const partyAttackBonus = estimatePartyAttackBonus(selectedParty);
+
+        // Hit rate: max(5%, chance to meet or exceed AC on d20)
+        // Need to roll >= (targetAC - attackBonus). With d20 (1-20):
+        // P(hit) = (21 - (targetAC - attackBonus)) / 20, min 5% (nat 20 always hits)
+        const hitRate = Math.max(0.05, Math.min(0.95, (21 - (avgEnemyAC - partyAttackBonus)) / 20));
+
+        const estimatedDPR = Math.round(damagePerHit * hitRate * 10) / 10;
+
         const partyStats = {
             averageLevel: partyAnalysis.averageLevel,
             partySize: partyAnalysis.partySize,
             averageAC: partyAnalysis.averageAC,
             averageHP: partyAnalysis.averageHP,
-            estimatedDPR: partyAnalysis.averageDamage,
+            estimatedDPR,
             totalStrength: partyAnalysis.totalStrength,
             xpBudgets: {
                 easy: partyAnalysis.easyXP,

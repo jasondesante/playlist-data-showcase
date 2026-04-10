@@ -19,6 +19,8 @@ export interface PartyEstimateCardProps {
     isLoading: boolean;
     /** Encounter adjusted XP for color-coding XP budgets (optional) */
     encounterXP?: number;
+    /** Enemy-aware DPR estimate (damage per hit × hit rate vs enemy AC). Overrides averageDamage if provided. */
+    estimatedDPR?: number;
 }
 
 /**
@@ -66,6 +68,7 @@ export function PartyEstimateCard({
     analysis,
     isLoading,
     encounterXP,
+    estimatedDPR,
 }: PartyEstimateCardProps) {
     if (isLoading) {
         return <Skeleton />;
@@ -107,7 +110,7 @@ export function PartyEstimateCard({
                 <div className="pec-pill" data-tooltip="Damage Per Round — estimated average damage output per party member per round">
                     <Crosshair size={11} />
                     <span className="pec-pill-label">DPR</span>
-                    <span className="pec-pill-value">~{analysis.averageDamage.toFixed(1)}</span>
+                    <span className="pec-pill-value">~{(estimatedDPR ?? analysis.averageDamage).toFixed(1)}</span>
                 </div>
                 <div className="pec-pill" data-tooltip="Total Party Strength — composite power score based on level, stats, and equipment">
                     <Zap size={11} />

@@ -197,6 +197,7 @@ function ResultsSummaryComponent({
                         validation={validation}
                         simEnemies={simEnemies}
                         party={party}
+                        hitMode="scaled"
                     />
                 </div>
             )}

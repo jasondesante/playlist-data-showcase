@@ -283,6 +283,7 @@ export function SimulationConfigPanel({
                     analysis={partyAnalysis}
                     isLoading={false}
                     encounterXP={estimateSnapshot?.enemy.totalAdjustedXP}
+                    estimatedDPR={estimateSnapshot?.party.estimatedDPR}
                 />
             </section>
 

@@ -13,7 +13,7 @@
 
 import { useState, useCallback, useMemo, memo } from 'react';
 import { Download, Copy, FileJson, FileSpreadsheet } from 'lucide-react';
-import { AttackResolver, type SimulationResults, type BalanceReport, type CharacterSheet, type AttackSimulationResult, type SimulationRunDetail } from 'playlist-data-engine';
+import { AttackResolver, type SimulationResults, type BalanceReport, type CharacterSheet, type AttackSimulationResult, type SimulationRunDetail, type HitMode } from 'playlist-data-engine';
 import type { EncounterConfigUI, SimulationEstimateSnapshot, EstimateValidation } from '@/types/simulation';
 import { formatRange } from '@/utils/estimateEnemyDPR';
 import { showToast } from '@/components/ui/Toast';
@@ -34,6 +34,8 @@ export interface SimulationExportButtonProps {
     simEnemies?: CharacterSheet[] | null;
     /** Player party characters (for damage spread export) */
     party?: CharacterSheet[] | null;
+    /** Hit mode for damage spread calculations */
+    hitMode?: HitMode;
     className?: string;
 }
 
@@ -93,7 +95,7 @@ function getWeapons(character: CharacterSheet): WeaponInfo[] {
         const strMod = Math.floor((character.ability_scores.STR - 10) / 2);
         return [{
             name: 'Unarmed Strike',
-            damageDice: '1',
+            damageDice: '1d1',
             attackBonus: strMod + character.proficiency_bonus,
             type: 'melee' as const,
             properties: [],
@@ -119,6 +121,7 @@ function computeDamageSpreads(
     party: CharacterSheet[],
     enemies: CharacterSheet[],
     simIterations: number = 1000,
+    hitMode?: HitMode,
 ): DamageSpreadEntry[] {
     const entries: DamageSpreadEntry[] = [];
 
@@ -158,7 +161,7 @@ function computeDamageSpreads(
                     type: weapon.type,
                     properties: weapon.properties,
                 };
-                const simulation = AttackResolver.simulateAttacks(hero, enemy, attack, simIterations);
+                const simulation = AttackResolver.simulateAttacks(hero, enemy, attack, simIterations, undefined, hitMode);
 
                 entries.push({
                     hero: hero.name,
@@ -182,6 +185,7 @@ function buildJsonExport(
     balanceReport: BalanceReport | null,
     party?: CharacterSheet[] | null,
     simEnemies?: CharacterSheet[] | null,
+    hitMode?: HitMode,
 ): object {
     return {
         exportedAt: new Date().toISOString(),
@@ -215,7 +219,7 @@ function buildJsonExport(
         enemyGenerationStats: (results as any).enemyGenerationStats ?? null,
         wasCancelled: results.wasCancelled,
         ...(party && simEnemies && simEnemies.length > 0
-            ? { damageSpreads: computeDamageSpreads(party, simEnemies) }
+            ? { damageSpreads: computeDamageSpreads(party, simEnemies, 1000, hitMode) }
             : {}),
     };
 }
@@ -225,6 +229,7 @@ function buildCsvExport(
     results: SimulationResults,
     party?: CharacterSheet[] | null,
     simEnemies?: CharacterSheet[] | null,
+    hitMode?: HitMode,
 ): string {
     const lines: string[] = [];
 
@@ -324,7 +329,7 @@ function buildCsvExport(
         lines.push('');
         lines.push('=== Damage Spreads (1,000 attack simulations) ===');
         lines.push('Hero,Enemy,Weapon,Attack Bonus,Target AC,Hit Rate %,Crit Rate %,Miss Rate %,Avg Damage,Max Damage');
-        const spreads = computeDamageSpreads(party, simEnemies);
+        const spreads = computeDamageSpreads(party, simEnemies, 1000, hitMode);
         for (const ds of spreads) {
             lines.push([
                 `"${ds.hero}"`,
@@ -353,6 +358,7 @@ function buildClipboardSummary(
     validation?: EstimateValidation | null,
     simEnemies?: CharacterSheet[] | null,
     party?: CharacterSheet[] | null,
+    hitMode?: HitMode,
 ): string {
     const s = results.summary;
     const lines: string[] = [];
@@ -541,7 +547,7 @@ function buildClipboardSummary(
     // ─── Damage Spreads ─────────────────────────────────────────────────
     if (party && simEnemies && simEnemies.length > 0) {
         lines.push('── Damage Spreads (1,000 attack simulations per combo) ──');
-        const spreads = computeDamageSpreads(party, simEnemies);
+        const spreads = computeDamageSpreads(party, simEnemies, 1000, hitMode);
         for (const ds of spreads) {
             lines.push(`  ${ds.hero} → ${ds.enemy} (${ds.weapon}, +${ds.attackBonus} vs AC ${ds.targetAC})`);
             lines.push(`    Hit: ${ds.simulation.hitRate.toFixed(0)}%  |  Crit: ${ds.simulation.critRate.toFixed(0)}%  |  Miss: ${ds.simulation.missRate.toFixed(0)}%  |  Avg DMG: ${ds.simulation.averageDamage.toFixed(1)}  |  Max DMG: ${ds.simulation.maxDamage}`);
@@ -714,6 +720,7 @@ export function SimulationExportButton({
     validation,
     simEnemies,
     party,
+    hitMode,
     className = '',
 }: SimulationExportButtonProps) {
     const [activeMenu, setActiveMenu] = useState(false);
@@ -769,7 +776,7 @@ export function SimulationExportButton({
                     })),
                 };
             } else if (effectiveScope === 'all') {
-                const analysis = buildJsonExport(results, balanceReport, party, simEnemies);
+                const analysis = buildJsonExport(results, balanceReport, party, simEnemies, hitMode);
                 data = {
                     ...analysis,
                     combatLogs: results.runDetails!.map((rd: SimulationRunDetail) => ({
@@ -795,7 +802,7 @@ export function SimulationExportButton({
                     })),
                 };
             } else {
-                data = buildJsonExport(results, balanceReport, party, simEnemies);
+                data = buildJsonExport(results, balanceReport, party, simEnemies, hitMode);
             }
 
             const json = JSON.stringify(data, null, 2);
@@ -817,9 +824,9 @@ export function SimulationExportButton({
             if (effectiveScope === 'logs') {
                 csv = buildCombatLogExport(results, results.runDetails!);
             } else if (effectiveScope === 'all') {
-                csv = buildCsvExport(results, party, simEnemies) + '\n\n' + buildCombatLogExport(results, results.runDetails!);
+                csv = buildCsvExport(results, party, simEnemies, hitMode) + '\n\n' + buildCombatLogExport(results, results.runDetails!);
             } else {
-                csv = buildCsvExport(results, party, simEnemies);
+                csv = buildCsvExport(results, party, simEnemies, hitMode);
             }
             const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
             const wr = (results.summary.playerWinRate * 100).toFixed(0);
@@ -835,7 +842,7 @@ export function SimulationExportButton({
 
     const handleCopySummary = useCallback(async () => {
         try {
-            const analysis = buildClipboardSummary(results, balanceReport, encounterConfig, estimateSnapshot, validation, simEnemies, party);
+            const analysis = buildClipboardSummary(results, balanceReport, encounterConfig, estimateSnapshot, validation, simEnemies, party, hitMode);
             let text: string;
             if (effectiveScope === 'logs') {
                 text = buildCombatLogExport(results, results.runDetails!);

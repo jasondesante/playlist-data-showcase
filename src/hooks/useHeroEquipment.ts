@@ -249,6 +249,13 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
             // Apply equipment effects using the engine (no instanceId to match API behavior)
             const result = EquipmentEffectApplier.equipItem(updatedCharacter, equipmentData, undefined);
 
+            // Only fail on stat requirement errors — items with no effects (e.g. weapons)
+            // return applied=false with no errors, which is valid
+            const requirementErrors = result.errors.filter(e => e.includes('requires'));
+            if (requirementErrors.length > 0) {
+                return { success: false, error: requirementErrors.join('; ') };
+            }
+
             if (result.errors.length > 0) {
                 logger.warn('HeroEquipment', 'Equipment effect application had errors', result.errors);
             }

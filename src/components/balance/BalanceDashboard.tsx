@@ -230,7 +230,7 @@ function BalanceDashboardComponent({
                                         </div>
                                     )}
                                     {party && (
-                                        <DamageSpreadCalculator enemy={enemy} party={party} />
+                                        <DamageSpreadCalculator enemy={enemy} party={party} hitMode="scaled" />
                                     )}
                                 </div>
                             );
