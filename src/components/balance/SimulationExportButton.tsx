@@ -141,12 +141,15 @@ function computeDamageSpreads(
                     let damageRange: { min: number; max: number } | null = null;
                     if (hits) {
                         const dice = isCrit ? diceCount * 2 : diceCount;
-                        const mod = Math.floor((hero.ability_scores[
-                            weapon.type === 'ranged' || weapon.properties.includes('finesse') ? 'DEX' : 'STR'
-                        ] - 10) / 2);
+                        const attackerSTR = hero.ability_scores.STR ?? 10;
+                        const defenderDEX = enemy.ability_scores.DEX ?? 10;
+                        const baseDamage = Math.max(0, attackerSTR - targetAC);
+                        const amplifier = Math.max(0.1, 1 + (attackerSTR - defenderDEX) * 0.1);
+                        const maxPossible = dice * diceSides;
+                        const newMin = Math.max(dice, maxPossible - 3);
                         damageRange = {
-                            min: dice + mod,
-                            max: dice * diceSides + mod,
+                            min: Math.max(1, baseDamage + Math.floor(newMin * amplifier)),
+                            max: Math.max(1, baseDamage + Math.floor(maxPossible * amplifier)),
                         };
                     }
                     const label = isCrit ? 'CRIT!' : isFumble ? 'MISS!' : hits ? 'Hit' : 'Miss';

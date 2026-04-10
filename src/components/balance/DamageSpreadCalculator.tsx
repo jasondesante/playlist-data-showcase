@@ -46,16 +46,31 @@ interface RollOutcome {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Calculate damage range (min, avg, max) using engine's DiceRoller.parseDiceFormula */
-function calcDamageRange(weapon: WeaponOption, isCrit: boolean): { min: number; avg: number; max: number } {
+/** Calculate damage range (min, avg, max) using STR-based damage formula */
+function calcDamageRange(
+    weapon: WeaponOption,
+    isCrit: boolean,
+    attackerSTR: number,
+    defenderAC: number,
+): { min: number; avg: number; max: number } {
     const parsed = DiceRoller.parseDiceFormula(weapon.damageDice);
-    const mod = weapon.damageModifier;
     const dice = isCrit ? parsed.diceCount * 2 : parsed.diceCount;
-    const avgPerDie = (parsed.diceSides + 1) / 2;
+
+    const baseDamage = Math.max(0, attackerSTR - defenderAC);
+
+    // Weapon bonus: small contribution from dice (1-3 depending on weapon size)
+    const minPossible = dice;                           // all 1s
+    const maxPossible = dice * parsed.diceSides;         // all max
+    const avgRoll = (minPossible + maxPossible) / 2;
+
+    const bonusMin = Math.max(1, Math.floor(minPossible / 4));
+    const bonusAvg = Math.max(1, Math.floor(avgRoll / 4));
+    const bonusMax = Math.max(1, Math.floor(maxPossible / 4));
+
     return {
-        min: dice + mod,
-        avg: Math.round(avgPerDie * dice + mod),
-        max: dice * parsed.diceSides + mod,
+        min: Math.max(1, baseDamage + bonusMin),
+        avg: Math.max(1, baseDamage + bonusAvg),
+        max: Math.max(1, baseDamage + bonusMax),
     };
 }
 
@@ -159,7 +174,8 @@ function DamageSpreadCalculatorComponent({ enemy, party, hitMode }: DamageSpread
             const hits = isScaled
                 ? !isFumble
                 : isCrit || (!isFumble && totalRoll >= targetAC);
-            const damageRange = hits ? calcDamageRange(selectedWeapon, isCrit) : null;
+            const attackerSTR = party[selectedHeroIdx]?.ability_scores.STR ?? 10;
+            const damageRange = hits ? calcDamageRange(selectedWeapon, isCrit, attackerSTR, targetAC) : null;
             let label: string;
             if (isCrit) {
                 label = 'CRIT!';
