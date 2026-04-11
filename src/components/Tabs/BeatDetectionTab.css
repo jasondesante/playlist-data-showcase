@@ -515,6 +515,14 @@
   justify-content: center;
 }
 
+.audio-analysis-controller-mode-description {
+  font-size: 0.7rem;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+  line-height: 1.4;
+  margin: 0;
+}
+
 .audio-analysis-controller-mode-button {
   display: flex;
   flex-direction: column;

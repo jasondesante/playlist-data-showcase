@@ -915,6 +915,13 @@ export function BeatDetectionTab() {
                                                 <span className="audio-analysis-controller-mode-button-desc">Tap</span>
                                             </button>
                                         </div>
+                                        <p className="audio-analysis-controller-mode-description">
+                                            {autoLevelSettings.controllerMode === 'tap'
+                                                ? 'Tap mode skips pitch detection and note phrase steps for faster analysis'
+                                                : autoLevelSettings.controllerMode === 'guitar_hero'
+                                                ? '5-fret layout with pitch-based note assignment across the fretboard'
+                                                : '4-directional layout with phrase-based arrow assignment'}
+                                        </p>
                                     </div>
                                 )}
 
@@ -1221,8 +1228,8 @@ export function BeatDetectionTab() {
 
             case 4:
                 // Step 4: Ready/Practice - Beat map summary, practice mode, export
-                // In auto mode with generated levels, show AutoReadyPanel
-                if (generationMode === 'automatic' && (allDifficulties || customDensityLevel)) {
+                // In auto mode with generated levels (or while regenerating), show AutoReadyPanel
+                if (generationMode === 'automatic' && (allDifficulties || customDensityLevel || isLevelGenerating)) {
                     // Imported levels may not have a beatMap — skip the !beatMap guard for auto mode
                     return wrapContent(
                         <AutoReadyPanel
@@ -1331,6 +1338,7 @@ export function BeatDetectionTab() {
         step1FileInputRef,
         generationMode,
         allDifficulties,
+        isLevelGenerating,
     ]);
 
     return (

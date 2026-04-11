@@ -305,30 +305,32 @@ export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRege
                 </p>
             </div>
 
-            {/* Start Practice Button */}
-            <div className="auto-ready-actions">
-                <Button
-                    variant="primary"
-                    size="lg"
-                    onClick={handleStartPractice}
-                    disabled={!hasLevel}
-                    className="auto-ready-start-btn"
-                >
-                    <Play size={18} />
-                    Start Practice
-                </Button>
-                {onExport && (
+            {/* Start Practice Button — hidden when downbeat config is stale */}
+            {!isStale && (
+                <div className="auto-ready-actions">
                     <Button
-                        variant="outline"
+                        variant="primary"
                         size="lg"
-                        onClick={onExport}
+                        onClick={handleStartPractice}
                         disabled={!hasLevel}
+                        className="auto-ready-start-btn"
                     >
-                        <Download size={18} />
-                        Export Level
+                        <Play size={18} />
+                        Start Practice
                     </Button>
-                )}
-            </div>
+                    {onExport && (
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            onClick={onExport}
+                            disabled={!hasLevel}
+                        >
+                            <Download size={18} />
+                            Export Level
+                        </Button>
+                    )}
+                </div>
+            )}
 
             {/* Difficulty Switcher (preset mode only) */}
             {autoSubMode !== 'customDensity' && (
@@ -388,14 +390,26 @@ export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRege
             <LevelSummaryCard level={selectedLevel} difficulty={selectedDifficulty} />
 
             {/* Downbeat Configuration */}
-            <DownbeatConfigPanel disabled={!hasLevel} />
+            <div className="auto-ready-downbeat-section">
+                <div className="auto-ready-downbeat-callout">
+                    <p className="auto-ready-downbeat-callout-text">
+                        Make sure the first beat of each bar is lined up correctly. If the downbeat isn't right,
+                        the generated levels won't align to the music — adjust it below, then regenerate.
+                    </p>
+                </div>
+                <DownbeatConfigPanel disabled={!hasLevel} />
+            </div>
 
             {/* Regenerate Levels prompt when downbeat/time signature changed */}
             {isStale && onRegenerate && (
                 <div className="auto-ready-regenerate">
+                    <p className="auto-ready-regenerate-heading">Downbeat configuration changed</p>
+                    <p className="auto-ready-regenerate-hint">
+                        You must regenerate levels for the changes to take effect.
+                    </p>
                     <Button
-                        variant="outline"
-                        size="sm"
+                        variant="primary"
+                        size="lg"
                         leftIcon={RefreshCw}
                         onClick={handleRegenerate}
                         disabled={isRegenerating}
@@ -404,9 +418,6 @@ export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRege
                     >
                         Regenerate Levels
                     </Button>
-                    <span className="auto-ready-regenerate-hint">
-                        Downbeat or time signature changed — regenerate to update levels
-                    </span>
                 </div>
             )}
 
