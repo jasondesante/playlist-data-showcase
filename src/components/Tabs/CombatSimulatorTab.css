@@ -7184,3 +7184,132 @@
   color: hsl(var(--primary-foreground));
   border-color: hsl(var(--primary));
 }
+
+/* ─── Stat Level Overrides ────────────────── */
+
+.combat-stat-levels-section {
+  margin-top: 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius, 0.5rem);
+  overflow: hidden;
+}
+
+.combat-stat-levels-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: hsl(var(--muted) / 0.15);
+  color: hsl(var(--foreground));
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.combat-stat-levels-toggle:hover {
+  background: hsl(var(--muted) / 0.25);
+}
+
+.combat-stat-levels-toggle-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.combat-stat-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 9999px;
+  background: hsl(var(--primary) / 0.15);
+  color: hsl(var(--primary));
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.combat-stat-levels-content {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.combat-stat-levels-hint {
+  font-size: 0.72rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+  line-height: 1.4;
+}
+
+.combat-stat-levels-presets {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.combat-preset-reset {
+  color: hsl(var(--muted-foreground));
+}
+
+.combat-stat-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.combat-stat-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.combat-stat-slider-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: hsl(var(--foreground));
+}
+
+.combat-stat-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.combat-stat-over {
+  color: hsl(120 70% 45%);
+  font-size: 0.7rem;
+  margin-left: 0.15rem;
+}
+
+.combat-stat-under {
+  color: hsl(0 70% 50%);
+  font-size: 0.7rem;
+  margin-left: 0.15rem;
+}
+
+.combat-stat-slider input[type="range"] {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: hsl(var(--border));
+  border-radius: 2px;
+  outline: none;
+}
+
+.combat-stat-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  cursor: pointer;
+  border: 2px solid hsl(var(--background));
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3);
+}

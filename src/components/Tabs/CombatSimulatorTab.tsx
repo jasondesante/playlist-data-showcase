@@ -12,7 +12,7 @@ import { RawJsonDump } from '../ui/RawJsonDump';
 import { CharacterCard } from '../ui/CharacterCard';
 import { useTabContext } from '../../App';
 import { dispatchBalanceConfigTransfer } from '../../utils/balanceConfigTransfer';
-import { type EncounterConfigUI, getWinRateDifficulty } from '../../types/simulation';
+import { type EncounterConfigUI, type StatLevelOverrides, getWinRateDifficulty, STAT_LEVEL_PRESETS } from '../../types/simulation';
 import {
     SPELL_DATABASE,
     ExtensionManager,
@@ -275,6 +275,9 @@ export interface EnemyGenerationConfig {
 
     /** Optional: Difficulty multiplier */
     difficultyMultiplier: number;
+
+    /** Optional: Override effective levels for HP, attack, and defense independently */
+    statLevels?: StatLevelOverrides;
 }
 
 /**
@@ -846,6 +849,9 @@ export function CombatSimulatorTab() {
   const [isEditingDifficulty, setIsEditingDifficulty] = useState(false);
   const [difficultyInputValue, setDifficultyInputValue] = useState('');
 
+  // State: Stat level overrides collapsible
+  const [showStatLevels, setShowStatLevels] = useState(false);
+
   // Handler: Update advanced config field
   const updateAdvancedConfig = useCallback(<K extends keyof AdvancedCombatConfig>(
     key: K,
@@ -1083,7 +1089,8 @@ export function CombatSimulatorTab() {
       prevConfigRef.current.archetype !== generationConfig.archetype ||
       prevConfigRef.current.templateId !== generationConfig.templateId ||
       prevConfigRef.current.enemyMix !== generationConfig.enemyMix ||
-      prevConfigRef.current.templates !== generationConfig.templates
+      prevConfigRef.current.templates !== generationConfig.templates ||
+      prevConfigRef.current.statLevels !== generationConfig.statLevels
     );
 
     if (hasConfigChanged && generatedEnemies.length > 0) {
@@ -1154,7 +1161,8 @@ export function CombatSimulatorTab() {
             difficultyMultiplier: generationConfig.difficultyMultiplier,
             category: generationConfig.category,
             archetype: generationConfig.archetype,
-            templateId: generationConfig.templateId
+            templateId: generationConfig.templateId,
+            statLevels: generationConfig.statLevels
           }
         );
 
@@ -1180,7 +1188,8 @@ export function CombatSimulatorTab() {
           templateId: generationConfig.templateId,
           enemyMix: generationConfig.enemyMix,
           templates: generationConfig.templates,
-          difficultyMultiplier: generationConfig.difficultyMultiplier
+          difficultyMultiplier: generationConfig.difficultyMultiplier,
+          statLevels: generationConfig.statLevels
         };
 
         switch (generationConfig.mode) {
@@ -1192,7 +1201,8 @@ export function CombatSimulatorTab() {
               rarity: generationConfig.baseRarity,
               category: generationConfig.category,
               archetype: generationConfig.archetype,
-              difficultyMultiplier: generationConfig.difficultyMultiplier
+              difficultyMultiplier: generationConfig.difficultyMultiplier,
+              statLevels: generationConfig.statLevels
             });
             if (singleEnemy) {
               enemies = [singleEnemy];
@@ -1878,7 +1888,8 @@ export function CombatSimulatorTab() {
         rarity: generationConfig.baseRarity,
         category: generationConfig.category,
         archetype: generationConfig.archetype,
-        difficultyMultiplier: generationConfig.difficultyMultiplier
+        difficultyMultiplier: generationConfig.difficultyMultiplier,
+        statLevels: generationConfig.statLevels
       });
 
       if (fallbackEnemy) {
@@ -1946,6 +1957,7 @@ export function CombatSimulatorTab() {
       rarity: generationConfig.baseRarity,
       seed: generationConfig.seed || '',
       difficultyMultiplier: generationConfig.difficultyMultiplier,
+      statLevels: generationConfig.statLevels,
     };
 
     // Transfer config and navigate
@@ -3645,7 +3657,8 @@ export function CombatSimulatorTab() {
                       advancedConfig.useMusic && 'Music',
                       advancedConfig.tacticalMode && 'Tactical',
                       advancedConfig.allowFleeing && 'Flee',
-                      generationConfig.difficultyMultiplier !== 1.0 && `${generationConfig.difficultyMultiplier.toFixed(1)}x Diff`
+                      generationConfig.difficultyMultiplier !== 1.0 && `${generationConfig.difficultyMultiplier.toFixed(1)}x Diff`,
+                      generationConfig.statLevels && Object.keys(generationConfig.statLevels).length > 0 && 'Stat Overrides'
                     ].filter(Boolean);
                     return activeOptions.length > 0 ? (
                       <span className="combat-advanced-active-badge">
@@ -3861,6 +3874,134 @@ export function CombatSimulatorTab() {
                             </div>
                           </div>
                         </div>
+                      </div>
+
+                      {/* Stat Level Overrides */}
+                      <div className="combat-stat-levels-section">
+                        <button
+                          type="button"
+                          className="combat-stat-levels-toggle"
+                          onClick={() => setShowStatLevels(!showStatLevels)}
+                        >
+                          <span className="combat-stat-levels-toggle-text">
+                            Stat Level Overrides
+                            {generationConfig.statLevels && Object.keys(generationConfig.statLevels).length > 0 && (
+                              <span className="combat-stat-badge">Custom</span>
+                            )}
+                          </span>
+                          <span className={`combat-advanced-expand-icon ${showStatLevels ? 'combat-advanced-expanded' : ''}`}>▼</span>
+                        </button>
+
+                        {showStatLevels && (
+                          <div className="combat-stat-levels-content">
+                            <p className="combat-stat-levels-hint">
+                              Override HP/Attack/Defense scaling to a different effective level.
+                              Default: all match CR.
+                            </p>
+
+                            <div className="combat-stat-levels-presets">
+                              {STAT_LEVEL_PRESETS.map((preset) => (
+                                <button
+                                  key={preset.label}
+                                  type="button"
+                                  className="combat-preset-button"
+                                  onClick={() => updateGenerationConfig('statLevels', { ...preset.overrides })}
+                                  title={preset.description}
+                                >
+                                  {preset.label}
+                                </button>
+                              ))}
+                              <button
+                                type="button"
+                                className="combat-preset-button combat-preset-reset"
+                                onClick={() => updateGenerationConfig('statLevels', undefined)}
+                                title="Reset to match CR"
+                              >
+                                ↺ Reset
+                              </button>
+                            </div>
+
+                            <div className="combat-stat-sliders">
+                              {/* HP Level */}
+                              <div className="combat-stat-slider">
+                                <label className="combat-stat-slider-label">
+                                  <span>HP Level</span>
+                                  {generationConfig.statLevels?.hpLevel !== undefined && (
+                                    <span className="combat-stat-value">
+                                      {generationConfig.statLevels.hpLevel}
+                                      {generationConfig.statLevels.hpLevel > (generationConfig.targetCR || 1) && <span className="combat-stat-over">+</span>}
+                                      {generationConfig.statLevels.hpLevel < (generationConfig.targetCR || 1) && <span className="combat-stat-under">-</span>}
+                                    </span>
+                                  )}
+                                </label>
+                                <input
+                                  type="range"
+                                  min={1}
+                                  max={20}
+                                  value={generationConfig.statLevels?.hpLevel ?? Math.round(generationConfig.targetCR || 1)}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value);
+                                    const current = generationConfig.statLevels || {};
+                                    const updated = { ...current, hpLevel: val };
+                                    updateGenerationConfig('statLevels', Object.keys(updated).length > 0 ? updated : undefined);
+                                  }}
+                                />
+                              </div>
+
+                              {/* Attack Level */}
+                              <div className="combat-stat-slider">
+                                <label className="combat-stat-slider-label">
+                                  <span>Attack Level</span>
+                                  {generationConfig.statLevels?.attackLevel !== undefined && (
+                                    <span className="combat-stat-value">
+                                      {generationConfig.statLevels.attackLevel}
+                                      {generationConfig.statLevels.attackLevel > (generationConfig.targetCR || 1) && <span className="combat-stat-over">+</span>}
+                                      {generationConfig.statLevels.attackLevel < (generationConfig.targetCR || 1) && <span className="combat-stat-under">-</span>}
+                                    </span>
+                                  )}
+                                </label>
+                                <input
+                                  type="range"
+                                  min={1}
+                                  max={20}
+                                  value={generationConfig.statLevels?.attackLevel ?? Math.round(generationConfig.targetCR || 1)}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value);
+                                    const current = generationConfig.statLevels || {};
+                                    const updated = { ...current, attackLevel: val };
+                                    updateGenerationConfig('statLevels', Object.keys(updated).length > 0 ? updated : undefined);
+                                  }}
+                                />
+                              </div>
+
+                              {/* Defense Level */}
+                              <div className="combat-stat-slider">
+                                <label className="combat-stat-slider-label">
+                                  <span>Defense Level</span>
+                                  {generationConfig.statLevels?.defenseLevel !== undefined && (
+                                    <span className="combat-stat-value">
+                                      {generationConfig.statLevels.defenseLevel}
+                                      {generationConfig.statLevels.defenseLevel > (generationConfig.targetCR || 1) && <span className="combat-stat-over">+</span>}
+                                      {generationConfig.statLevels.defenseLevel < (generationConfig.targetCR || 1) && <span className="combat-stat-under">-</span>}
+                                    </span>
+                                  )}
+                                </label>
+                                <input
+                                  type="range"
+                                  min={1}
+                                  max={20}
+                                  value={generationConfig.statLevels?.defenseLevel ?? Math.round(generationConfig.targetCR || 1)}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value);
+                                    const current = generationConfig.statLevels || {};
+                                    const updated = { ...current, defenseLevel: val };
+                                    updateGenerationConfig('statLevels', Object.keys(updated).length > 0 ? updated : undefined);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Selected Template Info */}

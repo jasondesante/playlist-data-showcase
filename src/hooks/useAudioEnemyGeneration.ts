@@ -9,7 +9,8 @@ import {
     EnemyArchetype,
     EncounterDifficulty,
     EnemyMixMode,
-    AudioProfile
+    AudioProfile,
+    StatLevelOverrides
 } from 'playlist-data-engine';
 import { useAudioAnalyzer } from './useAudioAnalyzer';
 import { logger } from '@/utils/logger';
@@ -74,6 +75,8 @@ export interface AudioEnemyGenerationOptions {
     templates?: string[];
     /** Optional - Enable leader promotion for groups > 3 (default: true) */
     enableLeaderPromotion?: boolean;
+    /** Optional - Override effective levels for HP, attack, and defense independently */
+    statLevels?: StatLevelOverrides;
     /** Optional - Skip audio analysis if profiles already cached */
     skipAnalysis?: boolean;
 }
@@ -287,7 +290,8 @@ export function useAudioEnemyGeneration() {
             baseRarity = 'common',
             difficultyMultiplier = 1.0,
             templateId,
-            skipAnalysis = false
+            skipAnalysis = false,
+            statLevels
         } = options;
 
         setIsGenerating(true);
@@ -350,7 +354,8 @@ export function useAudioEnemyGeneration() {
                     rarity: baseRarity,
                     difficultyMultiplier,
                     audioProfile: profile || undefined,
-                    track: track
+                    track: track,
+                    statLevels
                 };
 
                 // Generate the enemy
@@ -431,7 +436,8 @@ export function useAudioEnemyGeneration() {
             enemyMix = 'uniform',
             templates,
             enableLeaderPromotion = true,
-            skipAnalysis = false
+            skipAnalysis = false,
+            statLevels
         } = options;
 
         setIsGenerating(true);
@@ -490,7 +496,8 @@ export function useAudioEnemyGeneration() {
                 templates,
                 audioProfile: primaryProfile,
                 track: primaryTrack,
-                enableLeaderPromotion
+                enableLeaderPromotion,
+                statLevels
             };
 
             // Step 4: Generate the encounter
