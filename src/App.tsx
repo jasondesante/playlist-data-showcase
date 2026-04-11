@@ -1,10 +1,11 @@
 import { useState, useCallback, createContext, useContext, useMemo } from 'react';
-import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users, Backpack, Database, Drum, Scale } from 'lucide-react';
+import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users, Backpack, Database, Drum, Scale, Home } from 'lucide-react';
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
 import { ToastContainer } from './components/ui/Toast';
 import { LevelUpDetailModal } from './components/LevelUpDetailModal';
 import type { TabItem } from './components/Layout/Sidebar';
+import { HomeTab } from './components/Tabs/HomeTab';
 import { PlaylistLoaderTab } from './components/Tabs/PlaylistLoaderTab';
 import { AudioAnalysisTab } from './components/Tabs/AudioAnalysisTab';
 import { BeatDetectionTab } from './components/Tabs/BeatDetectionTab';
@@ -26,7 +27,7 @@ import { useCharacterStore } from './store/characterStore';
 import { useDataViewerStore } from './store/dataViewerStore';
 import { useCustomEquipmentInitializer } from './hooks/useItemCreator';
 
-type Tab = 'playlist' | 'audio' | 'beat' | 'character' | 'party' | 'items' | 'dataviewer' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'balance' | 'settings';
+type Tab = 'home' | 'playlist' | 'audio' | 'beat' | 'character' | 'party' | 'items' | 'dataviewer' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'balance' | 'settings';
 
 // Create context for active tab
 const TabContext = createContext<{ activeTab: Tab; navigateToTab: (tab: Tab) => void } | null>(null);
@@ -34,7 +35,7 @@ const TabContext = createContext<{ activeTab: Tab; navigateToTab: (tab: Tab) => 
 export const useTabContext = () => useContext(TabContext);
 
 function App() {
-  const [activeTab, setActiveTab] = useState<Tab>('playlist');
+  const [activeTab, setActiveTab] = useState<Tab>('home');
 
   const navigateToTab = useCallback((tab: Tab) => {
     setActiveTab(tab);
@@ -70,6 +71,7 @@ function App() {
   // the characters array is populated before we try to find the active character.
 
   const tabs: TabItem[] = [
+    { id: 'home', label: 'Home', icon: Home },
     { id: 'playlist', label: 'Playlist', icon: Music },
     { id: 'audio', label: 'Audio Analysis', icon: Music },
     { id: 'beat', label: 'Beat Detection', icon: Drum },
@@ -103,6 +105,7 @@ function App() {
 
   const renderActiveTab = () => {
     switch (activeTab) {
+      case 'home': return <HomeTab />;
       case 'playlist': return <PlaylistLoaderTab />;
       case 'audio': return <AudioAnalysisTab />;
       case 'beat': return <BeatDetectionTab />;
