@@ -6,6 +6,22 @@
    encounter XP when available.
    ============================================ */
 
+/* ─── Portal Tooltip ─────────────────────────────────────────────── */
+
+.pill-tooltip-portal {
+    padding: 0.3rem 0.5rem;
+    background-color: hsl(var(--popover));
+    color: hsl(var(--popover-foreground));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 400;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
 /* ─── Shared Shimmer ─────────────────────────────────────────────────── */
 
 .pec-shimmer {
@@ -68,7 +84,6 @@
 }
 
 .pec-pill {
-    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
@@ -80,35 +95,6 @@
     font-size: 0.75rem;
     white-space: nowrap;
     cursor: default;
-}
-
-/* Tooltip on pill hover */
-.pec-pill::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 0.3rem 0.5rem;
-    background-color: hsl(var(--popover));
-    color: hsl(var(--popover-foreground));
-    border: 1px solid hsl(var(--border));
-    border-radius: 0.25rem;
-    font-size: 0.7rem;
-    font-weight: 400;
-    line-height: 1.35;
-    white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.15s ease, visibility 0.15s ease;
-    z-index: 100;
-}
-
-.pec-pill:hover::after {
-    opacity: 1;
-    visibility: visible;
 }
 
 .pec-pill svg {
@@ -125,6 +111,12 @@
 .pec-pill-value {
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+}
+
+.pec-dpr-buffer {
+    font-weight: 400;
+    opacity: 0.6;
+    font-size: 0.65rem;
 }
 
 /* ─── XP Budgets ────────────────────────────────────────────────────── */

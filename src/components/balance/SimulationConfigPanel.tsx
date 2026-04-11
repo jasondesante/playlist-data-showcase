@@ -287,6 +287,8 @@ export function SimulationConfigPanel({
                     isLoading={false}
                     encounterXP={estimateSnapshot?.enemy.totalAdjustedXP}
                     estimatedDPR={estimateSnapshot?.party.estimatedDPR}
+                    combatAdjustedDPR={estimateSnapshot?.party.combatAdjustedDPR}
+                    dprBuffer={estimateSnapshot?.party.dprBuffer}
                     weaponName={estimateSnapshot?.party.weaponName}
                 />
             </section>

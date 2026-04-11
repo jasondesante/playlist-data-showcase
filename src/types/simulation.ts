@@ -578,8 +578,12 @@ export interface SimulationEstimateSnapshot {
         averageAC: number;
         /** Average hit points across all party members */
         averageHP: number;
-        /** Estimated average damage per round for the party */
+        /** Estimated average damage per round for the party (steady-state, infinite rounds) */
         estimatedDPR: number;
+        /** Combat-adjusted DPR accounting for overkill waste and action loss from dying */
+        combatAdjustedDPR?: number;
+        /** DPR buffer — how much steady-state DPR overestimates due to finite combat */
+        dprBuffer?: number;
         /** Total party strength score (abstract value) */
         totalStrength: number;
         /** Primary weapon name(s) used by the party */
@@ -603,6 +607,10 @@ export interface SimulationEstimateSnapshot {
         perEnemyAC: { min: number; avg: number; max: number };
         /** Estimated damage per round per enemy — min/avg/max across generated samples */
         perEnemyEstDPR: { min: number; avg: number; max: number };
+        /** Combat-adjusted enemy DPR accounting for overkill waste and action loss */
+        combatAdjustedDPR?: number;
+        /** Enemy DPR buffer — how much steady-state DPR overestimates due to finite combat */
+        dprBuffer?: number;
         /** Total adjusted XP for the encounter (accounts for enemy count multiplier) */
         totalAdjustedXP: number;
         /** Challenge rating of the enemy template */
@@ -641,8 +649,12 @@ export interface SimulationEstimateSnapshot {
 export interface EstimateComparison {
     /** Human-readable metric label (e.g. "Party DPR") */
     label: string;
-    /** Pre-simulation estimate */
+    /** Pre-simulation estimate (steady-state) */
     estimated: number;
+    /** Combat-adjusted estimate (accounts for overkill, action loss) */
+    adjustedEstimated?: number;
+    /** DPR buffer amount (difference between steady-state and adjusted) */
+    buffer?: number;
     /** Actual simulation result */
     actual: number;
     /** Difference: actual - estimated */
@@ -651,6 +663,8 @@ export interface EstimateComparison {
     deltaPercent: number;
     /** Whether the discrepancy is significant (|deltaPercent| > 10%) */
     isSignificant: boolean;
+    /** Whether the discrepancy is explained by combat truncation (actual within range of adjusted) */
+    explainedByBuffer?: boolean;
 }
 
 /**

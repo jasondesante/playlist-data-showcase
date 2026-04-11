@@ -64,6 +64,77 @@ function getPartyWeaponName(party: CharacterSheet[]): string {
 }
 
 /**
+ * Result of combat buffer estimation.
+ */
+interface CombatBufferResult {
+    /** DPR adjusted for finite combat effects */
+    adjustedDPR: number;
+    /** Total buffer amount (steady-state minus adjusted) */
+    buffer: number;
+}
+
+/**
+ * Estimate how much the steady-state DPR overestimates actual combat DPR
+ * due to finite combat effects.
+ *
+ * Two sources of "lost" damage reduce effective DPR below the theoretical rate:
+ *
+ * 1. **Overkill waste** — The killing blow often deals more damage than the
+ *    target's remaining HP. That excess is wasted. Expected overkill per
+ *    combat ≈ avgDmgPerHit × 0.4 (scaled mode) or × 0.5 (DND mode), since
+ *    deficit scaling in scaled mode makes damage less variable.
+ *
+ * 2. **Action loss from dying** — When you die before your turn (enemy had
+ *    initiative), you lose a full round's damage. Expected loss per combat
+ *    ≈ deathRate × 0.5 × steadyStateDPR.
+ *
+ * Both effects scale inversely with expected combat length — short combats
+ * (2-3 rounds) have bigger buffers; long combats (10+ rounds) converge
+ * toward the steady-state rate.
+ */
+function estimateCombatBuffer(
+    steadyStateDPR: number,
+    targetHP: number,
+    _attackerHP: number,
+    _enemyDPR: number,
+    predictedWinRate: number,
+    hitMode: HitMode,
+): CombatBufferResult {
+    if (steadyStateDPR <= 0 || targetHP <= 0) {
+        return { adjustedDPR: 0, buffer: 0 };
+    }
+
+    // Hit rate: scaled mode only misses on nat 1 (95%); DND mode varies by AC
+    const hitRate = hitMode === 'scaled' ? 0.95 : 0.65;
+
+    // Average damage per hit (damage when you actually connect)
+    const avgDmgPerHit = steadyStateDPR / hitRate;
+
+    // Expected combat rounds (how many rounds to deal targetHP at steady-state rate)
+    const expectedRounds = Math.max(1, targetHP / steadyStateDPR);
+
+    // 1. Overkill waste
+    // Remaining HP at kill time is roughly uniform in [0, avgDmgPerHit).
+    // Scaled mode uses 0.4 factor (deficit compression reduces damage spread),
+    // DND mode uses 0.5 (full dice variance).
+    const overkillFactor = hitMode === 'scaled' ? 0.4 : 0.5;
+    const overkillWaste = (avgDmgPerHit * overkillFactor) / expectedRounds;
+
+    // 2. Action loss from dying before your turn
+    // ~50% chance enemy has initiative in the round you die
+    const deathRate = 1 - predictedWinRate;
+    const actionLoss = (deathRate * 0.5 * steadyStateDPR) / expectedRounds;
+
+    const buffer = overkillWaste + actionLoss;
+    const adjustedDPR = Math.max(0, steadyStateDPR - buffer);
+
+    return {
+        adjustedDPR: Math.round(adjustedDPR * 10) / 10,
+        buffer: Math.round(buffer * 10) / 10,
+    };
+}
+
+/**
  * React hook for computing pre-simulation estimates from party + encounter config.
  *
  * Generates multiple enemy samples to show the spread of possible enemy stats
@@ -223,32 +294,46 @@ export function useEstimateSnapshot(
         }
         const estimatedDPR = Math.round((totalPartyDPR / selectedParty.length) * 10) / 10;
 
+        // --- Prediction (needed before combat buffer calculation) ---
+        const xpBudgets = {
+            easy: partyAnalysis.easyXP,
+            medium: partyAnalysis.mediumXP,
+            hard: partyAnalysis.hardXP,
+            deadly: partyAnalysis.deadlyXP,
+        };
+        const predictedDifficulty = derivePredictedDifficulty(totalAdjustedXP, xpBudgets);
+        const xpRatio = xpBudgets.medium > 0 ? totalAdjustedXP / xpBudgets.medium : 0;
+        const predictedWinRate = WIN_RATE_MIDPOINTS[predictedDifficulty];
+
+        // --- Combat-adjusted DPR (accounts for finite combat effects) ---
+        // The steady-state DPR assumes infinite rounds. In actual combat:
+        // 1. Overkill: the killing blow wastes damage beyond remaining HP
+        // 2. Action loss: dying before your turn loses a round of damage
+        // Both effects reduce effective DPR, more so in short combats.
+        const totalEnemyHP = perEnemyHP.avg * enemyCount;
+        const totalPartyHP = partyAnalysis.averageHP * selectedParty.length;
+        const enemyAvgDPR = perEnemyEstDPR.avg * enemyCount;
+
+        const partyCombatBuffer = estimateCombatBuffer(
+            estimatedDPR, totalEnemyHP, totalPartyHP, enemyAvgDPR, predictedWinRate, hitMode,
+        );
+        const enemyCombatBuffer = estimateCombatBuffer(
+            perEnemyEstDPR.avg, partyAnalysis.averageHP, perEnemyHP.avg,
+            estimatedDPR, 1 - predictedWinRate, hitMode,
+        );
+
         const partyStats = {
             averageLevel: partyAnalysis.averageLevel,
             partySize: partyAnalysis.partySize,
             averageAC: partyAnalysis.averageAC,
             averageHP: partyAnalysis.averageHP,
             estimatedDPR,
+            combatAdjustedDPR: partyCombatBuffer.adjustedDPR,
+            dprBuffer: partyCombatBuffer.buffer,
             totalStrength: partyAnalysis.totalStrength,
             weaponName: getPartyWeaponName(selectedParty),
-            xpBudgets: {
-                easy: partyAnalysis.easyXP,
-                medium: partyAnalysis.mediumXP,
-                hard: partyAnalysis.hardXP,
-                deadly: partyAnalysis.deadlyXP,
-            },
+            xpBudgets,
         };
-
-        // --- Prediction ---
-        const predictedDifficulty = derivePredictedDifficulty(
-            totalAdjustedXP,
-            partyStats.xpBudgets
-        );
-        const xpRatio =
-            partyStats.xpBudgets.medium > 0
-                ? totalAdjustedXP / partyStats.xpBudgets.medium
-                : 0;
-        const predictedWinRate = WIN_RATE_MIDPOINTS[predictedDifficulty];
 
         const snapshot: SimulationEstimateSnapshot = {
             party: partyStats,
@@ -257,6 +342,8 @@ export function useEstimateSnapshot(
                 perEnemyHP,
                 perEnemyAC,
                 perEnemyEstDPR,
+                combatAdjustedDPR: enemyCombatBuffer.adjustedDPR,
+                dprBuffer: enemyCombatBuffer.buffer,
                 totalAdjustedXP,
                 enemyCR,
                 archetype,

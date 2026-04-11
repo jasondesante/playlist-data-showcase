@@ -444,8 +444,14 @@ function buildClipboardSummary(
     if (estimateSnapshot) {
         const est = estimateSnapshot;
         lines.push('── Pre-Simulation Estimates ──');
-        lines.push(`  Party — Lv ${est.party.averageLevel.toFixed(1)}, AC ${est.party.averageAC.toFixed(1)}, HP ${Math.round(est.party.averageHP)}, DPR ~${est.party.estimatedDPR.toFixed(1)}`);
-        lines.push(`  Enemy — HP ${formatRange(est.enemy.perEnemyHP)}, AC ${formatRange(est.enemy.perEnemyAC)}, DPR ~${formatRange(est.enemy.perEnemyEstDPR, 1)}, CR ${est.enemy.enemyCR} (${est.enemy.sampleCount} samples)`);
+        const partyDPRStr = est.party.combatAdjustedDPR != null
+            ? `DPR ~${est.party.estimatedDPR.toFixed(1)} (adj ~${est.party.combatAdjustedDPR!.toFixed(1)}, est. buffer ${est.party.dprBuffer!.toFixed(1)})`
+            : `DPR ~${est.party.estimatedDPR.toFixed(1)}`;
+        lines.push(`  Party — Lv ${est.party.averageLevel.toFixed(1)}, AC ${est.party.averageAC.toFixed(1)}, HP ${Math.round(est.party.averageHP)}, ${partyDPRStr}`);
+        const enemyDPRStr = est.enemy.combatAdjustedDPR != null
+            ? `DPR ~${formatRange(est.enemy.perEnemyEstDPR, 1)} (adj ~${est.enemy.combatAdjustedDPR!.toFixed(1)}, est. buffer ${est.enemy.dprBuffer!.toFixed(1)})`
+            : `DPR ~${formatRange(est.enemy.perEnemyEstDPR, 1)}`;
+        lines.push(`  Enemy — HP ${formatRange(est.enemy.perEnemyHP)}, AC ${formatRange(est.enemy.perEnemyAC)}, ${enemyDPRStr}, CR ${est.enemy.enemyCR} (${est.enemy.sampleCount} samples)`);
         lines.push(`  Predicted: ${est.prediction.predictedDifficulty} (XP ratio ${est.prediction.xpRatio.toFixed(2)}×, est. win rate ${(est.prediction.predictedWinRate * 100).toFixed(0)}%)`);
         lines.push('');
     }
@@ -484,8 +490,14 @@ function buildClipboardSummary(
             const isWinRate = cmp.label === 'Win Rate';
             const estStr = isWinRate ? `${cmp.estimated.toFixed(0)}%` : cmp.estimated.toFixed(1);
             const actStr = isWinRate ? `${cmp.actual.toFixed(0)}%` : cmp.actual.toFixed(1);
-            const status = cmp.isSignificant ? '⚠ SIGNIFICANT' : 'OK';
+            const status = cmp.explainedByBuffer
+                ? 'OK — estimation buffer'
+                : cmp.isSignificant ? '⚠ SIGNIFICANT' : 'OK';
             lines.push(`  ${cmp.label}:  est ${estStr}  →  actual ${actStr}  (delta ${sign}${cmp.delta.toFixed(1)}, ${sign}${cmp.deltaPercent.toFixed(0)}%)  [${status}]`);
+            // Show adjusted estimate and buffer when available
+            if (cmp.adjustedEstimated != null && cmp.buffer != null && cmp.buffer > 0 && !isWinRate) {
+                lines.push(`    Combat-adjusted est: ~${cmp.adjustedEstimated.toFixed(1)} (estimation buffer ${cmp.buffer.toFixed(1)} from overkill + action loss)`);
+            }
         }
 
         // Difficulty row

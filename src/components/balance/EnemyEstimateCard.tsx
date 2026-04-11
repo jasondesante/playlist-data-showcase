@@ -13,6 +13,7 @@ import type { SimulationEstimateSnapshot } from '@/types/simulation';
 import { getXPForCR, getEncounterMultiplier } from 'playlist-data-engine';
 import { Heart, Shield, Crosshair, Star, Skull, TrendingUp, AlertCircle, Swords } from 'lucide-react';
 import { formatRange } from '@/utils/estimateEnemyDPR';
+import { PillTooltip } from './PillTooltip';
 import './EnemyEstimateCard.css';
 
 const SAMPLE_OPTIONS = [10, 100, 1000] as const;
@@ -111,37 +112,49 @@ export function EnemyEstimateCard({
 
             {/* Stat Pills */}
             <div className="eec-stats-row">
-                <div className="eec-pill" data-tooltip="Hit Points per enemy — min / avg / max across generated samples">
-                    <Heart size={11} />
-                    <span className="eec-pill-label">HP</span>
-                    <span className="eec-pill-value">{formatRange(perEnemyHP)}</span>
-                </div>
-                <div className="eec-pill" data-tooltip="Armor Class per enemy — min / avg / max across generated samples">
-                    <Shield size={11} />
-                    <span className="eec-pill-label">AC</span>
-                    <span className="eec-pill-value">{formatRange(perEnemyAC)}</span>
-                </div>
-                <div className="eec-pill" data-tooltip="Damage Per Round — estimated min / avg / max across generated samples">
-                    <Crosshair size={11} />
-                    <span className="eec-pill-label">DPR</span>
-                    <span className="eec-pill-value">~{formatRange(perEnemyEstDPR, 1)}</span>
-                </div>
-                <div className="eec-pill" data-tooltip="Challenge Rating — D&D 5e measure of enemy power (1 = 1st-level party, scales with level)">
-                    <Star size={11} />
-                    <span className="eec-pill-label">CR</span>
-                    <span className="eec-pill-value">{enemyCR}</span>
-                </div>
-                <div className="eec-pill" data-tooltip={`Experience Points — XP awarded per CR ${enemyCR} enemy on defeat`}>
-                    <Skull size={11} />
-                    <span className="eec-pill-label">XP</span>
-                    <span className="eec-pill-value">{xpPerEnemy.toLocaleString()}</span>
-                </div>
-                {snapshot.weaponNames && snapshot.weaponNames.length > 0 && (
-                    <div className="eec-pill" data-tooltip={`Equipped weapon(s): ${snapshot.weaponNames.join(', ')}`}>
-                        <Swords size={11} />
-                        <span className="eec-pill-label">Weapon</span>
-                        <span className="eec-pill-value">{snapshot.weaponNames.join(', ')}</span>
+                <PillTooltip tooltip="Hit Points per enemy — min / avg / max across generated samples">
+                    <div className="eec-pill">
+                        <Heart size={11} />
+                        <span className="eec-pill-label">HP</span>
+                        <span className="eec-pill-value">{formatRange(perEnemyHP)}</span>
                     </div>
+                </PillTooltip>
+                <PillTooltip tooltip="Armor Class per enemy — min / avg / max across generated samples">
+                    <div className="eec-pill">
+                        <Shield size={11} />
+                        <span className="eec-pill-label">AC</span>
+                        <span className="eec-pill-value">{formatRange(perEnemyAC)}</span>
+                    </div>
+                </PillTooltip>
+                <PillTooltip tooltip="Damage Per Round — estimated min / avg / max across generated samples">
+                    <div className="eec-pill">
+                        <Crosshair size={11} />
+                        <span className="eec-pill-label">DPR</span>
+                        <span className="eec-pill-value">~{formatRange(perEnemyEstDPR, 1)}</span>
+                    </div>
+                </PillTooltip>
+                <PillTooltip tooltip="Challenge Rating — D&D 5e measure of enemy power (1 = 1st-level party, scales with level)">
+                    <div className="eec-pill">
+                        <Star size={11} />
+                        <span className="eec-pill-label">CR</span>
+                        <span className="eec-pill-value">{enemyCR}</span>
+                    </div>
+                </PillTooltip>
+                <PillTooltip tooltip={`Experience Points — XP awarded per CR ${enemyCR} enemy on defeat`}>
+                    <div className="eec-pill">
+                        <Skull size={11} />
+                        <span className="eec-pill-label">XP</span>
+                        <span className="eec-pill-value">{xpPerEnemy.toLocaleString()}</span>
+                    </div>
+                </PillTooltip>
+                {snapshot.weaponNames && snapshot.weaponNames.length > 0 && (
+                    <PillTooltip tooltip={`Equipped weapon(s): ${snapshot.weaponNames.join(', ')}`}>
+                        <div className="eec-pill">
+                            <Swords size={11} />
+                            <span className="eec-pill-label">Weapon</span>
+                            <span className="eec-pill-value">{snapshot.weaponNames.join(', ')}</span>
+                        </div>
+                    </PillTooltip>
                 )}
             </div>
 

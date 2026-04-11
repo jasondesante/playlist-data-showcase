@@ -10,6 +10,7 @@
 
 import type { PartyAnalysis } from 'playlist-data-engine';
 import { Swords, Shield, Heart, Crosshair, Zap, Wrench } from 'lucide-react';
+import { PillTooltip } from './PillTooltip';
 import './PartyEstimateCard.css';
 
 export interface PartyEstimateCardProps {
@@ -21,6 +22,10 @@ export interface PartyEstimateCardProps {
     encounterXP?: number;
     /** Enemy-aware DPR estimate (damage per hit × hit rate vs enemy AC). Overrides averageDamage if provided. */
     estimatedDPR?: number;
+    /** Combat-adjusted DPR accounting for overkill waste and action loss */
+    combatAdjustedDPR?: number;
+    /** DPR buffer amount (steady-state minus adjusted) */
+    dprBuffer?: number;
     /** Primary weapon name(s) used by the party */
     weaponName?: string;
 }
@@ -71,6 +76,8 @@ export function PartyEstimateCard({
     isLoading,
     encounterXP,
     estimatedDPR,
+    combatAdjustedDPR,
+    dprBuffer,
     weaponName,
 }: PartyEstimateCardProps) {
     if (isLoading) {
@@ -95,37 +102,56 @@ export function PartyEstimateCard({
 
             {/* Stat Pills */}
             <div className="pec-stats-row">
-                <div className="pec-pill" data-tooltip="Average character level">
-                    <Swords size={11} />
-                    <span className="pec-pill-label">Lv</span>
-                    <span className="pec-pill-value">{analysis.averageLevel.toFixed(1)}</span>
-                </div>
-                <div className="pec-pill" data-tooltip="Average Armor Class — harder to hit = higher AC">
-                    <Shield size={11} />
-                    <span className="pec-pill-label">AC</span>
-                    <span className="pec-pill-value">{analysis.averageAC.toFixed(1)}</span>
-                </div>
-                <div className="pec-pill" data-tooltip="Average Hit Points — total health before falling unconscious">
-                    <Heart size={11} />
-                    <span className="pec-pill-label">HP</span>
-                    <span className="pec-pill-value">{Math.round(analysis.averageHP)}</span>
-                </div>
-                <div className="pec-pill" data-tooltip="Damage Per Round — estimated average damage output per party member per round">
-                    <Crosshair size={11} />
-                    <span className="pec-pill-label">DPR</span>
-                    <span className="pec-pill-value">~{(estimatedDPR ?? analysis.averageDamage).toFixed(1)}</span>
-                </div>
-                <div className="pec-pill" data-tooltip="Total Party Strength — composite power score based on level, stats, and equipment">
-                    <Zap size={11} />
-                    <span className="pec-pill-label">Str</span>
-                    <span className="pec-pill-value">{analysis.totalStrength.toLocaleString()}</span>
-                </div>
-                {weaponName && (
-                    <div className="pec-pill" data-tooltip="Primary weapon(s) used by the party">
-                        <Wrench size={11} />
-                        <span className="pec-pill-label">Weapon</span>
-                        <span className="pec-pill-value">{weaponName}</span>
+                <PillTooltip tooltip="Average character level">
+                    <div className="pec-pill">
+                        <Swords size={11} />
+                        <span className="pec-pill-label">Lv</span>
+                        <span className="pec-pill-value">{analysis.averageLevel.toFixed(1)}</span>
                     </div>
+                </PillTooltip>
+                <PillTooltip tooltip="Average Armor Class — harder to hit = higher AC">
+                    <div className="pec-pill">
+                        <Shield size={11} />
+                        <span className="pec-pill-label">AC</span>
+                        <span className="pec-pill-value">{analysis.averageAC.toFixed(1)}</span>
+                    </div>
+                </PillTooltip>
+                <PillTooltip tooltip="Average Hit Points — total health before falling unconscious">
+                    <div className="pec-pill">
+                        <Heart size={11} />
+                        <span className="pec-pill-label">HP</span>
+                        <span className="pec-pill-value">{Math.round(analysis.averageHP)}</span>
+                    </div>
+                </PillTooltip>
+                <PillTooltip tooltip={dprBuffer != null && dprBuffer > 0
+                    ? `Damage Per Round — steady-state ~${(estimatedDPR ?? analysis.averageDamage).toFixed(1)}, combat-adjusted ~${combatAdjustedDPR?.toFixed(1)} (estimation buffer ${dprBuffer.toFixed(1)} from overkill + action loss in finite combat)`
+                    : 'Damage Per Round — estimated average damage output per party member per round'}>
+                    <div className="pec-pill">
+                        <Crosshair size={11} />
+                        <span className="pec-pill-label">DPR</span>
+                        <span className="pec-pill-value">
+                            ~{(estimatedDPR ?? analysis.averageDamage).toFixed(1)}
+                            {dprBuffer != null && dprBuffer > 0 && (
+                                <span className="pec-dpr-buffer"> → ~{combatAdjustedDPR?.toFixed(1)}</span>
+                            )}
+                        </span>
+                    </div>
+                </PillTooltip>
+                <PillTooltip tooltip="Total Party Strength — composite power score based on level, stats, and equipment">
+                    <div className="pec-pill">
+                        <Zap size={11} />
+                        <span className="pec-pill-label">Str</span>
+                        <span className="pec-pill-value">{analysis.totalStrength.toLocaleString()}</span>
+                    </div>
+                </PillTooltip>
+                {weaponName && (
+                    <PillTooltip tooltip="Primary weapon(s) used by the party">
+                        <div className="pec-pill">
+                            <Wrench size={11} />
+                            <span className="pec-pill-label">Weapon</span>
+                            <span className="pec-pill-value">{weaponName}</span>
+                        </div>
+                    </PillTooltip>
                 )}
             </div>
 

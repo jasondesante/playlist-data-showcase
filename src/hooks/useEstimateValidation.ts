@@ -67,17 +67,36 @@ function makeComparison(
     label: string,
     estimated: number,
     actual: number,
+    adjustedEstimated?: number,
+    buffer?: number,
 ): EstimateComparison {
     const delta = actual - estimated;
     const deltaPercent =
         estimated !== 0 ? (delta / Math.abs(estimated)) * 100 : actual !== 0 ? 100 : 0;
+
+    // Check if the discrepancy is explained by combat truncation:
+    // actual is within range of the combat-adjusted estimate
+    let explainedByBuffer = false;
+    if (adjustedEstimated !== undefined && adjustedEstimated > 0 && buffer !== undefined && buffer > 0) {
+        const deltaFromAdjusted = actual - adjustedEstimated;
+        const adjustedPercent = adjustedEstimated !== 0
+            ? Math.abs(deltaFromAdjusted / adjustedEstimated) * 100
+            : 0;
+        explainedByBuffer = adjustedPercent <= SIGNIFICANCE_THRESHOLD;
+    }
+
     return {
         label,
         estimated: Math.round(estimated * 10) / 10,
+        adjustedEstimated: adjustedEstimated !== undefined
+            ? Math.round(adjustedEstimated * 10) / 10
+            : undefined,
+        buffer: buffer !== undefined ? Math.round(buffer * 10) / 10 : undefined,
         actual: Math.round(actual * 10) / 10,
         delta: Math.round(delta * 10) / 10,
         deltaPercent: Math.round(deltaPercent * 10) / 10,
         isSignificant: Math.abs(deltaPercent) > SIGNIFICANCE_THRESHOLD,
+        explainedByBuffer,
     };
 }
 
@@ -244,13 +263,25 @@ export function useEstimateValidation(
             // Party DPR: estimated from PartyAnalyzer vs actual from player combatants
             const actualPartyDPR = averageField(playerMetrics, 'averageDamagePerRound');
             comparisons.push(
-                makeComparison('Party DPR', estimateSnapshot.party.estimatedDPR, actualPartyDPR),
+                makeComparison(
+                    'Party DPR',
+                    estimateSnapshot.party.estimatedDPR,
+                    actualPartyDPR,
+                    estimateSnapshot.party.combatAdjustedDPR,
+                    estimateSnapshot.party.dprBuffer,
+                ),
             );
 
             // Enemy DPR: estimated from estimateEnemyDPR vs actual from enemy combatants
             const actualEnemyDPR = averageField(enemyMetrics, 'averageDamagePerRound');
             comparisons.push(
-                makeComparison('Enemy DPR', estimateSnapshot.enemy.perEnemyEstDPR.avg, actualEnemyDPR),
+                makeComparison(
+                    'Enemy DPR',
+                    estimateSnapshot.enemy.perEnemyEstDPR.avg,
+                    actualEnemyDPR,
+                    estimateSnapshot.enemy.combatAdjustedDPR,
+                    estimateSnapshot.enemy.dprBuffer,
+                ),
             );
 
             // ── Difficulty comparison ──
@@ -289,7 +320,7 @@ export function useEstimateValidation(
 
             // Party DPR suggestions
             const partyDPRComp = comparisons[0];
-            if (partyDPRComp.isSignificant) {
+            if (partyDPRComp.isSignificant && !partyDPRComp.explainedByBuffer) {
                 if (partyDPRComp.deltaPercent < 0) {
                     // Overestimate (estimated higher than actual)
                     suggestions.push(
@@ -303,7 +334,7 @@ export function useEstimateValidation(
 
             // Enemy DPR suggestions
             const enemyDPRComp = comparisons[1];
-            if (enemyDPRComp.isSignificant) {
+            if (enemyDPRComp.isSignificant && !enemyDPRComp.explainedByBuffer) {
                 if (enemyDPRComp.deltaPercent < 0) {
                     // Overestimate
                     suggestions.push(
