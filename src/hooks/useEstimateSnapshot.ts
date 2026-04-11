@@ -1,16 +1,18 @@
 import { useMemo } from 'react';
 import {
     PartyAnalyzer,
+    AttackResolver,
     calculateAdjustedXP,
     getEncounterMultiplier,
     CharacterSheet,
 } from 'playlist-data-engine';
+import type { HitMode } from 'playlist-data-engine';
 import type { EncounterConfigUI } from '@/types/simulation';
 import type { SimulationEstimateSnapshot } from '@/types/simulation';
 import type { EncounterDifficulty } from 'playlist-data-engine';
 import { useEnemyGenerator } from '@/hooks/useEnemyGenerator';
 import { logger } from '@/utils/logger';
-import { estimateEnemyDPR } from '@/utils/estimateEnemyDPR';
+import { estimateEnemyDPR, getEnemyWeaponNames } from '@/utils/estimateEnemyDPR';
 
 /** Midpoint win rates for each difficulty tier */
 const WIN_RATE_MIDPOINTS: Record<EncounterDifficulty, number> = {
@@ -46,35 +48,18 @@ function statRange(values: number[]): { min: number; avg: number; max: number } 
 }
 
 /**
- * Estimate the party's average attack bonus from equipped weapons.
- *
- * For each party member, finds the first equipped weapon and computes
- * attack bonus = ability modifier + proficiency bonus. Returns the
- * average across all party members.
+ * Get the most common weapon name across party members for display.
  */
-function estimatePartyAttackBonus(party: CharacterSheet[]): number {
-    if (party.length === 0) return 0;
-
-    let totalBonus = 0;
+function getPartyWeaponName(party: CharacterSheet[]): string {
+    const weaponNames: string[] = [];
     for (const character of party) {
-        const stats = character.ability_scores;
-        const equippedWeapon = character.equipment?.weapons?.find(w => w.equipped);
-
-        let abilityMod: number;
-        if (equippedWeapon) {
-            const isRanged = equippedWeapon.weaponProperties?.includes('ranged') ?? false;
-            const isFinesse = equippedWeapon.weaponProperties?.includes('finesse') ?? false;
-            const ability = isRanged || isFinesse ? 'DEX' : 'STR';
-            abilityMod = Math.floor(((stats?.[ability] ?? 10) - 10) / 2);
-        } else {
-            abilityMod = Math.floor(((stats?.STR ?? 10) - 10) / 2);
-        }
-
-        const proficiency = character.proficiency_bonus ?? Math.ceil(1 + ((character.level || 1) - 1) / 4);
-        totalBonus += abilityMod + proficiency;
+        const equipped = character.equipment?.weapons?.find(w => w.equipped);
+        if (equipped) weaponNames.push(equipped.name);
     }
-
-    return totalBonus / party.length;
+    if (weaponNames.length === 0) return 'Unarmed';
+    // Return unique names, comma-separated if multiple
+    const unique = [...new Set(weaponNames)];
+    return unique.length === 1 ? unique[0] : unique.slice(0, 3).join(', ');
 }
 
 /**
@@ -87,20 +72,19 @@ function estimatePartyAttackBonus(party: CharacterSheet[]): number {
  *
  * @param selectedParty - Array of selected party member CharacterSheets
  * @param encounterConfig - Current encounter configuration
+ * @param hitMode - Current hit mode ('scaled' or 'dnd')
  * @param sampleCount - Number of enemy samples to generate (default 10)
  * @returns SimulationEstimateSnapshot if both party and config are valid, null otherwise
  */
 export function useEstimateSnapshot(
     selectedParty: CharacterSheet[],
     encounterConfig: EncounterConfigUI,
+    hitMode: HitMode = 'scaled',
     sampleCount: number = 10
 ): SimulationEstimateSnapshot | null {
     const { generateEncounterByCR } = useEnemyGenerator();
 
     // Destructure config fields for stable useMemo dependencies.
-    // Using individual primitives/refs instead of the whole object prevents
-    // unnecessary regeneration when the parent recreates encounterConfig
-    // with identical values on an unrelated re-render.
     const cr = encounterConfig.cr;
     const enemyCount = encounterConfig.enemyCount;
     const category = encounterConfig.category;
@@ -125,11 +109,10 @@ export function useEstimateSnapshot(
         }
 
         // --- Generate multiple enemy samples for range estimation ---
-        // Roll ENEMY_SAMPLE_COUNT enemies with different seeds to show the spread
-        // of possible stats at this CR/archetype/rarity/category combination.
         const sampleHPs: number[] = [];
         const sampleACs: number[] = [];
         const sampleDPRs: number[] = [];
+        let sampleWeaponNames: string[] = [];
 
         for (let i = 0; i < sampleCount; i++) {
             const sampleSeed = `preview-${cr}-${archetype}-${rarity}-${category}-${i}`;
@@ -148,7 +131,12 @@ export function useEstimateSnapshot(
                 const enemy = sampleEnemies[0];
                 sampleHPs.push(enemy.hp.max);
                 sampleACs.push(enemy.armor_class);
-                sampleDPRs.push(estimateEnemyDPR(enemy));
+                // Use the same formula as the actual combat simulator
+                sampleDPRs.push(estimateEnemyDPR(enemy, hitMode, partyAnalysis.averageAC));
+                // Collect weapon names from the last sample for display
+                if (i === 0) {
+                    sampleWeaponNames = getEnemyWeaponNames(enemy);
+                }
             }
         }
 
@@ -161,27 +149,48 @@ export function useEstimateSnapshot(
         const perEnemyHP = statRange(sampleHPs);
         const perEnemyAC = statRange(sampleACs);
         const perEnemyEstDPR = statRange(sampleDPRs);
-        const enemyCR = cr; // Use the requested CR, not the generated enemy's CR
+        const enemyCR = cr;
 
         // --- Adjusted XP calculation ---
         const enemyCRs = Array(enemyCount).fill(enemyCR);
         const multiplier = getEncounterMultiplier(enemyCRs.length);
         const totalAdjustedXP = calculateAdjustedXP(enemyCRs, multiplier);
 
-        // --- Party stats mapping ---
-        // Compute actual DPR: damage per hit × hit rate vs average enemy AC
+        // --- Party DPR using the same formula as actual combat ---
         const avgEnemyAC = perEnemyAC.avg;
-        const damagePerHit = partyAnalysis.averageDamage;
+        let totalPartyDPR = 0;
+        for (const character of selectedParty) {
+            const equippedWeapon = character.equipment?.weapons?.find(w => w.equipped);
+            const dice = equippedWeapon?.damage?.dice ?? '1';
+            const isFinesse = equippedWeapon?.weaponProperties?.includes('finesse') ?? false;
+            const isRanged = equippedWeapon?.weaponProperties?.includes('ranged') ?? false;
 
-        // Calculate party attack bonus from equipped weapons
-        const partyAttackBonus = estimatePartyAttackBonus(selectedParty);
+            // Scaled mode always uses STR (matches rollDamageScaled).
+            // DND mode uses DEX for finesse/ranged weapons.
+            const abilityScore = hitMode === 'scaled'
+                ? (character.ability_scores.STR ?? 10)
+                : ((isRanged || isFinesse)
+                    ? (character.ability_scores.DEX ?? 10)
+                    : (character.ability_scores.STR ?? 10));
 
-        // Hit rate: max(5%, chance to meet or exceed AC on d20)
-        // Need to roll >= (targetAC - attackBonus). With d20 (1-20):
-        // P(hit) = (21 - (targetAC - attackBonus)) / 20, min 5% (nat 20 always hits)
-        const hitRate = Math.max(0.05, Math.min(0.95, (21 - (avgEnemyAC - partyAttackBonus)) / 20));
+            // Attack bonus for damage scaling (delegated to engine)
+            const weaponAttackBonus = AttackResolver.computeAttackBonus(
+                character.ability_scores,
+                equippedWeapon?.weaponProperties ?? [],
+                character.proficiency_bonus ?? 2,
+            );
 
-        const estimatedDPR = Math.round(damagePerHit * hitRate * 10) / 10;
+            totalPartyDPR += AttackResolver.estimateDPR({
+                hitMode,
+                level: character.level ?? 1,
+                abilityScore,
+                targetAC: avgEnemyAC,
+                damageDice: dice,
+                proficiencyBonus: character.proficiency_bonus,
+                attackBonus: weaponAttackBonus,
+            });
+        }
+        const estimatedDPR = Math.round((totalPartyDPR / selectedParty.length) * 10) / 10;
 
         const partyStats = {
             averageLevel: partyAnalysis.averageLevel,
@@ -190,6 +199,7 @@ export function useEstimateSnapshot(
             averageHP: partyAnalysis.averageHP,
             estimatedDPR,
             totalStrength: partyAnalysis.totalStrength,
+            weaponName: getPartyWeaponName(selectedParty),
             xpBudgets: {
                 easy: partyAnalysis.easyXP,
                 medium: partyAnalysis.mediumXP,
@@ -221,6 +231,7 @@ export function useEstimateSnapshot(
                 archetype,
                 rarity,
                 sampleCount: sampleHPs.length,
+                weaponNames: sampleWeaponNames,
             },
             prediction: {
                 predictedDifficulty,
@@ -236,8 +247,11 @@ export function useEstimateSnapshot(
             enemyCount: snapshot.enemy.count,
             predictedDifficulty: snapshot.prediction.predictedDifficulty,
             xpRatio: snapshot.prediction.xpRatio,
+            partyDPR: estimatedDPR,
+            enemyDPR: perEnemyEstDPR.avg,
+            hitMode,
         });
 
         return snapshot;
-    }, [selectedParty, generateEncounterByCR, cr, enemyCount, category, archetype, rarity, difficultyMultiplier, statLevels, sampleCount]);
+    }, [selectedParty, generateEncounterByCR, cr, enemyCount, category, archetype, rarity, difficultyMultiplier, statLevels, sampleCount, hitMode]);
 }

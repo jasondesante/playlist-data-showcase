@@ -86,6 +86,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
+import { useAppStore } from '@/store/appStore';
+import { formatWeaponDamage } from '@/utils/formatWeaponDamage';
 import { useHeroEquipment } from '../../hooks/useHeroEquipment';
 import { useLootBox } from '../../hooks/useLootBox';
 import { useItemCreator } from '../../hooks/useItemCreator';
@@ -223,6 +225,7 @@ function getAmmunitionWeightDisplay(item: EnhancedInventoryItem): string {
 export function ItemsTab() {
   // Get character store for character selector
   const { characters, setActiveCharacter } = useCharacterStore();
+  const { settings } = useAppStore();
 
   // Use the hero equipment hook for all equipment operations
   const {
@@ -1197,7 +1200,7 @@ export function ItemsTab() {
     if (equipmentData.type === 'weapon' && equipmentData.damage) {
       properties.push({
         label: 'Damage',
-        value: `${equipmentData.damage.dice} ${equipmentData.damage.damageType}`
+        value: formatWeaponDamage(equipmentData.damage.dice, equipmentData.damage.damageType, settings.damageDisplay)
       });
     }
 
@@ -2094,7 +2097,7 @@ export function ItemsTab() {
                               <div className="lootbox-item-stat">
                                 <span className="lootbox-item-stat-label">Damage:</span>
                                 <span className="lootbox-item-stat-value">
-                                  {item.damage.dice} {item.damage.damageType}
+                                  {formatWeaponDamage(item.damage.dice, item.damage.damageType, settings.damageDisplay)}
                                 </span>
                               </div>
                             )}

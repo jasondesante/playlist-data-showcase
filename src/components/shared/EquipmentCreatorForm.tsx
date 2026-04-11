@@ -17,6 +17,8 @@
  */
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useAppStore } from '@/store/appStore';
+import { formatWeaponDamage } from '@/utils/formatWeaponDamage';
 import {
   Sword,
   Shield,
@@ -240,6 +242,7 @@ export function EquipmentCreatorForm({
   showAutoEquip = true,
   externalValidation
 }: EquipmentCreatorFormProps) {
+  const { settings } = useAppStore();
   // Get item creator hook functions
   const {
     validateItemData,
@@ -1474,7 +1477,7 @@ ExtensionManager.getInstance()
             {previewItem.damage && (
               <div className="equipment-creator-preview-stat">
                 <span className="equipment-creator-preview-stat-label">Damage:</span>
-                <span>{previewItem.damage.dice} {previewItem.damage.damageType}</span>
+                <span>{formatWeaponDamage(previewItem.damage.dice, previewItem.damage.damageType, settings.damageDisplay)}</span>
               </div>
             )}
             {previewItem.acBonus !== undefined && (

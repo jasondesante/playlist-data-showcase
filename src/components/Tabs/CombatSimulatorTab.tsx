@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useCharacterStore } from '../../store/characterStore';
+import { useAppStore } from '@/store/appStore';
+import { formatWeaponDamage } from '@/utils/formatWeaponDamage';
 import { useSimulationStore } from '../../store/simulationStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { useEnemyGenerator } from '../../hooks/useEnemyGenerator';
@@ -756,6 +758,7 @@ export function CombatSimulatorTab() {
     selectAllHeroes,
     deselectAllHeroes
   } = useCharacterStore();
+  const { settings } = useAppStore();
   const { addXPFromSource } = useCharacterUpdater();
 
   // ============================================================
@@ -1006,19 +1009,21 @@ export function CombatSimulatorTab() {
       } else {
         // Resolve Arweave URL through gateway manager (with automatic fallback)
         const arweaveUrl = `https://arweave.net/${trimmedInput}`;
+        const fetchStart = Date.now();
         const resolvedUrl = await arweaveGatewayManager.resolveUrl(arweaveUrl);
         let response: Response;
         try {
           response = await fetch(resolvedUrl);
         } catch (networkError) {
           // Network error (no response) — gateway is likely dead, report failure
-          arweaveGatewayManager.reportGatewayFailure(arweaveUrl).catch(() => {});
+          arweaveGatewayManager.reportGatewayFailure(arweaveUrl, { reason: 'load-error' }).catch(() => {});
           throw new Error('Network error: Unable to connect to Arweave. Please check your connection.');
         }
         if (!response.ok) {
           throw new Error(`Failed to fetch playlist: ${response.status}`);
         }
         const json = await response.json();
+        arweaveGatewayManager.reportFetchSuccess(Date.now() - fetchStart);
         playlist = await playlistParser.parse(json as Parameters<typeof playlistParser.parse>[0]);
       }
 
@@ -4135,7 +4140,7 @@ export function CombatSimulatorTab() {
                         <div key={index} className="combat-attack-card">
                           <div className="combat-attack-name">{weapon.name}</div>
                           <div className="combat-attack-damage">
-                            {weapon.damage_dice} {weapon.damage_type} {weapon.type === 'melee' ? '⚔️' : '🏹'}
+                            {formatWeaponDamage(weapon.damage_dice, weapon.damage_type, settings.damageDisplay)} {weapon.type === 'melee' ? '⚔️' : '🏹'}
                           </div>
                         </div>
                       ))}

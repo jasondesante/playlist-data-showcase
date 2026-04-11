@@ -9,7 +9,7 @@
  */
 
 import type { PartyAnalysis } from 'playlist-data-engine';
-import { Swords, Shield, Heart, Crosshair, Zap } from 'lucide-react';
+import { Swords, Shield, Heart, Crosshair, Zap, Wrench } from 'lucide-react';
 import './PartyEstimateCard.css';
 
 export interface PartyEstimateCardProps {
@@ -21,6 +21,8 @@ export interface PartyEstimateCardProps {
     encounterXP?: number;
     /** Enemy-aware DPR estimate (damage per hit × hit rate vs enemy AC). Overrides averageDamage if provided. */
     estimatedDPR?: number;
+    /** Primary weapon name(s) used by the party */
+    weaponName?: string;
 }
 
 /**
@@ -69,6 +71,7 @@ export function PartyEstimateCard({
     isLoading,
     encounterXP,
     estimatedDPR,
+    weaponName,
 }: PartyEstimateCardProps) {
     if (isLoading) {
         return <Skeleton />;
@@ -117,6 +120,13 @@ export function PartyEstimateCard({
                     <span className="pec-pill-label">Str</span>
                     <span className="pec-pill-value">{analysis.totalStrength.toLocaleString()}</span>
                 </div>
+                {weaponName && (
+                    <div className="pec-pill" data-tooltip="Primary weapon(s) used by the party">
+                        <Wrench size={11} />
+                        <span className="pec-pill-label">Weapon</span>
+                        <span className="pec-pill-value">{weaponName}</span>
+                    </div>
+                )}
             </div>
 
             {/* XP Budgets */}

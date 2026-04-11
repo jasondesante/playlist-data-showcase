@@ -627,8 +627,8 @@ export const useItemCreator = (): UseItemCreatorReturn => {
             // If auto-equipping, apply effects (no instanceId to match API behavior)
             if (autoEquip) {
                 const result = EquipmentEffectApplier.equipItem(updatedCharacter, equipment, undefined);
-                if (result.errors.length > 0) {
-                    logger.warn('ItemCreator', 'Auto-equip had errors', result.errors);
+                if (!result.applied) {
+                    logger.warn('ItemCreator', 'Auto-equip blocked', { errors: result.errors });
                 }
                 updatedCharacter.equipment.equippedWeight = (updatedCharacter.equipment.equippedWeight || 0) + itemWeight;
             }

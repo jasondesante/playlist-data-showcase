@@ -8,6 +8,8 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Users, Search, X, Trash2, ChevronDown, Check, Star, Circle, Target, BarChart3, PieChart, Sword, Shield, Package, Wand2 } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
+import { useAppStore } from '@/store/appStore';
+import { formatWeaponDamage } from '@/utils/formatWeaponDamage';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useFeatureNames } from '../../hooks/useFeatureNames';
@@ -180,6 +182,7 @@ function formatRarity(rarity: string): string {
 
 export function PartyTab() {
   const { characters, resetCharacters, activeCharacterId, setActiveCharacter, selectedHeroSeeds, toggleHeroSelection, selectAllHeroes, deselectAllHeroes } = useCharacterStore();
+  const { settings } = useAppStore();
   const { resolveFeatureName, resolveTraitName, getFeatureDescription, getTraitDescription, getFeatureEffects, getTraitEffects } = useFeatureNames();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('date-added');
@@ -1254,7 +1257,7 @@ export function PartyTab() {
 
                     // Add damage for weapons
                     if (equipmentData.type === 'weapon' && equipmentData.damage) {
-                      properties.push({ label: 'Damage', value: `${equipmentData.damage.dice} ${equipmentData.damage.damageType}` });
+                      properties.push({ label: 'Damage', value: formatWeaponDamage(equipmentData.damage.dice, equipmentData.damage.damageType, settings.damageDisplay) });
                     }
 
                     // Add AC for armor

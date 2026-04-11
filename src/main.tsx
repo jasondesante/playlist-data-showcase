@@ -14,6 +14,11 @@ import './styles/index.css'
 // like EquipmentSpawnHelper.spawnByRarity()
 ensureAllDefaultsInitialized()
 
+// Clear any persisted Arweave gateway from previous sessions.
+// The engine's gateway manager caches gateways in localStorage, but they go stale
+// frequently — a gateway that worked yesterday may be dead today.
+try { localStorage.removeItem('arweave_active_gateway') } catch {}
+
 // Register magic items from MAGIC_ITEM_EXAMPLES
 // These items provide variety for the loot box rarity spawning
 // NOTE: We adjust spawnWeight for demo purposes:

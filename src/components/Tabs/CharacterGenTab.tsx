@@ -5,6 +5,8 @@ import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
 import { useFeatureNames } from '../../hooks/useFeatureNames';
 import { useCharacterStore } from '../../store/characterStore';
+import { useAppStore } from '@/store/appStore';
+import { formatWeaponDamage } from '@/utils/formatWeaponDamage';
 import { validateCharacterSheet } from '../../schemas/characterSchema';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
@@ -154,6 +156,7 @@ export function CharacterGenTab() {
   const { selectedTrack, audioProfile } = usePlaylistStore();
   const { generateCharacter, isGenerating } = useCharacterGenerator();
   const { addCharacter, getActiveCharacter, setActiveCharacter, characters } = useCharacterStore();
+  const { settings } = useAppStore();
   const { resolveFeatureName, resolveTraitName, getFeatureDescription, getTraitDescription, getFeatureEffects, getTraitEffects } = useFeatureNames();
 
   // State for import/export
@@ -1490,7 +1493,7 @@ export function CharacterGenTab() {
 
                     // Add damage for weapons
                     if (equipmentData.type === 'weapon' && equipmentData.damage) {
-                      properties.push({ label: 'Damage', value: `${equipmentData.damage.dice} ${equipmentData.damage.damageType}` });
+                      properties.push({ label: 'Damage', value: formatWeaponDamage(equipmentData.damage.dice, equipmentData.damage.damageType, settings.damageDisplay) });
                     }
 
                     // Add AC for armor

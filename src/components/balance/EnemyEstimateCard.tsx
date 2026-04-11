@@ -11,7 +11,7 @@
 
 import type { SimulationEstimateSnapshot } from '@/types/simulation';
 import { getXPForCR, getEncounterMultiplier } from 'playlist-data-engine';
-import { Heart, Shield, Crosshair, Star, Skull, TrendingUp, AlertCircle } from 'lucide-react';
+import { Heart, Shield, Crosshair, Star, Skull, TrendingUp, AlertCircle, Swords } from 'lucide-react';
 import { formatRange } from '@/utils/estimateEnemyDPR';
 import './EnemyEstimateCard.css';
 
@@ -136,6 +136,13 @@ export function EnemyEstimateCard({
                     <span className="eec-pill-label">XP</span>
                     <span className="eec-pill-value">{xpPerEnemy.toLocaleString()}</span>
                 </div>
+                {snapshot.weaponNames && snapshot.weaponNames.length > 0 && (
+                    <div className="eec-pill" data-tooltip={`Equipped weapon(s): ${snapshot.weaponNames.join(', ')}`}>
+                        <Swords size={11} />
+                        <span className="eec-pill-label">Weapon</span>
+                        <span className="eec-pill-value">{snapshot.weaponNames.join(', ')}</span>
+                    </div>
+                )}
             </div>
 
             {/* Adjusted XP */}

@@ -46,32 +46,47 @@ interface RollOutcome {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Calculate damage range (min, avg, max) using STR-based damage formula */
-function calcDamageRange(
+/** DND mode: dice-based damage range (min, avg, max) */
+function calcDamageRangeDND(
     weapon: WeaponOption,
     isCrit: boolean,
     attackerSTR: number,
-    defenderAC: number,
+    attackerDEX: number,
 ): { min: number; avg: number; max: number } {
     const parsed = DiceRoller.parseDiceFormula(weapon.damageDice);
     const dice = isCrit ? parsed.diceCount * 2 : parsed.diceCount;
 
-    const baseDamage = Math.max(0, attackerSTR - defenderAC);
+    const isFinesse = weapon.properties?.includes('finesse') ?? false;
+    const isRanged = weapon.properties?.includes('ranged') ?? false;
+    const abilityMod = (isFinesse || isRanged)
+        ? Math.floor((attackerDEX - 10) / 2)
+        : Math.floor((attackerSTR - 10) / 2);
 
-    // Weapon bonus: small contribution from dice (1-3 depending on weapon size)
-    const minPossible = dice;                           // all 1s
-    const maxPossible = dice * parsed.diceSides;         // all max
-    const avgRoll = (minPossible + maxPossible) / 2;
-
-    const bonusMin = Math.max(1, Math.floor(minPossible / 4));
-    const bonusAvg = Math.max(1, Math.floor(avgRoll / 4));
-    const bonusMax = Math.max(1, Math.floor(maxPossible / 4));
+    const minPossible = dice + abilityMod;
+    const maxPossible = dice * parsed.diceSides + abilityMod;
+    const avgRoll = (dice * (parsed.diceSides + 1)) / 2 + abilityMod;
 
     return {
-        min: Math.max(1, baseDamage + bonusMin),
-        avg: Math.max(1, baseDamage + bonusAvg),
-        max: Math.max(1, baseDamage + bonusMax),
+        min: Math.max(1, minPossible),
+        avg: Math.max(1, Math.round(avgRoll)),
+        max: Math.max(1, maxPossible),
     };
+}
+
+/** Scaled mode: formula-based damage (no dice). Returns fixed value as min=avg=max. */
+function calcDamageRangeScaled(
+    attackerLevel: number,
+    attackerSTR: number,
+    defenderAC: number,
+    damageDice: string,
+    isCrit: boolean,
+): { min: number; avg: number; max: number } {
+    const levelBase = Math.max(1, Math.floor(attackerLevel * 2 + (attackerSTR - defenderAC) * 0.3));
+    const weaponBonus = AttackResolver.getWeaponBonus(damageDice);
+    const total = isCrit
+        ? Math.max(1, Math.floor(levelBase * 1.5) + weaponBonus)
+        : Math.max(1, levelBase + weaponBonus);
+    return { min: total, avg: total, max: total };
 }
 
 /** Get weapons from a character sheet */
@@ -174,8 +189,15 @@ function DamageSpreadCalculatorComponent({ enemy, party, hitMode }: DamageSpread
             const hits = isScaled
                 ? !isFumble
                 : isCrit || (!isFumble && totalRoll >= targetAC);
-            const attackerSTR = party[selectedHeroIdx]?.ability_scores.STR ?? 10;
-            const damageRange = hits ? calcDamageRange(selectedWeapon, isCrit, attackerSTR, targetAC) : null;
+            const attacker = party[selectedHeroIdx];
+            const attackerSTR = attacker?.ability_scores.STR ?? 10;
+            const attackerDEX = attacker?.ability_scores.DEX ?? 10;
+            const attackerLevel = attacker?.level ?? 1;
+            const damageRange = hits
+                ? isScaled
+                    ? calcDamageRangeScaled(attackerLevel, attackerSTR, targetAC, selectedWeapon.damageDice, isCrit)
+                    : calcDamageRangeDND(selectedWeapon, isCrit, attackerSTR, attackerDEX)
+                : null;
             let label: string;
             if (isCrit) {
                 label = 'CRIT!';

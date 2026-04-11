@@ -20,6 +20,7 @@ import {
     PartyAnalyzer,
 } from 'playlist-data-engine';
 import { useCharacterStore } from '@/store/characterStore';
+import { useAppStore } from '@/store/appStore';
 import { useEnemyGenerator } from '@/hooks/useEnemyGenerator';
 import { useEstimateSnapshot } from '@/hooks/useEstimateSnapshot';
 import {
@@ -86,6 +87,8 @@ export function SimulationConfigPanel({
     const [enemySampleCount, setEnemySampleCount] = useState<number>(10);
     const [settings, setSettings] = useState<SimulationSettingsUI>(DEFAULT_SIMULATION_SETTINGS);
     const [validationError, setValidationError] = useState<string | null>(null);
+    const { settings: appSettings } = useAppStore();
+    const hitMode = appSettings.damageDisplay;
 
     // Sync external encounter config override into internal state
     useEffect(() => {
@@ -126,7 +129,7 @@ export function SimulationConfigPanel({
     const canRun = selectedParty.length > 0 && !isRunning;
 
     // ─── Pre-Simulation Estimates ────────────────────────────────────────
-    const estimateSnapshot = useEstimateSnapshot(selectedParty, encounterConfig, enemySampleCount);
+    const estimateSnapshot = useEstimateSnapshot(selectedParty, encounterConfig, hitMode, enemySampleCount);
 
     // Instant party analysis (no loading delay) for PartyEstimateCard
     const partyAnalysis: PartyAnalysis | null = useMemo(() => {
@@ -284,6 +287,7 @@ export function SimulationConfigPanel({
                     isLoading={false}
                     encounterXP={estimateSnapshot?.enemy.totalAdjustedXP}
                     estimatedDPR={estimateSnapshot?.party.estimatedDPR}
+                    weaponName={estimateSnapshot?.party.weaponName}
                 />
             </section>
 

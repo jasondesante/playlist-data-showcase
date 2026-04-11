@@ -182,6 +182,7 @@ export function SettingsTab() {
   const [audioFftSize, setAudioFftSize] = useState(settings.audioFftSize);
   const [verboseLogging, setVerboseLogging] = useState(settings.verboseLogging);
   const [hideRealLocation, setHideRealLocation] = useState(settings.hideRealLocation);
+  const [damageDisplay, setDamageDisplay] = useState(settings.damageDisplay);
   const [saveIndicator, setSaveIndicator] = useState<'saved' | 'saving' | null>(null);
   const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
   const [importStatus, setImportStatus] = useState<'idle' | 'importing' | 'success' | 'error'>('idle');
@@ -224,6 +225,7 @@ export function SettingsTab() {
       setAudioFftSize(settings.audioFftSize);
       setVerboseLogging(settings.verboseLogging);
       setHideRealLocation(settings.hideRealLocation);
+      setDamageDisplay(settings.damageDisplay);
       isInitialized.current = true;
     }
   }, [settings.openWeatherApiKey, settings.steamApiKey, settings.audioFftSize, settings.verboseLogging, settings.hideRealLocation]);
@@ -291,6 +293,13 @@ export function SettingsTab() {
     if (checked) {
       logger.info('Settings', 'Location privacy mode enabled');
     }
+  };
+
+  const handleDamageDisplayChange = (value: 'dnd' | 'scaled') => {
+    setDamageDisplay(value);
+    updateSettings({ damageDisplay: value });
+    setSaveIndicator('saved');
+    setTimeout(() => setSaveIndicator(null), 2000);
   };
 
   // Debounced OpenWeather API key validation
@@ -807,6 +816,40 @@ export function SettingsTab() {
               <span>Location privacy is enabled. Coordinates shown will be fake (18.3002° N, 64.8252° W).</span>
             </div>
           )}
+        </Card>
+      </section>
+
+      {/* Combat Settings Section */}
+      <section className="settings-section">
+        <div className="settings-section-header">
+          <Gamepad2 className="settings-section-icon" />
+          <h2 className="settings-section-title">Combat</h2>
+        </div>
+        <Card variant="elevated" padding="md" className="settings-debug-card">
+          <div className="settings-toggle-row">
+            <div className="settings-toggle-info">
+              <div className="settings-toggle-label">Weapon Damage Display</div>
+              <div className="settings-description">
+                How weapon damage is shown throughout the app. <strong>Scaled RPG</strong> shows a flat damage bonus (e.g. +2). <strong>D&amp;D</strong> shows the traditional dice roll (e.g. 1d8).
+              </div>
+            </div>
+            <div className="settings-toggle-group">
+              <button
+                onClick={() => handleDamageDisplayChange('scaled')}
+                className={`settings-toggle-option ${damageDisplay === 'scaled' ? 'settings-toggle-option-active' : ''}`}
+                type="button"
+              >
+                Scaled RPG
+              </button>
+              <button
+                onClick={() => handleDamageDisplayChange('dnd')}
+                className={`settings-toggle-option ${damageDisplay === 'dnd' ? 'settings-toggle-option-active' : ''}`}
+                type="button"
+              >
+                D&amp;D
+              </button>
+            </div>
+          </div>
         </Card>
       </section>
 

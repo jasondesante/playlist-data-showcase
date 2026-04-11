@@ -18,6 +18,8 @@ import { useState, useMemo, useCallback } from 'react';
 import { Search, Plus, X, Sword, Shield, Package, AlertCircle } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useDebounce } from '../../hooks/useDebounce';
+import { useAppStore } from '@/store/appStore';
+import { formatWeaponDamage } from '@/utils/formatWeaponDamage';
 import {
   ExtensionManager,
   DEFAULT_EQUIPMENT,
@@ -109,6 +111,7 @@ export function EquipmentBrowser({
   className,
   maxHeight = '300px'
 }: EquipmentBrowserProps) {
+  const { settings } = useAppStore();
   // Search query state
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -265,7 +268,7 @@ export function EquipmentBrowser({
                     </span>
                     {item.damage && (
                       <span className="equipment-browser-item-damage">
-                        {item.damage.dice} {item.damage.damageType}
+                        {formatWeaponDamage(item.damage.dice, item.damage.damageType, settings.damageDisplay)}
                       </span>
                     )}
                     {item.acBonus !== undefined && (

@@ -62,6 +62,7 @@ export const usePlaylistParser = () => {
                 const url = `https://arweave.net/${txId}`;
                 let json: unknown;
                 try {
+                    const fetchStart = Date.now();
                     const resolvedUrl = await arweaveGatewayManager.resolveUrl(url);
                     const response = await fetch(resolvedUrl);
 
@@ -78,10 +79,11 @@ export const usePlaylistParser = () => {
                     }
 
                     json = await response.json();
+                    arweaveGatewayManager.reportFetchSuccess(Date.now() - fetchStart);
                 } catch (error) {
                     if (error instanceof TypeError) {
                         // Network error (no response) — gateway is likely dead, report failure
-                        arweaveGatewayManager.reportGatewayFailure(url).catch(() => {});
+                        arweaveGatewayManager.reportGatewayFailure(url, { reason: 'load-error' }).catch(() => {});
                         throw new Error('Network error: Unable to connect to Arweave. This could be due to CORS restrictions or network connectivity issues. Please try again or check your connection.');
                     }
                     if (error instanceof SyntaxError) {

@@ -1,6 +1,8 @@
 import { useState, useCallback, memo } from 'react';
 import type { SimulationResults, BalanceReport, CharacterSheet } from 'playlist-data-engine';
+import { AttackResolver } from 'playlist-data-engine';
 import { Lock, Unlock, Shuffle } from 'lucide-react';
+import { useAppStore } from '@/store/appStore';
 import { ResultsSummary } from './ResultsSummary';
 import { PerCombatantMetrics } from './PerCombatantMetrics';
 import { BalanceRecommendations } from './BalanceRecommendations';
@@ -157,6 +159,7 @@ function BalanceDashboardComponent({
     onBucketClick,
     className = '',
 }: BalanceDashboardProps) {
+    const { settings: appSettings } = useAppStore();
     const hasCombatantMetrics = results.perCombatantMetrics.size > 0;
     const hasRecommendations = balanceReport !== null && balanceReport.recommendations.length > 0;
 
@@ -222,7 +225,14 @@ function BalanceDashboardComponent({
                                     <div className="bd-enemy-stats">
                                         <span>HP {enemy.hp.max}</span>
                                         <span>AC {enemy.armor_class}</span>
-                                        {mainWeapon && <span>{mainWeapon.name ?? mainWeapon.damage?.dice ?? 'Weapon'}</span>}
+                                        {mainWeapon && (
+                                            <span>
+                                                {mainWeapon.name}
+                                                {mainWeapon.damage?.dice && (
+                                                    <> ({mainWeapon.damage.damageType ? AttackResolver.formatWeaponDamage(mainWeapon.damage.dice, mainWeapon.damage.damageType, appSettings.damageDisplay) : mainWeapon.damage.dice})</>
+                                                )}
+                                            </span>
+                                        )}
                                     </div>
                                     {spells.length > 0 && (
                                         <div className="bd-enemy-spells">
@@ -230,7 +240,7 @@ function BalanceDashboardComponent({
                                         </div>
                                     )}
                                     {party && (
-                                        <DamageSpreadCalculator enemy={enemy} party={party} hitMode="scaled" />
+                                        <DamageSpreadCalculator enemy={enemy} party={party} hitMode={appSettings.damageDisplay} />
                                     )}
                                 </div>
                             );

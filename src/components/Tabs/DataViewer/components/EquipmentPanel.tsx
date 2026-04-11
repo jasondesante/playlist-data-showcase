@@ -14,6 +14,8 @@ import { CustomContentBadge } from '../CustomContentBadge';
 import { RARITY_COLORS, RARITY_BG_COLORS } from '../constants';
 import { formatRarity, formatSpawnWeight, formatCondition, formatSpellLevelShort, formatSpellUses } from '../utils';
 import { getPropertyTypeConfig } from '../constants/propertyTypes';
+import { useAppStore } from '@/store/appStore';
+import { formatWeaponDamage } from '@/utils/formatWeaponDamage';
 
 /**
  * Type guard to check if an equipment item has enhanced properties.
@@ -198,7 +200,8 @@ function EquipmentCard({
   onEdit,
   onDelete,
   onDuplicate,
-  checkIsCustomItem
+  checkIsCustomItem,
+  damageDisplay,
 }: {
   item: Equipment;
   isExpanded: boolean;
@@ -207,6 +210,7 @@ function EquipmentCard({
   onDelete: () => void;
   onDuplicate: () => void;
   checkIsCustomItem: (itemName: string) => boolean;
+  damageDisplay: 'dnd' | 'scaled';
 }) {
   const rarityColor = RARITY_COLORS[item.rarity || 'common'] || RARITY_COLORS.common;
   const rarityBg = RARITY_BG_COLORS[item.rarity || 'common'] || RARITY_BG_COLORS.common;
@@ -301,7 +305,7 @@ function EquipmentCard({
               <div className="dataviewer-item-stat">
                 <span className="dataviewer-item-stat-label">Damage:</span>
                 <span className="dataviewer-item-stat-value">
-                  {item.damage.dice} {item.damage.damageType}
+                  {formatWeaponDamage(item.damage.dice, item.damage.damageType, damageDisplay)}
                 </span>
               </div>
             )}
@@ -371,6 +375,7 @@ export function EquipmentPanel({
   onDuplicate,
   checkIsCustomItem
 }: EquipmentPanelProps) {
+  const { settings } = useAppStore();
   return (
     <div className="dataviewer-grid">
       {equipment.map(item => {
@@ -384,6 +389,7 @@ export function EquipmentPanel({
             onToggle={() => toggleExpanded(item.name)}
             onEdit={() => onEdit('equipment', item.name)}
             onDelete={() => onDelete('equipment', item.name)}
+            damageDisplay={settings.damageDisplay}
             onDuplicate={() => onDuplicate('equipment', item.name)}
             checkIsCustomItem={(itemName) => checkIsCustomItem('equipment', itemName)}
           />

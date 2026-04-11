@@ -17,6 +17,8 @@ interface AppSettings {
     verboseLogging: boolean;
     /** Hide real location coordinates and show fake ones instead (privacy mode) */
     hideRealLocation: boolean;
+    /** How weapon damage is displayed: 'dnd' shows dice (1d8), 'scaled' shows flat bonus (+2) */
+    damageDisplay: 'dnd' | 'scaled';
 }
 
 interface AppState {
@@ -39,6 +41,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     audioFftSize: 2048,
     verboseLogging: false,
     hideRealLocation: true,
+    damageDisplay: 'scaled',
 };
 
 export const useAppStore = create<AppState>()(
@@ -89,6 +92,10 @@ export const useAppStore = create<AppState>()(
         {
             name: 'app-settings',
             storage: createJSONStorage(() => storage),
+            merge: (persisted, current) => ({
+                ...current,
+                settings: { ...DEFAULT_SETTINGS, ...(persisted as any)?.settings }
+            }),
             onRehydrateStorage: () => {
                 return (state) => {
                     if (state) {

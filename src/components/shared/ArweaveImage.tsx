@@ -14,7 +14,7 @@
  * @see docs/plans/arweave-gateway-fallback-implementation.md - Phase 5
  */
 
-import { useState, useEffect, useCallback, type ImgHTMLAttributes, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useRef, type ImgHTMLAttributes, type ReactNode } from 'react';
 import { Music } from 'lucide-react';
 import { arweaveGatewayManager, isArweaveUrl } from 'playlist-data-engine';
 import { logger } from '../../utils/logger';
@@ -87,6 +87,9 @@ export function ArweaveImage({
   const [resolveError, setResolveError] = useState<boolean>(false);
   const [imageLoadError, setImageLoadError] = useState<boolean>(false);
   const [imageLoaded, setImageLoaded] = useState<boolean>(false);
+  // Track when image data started loading (after URL resolution) for fetch timing
+  // Use ref to avoid stale closure issues in handleLoad callback
+  const loadStartTimeRef = useRef<number | null>(null);
 
   // Determine if this is an Arweave URL
   const isArweave = isArweaveUrl(src);
@@ -97,6 +100,7 @@ export function ArweaveImage({
     setResolveError(false);
     setImageLoadError(false);
     setImageLoaded(false);
+    loadStartTimeRef.current = null;
 
     // Skip resolution for non-Arweave URLs or when explicitly skipped
     if (!isArweave || skipResolution) {
@@ -117,6 +121,7 @@ export function ArweaveImage({
 
         setResolvedUrl(resolved);
         setIsResolving(false);
+        loadStartTimeRef.current = Date.now();
 
         // Log if we got a different URL (gateway fallback occurred)
         if (resolved !== src) {
@@ -155,9 +160,17 @@ export function ArweaveImage({
     (e: React.SyntheticEvent<HTMLImageElement>) => {
       setImageLoaded(true);
       setImageLoadError(false);
+
+      // Feed timing data back to the gateway manager for proactive rotation
+      if (isArweave && loadStartTimeRef.current !== null) {
+        const timingMs = Date.now() - loadStartTimeRef.current;
+        arweaveGatewayManager.reportFetchSuccess(timingMs);
+        loadStartTimeRef.current = null;
+      }
+
       onLoad?.(e);
     },
-    [onLoad]
+    [onLoad, isArweave]
   );
 
   // Handle image load error
@@ -167,7 +180,7 @@ export function ArweaveImage({
 
       // Report gateway failure so the engine tries a different gateway next time
       if (isArweave && resolvedUrl) {
-        arweaveGatewayManager.reportGatewayFailure(resolvedUrl).catch(() => {});
+        arweaveGatewayManager.reportGatewayFailure(resolvedUrl, { reason: 'load-error' }).catch(() => {});
       }
 
       logger.warn('ArweaveGateway', 'Image failed to load', { src: resolvedUrl });

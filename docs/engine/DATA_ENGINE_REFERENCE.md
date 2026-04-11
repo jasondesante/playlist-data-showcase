@@ -762,7 +762,7 @@ Three related types for equipment and inventory management.
 | Type | Location | Description |
 |------|----------|-------------|
 | **InventoryItem** | *[src/core/generation/EquipmentGenerator.ts](src/core/generation/EquipmentGenerator.ts)* | Basic inventory: name, quantity, equipped flag |
-| **EnhancedInventoryItem** | *[src/core/types/Equipment.ts](src/core/types/Equipment.ts)* | Adds: modifications, templateId, instanceId (for enchantments, per-instance tracking) |
+| **EnhancedInventoryItem** | *[src/core/types/Equipment.ts](src/core/types/Equipment.ts)* | Adds: modifications, templateId, instanceId, tags (for enchantments, per-instance tracking, combat item filtering) |
 | **CharacterEquipment** | *[src/core/types/Equipment.ts](src/core/types/Equipment.ts)* | Container: weapons[], armor[], items[], totalWeight, equippedWeight |
 
 **Key differences:**
@@ -1019,7 +1019,7 @@ An action taken during combat.
 | `'hide'` | Hide action (stealth check) |
 | `'ready'` | Ready an action to trigger later |
 | `'flee'` | Leave combat (requires `allowFleeing: true`) |
-| `'useItem'` | Use an item from inventory (healing potions, etc.) |
+| `'useItem'` | Use an item from inventory. Consumes one quantity (removes at 0). Only items with `'healing'` or `'consumable'` tags are considered by CombatAI. |
 | `'legendaryAction'` | Boss legendary action (spends action points) |
 | `'statusEffectTick'` | Status effect processing (duration decrement, expiration, concentration break, start-of-turn damage) |
 
@@ -1078,11 +1078,12 @@ Configuration for custom combat loot rewards.
 | Type | Description |
 |------|-------------|
 | `CombatActionResult` | Outcome of a combat action (success, roll, damage) |
-| `AttackRoll` | Attack roll result (d20, bonus, hit/miss) |
-| `DamageRoll` | Damage roll result (dice, rolls, total) |
+| `AttackRoll` | Attack roll result (d20, bonus, hit/miss, damageScale) |
+| `DamageRoll` | Damage roll result (dice, rolls, total, baseDamage, weaponRoll) — uses STR-based formula: `max(1, max(0, STR - AC) + max(1, floor(dice/4)))` |
 | `SpellCastResult` | Spell casting outcome (success, save DC, effects) |
 | `CombatResult` | Final combat result (winner, winnerSide, XP, treasure) — see below |
-| `CombatConfig` | Combat configuration options (environment, music, tactical, treasure) |
+| `CombatConfig` | Combat configuration options (environment, music, tactical, treasure, hitMode) |
+| `HitMode` | Hit resolution mode: `'dnd'` (classic AC threshold) or `'scaled'` (AC reduces damage) |
 | `TreasureConfig` | Custom loot rewards (fixed gold, range, items) |
 
 **CombatResult Interface:**
@@ -1677,7 +1678,7 @@ Genre models auto-detect their taxonomy from URL keywords (see [`GenreListType`]
 
 ### Arweave Gateway Resolution
 
-The engine includes a built-in Arweave gateway manager (`arweaveGatewayManager`) that provides automatic fallback to alternate gateways when Arweave URLs fail. `MusicClassifier`, `EssentiaPitchDetector`, `ColorExtractor`, and `PlaylistParser` all use this internally — no configuration needed.
+The engine includes a built-in Arweave gateway manager (`arweaveGatewayManager`) that provides automatic gateway fallback when Arweave URLs fail. `MusicClassifier`, `EssentiaPitchDetector`, `ColorExtractor`, and `PlaylistParser` all use this internally — no configuration needed.
 
 | Export | Description |
 |--------|-------------|
@@ -1685,7 +1686,34 @@ The engine includes a built-in Arweave gateway manager (`arweaveGatewayManager`)
 | `ArweaveGatewayManager` | Class: create custom instances with custom gateway lists |
 | `isArweaveUrl` | Utility: check if a URL is an Arweave transaction |
 
-**Gateway priority order:** arweave.net → ar.io → ardrive.net → turbo-gateway.com
+**Gateway resolution strategy:** Sequential fallback — arweave.net first (most reliable), then the persisted gateway from localStorage, then AR.IO Wayfinder (wider pool via `FastestPingRoutingStrategy` + `RandomRoutingStrategy` fallback), then remaining static gateways. Each gateway is verified with a real fetch before being used. Dead persisted gateways are cleared automatically.
+
+**Wayfinder configuration:** Uses `NetworkGatewaysProvider` (top 10 gateways by operator stake) as the primary candidate pool with `FastestPingRoutingStrategy` (3s timeout). Falls back to a wider pool of 20 gateways via `RandomRoutingStrategy`. Requires both `@ar.io/wayfinder-core` and `@ar.io/sdk`.
+
+**Default gateways:** arweave.net → ar.io → ardrive.net → turbo-gateway.com
+
+#### Key Public Methods
+
+| Method | Description |
+|--------|-------------|
+| `resolveUrl(url, signal?)` | Resolve an Arweave URL to a working gateway URL. Supports `AbortSignal` for cancellation. |
+| `reportGatewayFailure(url, options?)` | Report a failed fetch. Options: `{ signal?, reason?: 'load-error' \| 'user-cancel-slow' \| 'user-cancel-fast', excludeHost? }`. Fast user cancels preserve the active gateway. `excludeHost` skips a specific gateway during retry. |
+| `reportFetchSuccess(timingMs)` | Feed timing data back to the manager. Resets the slow-response counter on fast fetches; increments it on slow ones. Triggers proactive rotation after `maxSlowResponses` consecutive slow fetches. |
+| `reportFetchTiming(host, timingMs, success)` | Record real data-transfer timing for a gateway (separate from HEAD-based health checks). |
+
+#### Configuration
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `gateways` | `GatewayConfig[]` | 4 defaults | Gateway list |
+| `timeout` | `number` | `5000` | Per-gateway HEAD check timeout (ms) |
+| `cacheTTL` | `number` | `7200000` | Per-txId cache TTL (ms, default 2 hours) |
+| `slowResponseThreshold` | `number` | `8000` | Threshold above which a fetch is "slow" (ms) |
+| `maxSlowResponses` | `number` | `3` | Consecutive slow responses before proactive gateway rotation |
+
+**Persisted gateway:** The active gateway is saved to `localStorage` with a 30-minute TTL. Expired persisted gateways are ignored on the next session, forcing fresh discovery.
+
+**Health-aware filtering:** Gateways with >70% failure rate (and at least 3 checks) are skipped during resolution, unless all gateways would be filtered out.
 
 All model loading includes exponential backoff retries (1s, 2s, 4s) on transient failures, combined with automatic gateway resolution. Non-Arweave URLs pass through unchanged.
 
@@ -4850,7 +4878,7 @@ D&D 5e turn-based combat engine with initiative, attacks, spell casting, and dam
 
 | Constructor | Description |
 |-------------|-------------|
-| `new CombatEngine(config?: CombatConfig)` | Initialize combat engine with optional configuration (useEnvironment, useMusic, tacticalMode, maxTurnsBeforeDraw, allowFleeing, seed, treasure) |
+| `new CombatEngine(config?: CombatConfig)` | Initialize combat engine with optional configuration (useEnvironment, useMusic, tacticalMode, maxTurnsBeforeDraw, allowFleeing, seed, treasure, hitMode) |
 
 **Methods:**
 
@@ -4969,9 +4997,14 @@ Utility class for D&D-style dice rolling mechanics.
 
 *Location:* *[src/core/combat/AttackResolver.ts](src/core/combat/AttackResolver.ts)*
 
-> **Note:** Instance class - create with `new AttackResolver()`
+> **Note:** Instance class - create with `new AttackResolver(diceRoller?, hitMode?)`
 
-Handles melee and ranged attack resolution (d20 + attack bonus vs target AC).
+Handles melee and ranged attack resolution (d20 + attack bonus vs target AC). Supports two hit resolution modes:
+
+- **`'dnd'`** (classic): totalRoll >= AC to hit. Natural 1 always misses, natural 20 always crits.
+- **`'scaled'`** (default): AC reduces damage instead of determining hit/miss. Only natural 1 misses. For each point the total roll falls below AC, damage is reduced by 10% (minimum 1 damage). Natural 20 always crits at full damage.
+
+The `damageScale` field on `AttackRoll` indicates the multiplier applied (1.0 = full damage, <1.0 = scaled down). Only present in `'scaled'` mode.
 
 | Method | Description |
 |--------|-------------|
@@ -4980,7 +5013,13 @@ Handles melee and ranged attack resolution (d20 + attack bonus vs target AC).
 | `calculateAttackBonus(character, attackName, abilityModifier, isProficient)` | Calculates attack bonus (ability + proficiency if proficient) |
 | `attackWithAdvantage(attacker, target, attack)` | Resolves attack with advantage (roll twice, take higher) |
 | `attackWithDisadvantage(attacker, target, attack)` | Resolves attack with disadvantage (roll twice, take lower) |
-| `simulateAttacks(attacker, target, attack, iterations?, diceRoller?)` | **Static.** Simulates N attack rolls using the full resolution pipeline; returns hit/crit/miss rates, average/max damage, and damage distribution |
+| `simulateAttacks(attacker, target, attack, iterations?, diceRoller?, hitMode?)` | **Static.** Simulates N attack rolls using the full resolution pipeline; returns hit/crit/miss rates, average/max damage, and damage distribution |
+| `computeScaledDamage(level, str, targetAC, damageDice, isCritical)` | **Static.** Core scaled-mode damage formula: `max(1, floor(level * 2 + (STR - AC) * 0.3)) + weaponBonus`. Crits multiply level base by 1.5x. Always uses STR. |
+| `computeDamageScale(totalRoll, targetAC)` | **Static.** Returns damage multiplier for below-AC rolls in scaled mode: 1.0 if >= AC, else `max(0.10, 1 - deficit * 0.10)`. |
+| `computeAttackBonus(abilityScores, weaponProperties, proficiency)` | **Static.** DEX for ranged/finesse weapons, STR otherwise. Shared by `CombatEngine.buildWeaponAttack` and estimation methods. |
+| `formatWeaponDamage(dice, damageType, damageDisplay)` | **Static.** Formats weapon damage for display: scaled mode shows flat bonus (e.g. "+2 piercing"), dnd mode shows dice string (e.g. "1d8 piercing"). |
+| `estimateDamagePerHit(opts)` | **Static.** Estimates average damage per hit for a given hitMode. Mirrors actual combat formulas so pre-simulation estimates match simulator output. |
+| `estimateDPR(opts)` | **Static.** Estimates damage per round including hit rate. Iterates all 20 d20 outcomes to match actual combat mechanics exactly. |
 
 ### SpellCaster
 
@@ -5784,10 +5823,11 @@ Static class for applying and removing equipment effects when equipping/unequipp
 
 | Method | Description |
 |--------|-------------|
-| `equipItem(character, equipment, instanceId?)` | Apply all effects from equipping an item (properties, features, skills, spells) |
+| `equipItem(character, equipment, instanceId?)` | Apply all effects from equipping an item (properties, features, skills, spells). Returns `EffectApplicationResult` with `applied: boolean` — `false` if stat requirements are not met. Idempotent: re-equipping the same item returns `applied: true` without duplicating effects. |
 | `unequipItem(character, equipmentName, instanceId?)` | Remove all effects from unequipping an item |
 | `reapplyEquipmentEffects(character)` | Re-apply all equipment effects for updates/level-ups |
 | `getActiveEffects(character)` | Get array of all active equipment properties on character |
+| `evaluateACFormula(formula, dexMod)` | Evaluate an armor AC formula string. Supports flat values (`"16"`), light armor (`"11 + DEX"`), and medium armor (`"14 + min(DEX, 2)"`) |
 
 ### EquipmentValidator
 *Also known as: Equipment validation, equipment data checker, property validator*

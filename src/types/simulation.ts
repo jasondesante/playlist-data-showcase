@@ -582,6 +582,8 @@ export interface SimulationEstimateSnapshot {
         estimatedDPR: number;
         /** Total party strength score (abstract value) */
         totalStrength: number;
+        /** Primary weapon name(s) used by the party */
+        weaponName?: string;
         /** XP budgets per difficulty tier */
         xpBudgets: {
             easy: number;
@@ -611,6 +613,8 @@ export interface SimulationEstimateSnapshot {
         rarity: string;
         /** Number of enemy samples rolled to compute the ranges */
         sampleCount: number;
+        /** Equipped weapon names from a sample enemy */
+        weaponNames?: string[];
     };
 
     /** Derived difficulty prediction */

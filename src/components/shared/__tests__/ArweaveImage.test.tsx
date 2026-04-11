@@ -46,6 +46,9 @@ vi.mock('playlist-data-engine', () => ({
       }
       return url;
     }),
+    reportGatewayFailure: vi.fn(async () => {}),
+    reportFetchTiming: vi.fn(),
+    reportFetchSuccess: vi.fn(),
   },
 }));
 
@@ -54,6 +57,8 @@ import { isArweaveUrl, arweaveGatewayManager } from 'playlist-data-engine';
 
 const mockIsArweaveUrl = vi.mocked(isArweaveUrl);
 const mockResolveUrl = vi.mocked(arweaveGatewayManager.resolveUrl);
+const mockReportGatewayFailure = vi.mocked(arweaveGatewayManager.reportGatewayFailure);
+const mockReportFetchSuccess = vi.mocked(arweaveGatewayManager.reportFetchSuccess);
 
 // ============================================================
 // Task 7.3.1: Test rendering with non-Arweave URL
@@ -334,6 +339,36 @@ describe('Error handling', () => {
     });
   });
 
+  it('should report gateway failure with load-error reason when Arweave image fails to load', async () => {
+    render(<ArweaveImage src={ARWEAVE_URL} alt="Test" />);
+
+    // Wait for image to appear with resolved URL
+    const img = await screen.findByRole('img');
+    expect(img).toHaveAttribute('src', RESOLVED_URL);
+
+    // Simulate image load error
+    img.dispatchEvent(new Event('error'));
+
+    await waitFor(() => {
+      expect(mockReportGatewayFailure).toHaveBeenCalledWith(RESOLVED_URL, {
+        reason: 'load-error',
+      });
+    });
+  });
+
+  it('should NOT report gateway failure for non-Arweave image load errors', async () => {
+    render(<ArweaveImage src={REGULAR_URL} alt="Test" />);
+
+    const img = await screen.findByRole('img');
+    img.dispatchEvent(new Event('error'));
+
+    await waitFor(() => {
+      expect(img).toBeInTheDocument();
+    });
+
+    expect(mockReportGatewayFailure).not.toHaveBeenCalled();
+  });
+
   it('should fall back to original URL when all gateways fail', async () => {
     // When all gateways fail, resolveUrl returns the original URL
     mockResolveUrl.mockResolvedValueOnce(ARWEAVE_URL);
@@ -420,5 +455,38 @@ describe('Component structure', () => {
     img.dispatchEvent(new Event('load'));
 
     expect(onLoad).toHaveBeenCalled();
+  });
+
+  it('should report fetch success timing when Arweave image loads successfully', async () => {
+    render(<ArweaveImage src={ARWEAVE_URL} alt="Test" />);
+
+    // Wait for image to appear with resolved URL
+    const img = await screen.findByRole('img');
+    expect(img).toHaveAttribute('src', RESOLVED_URL);
+
+    // Simulate successful image load
+    img.dispatchEvent(new Event('load'));
+
+    await waitFor(() => {
+      expect(mockReportFetchSuccess).toHaveBeenCalledWith(expect.any(Number));
+    });
+
+    // Timing should be a positive number (milliseconds)
+    const timingMs = mockReportFetchSuccess.mock.calls[0][0];
+    expect(timingMs).toBeGreaterThan(0);
+  });
+
+  it('should NOT report fetch success for non-Arweave image loads', async () => {
+    mockReportFetchSuccess.mockClear();
+    render(<ArweaveImage src={REGULAR_URL} alt="Test" />);
+
+    const img = await screen.findByRole('img');
+    img.dispatchEvent(new Event('load'));
+
+    await waitFor(() => {
+      expect(img).toBeInTheDocument();
+    });
+
+    expect(mockReportFetchSuccess).not.toHaveBeenCalled();
   });
 });

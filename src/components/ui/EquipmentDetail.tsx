@@ -21,6 +21,8 @@
 
 import type { EnhancedEquipment } from 'playlist-data-engine';
 import { Sword, Shield, Package, Sparkles, Target, Zap, BookOpen, Crown, Scale } from 'lucide-react';
+import { useAppStore } from '@/store/appStore';
+import { formatWeaponDamage } from '@/utils/formatWeaponDamage';
 
 /**
  * Rarity color mapping for equipment display
@@ -151,6 +153,7 @@ export function EquipmentDetail({
   showSkills = true,
   showSpells = true
 }: EquipmentDetailProps) {
+  const { settings } = useAppStore();
   const TypeIcon = getEquipmentTypeIcon(equipment.type);
   const rarityColor = RARITY_COLORS[equipment.rarity] || RARITY_COLORS.common;
   const bgColor = RARITY_BG_COLORS[equipment.rarity] || RARITY_BG_COLORS.common;
@@ -213,7 +216,7 @@ export function EquipmentDetail({
             <Zap size={14} className="equipment-detail-stat-icon" />
             <span className="equipment-detail-stat-label">Damage:</span>
             <span className="equipment-detail-stat-value">
-              {equipment.damage.dice} {equipment.damage.damageType}
+              {formatWeaponDamage(equipment.damage.dice, equipment.damage.damageType, settings.damageDisplay)}
               {equipment.damage.versatile && ` (${equipment.damage.versatile} versatile)`}
             </span>
           </div>
