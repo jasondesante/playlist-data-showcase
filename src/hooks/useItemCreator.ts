@@ -585,12 +585,17 @@ export const useItemCreator = (): UseItemCreatorReturn => {
                 }
             }
 
-            // Create inventory item
+            // Create inventory item — copy combat stats from equipment data
+            // so they're available without a DEFAULT_EQUIPMENT lookup
             const inventoryItem: EnhancedInventoryItem = {
                 name: equipment.name,
                 quantity: quantity,
                 equipped: autoEquip,
-                instanceId: `${equipment.name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
+                instanceId: `${equipment.name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+                ...(equipment.damage ? { damage: equipment.damage } : {}),
+                ...(equipment.weaponProperties ? { weaponProperties: equipment.weaponProperties } : {}),
+                ...(equipment.type ? { type: equipment.type as any } : {}),
+                ...(equipment.acBonus !== undefined ? { acBonus: equipment.acBonus } : {}),
             };
 
             // Create a copy of the character to modify

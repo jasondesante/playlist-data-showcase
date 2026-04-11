@@ -5,6 +5,7 @@ import {
     calculateAdjustedXP,
     getEncounterMultiplier,
     CharacterSheet,
+    DEFAULT_EQUIPMENT,
 } from 'playlist-data-engine';
 import type { HitMode } from 'playlist-data-engine';
 import type { EncounterConfigUI } from '@/types/simulation';
@@ -132,7 +133,7 @@ export function useEstimateSnapshot(
                 sampleHPs.push(enemy.hp.max);
                 sampleACs.push(enemy.armor_class);
                 // Use the same formula as the actual combat simulator
-                sampleDPRs.push(estimateEnemyDPR(enemy, hitMode, partyAnalysis.averageAC));
+                sampleDPRs.push(estimateEnemyDPR(enemy, hitMode, partyAnalysis.averageAC, selectedParty.length));
                 // Collect weapon names from the last sample for display
                 if (i === 0) {
                     sampleWeaponNames = getEnemyWeaponNames(enemy);
@@ -157,30 +158,32 @@ export function useEstimateSnapshot(
         const totalAdjustedXP = calculateAdjustedXP(enemyCRs, multiplier);
 
         // --- Party DPR using the same formula as actual combat ---
+        // The AI picks the best damage action each turn (weapon or cantrip).
+        // Model both and take the max per member.
         const avgEnemyAC = perEnemyAC.avg;
         let totalPartyDPR = 0;
         for (const character of selectedParty) {
+            // Weapon DPR — look up DEFAULT_EQUIPMENT (matches buildAttackFromWeapon)
             const equippedWeapon = character.equipment?.weapons?.find(w => w.equipped);
-            const dice = equippedWeapon?.damage?.dice ?? '1';
-            const isFinesse = equippedWeapon?.weaponProperties?.includes('finesse') ?? false;
-            const isRanged = equippedWeapon?.weaponProperties?.includes('ranged') ?? false;
+            const defaultWeapon = equippedWeapon ? DEFAULT_EQUIPMENT[equippedWeapon.name] : undefined;
+            const dice = defaultWeapon?.damage?.dice ?? equippedWeapon?.damage?.dice ?? '1d6';
+            const wp = defaultWeapon?.weaponProperties ?? equippedWeapon?.weaponProperties ?? [];
+            const isFinesse = wp.includes('finesse');
+            const isRanged = wp.includes('ranged');
 
-            // Scaled mode always uses STR (matches rollDamageScaled).
-            // DND mode uses DEX for finesse/ranged weapons.
             const abilityScore = hitMode === 'scaled'
                 ? (character.ability_scores.STR ?? 10)
                 : ((isRanged || isFinesse)
                     ? (character.ability_scores.DEX ?? 10)
                     : (character.ability_scores.STR ?? 10));
 
-            // Attack bonus for damage scaling (delegated to engine)
             const weaponAttackBonus = AttackResolver.computeAttackBonus(
                 character.ability_scores,
-                equippedWeapon?.weaponProperties ?? [],
+                wp,
                 character.proficiency_bonus ?? 2,
             );
 
-            totalPartyDPR += AttackResolver.estimateDPR({
+            const weaponDPR = AttackResolver.estimateDPR({
                 hitMode,
                 level: character.level ?? 1,
                 abilityScore,
@@ -189,6 +192,34 @@ export function useEstimateSnapshot(
                 proficiencyBonus: character.proficiency_bonus,
                 attackBonus: weaponAttackBonus,
             });
+
+            // Cantrip DPR: attack_roll cantrips always hit in the engine,
+            // save-based cantrips have ~60% success rate.
+            let bestCantripDPR = 0;
+            const combatSpells = character.combat_spells ?? [];
+            for (const spell of combatSpells) {
+                const isCantrip = (spell.level ?? 0) === 0;
+                if (!isCantrip) continue;
+                const tags = spell.tags ?? [];
+                if (!tags.includes('damage') && !tags.includes('aoe')) continue;
+
+                const dmgFormula = (spell.damage_dice ?? spell.damage ?? '').replace(/\s/g, '').replace(/^d(\d+)/, '1d$1');
+                if (!dmgFormula) continue;
+
+                const cantripMatch = dmgFormula.match(/^(\d+)d(\d+)([+-]\d+)?$/);
+                if (!cantripMatch) continue;
+                const avgDmg = parseInt(cantripMatch[1]) * (parseInt(cantripMatch[2]) + 1) / 2 + (cantripMatch[3] ? parseInt(cantripMatch[3]) : 0);
+
+                const isAttackRoll = !!spell.attack_roll;
+                const hasSave = !!(spell.saving_throw ?? spell.save);
+                const hitRate = isAttackRoll ? 1.0 : hasSave ? 0.6 : 0;
+
+                const dpr = avgDmg * hitRate;
+                if (dpr > bestCantripDPR) bestCantripDPR = dpr;
+            }
+
+            // AI picks the best damage action per turn
+            totalPartyDPR += Math.max(weaponDPR, bestCantripDPR);
         }
         const estimatedDPR = Math.round((totalPartyDPR / selectedParty.length) * 10) / 10;
 
