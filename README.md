@@ -11,7 +11,7 @@ npm run dev
 
 Open `http://localhost:5173` in your browser.
 
-Requires the [playlist-data-engine](https://github.com/jasondesante/playlist-data-engine) as a sibling directory (linked via `file:../playlist-data-engine` in package.json).
+Depends on [`playlist-data-engine`](https://www.npmjs.com/package/playlist-data-engine) (installed from npm).
 
 ## The Playlist Data Engine
 
@@ -111,7 +111,7 @@ npm run dev        # starts on http://localhost:3001
 - `POST /api/config` — update API keys at runtime (no restart needed)
 - `GET /api/diagnostics` — full sensor and cache diagnostics
 
-Built with Express, and links the engine directly via `file:../../playlist-data-engine`.
+Built with Express, using `playlist-data-engine` from npm.
 
 ## Tech Stack
 
@@ -122,7 +122,7 @@ Built with Express, and links the engine directly via `file:../../playlist-data-
 - Lucide React (icons)
 - Howler.js (audio playback)
 
-**Engine (linked dependency):**
+**Engine (npm dependency):**
 - TensorFlow.js + essentia.js (WASM) — ML models for music classification
 - Web Audio API — audio analysis (browser) with `web-audio-api` polyfill for Node.js
 - Zod — runtime validation
