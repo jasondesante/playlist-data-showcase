@@ -1771,3 +1771,222 @@
     font-size: 0.6875rem;
   }
 }
+
+/* ========================================
+   MOBILE RESPONSIVE (max-width: 767px)
+   ======================================== */
+
+@media (max-width: 767px) {
+  /* Container width tracking for all flex/grid containers */
+  .character-gen-container,
+  .character-sheet,
+  .character-header-card,
+  .character-info-section {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* Grid collapse - all multi-column grids to single column */
+  .character-stats-grid,
+  .character-abilities-grid,
+  .character-skills-grid,
+  .character-saving-throws-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Font size reductions */
+  .character-section-title {
+    font-size: 0.875rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .character-gen-header-title {
+    font-size: 0.875rem;
+  }
+
+  .character-gen-header-subtitle {
+    font-size: 0.6875rem;
+  }
+
+  .character-name {
+    font-size: 0.875rem;
+  }
+
+  .character-class {
+    font-size: 0.75rem;
+  }
+
+  .character-xp {
+    font-size: 0.75rem;
+  }
+
+  .character-stat-label {
+    font-size: 0.5625rem;
+  }
+
+  .character-stat-value {
+    font-size: 0.875rem;
+  }
+
+  .character-ability-label {
+    font-size: 0.5625rem;
+  }
+
+  .character-ability-score {
+    font-size: 0.75rem;
+  }
+
+  .character-ability-modifier {
+    font-size: 0.625rem;
+  }
+
+  .character-skill-name {
+    font-size: 0.625rem;
+  }
+
+  .character-saving-throw-ability {
+    font-size: 0.6875rem;
+  }
+
+  .character-trait-badge {
+    font-size: 0.6875rem;
+    padding: 0.3125rem 0.5rem;
+  }
+
+  .character-spell-badge {
+    font-size: 0.75rem;
+    padding: 0.3125rem 0.5rem;
+  }
+
+  .character-appearance-label {
+    font-size: 0.6875rem;
+    min-width: 4rem;
+  }
+
+  .character-appearance-value {
+    font-size: 0.75rem;
+  }
+
+  .character-appearance-color-label {
+    font-size: 0.625rem;
+  }
+
+  .character-equipment-label {
+    font-size: 0.6875rem;
+  }
+
+  .character-equipment-items {
+    font-size: 0.75rem;
+  }
+
+  .character-equipment-badge {
+    font-size: 0.625rem;
+    padding: 0.0625rem 0.375rem;
+  }
+
+  .character-equipment-weight-label,
+  .character-equipment-weight-separator {
+    font-size: 0.75rem;
+  }
+
+  /* Padding reductions */
+  .character-gen-container .card-padding-md {
+    padding: 0.5rem !important;
+  }
+
+  .character-gen-container .card-padding-sm {
+    padding: 0.375rem !important;
+  }
+
+  .character-stat-card {
+    padding: 0.375rem 0.3125rem;
+  }
+
+  .character-ability-card {
+    padding: 0.3125rem;
+    gap: 0.1875rem;
+  }
+
+  .character-skill-item {
+    padding: 0.3125rem 0.5rem;
+  }
+
+  .character-saving-throw-item {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .character-equipment-card {
+    padding: 0.375rem;
+    gap: 0.375rem;
+  }
+
+  /* Equipment injection browsers grid */
+  .equipment-injection-browsers-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  /* Gaps reduction */
+  .character-gen-container {
+    gap: 0.5rem;
+  }
+
+  .character-traits-grid {
+    gap: 0.3125rem;
+  }
+
+  .character-spells-grid {
+    gap: 0.375rem;
+  }
+
+  .character-appearance-section {
+    gap: 0.5rem;
+  }
+
+  .character-equipment-section {
+    gap: 0.375rem;
+  }
+
+  /* Audio mapping table */
+  .character-audio-mapping-table {
+    font-size: 0.6875rem;
+  }
+
+  .character-audio-mapping-table th,
+  .character-audio-mapping-table td {
+    padding: 0.3125rem 0.5rem;
+  }
+
+  .character-audio-trait-name {
+    font-size: 0.6875rem;
+  }
+
+  .character-audio-value {
+    font-size: 0.5625rem;
+  }
+
+  .character-audio-badge {
+    font-size: 0.5625rem;
+    padding: 0.0625rem 0.3125rem;
+  }
+
+  /* Determinism result */
+  .character-determinism-result {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  /* Appearance color swatches */
+  .character-appearance-color-swatch {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* Equipment weight display */
+  .character-equipment-weight {
+    padding: 0.5rem;
+    margin-top: 0.375rem;
+  }
+}

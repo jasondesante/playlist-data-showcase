@@ -2370,3 +2370,321 @@
     gap: 0.75rem;
   }
 }
+
+/* ========================================
+   MOBILE RESPONSIVE (max-width: 767px)
+   Additional mobile optimizations beyond existing breakpoints
+   ======================================== */
+
+@media (max-width: 767px) {
+  /* Container width tracking for all flex/grid containers */
+  .party-tab,
+  .party-card,
+  .party-detail-content,
+  .party-detail-section {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* Detail view grids - collapse to single column */
+  .party-detail-stats-grid,
+  .party-detail-abilities-grid,
+  .party-detail-skills-list,
+  .party-detail-saving-throws-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Font size reductions for detail view */
+  .party-detail-title {
+    font-size: 1.25rem;
+  }
+
+  .party-detail-subtitle {
+    font-size: 0.8125rem;
+  }
+
+  .party-detail-section-title {
+    font-size: 0.875rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .party-detail-stat-label {
+    font-size: 0.6875rem;
+  }
+
+  .party-detail-stat-value {
+    font-size: 0.875rem;
+  }
+
+  .party-detail-ability-name {
+    font-size: 0.5625rem;
+  }
+
+  .party-detail-ability-score {
+    font-size: 1rem;
+  }
+
+  .party-detail-ability-modifier {
+    font-size: 0.6875rem;
+  }
+
+  .party-detail-skill-item {
+    font-size: 0.6875rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .party-detail-saving-throw-item {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .party-detail-saving-throw-ability {
+    font-size: 0.75rem;
+  }
+
+  .party-detail-trait-badge {
+    font-size: 0.6875rem;
+    padding: 0.3125rem 0.5rem;
+  }
+
+  .party-detail-appearance-label {
+    font-size: 0.75rem;
+    min-width: 4rem;
+  }
+
+  .party-detail-appearance-value {
+    font-size: 0.8125rem;
+  }
+
+  .party-detail-appearance-color-label {
+    font-size: 0.6875rem;
+  }
+
+  .party-detail-equipment-category-label {
+    font-size: 0.6875rem;
+  }
+
+  .party-detail-equipment-item {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .party-detail-equipment-name {
+    font-size: 0.75rem;
+  }
+
+  .party-detail-equipment-quantity {
+    font-size: 0.6875rem;
+  }
+
+  .party-detail-equipment-weight-label {
+    font-size: 0.75rem;
+  }
+
+  .party-detail-spells-group-title {
+    font-size: 0.75rem;
+  }
+
+  .party-detail-spell-tag {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  /* Padding reductions */
+  .party-detail-content {
+    padding: 0.75rem;
+    max-height: 90vh;
+  }
+
+  .party-detail-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .party-detail-section {
+    padding: 0.75rem;
+  }
+
+  .party-detail-stat-item,
+  .party-detail-ability-item {
+    padding: 0.5rem;
+  }
+
+  .party-detail-traits-grid {
+    gap: 0.375rem;
+  }
+
+  .party-detail-appearance-section {
+    gap: 0.5rem;
+  }
+
+  .party-detail-appearance-row {
+    gap: 0.5rem;
+  }
+
+  .party-detail-appearance-color-swatch {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .party-detail-equipment-section {
+    gap: 0.5rem;
+  }
+
+  .party-detail-equipment-category {
+    gap: 0.375rem;
+  }
+
+  .party-detail-equipment-items {
+    gap: 0.3125rem;
+  }
+
+  /* XP section */
+  .party-detail-xp-section {
+    padding: 0.75rem;
+  }
+
+  .party-detail-xp-label {
+    font-size: 0.75rem;
+  }
+
+  .party-detail-xp-values {
+    font-size: 0.75rem;
+  }
+
+  .party-detail-xp-bar {
+    height: 0.625rem;
+  }
+
+  .party-detail-xp-hint {
+    font-size: 0.6875rem;
+  }
+
+  /* Audio mapping table in detail view */
+  .party-detail-audio-mapping-table {
+    font-size: 0.6875rem;
+  }
+
+  .party-detail-audio-mapping-table th,
+  .party-detail-audio-mapping-table td {
+    padding: 0.3125rem 0.5rem;
+  }
+
+  /* Analysis groups */
+  .party-analysis-group {
+    padding: 0.375rem;
+    gap: 0.3125rem;
+  }
+
+  .party-analysis-group-label {
+    font-size: 0.5625rem;
+    padding: 0 0.125rem;
+  }
+
+  .party-analysis-group-buttons {
+    gap: 0.3125rem;
+  }
+
+  .party-analysis-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.625rem;
+  }
+
+  /* Character card adjustments */
+  .party-card {
+    padding: 0.75rem;
+  }
+
+  .party-card-name {
+    font-size: 0.875rem;
+  }
+
+  .party-card-subtitle {
+    font-size: 0.6875rem;
+  }
+
+  .party-card-level {
+    font-size: 0.5625rem;
+    padding: 0.0625rem 0.375rem;
+  }
+
+  .party-card-game-mode-badge {
+    font-size: 0.5625rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .party-card-xp-label {
+    font-size: 0.6875rem;
+  }
+
+  .party-card-xp-value {
+    font-size: 0.75rem;
+  }
+
+  /* Empty states */
+  .party-empty-state {
+    padding: 1.5rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .party-empty-icon {
+    font-size: 2.5rem;
+  }
+
+  .party-empty-title {
+    font-size: 0.875rem;
+  }
+
+  .party-empty-description {
+    font-size: 0.75rem;
+  }
+
+  .party-no-results {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .party-no-results-icon {
+    font-size: 2rem;
+  }
+
+  .party-no-results-title {
+    font-size: 0.875rem;
+  }
+
+  .party-no-results-text {
+    font-size: 0.75rem;
+  }
+
+  /* Header adjustments */
+  .party-header {
+    gap: 0.5rem;
+  }
+
+  .party-header-icon {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .party-header-title {
+    font-size: 1rem;
+  }
+
+  .party-header-subtitle {
+    font-size: 0.75rem;
+  }
+
+  /* Selection controls */
+  .party-selection-controls {
+    padding: 0.5rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .party-selection-count {
+    font-size: 0.75rem;
+  }
+
+  /* Controls section */
+  .party-controls {
+    gap: 0.5rem;
+  }
+}

@@ -50,6 +50,7 @@ export function MoodClassificationCard({
 
     const { moods, moodTags } = moodData;
     const hasMoods = moods.length > 0 || moodTags.length > 0;
+    const displayMoods = moods.slice(0, 15);
 
     if (!hasMoods) {
         return null;
@@ -84,11 +85,11 @@ export function MoodClassificationCard({
                     <div className="mood-classification-confidence-header">
                         <Tag size={14} className="mood-classification-confidence-icon" />
                         <span className="mood-classification-confidence-label">
-                            Confidence Scores ({moods.length} detected)
+                            Confidence Scores ({displayMoods.length} of {moods.length} detected)
                         </span>
                     </div>
                     <div className="mood-classification-list">
-                        {moods.map((mood, index) => (
+                        {displayMoods.map((mood, index) => (
                             <div key={index} className="mood-classification-item">
                                 <span className="mood-classification-name">
                                     {formatMoodName(mood.name)}

@@ -368,6 +368,12 @@
   }
 }
 
+@media (max-width: 767px) {
+  .skill-creator-images-grid {
+    gap: 0.75rem;
+  }
+}
+
 /* Preview Icon and Image */
 .skill-creator-preview-icon {
   width: 24px;
@@ -401,6 +407,98 @@
 }
 
 /* Responsive */
+@media (max-width: 767px) {
+  .skill-creator-form {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .skill-creator-section-title {
+    font-size: 0.75rem;
+  }
+
+  .skill-creator-label {
+    font-size: 0.75rem;
+  }
+
+  .skill-creator-input,
+  .skill-creator-select,
+  .skill-creator-textarea {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .skill-creator-category-tag {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.375rem;
+  }
+
+  .skill-creator-suggestion-btn {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.375rem;
+  }
+
+  .skill-creator-checkbox-field {
+    padding: 0.5rem;
+  }
+
+  .skill-creator-checkbox {
+    width: 16px;
+    height: 16px;
+  }
+
+  .skill-creator-checkbox-text strong {
+    font-size: 0.75rem;
+  }
+
+  .skill-creator-checkbox-description {
+    font-size: 0.6875rem;
+  }
+
+  .skill-creator-errors {
+    padding: 0.5rem;
+  }
+
+  .skill-creator-error {
+    font-size: 0.75rem;
+  }
+
+  .skill-creator-preview {
+    padding: 0.75rem;
+  }
+
+  .skill-creator-preview-title {
+    font-size: 0.75rem;
+  }
+
+  .skill-creator-preview-name {
+    font-size: 0.875rem;
+  }
+
+  .skill-creator-preview-ability {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .skill-creator-preview-category {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .skill-creator-preview-description {
+    font-size: 0.75rem;
+  }
+
+  .skill-creator-hint {
+    font-size: 0.6875rem;
+  }
+
+  .skill-creator-actions {
+    gap: 0.5rem;
+  }
+}
+
 @media (max-width: 480px) {
   .skill-creator-category-input-row {
     flex-direction: column;

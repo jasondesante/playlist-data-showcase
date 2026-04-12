@@ -6939,6 +6939,296 @@
 }
 
 /* ============================================
+   MOBILE STYLES - 767px BREAKPOINT
+   Fills gaps between existing 480px, 640px, and 768px breakpoints
+   ============================================ */
+@media (max-width: 767px) {
+  /* Pattern 1: Container width tracking for flex/grid containers */
+  .combat-container,
+  .combat-pregame,
+  .combat-config-panel,
+  .combat-config-section,
+  .combat-config-row,
+  .combat-template-info,
+  .combat-rarity-info,
+  .combat-party-mode-section,
+  .combat-party-selector-grid,
+  .combat-config-preview-list,
+  .combat-config-actions,
+  .combat-audio-profile-section,
+  .combat-difficulty-multiplier-presets,
+  .combat-stat-levels-section,
+  .combat-stat-sliders,
+  .template-browser,
+  .template-browser-filters,
+  .template-browser-grid,
+  .party-analyzer-card,
+  .party-analyzer-stats-grid,
+  .party-analyzer-xp-grid,
+  .encounter-summary-panel,
+  .encounter-summary-stats-grid,
+  .encounter-summary-thresholds-grid {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* Pattern 3: Font size reduction for better mobile readability */
+  .combat-title {
+    font-size: 1.1rem;
+  }
+
+  .combat-subtitle {
+    font-size: 0.75rem;
+  }
+
+  .combat-config-title {
+    font-size: 0.875rem;
+  }
+
+  .combat-config-label {
+    font-size: 0.6875rem;
+  }
+
+  .combat-config-hint {
+    font-size: 0.625rem;
+  }
+
+  .combat-template-name {
+    font-size: 0.875rem;
+  }
+
+  .combat-template-cr {
+    font-size: 0.75rem;
+  }
+
+  .combat-template-badge {
+    font-size: 0.5625rem;
+  }
+
+  .combat-template-ability-name {
+    font-size: 0.6875rem;
+  }
+
+  .combat-template-ability-desc {
+    font-size: 0.625rem;
+  }
+
+  .combat-rarity-label {
+    font-size: 0.6875rem;
+  }
+
+  .combat-config-enemy-name {
+    font-size: 0.8rem;
+  }
+
+  .combat-config-enemy-details {
+    font-size: 0.6875rem;
+  }
+
+  .combat-audio-profile-label {
+    font-size: 0.625rem;
+  }
+
+  .combat-difficulty-multiplier-description {
+    font-size: 0.625rem;
+  }
+
+  .combat-preset-button {
+    font-size: 0.5625rem;
+  }
+
+  .combat-stat-levels-hint {
+    font-size: 0.6875rem;
+  }
+
+  .combat-stat-slider-label {
+    font-size: 0.6875rem;
+  }
+
+  .combat-stat-over,
+  .combat-stat-under {
+    font-size: 0.625rem;
+  }
+
+  /* Pattern 4: Padding/gap reduction */
+  .combat-container {
+    gap: 0.75rem;
+  }
+
+  .combat-pregame {
+    gap: 0.75rem;
+  }
+
+  .combat-config-panel {
+    padding: 0.6rem;
+  }
+
+  .combat-config-section {
+    padding: 0.6rem;
+    gap: 0.6rem;
+  }
+
+  .combat-config-row {
+    gap: 0.75rem;
+  }
+
+  .combat-template-info {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .combat-template-badges {
+    gap: 0.3rem;
+  }
+
+  .combat-party-mode-section {
+    gap: 0.6rem;
+  }
+
+  .combat-party-selector-grid {
+    gap: 0.6rem;
+  }
+
+  .combat-config-preview-list {
+    gap: 0.5rem;
+  }
+
+  .combat-config-actions {
+    gap: 0.5rem;
+  }
+
+  .combat-audio-profile-bar {
+    gap: 0.3rem;
+  }
+
+  .combat-difficulty-multiplier {
+    gap: 0.4rem;
+  }
+
+  .combat-difficulty-multiplier-presets {
+    gap: 0.3rem;
+  }
+
+  .combat-stat-levels-content {
+    gap: 0.5rem;
+  }
+
+  .combat-stat-slider {
+    gap: 0.15rem;
+  }
+
+  /* Pattern 2: Grid collapse - ensure single column on mobile */
+  .combat-config-row {
+    grid-template-columns: 1fr;
+  }
+
+  .combat-party-selector-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .combat-config-preview-list {
+    flex-direction: column;
+  }
+
+  .combat-config-actions {
+    flex-direction: column;
+  }
+
+  .template-browser-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .template-browser-search {
+    grid-column: 1 / -1;
+  }
+
+  .template-browser-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .party-analyzer-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .party-analyzer-xp-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .encounter-summary-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .encounter-summary-thresholds-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Header adjustments */
+  .combat-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  /* Party mode header stack on mobile */
+  .combat-party-mode-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .combat-party-mode-toggle {
+    width: 100%;
+  }
+
+  /* Template info wrap badges */
+  .combat-template-badges {
+    flex-wrap: wrap;
+  }
+
+  /* Rarity info stack */
+  .combat-rarity-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+
+  /* Audio profile section */
+  .combat-audio-profile-section {
+    gap: 0.5rem;
+  }
+
+  /* Stat levels section */
+  .combat-stat-levels-presets {
+    gap: 0.3rem;
+  }
+
+  /* Ensure buttons are full width on mobile */
+  .combat-config-button,
+  .combat-party-mode-button {
+    width: 100%;
+  }
+
+  /* Touch target improvements - ensure minimum 44px */
+  .combat-config-button,
+  .combat-config-select,
+  .combat-target-button,
+  .combat-spell-button,
+  .combat-tactical-button,
+  .combat-party-mode-button,
+  .combat-template-chip {
+    min-height: 44px;
+  }
+
+  /* Checkbox and radio improvements */
+  .combat-config-checkbox,
+  .combat-config-radio {
+    min-width: 24px;
+    min-height: 24px;
+  }
+}
+
+/* ============================================
    PRINT STYLES (for encounter planning)
    ============================================ */
 @media print {

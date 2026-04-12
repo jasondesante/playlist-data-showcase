@@ -83,6 +83,12 @@
   --spacing-6: 1.5rem;
   --spacing-8: 2rem;
 
+  /* Safe area insets (for notched phones) */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+
   /* Font sizes */
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
@@ -239,6 +245,14 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Prevent horizontal overflow on mobile */
+@media (max-width: 767px) {
+  html {
+    overflow-x: clip;
+  }
 }
 
 body {
@@ -612,4 +626,65 @@ img,
     will-change: auto;
     transform: none;
   }
+}
+
+/*
+ * MOBILE BREAKPOINT CONVENTION
+ *
+ * Standard breakpoints used across the project:
+ *   sm: 480px   — small phones (iPhone SE)
+ *   md: 768px   — tablets / large phones (primary mobile breakpoint)
+ *   lg: 1024px  — small desktops / landscape tablets
+ *   xl: 1280px  — standard desktop
+ *
+ * Mobile-first: write base styles for mobile,
+ * use @media (min-width: 768px) for desktop overrides.
+ * Legacy desktop-first files use @media (max-width: 767px) for mobile.
+ */
+
+/* --------------------------------------------
+   MOBILE RESPONSIVE UTILITIES
+   -------------------------------------------- */
+
+/* Hide on mobile, show on desktop */
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .desktop-only {
+    display: revert;
+  }
+}
+
+/* Show on mobile, hide on desktop */
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-only {
+    display: revert;
+  }
+}
+
+/* Minimum touch target size (44x44 per Apple HIG) */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Prevent text selection on interactive elements (mobile UX) */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Safe area padding helpers */
+.safe-area-top {
+  padding-top: var(--safe-area-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: var(--safe-area-bottom);
 }

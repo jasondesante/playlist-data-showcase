@@ -1243,3 +1243,341 @@
   color: hsl(var(--muted-foreground) / 0.7);
   flex-shrink: 0;
 }
+
+/* ========================================
+   MOBILE STYLES (max-width: 767px)
+   ======================================== */
+
+@media (max-width: 767px) {
+  /* Tab container */
+  .leveling-tab {
+    gap: 0.75rem;
+  }
+
+  /* Header */
+  .leveling-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .leveling-header-left {
+    width: 100%;
+  }
+
+  .leveling-header-selector {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .leveling-header-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .leveling-header-title {
+    font-size: 1rem;
+  }
+
+  .leveling-header-subtitle {
+    font-size: 0.75rem;
+  }
+
+  /* Selector info */
+  .leveling-selector-info {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .leveling-select-wrapper,
+  .leveling-select-inline {
+    max-width: 100%;
+  }
+
+  /* Empty state */
+  .leveling-empty-state {
+    padding: 2rem 1rem;
+  }
+
+  .leveling-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .leveling-empty-title {
+    font-size: 1rem;
+  }
+
+  .leveling-empty-description {
+    font-size: 0.75rem;
+  }
+
+  /* Character selector */
+  .leveling-character-selector {
+    margin-top: 1rem;
+  }
+
+  .leveling-selector-label {
+    font-size: 0.75rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .leveling-character-select {
+    padding: 0.625rem 2.25rem 0.625rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  /* Character card */
+  .leveling-character-header {
+    gap: 0.75rem;
+  }
+
+  .leveling-character-avatar {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .leveling-avatar-emoji {
+    font-size: 1.5rem;
+  }
+
+  .leveling-avatar-badge {
+    font-size: 0.5625rem;
+    padding: 0.125rem 0.25rem;
+    bottom: -0.375rem;
+    right: -0.375rem;
+  }
+
+  .leveling-character-name {
+    font-size: 1rem;
+  }
+
+  .leveling-character-class {
+    font-size: 0.75rem;
+  }
+
+  /* Quick stats */
+  .leveling-quick-stats {
+    gap: 0.375rem;
+    margin-top: 0.375rem;
+  }
+
+  .leveling-quick-stat {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  /* XP section */
+  .leveling-xp-section {
+    margin-top: 1rem;
+  }
+
+  .leveling-xp-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .leveling-xp-label {
+    font-size: 0.75rem;
+  }
+
+  .leveling-xp-values {
+    font-size: 0.75rem;
+  }
+
+  /* Progress bar */
+  .leveling-progress-bar {
+    height: 0.625rem;
+  }
+
+  .leveling-xp-hint {
+    font-size: 0.6875rem;
+    margin-top: 0.375rem;
+  }
+
+  /* Level milestones */
+  .leveling-milestones-card {
+    padding: 0.75rem;
+  }
+
+  .leveling-milestones-title {
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .leveling-milestones-grid {
+    gap: 0.375rem;
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .leveling-milestone {
+    padding: 0.375rem 0.125rem;
+  }
+
+  .leveling-milestone-dot {
+    width: 1rem;
+    height: 1rem;
+    font-size: 0.5625rem;
+  }
+
+  .leveling-milestone-level {
+    font-size: 0.5625rem;
+  }
+
+  .leveling-milestone-xp {
+    font-size: 0.5rem;
+  }
+
+  /* XP actions */
+  .leveling-xp-actions {
+    padding: 0.75rem;
+  }
+
+  .leveling-actions-title {
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .leveling-quick-add {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .leveling-quick-label {
+    font-size: 0.75rem;
+  }
+
+  .leveling-quick-grid {
+    gap: 0.375rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .leveling-custom-xp {
+    gap: 0.5rem;
+  }
+
+  /* XP sources */
+  .leveling-xp-sources {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    gap: 0.5rem;
+  }
+
+  .leveling-xp-sources-label {
+    font-size: 0.75rem;
+  }
+
+  .leveling-xp-sources-grid {
+    gap: 0.375rem;
+    grid-template-columns: 1fr;
+  }
+
+  .leveling-xp-source-btn {
+    padding: 0.75rem 0.875rem !important;
+  }
+
+  .leveling-xp-source-label {
+    font-size: 0.75rem;
+  }
+
+  .leveling-xp-source-amount {
+    font-size: 0.6875rem;
+  }
+
+  /* XP source tooltip */
+  .leveling-xp-source-tooltip {
+    font-size: 0.6875rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  /* Pending badge card */
+  .leveling-pending-badge-card {
+    padding: 0.75rem;
+  }
+
+  .leveling-pending-badge-content {
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .leveling-pending-badge-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .leveling-pending-badge-title {
+    font-size: 0.875rem;
+  }
+
+  .leveling-pending-badge-description {
+    font-size: 0.75rem;
+  }
+
+  /* Strategy card */
+  .leveling-strategy-card {
+    padding: 0.75rem;
+  }
+
+  .leveling-strategy-note {
+    font-size: 0.6875rem;
+    margin-top: 0.5rem;
+  }
+
+  /* Mastery card */
+  .leveling-mastery-card {
+    padding: 0.75rem;
+  }
+
+  .leveling-mastery-header {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .leveling-mastery-title {
+    font-size: 1rem;
+  }
+
+  .leveling-mastery-empty {
+    padding: 1rem;
+    gap: 0.375rem;
+  }
+
+  .leveling-mastery-empty-text {
+    font-size: 0.75rem;
+  }
+
+  .leveling-mastery-empty-hint {
+    font-size: 0.6875rem;
+  }
+
+  .leveling-mastery-content {
+    gap: 0.75rem;
+  }
+
+  .leveling-mastery-track-info {
+    padding-bottom: 0.5rem;
+  }
+
+  .leveling-mastery-track-title {
+    font-size: 0.875rem;
+  }
+
+  .leveling-mastery-track-artist {
+    font-size: 0.75rem;
+  }
+
+  .leveling-mastery-listen-count {
+    font-size: 0.6875rem;
+    padding-top: 0.375rem;
+  }
+
+  .leveling-mastery-no-listens {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  /* Confetti */
+  .leveling-confetti {
+    width: 0.375rem;
+    height: 0.375rem;
+  }
+}

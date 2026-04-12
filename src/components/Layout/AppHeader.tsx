@@ -220,7 +220,14 @@ export function AppHeader({
                     >
                       <button
                         className={`mini-player-btn mini-player-volume-btn ${isMuted ? 'mini-player-volume-btn--muted' : ''}`}
-                        onClick={toggleMute}
+                        onClick={() => {
+                          // On mobile: toggle inline volume slider; on desktop: toggle mute
+                          if (window.innerWidth < 768) {
+                            setShowVolumeSlider(prev => !prev);
+                          } else {
+                            toggleMute();
+                          }
+                        }}
                         aria-label={isMuted ? 'Unmute' : `Mute (currently ${Math.round(volume * 100)}%)`}
                         aria-pressed={isMuted}
                         title={isMuted ? 'Unmute' : 'Mute'}
@@ -228,8 +235,8 @@ export function AppHeader({
                         <VolumeIcon size={16} />
                       </button>
 
-                      {/* Volume Slider Popup */}
-                      {showVolumeSlider && (
+                      {/* Volume Slider Popup (desktop) */}
+                      {showVolumeSlider && window.innerWidth >= 768 && (
                         <div className="mini-player-volume-popup">
                           <input
                             type="range"
@@ -247,6 +254,28 @@ export function AppHeader({
                           <div className="mini-player-volume-value">
                             {Math.round(volume * 100)}%
                           </div>
+                        </div>
+                      )}
+
+                      {/* Inline Volume Slider (mobile) */}
+                      {showVolumeSlider && window.innerWidth < 768 && (
+                        <div className="mini-player-volume-inline">
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={volume}
+                            onChange={(e) => setVolume(parseFloat(e.target.value))}
+                            className="mini-player-volume-inline-slider"
+                            aria-label="Volume"
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-valuenow={Math.round(volume * 100)}
+                          />
+                          <span className="mini-player-volume-inline-value">
+                            {Math.round(volume * 100)}%
+                          </span>
                         </div>
                       )}
                     </div>

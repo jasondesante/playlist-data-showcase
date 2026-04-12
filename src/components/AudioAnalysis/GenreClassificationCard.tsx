@@ -247,7 +247,7 @@ export function GenreClassificationCard({
                 <GenreBarChart
                     genres={genreData.genres}
                     primaryGenre={genreData.primaryGenre}
-                    maxBars={genreData.genres.length}
+                    maxBars={15}
                 />
             </div>
         </Card>

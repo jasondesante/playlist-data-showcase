@@ -1207,14 +1207,21 @@
    RESPONSIVE DESIGN
    ======================================== */
 
-/* Tablet (481px - 768px): Allow filters to wrap naturally */
-@media (max-width: 768px) {
+/* Tablet (481px - 767px): Allow filters to wrap naturally */
+@media (max-width: 767px) {
+  .dataviewer-tab {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
   .dataviewer-category-selector {
     justify-content: center;
   }
 
   .dataviewer-category-btn {
     padding: 0.5rem;
+    font-size: 0.75rem;
   }
 
   .dataviewer-filter-group {
@@ -1222,8 +1229,14 @@
     flex: 1 1 calc(50% - 0.5rem);
   }
 
+  .dataviewer-filter-select {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
   .dataviewer-item-stats {
     grid-template-columns: 1fr;
+    gap: 0.375rem;
   }
 
   .dataviewer-group-item {
@@ -1234,6 +1247,33 @@
 
   .dataviewer-group-item-header {
     width: 100%;
+  }
+
+  .dataviewer-item-card,
+  .dataviewer-card {
+    font-size: 0.8125rem;
+  }
+
+  .dataviewer-item-name,
+  .dataviewer-card-title {
+    font-size: 0.875rem;
+  }
+
+  .dataviewer-content-title {
+    font-size: 0.875rem;
+  }
+
+  .dataviewer-section-header {
+    font-size: 0.75rem;
+  }
+
+  .dataviewer-creator-title {
+    font-size: 0.875rem;
+  }
+
+  .dataviewer-filters {
+    gap: 0.75rem;
+    padding: 0.5rem;
   }
 }
 

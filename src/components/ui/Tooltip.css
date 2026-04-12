@@ -71,3 +71,26 @@
   border-top-color: hsl(var(--border));
   z-index: -1;
 }
+
+/* Mobile: tooltip appears below the icon, flip arrows */
+.tooltip-text--mobile::after {
+  bottom: auto;
+  top: -6px;
+  border-top-color: transparent;
+  border-bottom-color: #000;
+}
+
+.tooltip-text--mobile::before {
+  bottom: auto;
+  top: -7px;
+  border-top-color: transparent;
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile: constrain tooltip width */
+@media (max-width: 767px) {
+  .tooltip-text--mobile {
+    max-width: calc(100vw - 2rem);
+    min-width: 10rem;
+  }
+}

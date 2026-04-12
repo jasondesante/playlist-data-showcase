@@ -183,6 +183,7 @@ export function StepNav({
                         aria-controls={panelId}
                         aria-label={getAriaLabel(step, isAvailable, isCompleted)}
                         disabled={!isAvailable}
+                        data-step-number={step.id}
                         className={cn(
                             'step-nav-tab',
                             isActive && 'step-nav-tab-active',

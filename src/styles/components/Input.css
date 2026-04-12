@@ -318,6 +318,37 @@ input.input-field-with-left-icon {
    SPECIALIZED INPUT VARIANTS
    -------------------------------------------- */
 
+/* ============================================
+   MOBILE OVERRIDES
+   ======================================== */
+
+@media (max-width: 767px) {
+  .input-sm {
+    height: 2rem;
+    padding: 0 0.5rem;
+    font-size: 0.8125rem;
+    min-height: 2rem;
+  }
+
+  .input-md {
+    height: 2.25rem;
+    padding: 0 0.75rem;
+    font-size: 0.875rem;
+    min-height: 2.25rem;
+  }
+
+  .input-lg {
+    height: 2.75rem;
+    padding: 0 1rem;
+    font-size: 1rem;
+    min-height: 2.75rem;
+  }
+
+  input.input-field-with-left-icon {
+    padding: 0 0.75rem 0 2.75rem;
+  }
+}
+
 /* Settings select - styled dropdown for settings */
 .settings-select {
   padding: 0.5rem 2rem 0.5rem 0.75rem;

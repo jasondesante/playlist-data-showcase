@@ -2743,3 +2743,858 @@
     white-space: nowrap;
     border: 0;
 }
+
+/* ============================================
+   MOBILE RESPONSIVE - max-width: 767px
+   Fills gaps between existing 768px and 480px breakpoints
+   ============================================ */
+
+@media (max-width: 767px) {
+  /* --- Container --- */
+  .audio-analysis-container {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* --- Header --- */
+  .audio-analysis-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding-bottom: 0.375rem;
+  }
+
+  .audio-analysis-header-title {
+    font-size: 1rem;
+  }
+
+  .audio-analysis-header-subtitle {
+    font-size: 0.6875rem;
+  }
+
+  .audio-analysis-header-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* --- Selected track in header --- */
+  .audio-analysis-selected-track {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .audio-analysis-selected-track-title {
+    max-width: 100px;
+    font-size: 0.75rem;
+  }
+
+  .audio-analysis-selected-track-artist {
+    font-size: 0.625rem;
+  }
+
+  /* --- Empty state --- */
+  .audio-analysis-empty-state {
+    padding: 2rem 0.75rem;
+  }
+
+  .audio-analysis-empty-title {
+    font-size: 1.25rem;
+  }
+
+  .audio-analysis-empty-subtitle {
+    font-size: 0.75rem;
+  }
+
+  /* --- Primary card --- */
+  .audio-analysis-primary-card,
+  .beat-detection-results-card {
+    border-radius: 1rem;
+  }
+
+  .audio-analysis-primary-layout {
+    gap: 1rem;
+  }
+
+  /* --- Song display --- */
+  .audio-analysis-song-display {
+    gap: 0.75rem;
+  }
+
+  .audio-analysis-song-artwork {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 0.75rem;
+  }
+
+  .audio-analysis-song-artist-large {
+    font-size: 0.75rem;
+  }
+
+  /* --- EQ integration --- */
+  .audio-analysis-eq-integration {
+    padding: 0 0.75rem;
+  }
+
+  .audio-analysis-eq-grid {
+    gap: 0.375rem;
+  }
+
+  .audio-analysis-eq-band-compact {
+    width: 2.75rem;
+  }
+
+  .audio-analysis-eq-slider-vertical {
+    height: 80px;
+  }
+
+  /* --- Action row --- */
+  .audio-analysis-action-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .audio-analysis-primary-action-button {
+    height: 2.75rem;
+    font-size: 0.875rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* --- Controller mode buttons --- */
+  .audio-analysis-controller-mode-buttons {
+    gap: 0.375rem;
+  }
+
+  .audio-analysis-controller-mode-button {
+    padding: 0.5rem 0.75rem;
+    min-width: 5.5rem;
+  }
+
+  .audio-analysis-controller-mode-button-text {
+    font-size: 0.6875rem;
+  }
+
+  .audio-analysis-controller-mode-button-desc {
+    font-size: 0.5625rem;
+  }
+
+  /* --- Results grid --- */
+  .audio-analysis-results {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  /* --- Cards --- */
+  .audio-analysis-card {
+    padding: 0.75rem;
+  }
+
+  .audio-analysis-card-title {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .audio-analysis-card--metadata .audio-analysis-card-title {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* --- Frequency visualization --- */
+  .audio-analysis-frequency-container {
+    gap: 1rem;
+    min-height: 7rem;
+    padding: 0.75rem 0;
+  }
+
+  .audio-analysis-bar {
+    width: 1.75rem;
+  }
+
+  .audio-analysis-bar-label {
+    font-size: 0.6875rem;
+  }
+
+  .audio-analysis-bar-value {
+    font-size: 0.75rem;
+  }
+
+  .audio-analysis-amplitude-value {
+    font-size: 1.5rem;
+    padding: 0.375rem 0;
+  }
+
+  /* --- Energy grid --- */
+  .audio-analysis-energy-grid {
+    gap: 0.5rem;
+  }
+
+  .audio-analysis-energy-item {
+    padding: 0.5rem;
+  }
+
+  .audio-analysis-energy-label {
+    font-size: 0.6875rem;
+  }
+
+  .audio-analysis-energy-value {
+    font-size: 1.25rem;
+  }
+
+  /* --- Color properties grid --- */
+  .audio-analysis-color-properties {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+  }
+
+  .audio-analysis-color-property {
+    padding: 0.375rem;
+  }
+
+  /* --- Timeline --- */
+  .audio-analysis-timeline {
+    height: 2.5rem;
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  /* --- Mode card --- */
+  .audio-analysis-mode-card {
+    padding: 0.75rem;
+  }
+
+  .audio-analysis-mode-title {
+    font-size: 0.875rem;
+  }
+
+  .audio-analysis-mode-buttons {
+    gap: 0.375rem;
+  }
+
+  .audio-analysis-mode-btn {
+    padding: 0.5rem 0.75rem;
+    min-width: 3.75rem;
+  }
+
+  .audio-analysis-mode-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* --- Timeline visualization layout --- */
+  .audio-analysis-timeline-viz-layout {
+    gap: 1rem;
+  }
+
+  .audio-analysis-radar-metrics {
+    max-width: 160px;
+  }
+
+  .audio-analysis-radar-metric-value {
+    font-size: 0.75rem;
+  }
+
+  /* --- Comparison and export sections --- */
+  .audio-analysis-comparison-container {
+    padding: 0.75rem;
+  }
+
+  /* --- Chart editor placeholder --- */
+  .audio-analysis-chart-editor-placeholder-content {
+    padding: 1.25rem;
+  }
+
+  .audio-analysis-chart-editor-placeholder-title {
+    font-size: 0.8125rem;
+  }
+
+  .audio-analysis-chart-editor-placeholder-text {
+    font-size: 0.6875rem;
+    max-width: 100%;
+  }
+
+  .audio-analysis-chart-editor-placeholder-hint {
+    font-size: 0.625rem;
+    max-width: 100%;
+  }
+
+  /* --- Step content --- */
+  .audio-analysis-step-placeholder {
+    padding: 1.5rem 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .audio-analysis-step-placeholder-icon {
+    font-size: 2rem;
+  }
+
+  .audio-analysis-step-placeholder-title {
+    font-size: 1rem;
+  }
+
+  .audio-analysis-step-placeholder-text {
+    font-size: 0.8125rem;
+    max-width: 100%;
+  }
+
+  .audio-analysis-step-placeholder-hint {
+    font-size: 0.75rem;
+    max-width: 100%;
+  }
+
+  /* --- Step title --- */
+  .audio-analysis-step-title {
+    font-size: 0.9375rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.375rem;
+  }
+
+  /* --- Rhythm generation card --- */
+  .audio-analysis-rhythm-generation-card {
+    min-height: auto;
+  }
+
+  .audio-analysis-rhythm-generation-section {
+    gap: 1rem;
+  }
+
+  .audio-analysis-rhythm-generation-placeholder {
+    padding: 2rem 1.25rem;
+  }
+
+  .audio-analysis-rhythm-generation-placeholder-title {
+    font-size: 1.125rem;
+  }
+
+  .audio-analysis-rhythm-generation-placeholder-text {
+    font-size: 0.8125rem;
+    max-width: 100%;
+  }
+
+  /* --- Rhythm generation progress/error/result --- */
+  .audio-analysis-rhythm-generation-progress,
+  .audio-analysis-rhythm-generation-error,
+  .audio-analysis-rhythm-generation-result {
+    padding: 2rem 1.25rem;
+  }
+
+  .audio-analysis-progress-title,
+  .audio-analysis-error-title,
+  .audio-analysis-result-title {
+    font-size: 1.125rem;
+  }
+
+  .audio-analysis-result-stats {
+    gap: 1rem;
+  }
+
+  .audio-analysis-stat-value {
+    font-size: 1rem;
+  }
+
+  .audio-analysis-result-note {
+    font-size: 0.75rem;
+    max-width: 100%;
+  }
+
+  .audio-analysis-error-text {
+    font-size: 0.8125rem;
+    max-width: 100%;
+  }
+
+  .audio-analysis-error-actions {
+    gap: 0.5rem;
+  }
+
+  /* --- Error/warning messages --- */
+  .audio-analysis-error-message {
+    font-size: 0.6875rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .audio-analysis-storage-warning {
+    font-size: 0.6875rem;
+    padding: 0.5rem;
+  }
+
+  .audio-analysis-short-track-warning {
+    font-size: 0.625rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  /* --- Metrics --- */
+  .audio-analysis-metric-item {
+    font-size: 0.75rem;
+  }
+
+  .audio-analysis-metadata-item {
+    font-size: 0.75rem;
+  }
+
+  /* --- Timeline toggle --- */
+  .audio-analysis-timeline-toggle {
+    gap: 0.375rem;
+  }
+
+  .audio-analysis-timeline-toggle-btn {
+    padding: 0.375rem 0.5rem;
+  }
+
+  /* --- Timeline legend --- */
+  .audio-analysis-timeline-legend {
+    font-size: 0.6875rem;
+  }
+
+  /* --- Color swatches --- */
+  .audio-analysis-color-swatches {
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .audio-analysis-color-box {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
+/* ============================================
+   ADDITIONAL MOBILE OVERRIDES - 767px
+   Filling gaps not covered by existing breakpoints
+   ============================================ */
+
+@media (max-width: 767px) {
+  /* --- Artwork overlay --- */
+  .audio-analysis-artwork-overlay {
+    background: hsl(var(--background) / 0.7);
+  }
+
+  .audio-analysis-sparkle-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  /* --- Song meta --- */
+  .audio-analysis-song-meta {
+    gap: 0.125rem;
+  }
+
+  .audio-analysis-song-title-large {
+    font-size: 0.875rem;
+  }
+
+  .audio-analysis-song-status-badge {
+    margin-top: 0.375rem;
+  }
+
+  /* --- EQ header --- */
+  .audio-analysis-eq-header-row {
+    margin-bottom: 0.5rem;
+  }
+
+  .audio-analysis-eq-title-main {
+    font-size: 0.875rem;
+  }
+
+  .audio-analysis-eq-subtitle-main {
+    font-size: 0.5625rem;
+  }
+
+  /* --- EQ metadata --- */
+  .audio-analysis-eq-metadata {
+    margin-top: 0.125rem;
+  }
+
+  .audio-analysis-eq-name {
+    font-size: 0.5625rem;
+  }
+
+  .audio-analysis-eq-multiplier {
+    font-size: 0.6875rem;
+  }
+
+  /* --- Action integration --- */
+  .audio-analysis-action-integration {
+    gap: 0.5rem;
+  }
+
+  /* --- Controller mode section --- */
+  .audio-analysis-controller-mode-section {
+    padding: 0.5rem 0;
+    gap: 0.375rem;
+  }
+
+  .audio-analysis-controller-mode-header {
+    font-size: 0.6875rem;
+  }
+
+  .audio-analysis-controller-mode-description {
+    font-size: 0.625rem;
+  }
+
+  /* --- Playback warning --- */
+  .audio-analysis-playback-warning {
+    font-size: 0.625rem;
+  }
+
+  /* --- Frequency divider --- */
+  .audio-analysis-frequency-divider {
+    margin: 0.5rem 0;
+  }
+
+  /* --- Energy description --- */
+  .audio-analysis-energy-description {
+    font-size: 0.625rem;
+  }
+
+  /* --- Metrics list --- */
+  .audio-analysis-metrics-list {
+    gap: 0.375rem;
+  }
+
+  .audio-analysis-metric-label {
+    font-size: 0.625rem;
+  }
+
+  .audio-analysis-metric-value {
+    font-size: 0.6875rem;
+  }
+
+  /* --- Color swatch --- */
+  .audio-analysis-color-swatch {
+    padding: 0.375rem;
+  }
+
+  .audio-analysis-color-name {
+    font-size: 0.625rem;
+  }
+
+  .audio-analysis-color-hex {
+    font-size: 0.5625rem;
+  }
+
+  /* --- All colors grid --- */
+  .audio-analysis-all-colors-grid {
+    gap: 0.375rem;
+  }
+
+  .audio-analysis-color-dot {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  /* --- Property values --- */
+  .audio-analysis-property-label {
+    font-size: 0.5625rem;
+  }
+
+  .audio-analysis-property-value {
+    font-size: 0.625rem;
+  }
+
+  /* --- Timeline duration --- */
+  .audio-analysis-timeline-duration {
+    font-size: 0.625rem;
+  }
+
+  /* --- Metadata list --- */
+  .audio-analysis-metadata-list {
+    gap: 0.375rem;
+  }
+
+  .audio-analysis-metadata-label {
+    font-size: 0.625rem;
+  }
+
+  .audio-analysis-metadata-value {
+    font-size: 0.6875rem;
+  }
+
+  /* --- Mode card header --- */
+  .audio-analysis-mode-header {
+    gap: 0.375rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .audio-analysis-mode-subtitle {
+    font-size: 0.625rem;
+  }
+
+  /* --- Mode button content --- */
+  .audio-analysis-mode-label {
+    font-size: 0.6875rem;
+  }
+
+  .audio-analysis-mode-desc {
+    font-size: 0.5625rem;
+  }
+
+  /* --- Timeline options --- */
+  .audio-analysis-timeline-options {
+    gap: 0.75rem;
+  }
+
+  /* --- Timeline slider --- */
+  .audio-analysis-timeline-slider-container {
+    gap: 0.5rem;
+  }
+
+  .audio-analysis-timeline-slider-header {
+    gap: 0.375rem;
+  }
+
+  .audio-analysis-timeline-slider-label {
+    font-size: 0.6875rem;
+  }
+
+  .audio-analysis-timeline-slider-value {
+    font-size: 0.625rem;
+  }
+
+  .audio-analysis-timeline-slider-marks {
+    gap: 0.375rem;
+  }
+
+  .audio-analysis-timeline-slider-mark {
+    font-size: 0.5625rem;
+  }
+
+  /* --- Radar section --- */
+  .audio-analysis-radar-section {
+    gap: 0.75rem;
+  }
+
+  .audio-analysis-radar-metrics {
+    gap: 0.75rem;
+  }
+
+  .audio-analysis-radar-metric {
+    gap: 0.25rem;
+  }
+
+  .audio-analysis-radar-metric-label {
+    font-size: 0.625rem;
+  }
+
+  /* --- Scrubber section --- */
+  .audio-analysis-scrubber-section {
+    gap: 0.75rem;
+  }
+
+  /* --- Comparison toggle --- */
+  .audio-analysis-comparison-toggle {
+    gap: 0.5rem;
+  }
+
+  .audio-analysis-comparison-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.6875rem;
+  }
+
+  /* --- Subdivision section --- */
+  .audio-analysis-subdivision-section {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .audio-analysis-subdivision-timeline-card {
+    margin-top: 0.75rem;
+    border-radius: 1rem;
+  }
+
+  /* --- Chart editor section --- */
+  .audio-analysis-chart-editor-section {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .audio-analysis-chart-editor-card {
+    padding: 0.75rem;
+  }
+
+  /* --- Progress elements --- */
+  .audio-analysis-progress-indicator {
+    width: 52px;
+    height: 52px;
+  }
+
+  .audio-analysis-progress-indicator svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .audio-analysis-progress-bar-container {
+    height: 6px;
+  }
+
+  .audio-analysis-progress-phase {
+    font-size: 0.75rem;
+  }
+
+  .audio-analysis-progress-percent {
+    font-size: 0.625rem;
+  }
+
+  /* --- Result stats --- */
+  .audio-analysis-result-stat {
+    gap: 0.125rem;
+  }
+
+  .audio-analysis-stat-label {
+    font-size: 0.625rem;
+  }
+
+  /* --- Error icon --- */
+  .audio-analysis-error-icon {
+    font-size: 2.5rem;
+  }
+
+  /* --- Result icon --- */
+  .audio-analysis-result-icon {
+    font-size: 2.5rem;
+  }
+}
+
+  /* --- Step navigation mobile fixes --- */
+  .beat-detection-step-nav.step-nav {
+    border-radius: 0;
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+    width: calc(100% + 1.5rem);
+  }
+
+  .beat-detection-step-nav .step-nav-tab {
+    min-width: 70px;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.6875rem;
+    gap: 0.375rem;
+  }
+
+  .beat-detection-step-nav .step-nav-checkmark {
+    width: 0.875rem;
+    height: 0.875rem;
+    font-size: 0.625rem;
+  }
+
+
+  /* --- Step navigation - hide text on mobile, show only icons/numbers --- */
+  .beat-detection-step-nav .step-nav-tab {
+    min-width: 50px;
+    padding: 0.5rem;
+    font-size: 0;
+    gap: 0;
+  }
+
+  .beat-detection-step-nav .step-nav-label {
+    display: none;
+  }
+
+  .beat-detection-step-nav .step-nav-checkmark {
+    width: 1rem;
+    height: 1rem;
+    font-size: 0.75rem;
+  }
+
+
+  /* --- Step navigation - unique icons for each step on mobile --- */
+  .beat-detection-step-nav .step-nav-tab {
+    min-width: 44px;
+    padding: 0.5rem;
+    font-size: 0;
+    gap: 0;
+  }
+
+  .beat-detection-step-nav .step-nav-tab::before {
+    content: "";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 1rem;
+  }
+
+  /* Step 1 - Analyze: Magnifying glass */
+  .beat-detection-step-nav .step-nav-tab[data-step-number="1"]::before {
+    content: "🔍";
+  }
+
+  /* Step 2 - Rhythm Generation: Music notes */
+  .beat-detection-step-nav .step-nav-tab[data-step-number="2"]::before {
+    content: "🎵";
+  }
+
+  /* Step 3 - Pitch & Level: Slider/levels */
+  .beat-detection-step-nav .step-nav-tab[data-step-number="3"]::before {
+    content: "📊";
+  }
+
+  /* Step 4 - Ready: Checkmark */
+  .beat-detection-step-nav .step-nav-tab[data-step-number="4"]::before {
+    content: "✓";
+  }
+
+  /* Active step gets primary color background */
+  .beat-detection-step-nav .step-nav-tab-active::before {
+    background: hsl(var(--primary) / 0.15);
+    border-radius: 50%;
+  }
+
+  /* Completed steps get green checkmark badge */
+  .beat-detection-step-nav .step-nav-tab-completed::after {
+    content: "✓";
+    position: absolute;
+    top: 0.125rem;
+    right: 0.125rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.875rem;
+    height: 0.875rem;
+    font-size: 0.5rem;
+    color: hsl(var(--cute-green));
+    background: hsl(var(--surface-1));
+    border-radius: 50%;
+    border: 1px solid hsl(var(--border));
+  }
+
+  .beat-detection-step-nav .step-nav-tab {
+    position: relative;
+  }
+
+  .beat-detection-step-nav .step-nav-label {
+    display: none;
+  }
+
+  .beat-detection-step-nav .step-nav-checkmark {
+    display: none;
+  }
+
+
+/* Restore step nav text on wider screens */
+@media (min-width: 768px) {
+  .beat-detection-step-nav .step-nav-tab {
+    min-width: 100px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    gap: 0.5rem;
+  }
+
+  .beat-detection-step-nav .step-nav-tab::before {
+    display: none;
+  }
+
+  .beat-detection-step-nav .step-nav-label {
+    display: inline-block;
+  }
+}
+
+  .beat-detection-step-nav .step-nav-checkmark {
+    display: inline-flex;
+  }
+
+  .beat-detection-step-nav .step-nav-tab::after {
+    display: none;
+  }

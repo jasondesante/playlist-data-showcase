@@ -54,6 +54,22 @@
   }
 }
 
+@media (max-width: 767px) {
+  .toast-container-top-right {
+    top: calc(0.5rem + var(--safe-area-top, 0px));
+    right: 0.75rem;
+    left: 0.75rem;
+    align-items: center;
+    max-width: none;
+    width: auto;
+  }
+
+  .toast-container {
+    max-width: none;
+    width: calc(100% - 1.5rem);
+  }
+}
+
 /* Toast */
 .toast {
   pointer-events: auto;

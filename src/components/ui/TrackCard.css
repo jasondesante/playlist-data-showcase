@@ -546,3 +546,42 @@
 .track-card-selected .track-xp-container {
   border-left-color: hsl(var(--primary) / 0.5);
 }
+
+/* ========================================
+   MOBILE OVERRIDES
+   ======================================== */
+
+@media (max-width: 767px) {
+  /* Disable hover scale on touch devices — prevents layout jitter on tap */
+  .track-card:hover {
+    transform: none;
+  }
+
+  /* Show play overlay on selected/playing state, not just hover */
+  .track-card-selected .track-art-overlay,
+  .track-card-playing .track-art-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Collapse XP bar on mobile — too wide relative to screen */
+  .track-xp-container {
+    min-width: 44px;
+    padding-left: 6px;
+  }
+
+  .track-card-compact .track-xp-container {
+    min-width: 40px;
+    padding-left: 6px;
+  }
+
+  .track-xp-header {
+    font-size: 0.5rem;
+    gap: 4px;
+  }
+
+  /* Ensure cards have adequate touch targets */
+  .track-card {
+    padding: 0.5rem 0.375rem;
+  }
+}

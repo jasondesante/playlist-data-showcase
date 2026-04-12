@@ -71,7 +71,7 @@
   flex: 1;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 767px) {
   .racial-trait-row {
     flex-direction: column;
   }
@@ -127,11 +127,14 @@
   gap: 1rem;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 767px) {
   .racial-trait-images-grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 }
+
+@media (max-width: 600px) {
 
 /* Hint Text */
 .racial-trait-hint {
@@ -419,6 +422,106 @@
 }
 
 /* Responsive */
+@media (max-width: 767px) {
+  .racial-trait-creator-form {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .racial-trait-section-title {
+    font-size: 0.75rem;
+  }
+
+  .racial-trait-label {
+    font-size: 0.75rem;
+  }
+
+  .racial-trait-input,
+  .racial-trait-select,
+  .racial-trait-textarea {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .racial-trait-advanced-btn {
+    font-size: 0.75rem;
+  }
+
+  .racial-trait-advanced-section {
+    padding: 0.5rem;
+  }
+
+  .racial-trait-subrace-back-btn {
+    font-size: 0.6875rem;
+  }
+
+  .racial-trait-checkbox-label {
+    font-size: 0.6875rem;
+  }
+
+  .racial-trait-errors {
+    padding: 0.5rem;
+  }
+
+  .racial-trait-error {
+    font-size: 0.75rem;
+  }
+
+  .racial-trait-preview {
+    padding: 0.75rem;
+  }
+
+  .racial-trait-preview-title {
+    font-size: 0.75rem;
+  }
+
+  .racial-trait-preview-name {
+    font-size: 1rem;
+  }
+
+  .racial-trait-preview-badge {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .racial-trait-preview-stats {
+    font-size: 0.75rem;
+  }
+
+  .racial-trait-preview-description {
+    font-size: 0.75rem;
+  }
+
+  .racial-trait-preview-effect {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .racial-trait-preview-prereq {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .racial-trait-preview-effects-label,
+  .racial-trait-preview-prereqs-label {
+    font-size: 0.6875rem;
+  }
+
+  .racial-trait-hint {
+    font-size: 0.6875rem;
+  }
+
+  .racial-trait-preview-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .racial-trait-actions {
+    gap: 0.5rem;
+  }
+}
+
 @media (max-width: 480px) {
   .racial-trait-actions {
     flex-direction: column;
@@ -437,4 +540,5 @@
     flex-direction: column;
     gap: 0.25rem;
   }
+}
 }

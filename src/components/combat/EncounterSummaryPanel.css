@@ -514,3 +514,194 @@
 .encounter-summary-compact .encounter-summary-balance {
   display: none;
 }
+
+/* ============================================
+   MOBILE STYLES (max-width: 767px)
+   ============================================ */
+@media (max-width: 767px) {
+  /* Pattern 1: Container width tracking */
+  .encounter-summary-panel,
+  .encounter-summary-stats-grid,
+  .encounter-summary-types-grid,
+  .encounter-summary-enemy-list,
+  .encounter-summary-comparison-section,
+  .encounter-summary-thresholds-grid,
+  .encounter-summary-balance {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* Pattern 3: Font size reduction */
+  .encounter-summary-title {
+    font-size: 0.8rem;
+  }
+
+  .encounter-summary-rating {
+    font-size: 0.6875rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .encounter-summary-stat-label {
+    font-size: 0.5625rem;
+  }
+
+  .encounter-summary-stat-value {
+    font-size: 0.8rem;
+  }
+
+  .encounter-summary-stat-subtitle {
+    font-size: 0.5rem;
+  }
+
+  .encounter-summary-types-title {
+    font-size: 0.625rem;
+  }
+
+  .encounter-summary-type-badge {
+    font-size: 0.625rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .encounter-summary-category-header {
+    font-size: 0.625rem;
+  }
+
+  .encounter-summary-category-count {
+    font-size: 0.5625rem;
+  }
+
+  .encounter-summary-enemy-item {
+    font-size: 0.625rem;
+  }
+
+  .encounter-summary-enemy-level {
+    font-size: 0.5625rem;
+  }
+
+  .encounter-summary-comparison-title {
+    font-size: 0.625rem;
+  }
+
+  .encounter-summary-threshold-label {
+    font-size: 0.5rem;
+  }
+
+  .encounter-summary-threshold-value {
+    font-size: 0.625rem;
+  }
+
+  .encounter-summary-challenge-label {
+    font-size: 0.625rem;
+  }
+
+  .encounter-summary-balance-title {
+    font-size: 0.625rem;
+  }
+
+  .encounter-summary-balance-runs {
+    font-size: 0.5625rem;
+  }
+
+  .encounter-summary-balance-winrate {
+    font-size: 1.1rem;
+  }
+
+  .encounter-summary-balance-assessment {
+    font-size: 0.6875rem;
+  }
+
+  .encounter-summary-balance-link {
+    font-size: 0.625rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  /* Pattern 4: Padding reduction */
+  .encounter-summary-panel {
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .encounter-summary-header {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.4rem;
+  }
+
+  .encounter-summary-stats-grid {
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .encounter-summary-stat {
+    padding: 0.4rem;
+  }
+
+  .encounter-summary-types-section {
+    padding-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .encounter-summary-types-grid {
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .encounter-summary-enemy-category {
+    padding: 0.4rem;
+  }
+
+  .encounter-summary-category-header {
+    margin-bottom: 0.3rem;
+    padding-bottom: 0.2rem;
+  }
+
+  .encounter-summary-enemy-list {
+    gap: 0.4rem;
+  }
+
+  .encounter-summary-comparison-section {
+    padding-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .encounter-summary-thresholds-grid {
+    gap: 0.3rem;
+  }
+
+  .encounter-summary-threshold {
+    padding: 0.3rem 0.4rem;
+  }
+
+  .encounter-summary-challenge {
+    padding-top: 0.5rem;
+  }
+
+  .encounter-summary-challenge-bar {
+    margin-bottom: 0.3rem;
+  }
+
+  .encounter-summary-balance {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .encounter-summary-balance-header {
+    gap: 0.3rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .encounter-summary-balance-body {
+    margin-bottom: 0.3rem;
+  }
+
+  /* Pattern 2: Grid collapse - already single column at 640px, ensure at 767px too */
+  .encounter-summary-stats-grid,
+  .encounter-summary-thresholds-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Reduce gaps in grids */
+  .encounter-summary-types-grid {
+    gap: 0.3rem;
+  }
+}

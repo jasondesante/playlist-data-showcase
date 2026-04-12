@@ -570,6 +570,152 @@
 }
 
 /* Responsive */
+@media (max-width: 767px) {
+  .race-creator-form {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .race-creator-section-title {
+    font-size: 0.75rem;
+  }
+
+  .race-creator-label {
+    font-size: 0.75rem;
+  }
+
+  .race-creator-input,
+  .race-creator-select,
+  .race-creator-textarea {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .race-creator-abilities-grid {
+    gap: 0.5rem;
+  }
+
+  .race-creator-abilities-grid-subrace {
+    gap: 0.375rem;
+  }
+
+  .race-creator-ability-input input {
+    width: 40px;
+    padding: 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  .race-creator-ability-input label {
+    font-size: 0.625rem;
+  }
+
+  .race-creator-bonus-total {
+    font-size: 0.75rem;
+  }
+
+  .race-creator-bonus-warning {
+    font-size: 0.6875rem;
+  }
+
+  .race-creator-traits-grid {
+    gap: 0.375rem;
+  }
+
+  .race-creator-trait-option {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .race-creator-trait-tag {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.375rem;
+  }
+
+  .race-creator-selected-traits {
+    padding: 0.375rem;
+  }
+
+  .race-creator-selected-label {
+    font-size: 0.6875rem;
+  }
+
+  .race-creator-subraces-hint {
+    font-size: 0.75rem;
+  }
+
+  .race-creator-subrace-item {
+    padding: 0.5rem;
+  }
+
+  .race-creator-subrace-number {
+    font-size: 0.6875rem;
+  }
+
+  .race-creator-errors {
+    padding: 0.5rem;
+  }
+
+  .race-creator-error {
+    font-size: 0.75rem;
+  }
+
+  .race-creator-preview {
+    padding: 0.75rem;
+  }
+
+  .race-creator-preview-title {
+    font-size: 0.75rem;
+  }
+
+  .race-creator-preview-name {
+    font-size: 1rem;
+  }
+
+  .race-creator-preview-badge {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .race-creator-preview-stats {
+    font-size: 0.75rem;
+  }
+
+  .race-creator-preview-description {
+    font-size: 0.75rem;
+  }
+
+  .race-creator-preview-trait {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .race-creator-preview-subrace {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .race-creator-preview-subraces-label {
+    font-size: 0.6875rem;
+  }
+
+  .race-creator-hint {
+    font-size: 0.6875rem;
+  }
+
+  .race-creator-empty-message {
+    font-size: 0.75rem;
+  }
+
+  .race-creator-actions {
+    gap: 0.5rem;
+  }
+
+  .race-creator-images-grid {
+    gap: 0.75rem;
+  }
+}
+
 @media (max-width: 600px) {
   .race-creator-abilities-grid {
     gap: 0.5rem;

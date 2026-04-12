@@ -268,6 +268,76 @@
 }
 
 /* Responsive */
+@media (max-width: 767px) {
+  .appearance-option-creator {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .appearance-creator-section-title {
+    font-size: 0.75rem;
+  }
+
+  .appearance-creator-label {
+    font-size: 0.75rem;
+  }
+
+  .appearance-creator-input,
+  .appearance-creator-select,
+  .appearance-creator-hex-input {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .appearance-creator-hint {
+    font-size: 0.6875rem;
+  }
+
+  .appearance-creator-color-section {
+    gap: 0.75rem;
+  }
+
+  .appearance-creator-color-picker {
+    width: 40px;
+    height: 40px;
+  }
+
+  .appearance-creator-color-swatch-large {
+    min-height: 50px;
+    font-size: 0.75rem;
+  }
+
+  .appearance-creator-errors {
+    padding: 0.5rem;
+  }
+
+  .appearance-creator-error {
+    font-size: 0.75rem;
+  }
+
+  .appearance-creator-preview {
+    padding: 0.75rem;
+  }
+
+  .appearance-creator-preview-title {
+    font-size: 0.75rem;
+  }
+
+  .appearance-creator-preview-tag {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .appearance-creator-preview-hint {
+    font-size: 0.6875rem;
+  }
+
+  .appearance-creator-actions {
+    gap: 0.5rem;
+  }
+}
+
 @media (max-width: 480px) {
   .appearance-creator-color-inputs {
     flex-direction: column;
