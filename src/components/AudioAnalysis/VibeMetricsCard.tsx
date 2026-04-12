@@ -40,8 +40,8 @@ const formatPercent = (value: number | undefined): string => {
  * Default model information for export
  */
 const DEFAULT_MODEL_INFO = {
-    name: 'Discogs-EffNet + MTG Jamendo',
-    source: '/models/discogs-effnet-bs64-1.json',
+    name: 'Discogs-EffNet (MTG Mood/Theme)',
+    source: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
 };
 
 /**
