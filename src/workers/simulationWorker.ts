@@ -154,7 +154,7 @@ function handleStart(msg: SimulationWorkerStartMessage): void {
                 abortSignal?: AbortSignal;
                 onProgress?: (completed: number, total: number) => void;
             };
-            const cloneableResults: SimulationResults = {
+            const cloneableResults = {
                 ...results,
                 config: cloneableConfig,
                 // Maps are cloneable in modern browsers, but convert to plain
@@ -167,7 +167,7 @@ function handleStart(msg: SimulationWorkerStartMessage): void {
             const response: SimulationWorkerCompleteMessage = {
                 type: 'complete',
                 id,
-                results: cloneableResults,
+                results: cloneableResults as unknown as SimulationResults,
                 durationMs: Math.round(durationMs),
             };
             self.postMessage(response);

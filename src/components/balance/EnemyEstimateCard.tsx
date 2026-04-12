@@ -79,7 +79,7 @@ export function EnemyEstimateCard({
         );
     }
 
-    const { count, perEnemyHP, perEnemyAC, perEnemyEstDPR, totalAdjustedXP, enemyCR, archetype, rarity, sampleCount } = snapshot;
+    const { count, perEnemyHP, perEnemyAC, perEnemyEstDPR, totalAdjustedXP, enemyCR, archetype, rarity } = snapshot;
 
     const multiplier = getEncounterMultiplier(count);
     const xpPerEnemy = getXPForCR(enemyCR);
