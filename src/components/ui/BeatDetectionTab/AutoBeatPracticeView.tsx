@@ -442,33 +442,9 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
                 difficultyPreset={difficultyPreset}
                 subdivisionPlaybackAvailable={false}
                 showSubdivisionPlayground={false}
-                onToggleSubdivisionPlayground={() => {}}
+                onToggleSubdivisionPlayground={() => { }}
                 onOpenSettings={() => setIsSettingsPanelOpen(true)}
                 onExit={handleExit}
-            />
-
-            {/* View mode toggle - tap area / DDR lanes / Guitar lanes */}
-            <ViewModeToggle
-                subdividedBeatMap={subdividedBeatMap}
-                mode={keyLaneViewMode}
-                onModeChange={setKeyLaneViewMode}
-                hasRequiredKeys={true}
-                chartStyle={chartStyle ?? 'ddr'}
-            />
-
-            {/* Stats bar - BPM, position, XP, combo */}
-            <PracticeStatsBar
-                currentBpm={currentBpm ?? convertedBeatMap?.bpm ?? 0}
-                beatMapBpm={convertedBeatMap?.bpm ?? 0}
-                interpolationStats={null}
-                currentTime={currentTime}
-                duration={duration}
-                rhythmSessionTotals={rhythmSessionTotals}
-                lastRhythmXPResult={lastRhythmXPResult}
-                currentCombo={currentCombo}
-                subdivisionPlaybackAvailable={false}
-                currentSubdivision=""
-                subdivisionIsActive={false}
             />
 
             {/* Playback controls */}
@@ -521,22 +497,46 @@ export function AutoBeatPracticeView({ onExit }: AutoBeatPracticeViewProps) {
                     isDownbeatSelectionMode={false}
                     showMeasureBoundaries={true}
                     handleSeek={handleSeek}
-                    handleBeatClick={() => {}}
+                    handleBeatClick={() => { }}
                 />
             )}
 
             {/* Difficulty switcher (preset mode only) */}
             {autoSubMode !== 'customDensity' && (
-            <div className="auto-beat-practice-difficulty-section">
-                <DifficultySwitcher
-                    selected={selectedDifficulty}
-                    onChange={handleDifficultyChange}
-                    beatCounts={beatCounts}
-                    showCounts={true}
-                    size="default"
-                />
-            </div>
+                <div className="auto-beat-practice-difficulty-section">
+                    <DifficultySwitcher
+                        selected={selectedDifficulty}
+                        onChange={handleDifficultyChange}
+                        beatCounts={beatCounts}
+                        showCounts={true}
+                        size="default"
+                    />
+                </div>
             )}
+
+            {/* View mode toggle - tap area / DDR lanes / Guitar lanes */}
+            <ViewModeToggle
+                subdividedBeatMap={subdividedBeatMap}
+                mode={keyLaneViewMode}
+                onModeChange={setKeyLaneViewMode}
+                hasRequiredKeys={true}
+                chartStyle={chartStyle ?? 'ddr'}
+            />
+
+            {/* Stats bar - BPM, position, XP, combo */}
+            <PracticeStatsBar
+                currentBpm={currentBpm ?? convertedBeatMap?.bpm ?? 0}
+                beatMapBpm={convertedBeatMap?.bpm ?? 0}
+                interpolationStats={null}
+                currentTime={currentTime}
+                duration={duration}
+                rhythmSessionTotals={rhythmSessionTotals}
+                lastRhythmXPResult={lastRhythmXPResult}
+                currentCombo={currentCombo}
+                subdivisionPlaybackAvailable={false}
+                currentSubdivision=""
+                subdivisionIsActive={false}
+            />
 
             {/* Tap Statistics */}
             <TapStats />

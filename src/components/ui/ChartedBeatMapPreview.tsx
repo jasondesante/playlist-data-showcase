@@ -854,34 +854,47 @@ export function ChartedBeatMapPreview({
 
             {/* Legend */}
             <div className="charted-beat-map-legend">
-                <div className="charted-beat-map-legend-group">
-                    <span className="charted-beat-map-legend-title">Keys:</span>
-                    {isDDR ? (
-                        Object.entries(DDR_BUTTON_CONFIG).map(([key, config]) => (
-                            <div key={key} className="charted-beat-map-legend-item">
-                                <span
-                                    className="charted-beat-map-legend-icon"
-                                    style={{ color: config.color }}
-                                >
-                                    {config.icon}
-                                </span>
-                                <span className="charted-beat-map-legend-label">{config.label}</span>
-                            </div>
-                        ))
-                    ) : (
-                        Object.entries(GUITAR_HERO_BUTTON_CONFIG).map(([key, config]) => (
-                            <div key={key} className="charted-beat-map-legend-item">
-                                <span
-                                    className="charted-beat-map-legend-fret"
-                                    style={{ background: config.color }}
-                                >
-                                    {key}
-                                </span>
-                                <span className="charted-beat-map-legend-label">{config.label}</span>
-                            </div>
-                        ))
-                    )}
-                </div>
+                {(() => {
+                    // Derive unique keys actually used in the chart
+                    const usedKeys = [...new Set(
+                        chart.beats
+                            .map((b) => b.requiredKey)
+                            .filter((k): k is string => !!k && k !== 'tap')
+                    )].sort();
+                    if (usedKeys.length === 0) return null;
+
+                    const buttonConfig = isDDR ? DDR_BUTTON_CONFIG : GUITAR_HERO_BUTTON_CONFIG;
+
+                    return (
+                        <div className="charted-beat-map-legend-group">
+                            <span className="charted-beat-map-legend-title">Keys:</span>
+                            {usedKeys.map((key) => {
+                                const config = buttonConfig[key];
+                                if (!config) return null;
+                                return (
+                                    <div key={key} className="charted-beat-map-legend-item">
+                                        {'icon' in config && config.icon ? (
+                                            <span
+                                                className="charted-beat-map-legend-icon"
+                                                style={{ color: config.color }}
+                                            >
+                                                {config.icon as React.ReactNode}
+                                            </span>
+                                        ) : (
+                                            <span
+                                                className="charted-beat-map-legend-fret"
+                                                style={{ background: config.color }}
+                                            >
+                                                {key}
+                                            </span>
+                                        )}
+                                        <span className="charted-beat-map-legend-label">{config.label}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    );
+                })()}
                 <div className="charted-beat-map-legend-group">
                     <span className="charted-beat-map-legend-title">Beat Types:</span>
                     <div className="charted-beat-map-legend-item">

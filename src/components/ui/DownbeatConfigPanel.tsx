@@ -15,10 +15,11 @@
  * Task 2.1: Create DownbeatConfigPanel component
  * Task 2.7: Multi-segment support (Advanced)
  */
-import { useState } from 'react';
-import { Settings, ChevronDown, RotateCcw, Info, Plus, Trash2, ChevronRight, Eye, EyeOff, MousePointer2, Check } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Settings, ChevronDown, RotateCcw, Info, Plus, Trash2, ChevronRight, MousePointer2, Play, Pause } from 'lucide-react';
 import { Button } from './Button';
 import { Input } from './Input';
+import { BeatTimeline } from './BeatTimeline';
 import {
     useDownbeatConfig,
     useTimeSignature,
@@ -26,10 +27,16 @@ import {
     useHasCustomDownbeatConfig,
     useBeatMap,
     useBeatDetectionStore,
-    useShowMeasureBoundaries,
     useIsDownbeatSelectionMode,
+    useShowGridOverlay,
+    useShowTempoDriftVisualization,
+    useShowMeasureBoundaries,
+    useInterpolationVisualizationData,
 } from '../../store/beatDetectionStore';
 import type { DownbeatSegment } from '../../types';
+import type { BeatMap } from 'playlist-data-engine';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
+import { usePlaylistStore } from '../../store/playlistStore';
 import './DownbeatConfigPanel.css';
 
 /** Common time signature options */
@@ -94,19 +101,60 @@ const getToggleTabIndex = (beats: TimeSignatureValue, currentBeats: TimeSignatur
 interface DownbeatConfigPanelProps {
     /** Whether the panel is disabled (no beat map available) */
     disabled?: boolean;
-    /** Hide the "Edit Downbeat" button and selection-mode hint */
-    hideEditDownbeat?: boolean;
+    /** Hide the timeline (e.g., in step 1 before levels are generated) */
+    hideTimeline?: boolean;
+    /** Timeline props passed from parent when in selection mode */
+    timelineProps?: {
+        beatMap: BeatMap;
+        currentTime: number;
+        isPlaying: boolean;
+        interpolationData: ReturnType<typeof useInterpolationVisualizationData>;
+        showGridOverlay: boolean;
+        showTempoDriftVisualization: boolean;
+        onSeek: (time: number) => void;
+        onPlayPause: () => void;
+    };
 }
 
-export function DownbeatConfigPanel({ disabled = false, hideEditDownbeat = false }: DownbeatConfigPanelProps) {
+export function DownbeatConfigPanel({ disabled = false, hideTimeline = false, timelineProps }: DownbeatConfigPanelProps) {
     // Get downbeat configuration from store
     const config = useDownbeatConfig();
     const timeSignature = useTimeSignature();
     const segmentCount = useDownbeatSegmentCount();
     const hasCustomConfig = useHasCustomDownbeatConfig();
     const beatMap = useBeatMap();
-    const showMeasureBoundaries = useShowMeasureBoundaries();
     const isSelectionMode = useIsDownbeatSelectionMode();
+
+    // Timeline visualization state (used when parent doesn't provide timelineProps)
+    const interpolationData = useInterpolationVisualizationData();
+    const showGridOverlay = useShowGridOverlay();
+    const showTempoDriftVisualization = useShowTempoDriftVisualization();
+    const showMeasureBoundaries = useShowMeasureBoundaries();
+    const { playbackState, currentTime: audioTime, pause, resume, play, currentUrl, seek } = useAudioPlayerStore();
+    const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
+    const isAudioPlaying = playbackState === 'playing';
+
+    // Use parent's timeline props if provided, otherwise use local state
+    const timelineBeatMap = timelineProps?.beatMap ?? beatMap;
+    const timelineTime = timelineProps?.currentTime ?? audioTime;
+    const timelinePlaying = timelineProps?.isPlaying ?? isAudioPlaying;
+    const timelineInterpolation = timelineProps?.interpolationData ?? interpolationData;
+    const timelineGrid = timelineProps?.showGridOverlay ?? showGridOverlay;
+    const timelineTempoDrift = timelineProps?.showTempoDriftVisualization ?? showTempoDriftVisualization;
+    const timelineSeek = timelineProps?.onSeek ?? seek;
+    const timelinePlayPause = timelineProps?.onPlayPause ?? (() => {
+        if (isAudioPlaying) {
+            pause();
+        } else if (currentUrl) {
+            resume();
+        } else if (selectedTrack?.audio_url) {
+            play(selectedTrack.audio_url);
+        }
+    });
+
+    const handleBeatClick = useCallback((beatIndex: number) => {
+        useBeatDetectionStore.getState().actions.setDownbeatPosition(beatIndex, timeSignature);
+    }, [isSelectionMode, timeSignature]);
 
     // Local state for collapsible panel
     const [isExpanded, setIsExpanded] = useState(false);
@@ -291,6 +339,39 @@ export function DownbeatConfigPanel({ disabled = false, hideEditDownbeat = false
                     id="downbeat-config-panel-content"
                     className="downbeat-config-panel-content"
                 >
+                    {/* Beat Timeline for downbeat selection - visible when not hidden and not disabled */}
+                    {!hideTimeline && !isDisabled && timelineBeatMap && (
+                        <div className="downbeat-config-panel-timeline">
+                            <div className="downbeat-config-panel-timeline-header">
+                                <span className="downbeat-config-panel-timeline-label">
+                                    Click a beat marker to set as downbeat:
+                                </span>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={timelinePlayPause}
+                                    leftIcon={timelinePlaying ? Pause : Play}
+                                >
+                                    {timelinePlaying ? 'Pause' : 'Play'}
+                                </Button>
+                            </div>
+                            <BeatTimeline
+                                beatMap={timelineBeatMap}
+                                currentTime={timelineTime}
+                                anticipationWindow={5}
+                                pastWindow={10}
+                                isPlaying={timelinePlaying}
+                                interpolationData={timelineInterpolation}
+                                showGridOverlay={timelineGrid}
+                                showTempoDriftVisualization={timelineTempoDrift}
+                                enableBeatSelection={!isDisabled}
+                                onBeatClick={handleBeatClick}
+                                onSeek={timelineSeek}
+                                showMeasureBoundaries={showMeasureBoundaries}
+                            />
+                        </div>
+                    )}
+
                     {/* Current Config Display - Task 2.3 */}
                     <div className="downbeat-config-panel-current">
                         <div className="downbeat-config-panel-stat">
@@ -365,48 +446,19 @@ export function DownbeatConfigPanel({ disabled = false, hideEditDownbeat = false
                         />
                     </div>
 
-                    {/* Hint Box - Task 2.6 / Task 5.3 */}
-                    {!hideEditDownbeat && (
-                    <div className={`downbeat-config-panel-hint ${isSelectionMode ? 'downbeat-config-panel-hint--selection-mode' : ''}`}>
-                        {isSelectionMode ? (
-                            <>
-                                <MousePointer2 className="downbeat-config-panel-hint-icon" />
-                                <span className="downbeat-config-panel-hint-text">
-                                    <strong>Selection mode active:</strong> Click any beat in the timeline to set it as the downbeat (beat 1)
-                                </span>
-                            </>
-                        ) : (
-                            <>
+                    {/* Hint Box */}
+                    <div className="downbeat-config-panel-hint">
+                        {hideTimeline ? (
+                            <span className="downbeat-config-panel-hint-text">
                                 <Info className="downbeat-config-panel-hint-icon" />
-                                <span className="downbeat-config-panel-hint-text">
-                                    Click "Edit Downbeat" then click any beat in the timeline to set it as the downbeat (beat 1)
-                                </span>
-                            </>
-                        )}
-                    </div>
-                    )}
-
-                    {/* Measure Visualization Toggle - Task 4.1 */}
-                    <div className="downbeat-config-panel-toggle">
-                        <button
-                            type="button"
-                            className={`downbeat-config-panel-toggle-btn ${showMeasureBoundaries ? 'downbeat-config-panel-toggle-btn--active' : ''}`}
-                            onClick={() => useBeatDetectionStore.getState().actions.setShowMeasureBoundaries(!showMeasureBoundaries)}
-                            disabled={isDisabled}
-                            aria-pressed={showMeasureBoundaries}
-                        >
-                            {showMeasureBoundaries ? (
-                                <Eye className="downbeat-config-panel-toggle-icon" />
-                            ) : (
-                                <EyeOff className="downbeat-config-panel-toggle-icon" />
-                            )}
-                            <span className="downbeat-config-panel-toggle-label">
-                                Show Measure Boundaries
+                                The downbeat position will be configurable once the beat analysis is complete.
                             </span>
-                        </button>
-                        <span className="downbeat-config-panel-toggle-hint">
-                            {showMeasureBoundaries ? 'Measure lines and numbers visible' : 'Click to show measure lines'}
-                        </span>
+                        ) : (
+                            <span className="downbeat-config-panel-hint-text">
+                                <MousePointer2 className="downbeat-config-panel-hint-icon" />
+                                Click any beat in the timeline to set it as the downbeat (beat 1).
+                            </span>
+                        )}
                     </div>
 
                     {/* Multi-Segment Support - Task 2.7 */}
@@ -581,20 +633,6 @@ export function DownbeatConfigPanel({ disabled = false, hideEditDownbeat = false
 
                     {/* Actions */}
                     <div className="downbeat-config-panel-actions">
-                        {/* Edit Downbeat / Done toggle button */}
-                        {!hideEditDownbeat && (
-                        <Button
-                            variant={isSelectionMode ? 'primary' : 'outline'}
-                            size="sm"
-                            disabled={isDisabled}
-                            leftIcon={isSelectionMode ? Check : MousePointer2}
-                            onClick={() => {
-                                useBeatDetectionStore.getState().actions.setDownbeatSelectionMode(!isSelectionMode);
-                            }}
-                        >
-                            {isSelectionMode ? 'Done' : 'Edit Downbeat'}
-                        </Button>
-                        )}
                         <Button
                             variant="outline"
                             size="sm"

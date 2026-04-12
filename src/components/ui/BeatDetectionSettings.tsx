@@ -1214,7 +1214,7 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
       </details>
 
       {/* Quick Downbeat Configuration */}
-      <DownbeatConfigPanel disabled={disabled} hideEditDownbeat />
+      <DownbeatConfigPanel disabled={disabled} hideTimeline />
 
       {/* Note about tracks without clear beat (Task 7.2) */}
       <div className="beat-detection-settings-note">

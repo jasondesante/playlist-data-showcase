@@ -856,31 +856,6 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         subdivisionPlaygroundActive={showSubdivisionPlayground}
       />
 
-      {/* View Mode Toggle - Switch between TapArea and KeyLane views */}
-      <ViewModeToggle
-        subdividedBeatMap={subdividedBeatMap}
-        mode={keyLaneViewMode}
-        onModeChange={setKeyLaneViewMode}
-        hasRequiredKeys={hasRequiredKeys}
-        chartStyle={chartStyle}
-        subdivisionPlaygroundActive={showSubdivisionPlayground}
-      />
-
-      {/* BPM and Position Display */}
-      <PracticeStatsBar
-        currentBpm={currentBpm}
-        beatMapBpm={beatMap.bpm}
-        interpolationStats={interpolationStats}
-        currentTime={currentTime}
-        duration={duration}
-        rhythmSessionTotals={rhythmSessionTotals}
-        lastRhythmXPResult={lastRhythmXPResult}
-        currentCombo={currentCombo}
-        subdivisionPlaybackAvailable={subdivisionPlaybackAvailable}
-        currentSubdivision={currentSubdivision}
-        subdivisionIsActive={subdivisionIsActive}
-      />
-
       {/* Playback Controls */}
       <PlaybackControls
         isPlaying={isPlaying}
@@ -940,6 +915,31 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         showMeasureBoundaries={showMeasureBoundaries}
         handleSeek={handleSeek}
         handleBeatClick={handleBeatClick}
+      />
+
+      {/* View Mode Toggle - Switch between TapArea and KeyLane views */}
+      <ViewModeToggle
+        subdividedBeatMap={subdividedBeatMap}
+        mode={keyLaneViewMode}
+        onModeChange={setKeyLaneViewMode}
+        hasRequiredKeys={hasRequiredKeys}
+        chartStyle={chartStyle}
+        subdivisionPlaygroundActive={showSubdivisionPlayground}
+      />
+
+      {/* BPM and Position Display */}
+      <PracticeStatsBar
+        currentBpm={currentBpm}
+        beatMapBpm={beatMap.bpm}
+        interpolationStats={interpolationStats}
+        currentTime={currentTime}
+        duration={duration}
+        rhythmSessionTotals={rhythmSessionTotals}
+        lastRhythmXPResult={lastRhythmXPResult}
+        currentCombo={currentCombo}
+        subdivisionPlaybackAvailable={subdivisionPlaybackAvailable}
+        currentSubdivision={currentSubdivision}
+        subdivisionIsActive={subdivisionIsActive}
       />
 
       {/* Stream status indicator */}

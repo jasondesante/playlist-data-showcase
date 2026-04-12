@@ -91,6 +91,21 @@
   padding: 2rem;
 }
 
+/* Mobile: reduce padding to reclaim usable space */
+@media (max-width: 640px) {
+  .card-padding-sm {
+    padding: 0.375rem;
+  }
+
+  .card-padding-md {
+    padding: 0.5rem;
+  }
+
+  .card-padding-lg {
+    padding: 0.625rem;
+  }
+}
+
 /* ============================================
    CARD SUB-COMPONENTS
    ============================================ */

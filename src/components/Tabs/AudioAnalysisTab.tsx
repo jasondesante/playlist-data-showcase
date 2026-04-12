@@ -539,7 +539,14 @@ export function AudioAnalysisTab() {
                 <button
                   type="button"
                   className={`audio-analysis-mode-btn ${analysisMode === 'genre' ? 'audio-analysis-mode-btn-active' : ''}`}
-                  onClick={() => setAnalysisMode('genre')}
+                  onClick={() => {
+                    if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+                      if (!confirm('Genre detection requires significant RAM and may crash your browser on mobile. Continue anyway?')) {
+                        return;
+                      }
+                    }
+                    setAnalysisMode('genre');
+                  }}
                   aria-checked={analysisMode === 'genre'}
                   role="radio"
                 >

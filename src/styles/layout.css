@@ -620,13 +620,15 @@
 
 @media (max-width: 767px) {
   .main-content-card {
-    padding: 0.75rem;
+    padding: 0.25rem;
     border-radius: var(--radius-sm);
   }
 
   .main-layout {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    padding-left: 0.375rem;
+    padding-right: 0.375rem;
   }
 }
 

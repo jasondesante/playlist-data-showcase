@@ -1032,7 +1032,6 @@ interface BeatDetectionActions {
      * Set whether measure boundary lines and numbers should be shown in the timeline.
      * @param show - Whether to show measure boundaries
      */
-    setShowMeasureBoundaries: (show: boolean) => void;
     /**
      * Set whether downbeat selection mode is active.
      * When active, beat markers in the timeline become clickable for setting downbeat position.
@@ -2195,7 +2194,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             allDifficultyLevels: null,
                             levelGenerationProgress: null,
                             pitchAnalysis: null,
-                            selectedDifficulty: 'medium',
+                            selectedDifficulty: 'easy',
                             autoSubMode: 'preset',
                             densityConfig: DEFAULT_DENSITY_CONFIG,
                             customDensityLevel: null,
@@ -2952,14 +2951,6 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         });
 
                         state.actions.applyDownbeatConfig({ segments: newSegments });
-                    },
-
-                    /**
-                     * Set whether measure boundary lines and numbers should be shown in the timeline.
-                     */
-                    setShowMeasureBoundaries: (show: boolean) => {
-                        set({ showMeasureBoundaries: show });
-                        logger.info('BeatDetection', 'Measure boundaries visibility changed', { show });
                     },
 
                     /**

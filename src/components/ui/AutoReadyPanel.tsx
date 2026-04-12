@@ -16,22 +16,19 @@
  */
 
 import { useMemo, useCallback, useEffect, useState } from 'react';
-import { Play, Gamepad2, Music, Activity, RefreshCw, Pause, Download } from 'lucide-react';
+import { Play, Gamepad2, Music, Activity, RefreshCw, Download } from 'lucide-react';
 import './AutoReadyPanel.css';
 import { Card } from './Card';
 import { Button } from './Button';
 import { DifficultySwitcher, getDifficultyColor, getDifficultyLabel } from './DifficultySwitcher';
 import { ChartedBeatMapPreview } from './ChartedBeatMapPreview';
 import { DownbeatConfigPanel } from './DownbeatConfigPanel';
-import { BeatTimeline } from './BeatTimeline';
 import {
     useAllDifficultyLevels,
     useSelectedDifficulty,
     useBeatDetectionActions,
     useBeatDetectionStore,
     useIsDownbeatSelectionMode,
-    useTimeSignature,
-    useShowMeasureBoundaries,
     useInterpolationVisualizationData,
     useShowGridOverlay,
     useShowTempoDriftVisualization,
@@ -47,6 +44,7 @@ import type { DifficultyLevel } from '../../types/levelGeneration';
 import type { GeneratedLevel, ControllerMode } from 'playlist-data-engine';
 import { cn } from '../../utils/cn';
 import { logger } from '../../utils/logger';
+import { usePlaylistStore } from '../../store/playlistStore';
 
 // ============================================================
 // Types
@@ -172,14 +170,13 @@ export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRege
         [unifiedBeatMap]
     );
     const isDownbeatSelectionMode = useIsDownbeatSelectionMode();
-    const timeSignature = useTimeSignature();
-    const showMeasureBoundaries = useShowMeasureBoundaries();
     const interpolationData = useInterpolationVisualizationData();
     const showGridOverlay = useShowGridOverlay();
     const showTempoDriftVisualization = useShowTempoDriftVisualization();
 
     // Audio player state for preview timeline sync
-    const { playbackState, currentTime: audioTime, pause, resume, seek } = useAudioPlayerStore();
+    const { playbackState, currentTime: audioTime, pause, resume, play, currentUrl, seek } = useAudioPlayerStore();
+    const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
     const isAudioPlaying = playbackState === 'playing';
 
     // Preview timeline state
@@ -263,16 +260,12 @@ export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRege
     const handlePlayPause = useCallback(() => {
         if (isAudioPlaying) {
             pause();
-        } else {
+        } else if (currentUrl) {
             resume();
+        } else if (selectedTrack?.audio_url) {
+            play(selectedTrack.audio_url);
         }
-    }, [isAudioPlaying, pause, resume]);
-
-    // Handle beat click for downbeat selection
-    const handleBeatClick = useCallback((beatIndex: number) => {
-        if (!isDownbeatSelectionMode) return;
-        useBeatDetectionStore.getState().actions.setDownbeatPosition(beatIndex, timeSignature);
-    }, [isDownbeatSelectionMode, timeSignature]);
+    }, [isAudioPlaying, pause, resume, play, currentUrl, selectedTrack]);
 
     const hasAnyLevel = autoSubMode === 'customDensity' ? !!customDensityLevel : !!allDifficulties;
 
@@ -313,7 +306,19 @@ export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRege
                         the generated levels won't align to the music — adjust it below, then regenerate.
                     </p>
                 </div>
-                <DownbeatConfigPanel disabled={!hasLevel} />
+                <DownbeatConfigPanel
+                    disabled={!hasLevel}
+                    timelineProps={beatMap ? {
+                        beatMap,
+                        currentTime: previewTime,
+                        isPlaying: isAudioPlaying,
+                        interpolationData,
+                        showGridOverlay,
+                        showTempoDriftVisualization,
+                        onSeek: handlePreviewSeek,
+                        onPlayPause: handlePlayPause,
+                    } : undefined}
+                />
             </div>
 
             {/* Start Practice Button — hidden when downbeat config is stale */}
@@ -418,40 +423,6 @@ export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRege
                     >
                         Regenerate Levels
                     </Button>
-                </div>
-            )}
-
-            {/* Beat Timeline for downbeat selection (matches manual mode behavior) */}
-            {isDownbeatSelectionMode && beatMap && (
-                <div className="auto-ready-timeline">
-                    <div className="auto-ready-timeline-header">
-                        <span className="auto-ready-timeline-label">
-                            Drag to navigate, click a beat marker to set as downbeat:
-                        </span>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handlePlayPause}
-                            leftIcon={isAudioPlaying ? Pause : Play}
-                            className="auto-ready-timeline-play-btn"
-                        >
-                            {isAudioPlaying ? 'Pause' : 'Play'}
-                        </Button>
-                    </div>
-                    <BeatTimeline
-                        beatMap={beatMap}
-                        currentTime={previewTime}
-                        anticipationWindow={5}
-                        pastWindow={10}
-                        isPlaying={isAudioPlaying}
-                        interpolationData={interpolationData}
-                        showGridOverlay={showGridOverlay}
-                        showTempoDriftVisualization={showTempoDriftVisualization}
-                        enableBeatSelection={isDownbeatSelectionMode}
-                        onBeatClick={handleBeatClick}
-                        onSeek={handlePreviewSeek}
-                        showMeasureBoundaries={showMeasureBoundaries}
-                    />
                 </div>
             )}
 

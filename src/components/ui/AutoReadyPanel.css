@@ -237,12 +237,16 @@
 
 .auto-ready-actions {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
     padding-bottom: 0.5rem;
 }
 
 .auto-ready-start-btn {
-    min-width: 180px;
+    min-width: 240px;
+    max-width: 360px;
+    width: 100%;
 }
 
 /* ============================================================
@@ -295,15 +299,5 @@
     .auto-ready-difficulty-section {
         overflow-x: auto;
         padding-bottom: 0.5rem;
-    }
-
-    .auto-ready-actions {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .auto-ready-start-btn {
-        width: 100%;
-        min-width: 0;
     }
 }
