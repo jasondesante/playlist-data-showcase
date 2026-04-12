@@ -1,76 +1,161 @@
 # Playlist Data Showcase
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18.2-cyan)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-5.0-purple)](https://vitejs.dev/)
-
-A comprehensive React demo showcasing the **Playlist Data Engine** - a TypeScript library for parsing blockchain music playlists, analyzing audio, generating D&D 5e characters, and simulating combat.
+A React demo application for the **[Playlist Data Engine](#the-playlist-data-engine)** — a TypeScript library for deep audio analysis of music playlists. Extract sonic fingerprints, detect beats with subdivision, run pitch contour analysis, classify genres and moods via ML models, build rhythm game levels, and generate D&D 5e characters and combat encounters — all derived from the music itself.
 
 ## Quick Start
 
-1. **Clone and install:**
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+npm run dev
+```
 
-2. **Start dev server:**
-   ```bash
-   npm run dev
-   ```
+Open `http://localhost:5173` in your browser.
 
-3. **Open browser to** `http://localhost:5173`
+Requires the [playlist-data-engine](https://github.com/jasondesante/playlist-data-engine) as a sibling directory (linked via `file:../playlist-data-engine` in package.json).
 
-## What This Demo Showcases
+## The Playlist Data Engine
 
-This application demonstrates all features of the `playlist-data-engine` library:
+The engine is a modular, serverless music analysis library that powers [ar://listen](https://listen.arweave.net/). It parses playlists stored on Arweave and extracts everything it can from the audio — then uses that analysis to drive interactive features:
 
-- **Playlist parsing from Arweave** - Load and parse blockchain-hosted music playlists
-- **Audio analysis and character generation** - Analyze audio characteristics to generate unique D&D characters
-- **Beat detection with subdivision** - Detect beats in audio and subdivide into rhythmic patterns (quarter, eighth, triplets, swing)
-- **Beat practice mode** - Practice rhythm with real-time subdivision switching and accuracy scoring
-- **D&D 5e combat simulation** - Full combat engine with dice rolling, damage calculations, and victory conditions
-- **Environmental sensor integration** - Mobile device sensors (accelerometer, gyroscope, ambient light)
-- **XP system with multipliers** - Experience point tracking with source-based multipliers
-- **Game mode selection** - Choose between Standard (stats cap at 20) and Uncapped (unlimited progression) modes
-- **Multiple XP sources** - Earn XP from combat, quests, exploration, and boss defeats
-- **Detailed level-up breakdowns** - Visual modal showing HP increases, stat changes, and new features
-- **Stat management system** - Manual stat selection modal and automatic stat strategies
+**Audio Analysis** — Sonic fingerprinting (triple-tap sampling at 5%/40%/70%), full timeline analysis, and color palette extraction from audio frequency data.
 
-## Documentation
+**Genre & Mood Classification** — ML-powered genre/mood/vibe detection using TensorFlow.js with essentia.js WASM models (Discogs-EffNet embeddings, 400+ subgenres, 60 moods).
 
-- [Architecture Overview](./docs/architecture/overview.md) - System design and patterns
-- [Bug Tracker](./docs/design/bugs-to-fix.md) - Known issues
+**Pitch Analysis** — Full-track pitch detection via the pYIN algorithm with melody contour extraction, voicing ratio, and note distribution.
 
-## Feature Guides
+**Beat Detection & Rhythm Games** — Beat tracking using the Ellis 2007 dynamic programming algorithm, beat subdivision (eighth notes, triplets, swing, quintuplets), chart creation for rhythm game levels, accuracy scoring with combo and groove systems, and procedural rhythm generation.
 
-- [Beat Subdivision User Guide](./docs/features/BEAT_SUBDIVISION_USER_GUIDE.md) - How to use beat subdivision and practice mode
+**Level Generation** — Complete rhythm game level pipeline from beat maps: key assignment, difficulty scaling, and level export/import.
 
-## Data Engine Docs
+These audio systems feed into the RPG layer:
 
-- [Data Engine Reference](./docs/engine/DATA_ENGINE_REFERENCE.md) - Complete API documentation
-- [Usage Examples](./docs/engine/USAGE_IN_OTHER_PROJECTS.md) - Integration examples
-- [Audio Analysis Docs](./docs/engine/docs/AUDIO_ANALYSIS.md) - Beat detection and subdivision engine docs
+**Character Generation** — Deterministic D&D 5e characters from audio profiles. Frequency bands map to ability scores (bass → STR, mid → INT/WIS/CHA, treble → DEX), class selection is influenced by audio characteristics, and equipment/features are derived from the sonic fingerprint.
 
-## Quick Tour
+**Combat System** — Turn-based D&D 5e combat with AI opponents, procedural enemy generation from music (bass-heavy tracks spawn brutes, treble-heavy spawn archers), and Monte Carlo simulation for balance testing.
+
+**Progression** — Multi-source XP system (listening, combat, rhythm game, environmental sensors) with D&D 5e authentic leveling, stat increases, equipment effects, and a track mastery prestige system.
+
+**Extensibility** — Runtime content pack system for custom races, classes, equipment, spells, skills, and features across 20+ categories with spawn rate control and validation.
+
+All generation is deterministic — same seed + same audio = same character, same enemies, same combat outcomes.
+
+## What's in This Showcase
 
 The app is organized into tabs, each demonstrating a different engine feature:
 
-1. **Playlist Loader** - Load playlists from Arweave transaction IDs
-2. **Audio Analysis** - Analyze track audio, detect beats, configure subdivisions
-3. **Beat Practice** - Practice rhythm with real-time subdivision switching
-4. **Character Generator** - Generate D&D 5e characters from audio profiles
-5. **Session Tracking** - Track play sessions with timing data
-6. **XP Calculator** - Calculate XP with source-based multipliers
-7. **Character Leveling** - Level up characters, apply stats, manage game modes
-8. **Environmental Sensors** - View real-time sensor data (mobile)
-9. **Gaming Platforms** - Detect and display connected gaming platforms
-10. **Combat Simulator** - Run full D&D 5e combat encounters
-11. **Settings** - Configure application options
+| Tab | What it does |
+|-----|-------------|
+| **Home** | Landing page with playlist search, track cards, and quick actions |
+| **Playlist** | Parse playlists from Arweave transaction IDs or raw JSON |
+| **Audio Analysis** | Frequency analysis (bass/mid/treble), genre/mood classification, pitch contour graphing, color extraction |
+| **Beat Detection** | Beat map generation, subdivisions (eighth notes, triplets, swing), chart editor, practice mode, rhythm generation |
+| **Character Gen** | Generate D&D 5e characters from audio profiles with equipment browser and enchantment system |
+| **Party** | View all generated characters in a grid with party composition analysis |
+| **Items** | Equipment management with enchantment/curse system, loot box spawning, and item creator |
+| **Data Viewer** | Browse all game content (spells, skills, features, races, classes) with filtering and custom content creators |
+| **Session** | Track listening sessions with animated timer, real-time XP, and mastery badges |
+| **XP Calc** | Calculate XP from various sources (base, environmental, gaming, rhythm) with multiplier configuration |
+| **Leveling** | Character progression with stat management, level-up handling, prestige system, and uncapped mode |
+| **Sensors** | GPS/motion/weather sensor integration with biome detection and real-time data visualization |
+| **Gaming** | Steam integration for game activity tracking with genre-based XP bonuses |
+| **Combat** | Full combat simulation with encounter generation, enemy templates, combat log, and export |
+| **Balance Lab** | Monte Carlo combat simulation with statistical analysis, win rate charts, and balance recommendations |
+| **Settings** | API key configuration, audio settings, logging, and privacy controls |
+
+## How It All Connects
+
+```
+Playlist (Arweave)
+    │
+    ▼
+Audio Analysis ──► Sonic Fingerprint
+    │                  (bass/mid/treble/energy)
+    │                       │
+    ├──► Genre/Mood         ├──► Character Generation
+    │    Classification     │    (D&D 5e stats, equipment, class)
+    │                       │
+    ├──► Pitch Analysis     ├──► Enemy Generation
+    │    (pYIN contour)     │    (audio-weighted templates, CR scaling)
+    │                       │
+    ├──► Beat Detection     │
+    │    (Ellis DP)         │
+    │       │               │
+    │       ▼               ▼
+    │   Rhythm Game ──► Combat ◄────┘
+    │   (charts, scoring,    (turn-based D&D 5e)
+    │    combo, groove)          │
+    │                            ▼
+    └──► Level Generation   XP & Leveling
+         (key maps,          (multi-source,
+          difficulty)         prestige system)
+```
+
+Audio is the source of truth — the RPG layer is one of many things powered by it. The same audio always produces the same analysis, the same rhythm game levels, the same characters, and the same combat outcomes.
+
+## Tech Stack
+
+**Showcase app:**
+- React 18, TypeScript, Vite
+- Zustand (state management with localStorage persistence via LocalForage)
+- Recharts (charts and data visualization)
+- Lucide React (icons)
+- Howler.js (audio playback)
+
+**Engine (linked dependency):**
+- TensorFlow.js + essentia.js (WASM) — ML models for music classification
+- Web Audio API — audio analysis (browser) with `web-audio-api` polyfill for Node.js
+- Zod — runtime validation
+- MurmurHash V3 — deterministic seeded RNG
+- 7,205 tests across 183 test files
+
+## State Management
+
+The app uses 10 Zustand stores, all persisted to localStorage:
+
+- `appStore` — API keys, audio config, logging, privacy
+- `playlistStore` — Current playlist, selected track, audio profile
+- `characterStore` — Generated characters, active character, equipment effects
+- `sessionStore` — Active session, session history, XP tracking
+- `sensorStore` — Environmental/gaming sensor data
+- `beatDetectionStore` — Beat maps, practice mode, chart editor
+- `simulationStore` — Combat simulation results
+- `audioPlayerStore` — Playback state, volume, loading
+- `dataViewerStore` — Data viewer UI state
+- `progressionConfigStore` — XP progression configuration
+
+## Scripts
+
+```bash
+npm run dev          # Start dev server
+npm run build        # TypeScript check + Vite build
+npm run preview      # Preview production build
+npm test             # Run tests (Vitest)
+npm run test:watch   # Watch mode tests
+npm run lint:css     # Lint CSS (Stylelint)
+```
+
+## Engine Documentation
+
+Full engine documentation lives in `docs/engine/`:
+
+- [Engine README](./docs/engine/README.md) — Architecture overview and module guide
+- [Data Engine Reference](./docs/engine/DATA_ENGINE_REFERENCE.md) — Complete API documentation
+- [Usage in Other Projects](./docs/engine/USAGE_IN_OTHER_PROJECTS.md) — Integration examples
+
+**Feature docs:**
+- [Audio Analysis](./docs/engine/features/AUDIO_ANALYSIS.md)
+- [Beat Detection](./docs/engine/features/BEAT_DETECTION.md)
+- [Combat System](./docs/engine/features/COMBAT_SYSTEM.md)
+- [Enemy Generation](./docs/engine/features/ENEMY_GENERATION.md)
+- [XP and Stats](./docs/engine/features/XP_AND_STATS.md)
+- [Equipment System](./docs/engine/features/EQUIPMENT_SYSTEM.md)
+- [Extensibility Guide](./docs/engine/features/EXTENSIBILITY_GUIDE.md)
+- [Content Packs](./docs/engine/features/CONTENT_PACKS.md)
+- [Custom Content](./docs/engine/features/CUSTOM_CONTENT.md)
+- [IRL Sensors](./docs/engine/features/IRL_SENSORS.md)
+- [Rolls and Seeds](./docs/engine/features/ROLLS_AND_SEEDS.md)
+- [Prerequisites](./docs/engine/features/PREREQUISITES.md)
 
 ## License
 
 MIT
-
----
-
-Built with [playlist-data-engine](./docs/engine/DATA_ENGINE_REFERENCE.md)
