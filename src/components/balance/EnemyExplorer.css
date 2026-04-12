@@ -1,0 +1,1010 @@
+/* ============================================
+   ENEMY EXPLORER
+   ============================================ */
+
+.ee-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* ─── Header ───────────────────────────────────── */
+
+.ee-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.ee-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ee-header-icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+}
+
+.ee-header-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+}
+
+.ee-header-count {
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--muted) / 0.3);
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+}
+
+.ee-header-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.ee-view-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    background: none;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.ee-view-btn:hover {
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border) / 1.5);
+}
+
+.ee-view-btn-active {
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary) / 0.4);
+    background: hsl(var(--primary) / 0.08);
+}
+
+/* ─── Filters ─────────────────────────────────── */
+
+.ee-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.5rem;
+    background: hsl(var(--muted) / 0.08);
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: var(--radius);
+}
+
+.ee-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.ee-search-wrap {
+    position: relative;
+    flex: 1;
+}
+
+.ee-search-icon {
+    position: absolute;
+    left: 0.4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: hsl(var(--muted-foreground));
+    pointer-events: none;
+}
+
+.ee-search-input {
+    width: 100%;
+    padding: 0.35rem 1.8rem 0.35rem 1.8rem;
+    font-size: 0.75rem;
+    font-family: inherit;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    color: hsl(var(--foreground));
+    outline: none;
+    transition: border-color 0.15s ease;
+    box-sizing: border-box;
+}
+
+.ee-search-input:focus {
+    border-color: hsl(var(--primary) / 0.5);
+}
+
+.ee-search-input::placeholder {
+    color: hsl(var(--muted-foreground) / 0.6);
+}
+
+.ee-search-clear {
+    position: absolute;
+    right: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: none;
+    background: none;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 0;
+}
+
+.ee-search-clear:hover {
+    color: hsl(var(--foreground));
+    background: hsl(var(--muted) / 0.3);
+}
+
+.ee-filter-icon {
+    color: hsl(var(--muted-foreground));
+    flex-shrink: 0;
+}
+
+.ee-filter-select {
+    padding: 0.3rem 0.4rem;
+    font-size: 0.7rem;
+    font-family: inherit;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    color: hsl(var(--foreground));
+    outline: none;
+    cursor: pointer;
+    min-width: 0;
+    max-width: 140px;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ee-filter-select:focus {
+    border-color: hsl(var(--primary) / 0.5);
+}
+
+.ee-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+    font-family: inherit;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background: none;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.ee-clear-btn:hover {
+    color: hsl(var(--destructive));
+    border-color: hsl(var(--destructive) / 0.3);
+}
+
+/* ─── Template Grid ────────────────────────────── */
+
+.ee-templates {
+    max-height: 360px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.ee-templates::-webkit-scrollbar {
+    width: 5px;
+}
+
+.ee-templates::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ee-templates::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.15);
+    border-radius: 3px;
+}
+
+.ee-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2rem 1rem;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.8rem;
+}
+
+.ee-category-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.ee-category-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
+    padding-left: 0.15rem;
+}
+
+.ee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.4rem;
+}
+
+.ee-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    transition: all 0.15s ease;
+}
+
+.ee-tile:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    background: hsl(var(--primary) / 0.04);
+}
+
+.ee-tile-selected {
+    border-color: hsl(var(--primary) / 0.6);
+    background: hsl(var(--primary) / 0.08);
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.15);
+}
+
+.ee-tile-header {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.ee-tile-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.ee-tile-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ee-tile-archetype {
+    font-size: 0.55rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: hsl(var(--muted-foreground));
+    flex-shrink: 0;
+}
+
+.ee-tile-sparklines {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.1rem 0;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.ee-sparkline {
+    display: block;
+    flex-shrink: 0;
+    min-width: 0;
+}
+
+.ee-tile-stats {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.6rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.ee-tile-stat {
+    white-space: nowrap;
+}
+
+.ee-tile-sig {
+    font-size: 0.55rem;
+    color: hsl(var(--muted-foreground) / 0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ─── List View ────────────────────────────────── */
+
+.ee-templates-list .ee-grid {
+    display: none;
+}
+
+.ee-templates-list .ee-category-group {
+    display: none;
+}
+
+.ee-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.ee-list-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    transition: all 0.15s ease;
+    width: 100%;
+    overflow: hidden;
+}
+
+.ee-list-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.ee-list-row:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    background: hsl(var(--primary) / 0.04);
+}
+
+.ee-list-row-selected {
+    border-color: hsl(var(--primary) / 0.6);
+    background: hsl(var(--primary) / 0.08);
+}
+
+.ee-list-cat {
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    width: 70px;
+    flex-shrink: 0;
+    text-transform: capitalize;
+}
+
+.ee-list-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    width: 90px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ee-list-arch {
+    font-size: 0.6rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    width: 50px;
+    flex-shrink: 0;
+}
+
+.ee-list-base {
+    font-size: 0.65rem;
+    color: hsl(var(--muted-foreground));
+    width: 75px;
+    flex-shrink: 0;
+}
+
+.ee-list-sparklines {
+    display: flex;
+    gap: 0.25rem;
+    overflow: hidden;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.ee-list-sig {
+    font-size: 0.6rem;
+    color: hsl(var(--muted-foreground) / 0.7);
+    width: 80px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ee-list-chevron {
+    color: hsl(var(--muted-foreground) / 0.4);
+    flex-shrink: 0;
+}
+
+/* ─── CR Spectrum Panel ────────────────────────── */
+
+.ee-spectrum {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--primary) / 0.2);
+    border-radius: var(--radius);
+    animation: ee-fade-in 0.2s ease;
+}
+
+@keyframes ee-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ee-spectrum-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.ee-spectrum-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ee-spectrum-icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+}
+
+.ee-spectrum-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+}
+
+.ee-spectrum-count {
+    font-size: 0.65rem;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--muted) / 0.3);
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+}
+
+.ee-spectrum-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.ee-close-spectrum {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    background: none;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.ee-close-spectrum:hover {
+    color: hsl(var(--destructive));
+    border-color: hsl(var(--destructive) / 0.3);
+}
+
+.ee-spectrum-legend {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.ee-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.6rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ─── CR List ──────────────────────────────────── */
+
+.ee-cr-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.ee-cr-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.ee-cr-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ee-cr-list::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.15);
+    border-radius: 3px;
+}
+
+.ee-cr-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    background: hsl(var(--muted) / 0.05);
+    border: 1px solid hsl(var(--border) / 0.4);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    transition: all 0.15s ease;
+    width: 100%;
+}
+
+.ee-cr-row:hover {
+    background: hsl(var(--primary) / 0.04);
+    border-color: hsl(var(--primary) / 0.2);
+}
+
+.ee-cr-row-selected {
+    background: hsl(var(--primary) / 0.08);
+    border-color: hsl(var(--primary) / 0.5);
+    box-shadow: inset 3px 0 0 0 var(--rarity-color, hsl(var(--primary)));
+}
+
+.ee-cr-row-plateaued {
+    opacity: 0.65;
+}
+
+.ee-cr-row-plateaued:hover {
+    opacity: 1;
+}
+
+.ee-plateau-tag {
+    font-size: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--muted) / 0.3);
+    padding: 0.05rem 0.3rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.ee-cr-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+    width: 42px;
+    flex-shrink: 0;
+}
+
+.ee-rarity-badge {
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    width: 58px;
+    flex-shrink: 0;
+}
+
+.ee-cr-stats {
+    display: flex;
+    gap: 0.6rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.ee-cr-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.65rem;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+}
+
+.ee-cr-stat svg {
+    flex-shrink: 0;
+    opacity: 0.6;
+}
+
+.ee-cr-weapons {
+    font-size: 0.55rem;
+    color: hsl(var(--muted-foreground) / 0.5);
+    width: 100px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ─── Enemy Detail ─────────────────────────────── */
+
+.ee-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.75rem;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    animation: ee-fade-in 0.2s ease;
+}
+
+.ee-detail-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.ee-detail-name-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.ee-detail-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+    margin: 0;
+}
+
+.ee-detail-cr {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.1);
+    padding: 0.1rem 0.4rem;
+    border-radius: var(--radius-sm);
+}
+
+.ee-detail-rarity {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ee-detail-tags {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.ee-tag {
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--muted) / 0.2);
+    padding: 0.1rem 0.35rem;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--border) / 0.4);
+}
+
+/* ─── Ability Scores ───────────────────────────── */
+
+.ee-detail-scores {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.3rem;
+}
+
+.ee-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.05rem;
+    padding: 0.35rem 0.25rem;
+    background: hsl(var(--muted) / 0.08);
+    border: 1px solid hsl(var(--border) / 0.4);
+    border-radius: var(--radius-sm);
+    cursor: default;
+}
+
+.ee-score-name {
+    font-size: 0.55rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: hsl(var(--muted-foreground));
+}
+
+.ee-score-val {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+}
+
+.ee-score-mod {
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ─── Stat Bars ────────────────────────────────── */
+
+.ee-detail-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.ee-stat-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.ee-stat-bar-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    width: 28px;
+    flex-shrink: 0;
+}
+
+.ee-stat-bar-track {
+    flex: 1;
+    height: 6px;
+    background: hsl(var(--muted) / 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.ee-stat-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    min-width: 0;
+}
+
+.ee-stat-bar-value {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    width: 32px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* ─── Signature Ability ────────────────────────── */
+
+.ee-detail-ability {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    padding: 0.5rem;
+    background: hsl(var(--primary) / 0.04);
+    border: 1px solid hsl(var(--primary) / 0.1);
+    border-radius: var(--radius-sm);
+}
+
+.ee-detail-ability-icon {
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.ee-detail-ability-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.ee-detail-ability-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.ee-detail-ability-desc {
+    font-size: 0.65rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.35;
+}
+
+.ee-detail-ability-dmg {
+    font-size: 0.6rem;
+    color: hsl(var(--muted-foreground) / 0.7);
+}
+
+/* ─── Weapons ──────────────────────────────────── */
+
+.ee-detail-weapons {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.ee-detail-weapon-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    font-size: 0.65rem;
+}
+
+.ee-detail-weapon {
+    color: hsl(var(--foreground) / 0.8);
+}
+
+/* ─── Resistances ──────────────────────────────── */
+
+.ee-detail-resistances {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.ee-detail-res-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    font-size: 0.6rem;
+}
+
+.ee-resist {
+    color: hsl(210 70% 55%);
+}
+
+.ee-immune {
+    color: hsl(0 70% 55%);
+}
+
+/* ─── XP ───────────────────────────────────────── */
+
+.ee-detail-xp {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ─── Mobile Responsive ────────────────────────── */
+
+@media (max-width: 767px) {
+    .ee-grid {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 0.3rem;
+    }
+
+    .ee-tile {
+        padding: 0.4rem;
+    }
+
+    .ee-tile-name {
+        font-size: 0.7rem;
+    }
+
+    .ee-tile-stats {
+        font-size: 0.55rem;
+        gap: 0.3rem;
+    }
+
+    .ee-cr-stats {
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .ee-cr-weapons {
+        display: none;
+    }
+
+    .ee-detail-scores {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .ee-list-cat {
+        width: 55px;
+    }
+
+    .ee-list-base {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .ee-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    .ee-spectrum-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ─── Scaling Chart ────────────────────────────── */
+
+.ee-scaling-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.5rem;
+    background: hsl(var(--muted) / 0.06);
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.ee-chart-svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.ee-chart-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.ee-chart-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.6rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.ee-chart-legend-note {
+    color: hsl(var(--muted-foreground) / 0.5);
+    font-style: italic;
+}
+
+.ee-chart-swatch {
+    display: inline-block;
+    width: 8px;
+    height: 3px;
+    border-radius: 1px;
+}

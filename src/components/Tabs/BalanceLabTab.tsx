@@ -8,10 +8,12 @@ import {
     Clock,
     Zap,
     Database,
+    Eye,
 } from 'lucide-react';
 import { useSimulationHistory } from '@/hooks/useSimulationHistory';
 import { SimulationHistoryPanel } from '@/components/balance/SimulationHistoryPanel';
 import { SimulationConfigPanel } from '@/components/balance/SimulationConfigPanel';
+import { EnemyExplorer } from '@/components/balance/EnemyExplorer';
 import { BalanceDashboard } from '@/components/balance/BalanceDashboard';
 import type { RoundRangeFilter } from '@/components/balance/BalanceDashboard';
 import { EstimateValidationPanel } from '@/components/balance/EstimateValidationPanel';
@@ -19,6 +21,7 @@ import { SimulationLogViewer } from '@/components/balance/SimulationLogViewer';
 import { ResultsDashboardSkeleton } from '@/components/balance/BalanceLabSkeleton';
 import {
     BalanceValidator,
+    DEFAULT_ENEMY_TEMPLATES,
     type EncounterDifficulty,
     type SimulationConfig,
     type CharacterSheet,
@@ -51,6 +54,7 @@ export function BalanceLabTab() {
     const [configCollapsed, setConfigCollapsed] = useState(false);
     const [resultsCollapsed, setResultsCollapsed] = useState(false);
     const [historyCollapsed, setHistoryCollapsed] = useState(false);
+    const [explorerCollapsed, setExplorerCollapsed] = useState(false);
 
     // Round range filter shared between TurnDistributionChart and SimulationLogViewer
     const [roundRangeFilter, setRoundRangeFilter] = useState<RoundRangeFilter | null>(null);
@@ -137,9 +141,11 @@ export function BalanceLabTab() {
     const configId = useId();
     const resultsId = useId();
     const historyId = useId();
+    const explorerId = useId();
     const configContentId = `bl-config-content-${configId}`;
     const resultsContentId = `bl-results-content-${resultsId}`;
     const historyContentId = `bl-history-content-${historyId}`;
+    const explorerContentId = `bl-explorer-content-${explorerId}`;
 
     // Balance analysis from results — uses predicted difficulty as intended target
     const balanceReport = useMemo(() => {
@@ -301,6 +307,33 @@ export function BalanceLabTab() {
                                     lockedEnemies={lockedEnemies}
                                     onClearLockedEnemies={handleClearLockedEnemies}
                                 />
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Enemy Explorer */}
+                    <section className="bl-panel bl-explorer-panel">
+                        <button
+                            className="bl-panel-header"
+                            onClick={() => {
+                                setExplorerCollapsed(!explorerCollapsed);
+                            }}
+                            aria-expanded={!explorerCollapsed}
+                            aria-controls={explorerContentId}
+                        >
+                            <div className="bl-panel-title-row">
+                                <Eye size={16} className="bl-panel-icon" />
+                                <h2 className="bl-panel-title">Enemy Explorer</h2>
+                                <span className="bl-count-badge">{DEFAULT_ENEMY_TEMPLATES.length}</span>
+                            </div>
+                            <span className="bl-panel-toggle">
+                                {explorerCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+                            </span>
+                        </button>
+
+                        {!explorerCollapsed && (
+                            <div id={explorerContentId} className="bl-panel-content">
+                                <EnemyExplorer />
                             </div>
                         )}
                     </section>
