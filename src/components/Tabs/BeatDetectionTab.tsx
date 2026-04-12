@@ -860,14 +860,47 @@ export function BeatDetectionTab() {
 
                             {/* Beat Detection Settings (common to manual and auto) */}
                             <div className="audio-analysis-action-integration">
-                                {/* Mode Toggle - centered at top */}
+                                {/* Action buttons row */}
+                                <div className="audio-analysis-action-row">
+                                    <Button
+                                        onClick={handleBeatAnalysis}
+                                        disabled={isBeatGenerating}
+                                        isLoading={isBeatGenerating}
+                                        variant="primary"
+                                        size="lg"
+                                        className="audio-analysis-primary-action-button"
+                                    >
+                                        {isBeatGenerating && beatProgress
+                                            ? `${beatProgress.progress}% - ${getPhaseLabel(beatProgress.phase)}`
+                                            : beatMap ? 'Re-Analyze' : 'Analyze Beats'}
+                                    </Button>
+                                    <input
+                                        ref={step1FileInputRef}
+                                        type="file"
+                                        accept=".json,application/json"
+                                        onChange={handleImportLevel}
+                                        style={{ display: 'none' }}
+                                        aria-hidden="true"
+                                    />
+                                    <Button
+                                        variant="outline"
+                                        size="lg"
+                                        onClick={() => step1FileInputRef.current?.click()}
+                                        leftIcon={Upload}
+                                        className="audio-analysis-import-btn"
+                                    >
+                                        Import Level
+                                    </Button>
+                                </div>
+
+                                {/* Mode Toggle - below action buttons */}
                                 <AutoLevelToggle
                                     value={generationMode}
                                     onChange={setGenerationMode}
                                     disabled={isBeatGenerating}
                                 />
 
-                                {/* Controller Mode Selection - prominent when auto mode is on */}
+                                {/* Controller Mode Selection - below toggle, shown when auto mode is on */}
                                 {generationMode === 'automatic' && (
                                     <div className="audio-analysis-controller-mode-section">
                                         <div className="audio-analysis-controller-mode-header">
@@ -924,39 +957,6 @@ export function BeatDetectionTab() {
                                         </p>
                                     </div>
                                 )}
-
-                                {/* Action buttons row */}
-                                <div className="audio-analysis-action-row">
-                                    <Button
-                                        onClick={handleBeatAnalysis}
-                                        disabled={isBeatGenerating}
-                                        isLoading={isBeatGenerating}
-                                        variant="primary"
-                                        size="lg"
-                                        className="audio-analysis-primary-action-button"
-                                    >
-                                        {isBeatGenerating && beatProgress
-                                            ? `${beatProgress.progress}% - ${getPhaseLabel(beatProgress.phase)}`
-                                            : beatMap ? 'Re-Analyze' : 'Analyze Beats'}
-                                    </Button>
-                                    <input
-                                        ref={step1FileInputRef}
-                                        type="file"
-                                        accept=".json,application/json"
-                                        onChange={handleImportLevel}
-                                        style={{ display: 'none' }}
-                                        aria-hidden="true"
-                                    />
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        onClick={() => step1FileInputRef.current?.click()}
-                                        leftIcon={Upload}
-                                        className="audio-analysis-import-btn"
-                                    >
-                                        Import Level
-                                    </Button>
-                                </div>
 
                                 {/* Beat Detection Settings (collapsible, below buttons) */}
                                 <BeatDetectionSettings disabled={isBeatGenerating} />

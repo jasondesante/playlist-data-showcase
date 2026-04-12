@@ -2851,15 +2851,18 @@
 
   /* --- Action row --- */
   .audio-analysis-action-row {
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 0.5rem;
   }
 
   .audio-analysis-primary-action-button {
     height: 2.75rem;
     font-size: 0.875rem;
-    flex: 1;
-    min-width: 0;
+    width: 100%;
+  }
+
+  .audio-analysis-import-btn {
+    font-size: 0.75rem;
   }
 
   /* --- Controller mode buttons --- */

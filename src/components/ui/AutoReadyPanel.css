@@ -296,4 +296,14 @@
         overflow-x: auto;
         padding-bottom: 0.5rem;
     }
+
+    .auto-ready-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .auto-ready-start-btn {
+        width: 100%;
+        min-width: 0;
+    }
 }

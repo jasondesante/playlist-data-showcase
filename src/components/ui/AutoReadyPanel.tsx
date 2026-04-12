@@ -305,6 +305,17 @@ export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRege
                 </p>
             </div>
 
+            {/* Downbeat Configuration */}
+            <div className="auto-ready-downbeat-section">
+                <div className="auto-ready-downbeat-callout">
+                    <p className="auto-ready-downbeat-callout-text">
+                        Make sure the first beat of each bar is lined up correctly. If the downbeat isn't right,
+                        the generated levels won't align to the music — adjust it below, then regenerate.
+                    </p>
+                </div>
+                <DownbeatConfigPanel disabled={!hasLevel} />
+            </div>
+
             {/* Start Practice Button — hidden when downbeat config is stale */}
             {!isStale && (
                 <div className="auto-ready-actions">
@@ -321,11 +332,11 @@ export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRege
                     {onExport && (
                         <Button
                             variant="outline"
-                            size="lg"
+                            size="sm"
                             onClick={onExport}
                             disabled={!hasLevel}
                         >
-                            <Download size={18} />
+                            <Download size={14} />
                             Export Level
                         </Button>
                     )}
@@ -388,17 +399,6 @@ export function AutoReadyPanel({ onStartPractice, onExport, onRegenerate, isRege
 
             {/* Level Summary */}
             <LevelSummaryCard level={selectedLevel} difficulty={selectedDifficulty} />
-
-            {/* Downbeat Configuration */}
-            <div className="auto-ready-downbeat-section">
-                <div className="auto-ready-downbeat-callout">
-                    <p className="auto-ready-downbeat-callout-text">
-                        Make sure the first beat of each bar is lined up correctly. If the downbeat isn't right,
-                        the generated levels won't align to the music — adjust it below, then regenerate.
-                    </p>
-                </div>
-                <DownbeatConfigPanel disabled={!hasLevel} />
-            </div>
 
             {/* Regenerate Levels prompt when downbeat/time signature changed */}
             {isStale && onRegenerate && (
