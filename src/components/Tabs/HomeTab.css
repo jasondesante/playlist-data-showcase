@@ -183,13 +183,6 @@
   overflow: hidden;
 }
 
-/* Mobile: move quick actions above playlist */
-@media (max-width: 768px) {
-  .home-actions-column {
-    order: -1;
-  }
-}
-
 @media (max-width: 768px) {
   .home-columns {
     grid-template-columns: 1fr;

@@ -1567,3 +1567,66 @@
     transition: none;
   }
 }
+
+/* ============================================
+   Mobile Touch Device Optimizations
+   Disable infinite decorative animations on
+   touch devices to reduce GPU load and improve
+   tap responsiveness. Per-tap feedback animations
+   are kept since they provide gameplay feedback.
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Disable infinite glow animations on upcoming beats */
+  .beat-timeline-marker--upcoming .beat-timeline-marker-dot {
+    animation: none !important;
+  }
+
+  .beat-timeline-marker--interpolated.beat-timeline-marker--upcoming .beat-timeline-marker-dot {
+    animation: none !important;
+  }
+
+  .beat-timeline-marker--subdivided.beat-timeline-marker--upcoming .beat-timeline-marker-dot {
+    animation: none !important;
+  }
+
+  /* Disable infinite ring pulse on downbeat accent rings */
+  .beat-timeline-marker-ring {
+    animation: none !important;
+    opacity: 0.3;
+  }
+
+  /* Disable infinite key-beat-pulse */
+  .beat-timeline-marker--has-key.beat-timeline-marker--upcoming .beat-timeline-marker-dot {
+    animation: none !important;
+  }
+
+  /* Contain paint scope to the track for fewer layout recalcs */
+  .beat-timeline-track {
+    contain: layout style paint;
+  }
+
+  /* Prevent browser scroll/zoom interference during taps */
+  .beat-timeline-track--draggable {
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* GPU-layer the tap feedback elements for smoother compositing */
+  .beat-timeline-tap-indicator {
+    will-change: transform, opacity;
+  }
+
+  .beat-timeline-now-pulse {
+    will-change: transform, opacity;
+  }
+
+  /* Simplify tap ring on mobile (fewer box-shadow layers) */
+  .beat-timeline-tap-ring {
+    box-shadow: 0 0 15px currentColor;
+  }
+
+  .beat-timeline-tap-core {
+    box-shadow: 0 0 10px currentColor;
+  }
+}

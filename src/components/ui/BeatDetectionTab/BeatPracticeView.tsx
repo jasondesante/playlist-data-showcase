@@ -188,6 +188,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Debug: track taps for timing analysis (limited to 1000, virtualized with react-window)
   const MAX_DEBUG_HISTORY = 1000;
   const [tapDebugHistory, setTapDebugHistory] = useState<TapDebugInfo[]>([]);
+  // Use a ref to batch debug history updates — flush to state on a timer to reduce re-renders
+  const tapDebugHistoryRef = useRef<TapDebugInfo[]>([]);
+  const tapDebugFlushRef = useRef<number | null>(null);
 
   // Track audio time for debug info
   const audioTimeRef = useRef<number>(currentTime);
@@ -554,7 +557,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       // Trigger timeline tap visual
       setTapVisualTime(Date.now());
 
-      // Record debug info for timing analysis
+      // Record debug info for timing analysis (batched to reduce re-renders)
       const debugInfo: TapDebugInfo = {
         registeredAt: performance.now(),
         audioTime: audioTimeRef.current,
@@ -566,11 +569,14 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         characterXP: xpResult?.finalXP,
         multiplier: xpResult?.totalMultiplier,
       };
-      setTapDebugHistory(prev => {
-        const newHistory = [debugInfo, ...prev];
-        // Limit to MAX_DEBUG_HISTORY to prevent memory/performance issues
-        return newHistory.slice(0, MAX_DEBUG_HISTORY);
-      });
+      // Append to ref, flush to state on a 500ms timer
+      tapDebugHistoryRef.current = [debugInfo, ...tapDebugHistoryRef.current].slice(0, MAX_DEBUG_HISTORY);
+      if (!tapDebugFlushRef.current) {
+        tapDebugFlushRef.current = window.setTimeout(() => {
+          setTapDebugHistory(tapDebugHistoryRef.current);
+          tapDebugFlushRef.current = null;
+        }, 500);
+      }
     }
   }, [checkTap, checkSubdivisionTap, recordTap, streamIsActive, showTapFeedback, subdivisionPlaybackAvailable, currentSubdivision, subdivisionIsActive, recordGrooveHit, recordGrooveMiss, currentBpm, activeBeatMap, recordRhythmHit, processGrooveEndBonus, breakCombo]);
 
@@ -758,12 +764,15 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   }, [isDownbeatSelectionMode, timeSignature]);
 
   /**
-   * Cleanup for tooFast timeout on unmount
+   * Cleanup for tooFast timeout and debug flush timer on unmount
    */
   useEffect(() => {
     return () => {
       if (tooFastTimeoutRef.current) {
         clearTimeout(tooFastTimeoutRef.current);
+      }
+      if (tapDebugFlushRef.current) {
+        clearTimeout(tapDebugFlushRef.current);
       }
     };
   }, []);

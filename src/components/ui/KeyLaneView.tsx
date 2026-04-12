@@ -482,6 +482,7 @@ export function KeyLaneView({
      * Animation loop for smooth scrolling.
      * Uses requestAnimationFrame for 60fps updates.
      * Interpolates time between audio player updates.
+     * On touch devices, throttles to ~30fps to reduce GPU load.
      */
     useEffect(() => {
         if (isPaused) {
@@ -502,10 +503,25 @@ export function KeyLaneView({
             wasPausedRef.current = false;
         }
 
+        // Detect touch device for frame throttling
+        const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        const minFrameInterval = isTouchDevice ? 33 : 0; // ~30fps on touch, 60fps on desktop
+        let lastFrameTime = 0;
+
         /**
          * Animation loop function
          */
-        const animate = () => {
+        const animate = (timestamp: number) => {
+            // Throttle on touch devices
+            if (minFrameInterval > 0) {
+                const elapsed = timestamp - lastFrameTime;
+                if (elapsed < minFrameInterval) {
+                    animationFrameRef.current = requestAnimationFrame(animate);
+                    return;
+                }
+                lastFrameTime = timestamp;
+            }
+
             const { time: lastAudioTime, timestamp: lastTimestamp } = lastAudioTimeRef.current;
             const now = performance.now();
             const elapsedMs = now - lastTimestamp;

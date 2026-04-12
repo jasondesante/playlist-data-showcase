@@ -208,6 +208,7 @@ export function BeatTimeline({
    * Animation loop for smooth scrolling.
    * Uses requestAnimationFrame for 60fps updates.
    * Interpolates time between audio player updates.
+   * On touch devices, throttles to ~30fps to reduce GPU load.
    */
   useEffect(() => {
     if (!isPlaying) {
@@ -216,11 +217,26 @@ export function BeatTimeline({
       return;
     }
 
+    // Detect touch device for frame throttling
+    const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    const minFrameInterval = isTouchDevice ? 33 : 0; // ~30fps on touch, 60fps on desktop
+    let lastFrameTime = 0;
+
     /**
-     * The animation loop - runs at ~60fps
+     * The animation loop - runs at 60fps (30fps on touch devices)
      * Calculates interpolated time based on last known audio time
      */
-    const animate = () => {
+    const animate = (timestamp: number) => {
+      // Throttle on touch devices
+      if (minFrameInterval > 0) {
+        const elapsed = timestamp - lastFrameTime;
+        if (elapsed < minFrameInterval) {
+          animationFrameRef.current = requestAnimationFrame(animate);
+          return;
+        }
+        lastFrameTime = timestamp;
+      }
+
       const now = performance.now();
       const { time: lastAudioTime, timestamp: lastUpdateTimestamp } = lastAudioTimeRef.current;
 
@@ -329,6 +345,23 @@ export function BeatTimeline({
   );
 
   /**
+   * Handle touch start on track - start dragging (mobile scrub support)
+   */
+  const handleTouchStart = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      if (!onSeek || !trackRef.current) return;
+
+      event.preventDefault();
+      setIsDragging(true);
+
+      const touch = event.touches[0];
+      dragStartXRef.current = touch.clientX;
+      dragStartTimeRef.current = smoothTime;
+    },
+    [onSeek, smoothTime]
+  );
+
+  /**
    * Handle mouse move during drag
    * Calculates delta from initial position and applies to initial time
    */
@@ -357,6 +390,30 @@ export function BeatTimeline({
   );
 
   /**
+   * Handle touch move during drag (mobile scrub)
+   */
+  const handleTouchMove = useCallback(
+    (event: TouchEvent) => {
+      if (!isDragging || !onSeek || !trackRef.current) return;
+
+      event.preventDefault();
+
+      const touch = event.touches[0];
+      const rect = trackRef.current.getBoundingClientRect();
+      const trackWidth = rect.width;
+
+      const deltaX = touch.clientX - dragStartXRef.current;
+      const timePerPixel = (anticipationWindow * 2) / trackWidth;
+      const deltaTime = -deltaX * timePerPixel;
+
+      const newTime = Math.max(0, Math.min(beatMap.duration, dragStartTimeRef.current + deltaTime));
+
+      onSeek(newTime);
+    },
+    [isDragging, onSeek, anticipationWindow, beatMap.duration]
+  );
+
+  /**
    * Handle mouse up - end drag
    */
   const handleMouseUp = useCallback(() => {
@@ -364,18 +421,31 @@ export function BeatTimeline({
   }, []);
 
   /**
-   * Add/remove global mouse event listeners when dragging
+   * Handle touch end - end drag (mobile scrub)
+   */
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  /**
+   * Add/remove global mouse and touch event listeners when dragging
    */
   useEffect(() => {
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd);
+      window.addEventListener('touchcancel', handleTouchEnd);
       return () => {
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('touchend', handleTouchEnd);
+        window.removeEventListener('touchcancel', handleTouchEnd);
       };
     }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
   /**
    * Calculate beat position on the timeline
@@ -792,6 +862,7 @@ export function BeatTimeline({
         ref={trackRef}
         className={`beat-timeline-track ${onSeek ? 'beat-timeline-track--draggable' : ''} ${isDragging ? 'beat-timeline-track--dragging' : ''}`}
         onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
         role={onSeek ? 'slider' : undefined}
         aria-label="Beat timeline"
         aria-valuemin={0}

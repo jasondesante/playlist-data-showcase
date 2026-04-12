@@ -508,7 +508,7 @@
   border: 2px dashed hsl(var(--border) / 0.5);
   border-radius: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
   user-select: none;
 }
 
@@ -875,6 +875,32 @@
 
   .beat-practice-tap-hint {
     font-size: 0.875rem;
+  }
+
+  /* Disable infinite decorative animations on touch devices */
+  .beat-practice-stat-value--live {
+    animation: none;
+  }
+
+  .beat-practice-bpm-indicator {
+    animation: none;
+  }
+
+  .beat-practice-subdivision-indicator {
+    animation: none;
+  }
+
+  .beat-practice-stat-value--subdivision-active {
+    animation: none;
+  }
+
+  .beat-practice-stream-icon--active {
+    animation: none;
+  }
+
+  /* GPU-layer the tap feedback overlay */
+  .beat-practice-tap-feedback {
+    will-change: transform, opacity;
   }
 }
 
