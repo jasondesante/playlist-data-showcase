@@ -387,10 +387,14 @@ export interface DifficultySettings {
 
 /**
  * Default difficulty settings.
- * Starts with 'medium' as a reasonable default for most players.
+ * Uses 'easy' on touch devices (more forgiving for mobile tapping),
+ * 'medium' on desktop.
  */
+const isTouchDevice = typeof window !== 'undefined' &&
+    window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
 const DEFAULT_DIFFICULTY_SETTINGS: DifficultySettings = {
-    preset: 'medium',
+    preset: isTouchDevice ? 'easy' : 'medium',
     customThresholds: {},
     customGroovePenalties: {},
     ignoreKeyRequirements: false,
@@ -1695,7 +1699,7 @@ const createInitialState = (): BeatDetectionState => ({
     allDifficultyLevels: null, // Session-only
     levelGenerationProgress: null, // Session-only
     pitchAnalysis: null, // Session-only
-    selectedDifficulty: 'medium', // Default to medium difficulty
+    selectedDifficulty: 'easy', // Default to easy difficulty
 
     // Custom Density mode state
     autoSubMode: 'preset',
@@ -4488,7 +4492,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 allDifficultyLevels: null,
                                 levelGenerationProgress: null,
                                 pitchAnalysis: null,
-                                selectedDifficulty: 'medium',
+                                selectedDifficulty: 'easy',
                             });
                             // Navigate to Step 2 (Subdivide) only if currently on a later step
                             // (e.g., Step 3/4) and we have a beat map.
@@ -4509,7 +4513,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 allDifficultyLevels: null,
                                 levelGenerationProgress: null,
                                 pitchAnalysis: null,
-                                selectedDifficulty: 'medium',
+                                selectedDifficulty: 'easy',
                             });
                         }
                     },
@@ -4578,7 +4582,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 allDifficultyLevels: null,
                                 levelGenerationProgress: null,
                                 pitchAnalysis: null,
-                                selectedDifficulty: 'medium',
+                                selectedDifficulty: 'easy',
                                 customDensityLevel: null,
                             });
                         }
@@ -4801,6 +4805,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         ...DEFAULT_DIFFICULTY_SETTINGS,
                         ...persisted.difficultySettings,
                     };
+                    // Migration: if persisted preset is 'medium' and device is touch,
+                    // upgrade to 'easy' (old default was always 'medium')
+                    if (difficultySettings.preset === 'medium' && isTouchDevice) {
+                        difficultySettings.preset = 'easy';
+                    }
                 }
 
                 // Handle OSE config migration
