@@ -2,6 +2,8 @@
 
 A React demo application for the **[Playlist Data Engine](#the-playlist-data-engine)** — a TypeScript library for deep audio analysis of music playlists. Extract sonic fingerprints, detect beats with subdivision, run pitch contour analysis, classify genres and moods via ML models, build rhythm game levels, and generate D&D 5e characters and combat encounters — all derived from the music itself.
 
+**Live Demo:** [playlist-data-showcase_contractwizard.ar.io](https://playlist-data-showcase_contractwizard.ar.io/)
+
 ## Quick Start
 
 ```bash
@@ -13,13 +15,24 @@ Open `http://localhost:5173` in your browser.
 
 Depends on [`playlist-data-engine`](https://www.npmjs.com/package/playlist-data-engine) (installed from npm).
 
+## Serverless Playlists
+
+This app consumes **Serverless Playlists** — permanent, decentralized music playlists stored on [Arweave](https://arweave.org/). Created with [The Contract Wizard](https://listen.arweave.net/), they mix Ethereum NFTs with Arweave uploads, add metadata and tags, and live on-chain forever. The engine parses these playlists, resolves audio sources, and extracts everything it can from the audio.
+
+For the full spec, tags, and how to build with serverless playlists:
+
+- [Playlist Objects](https://github.com/jasondesante/Ape-Tapes-Docs/tree/main/curate/playlists/playlist-objects) — format and structure
+- [Playlist Tags](https://github.com/jasondesante/Ape-Tapes-Docs/tree/main/curate/playlists) — on-chain queryable metadata
+- [Ape Tapes Docs](https://github.com/jasondesante/Ape-Tapes-Docs) — full documentation
+- [ar://listen](https://listen.arweave.net/) — create and browse playlists
+
 ## The Playlist Data Engine
 
 The engine is a modular, serverless music analysis library that powers [ar://listen](https://listen.arweave.net/). It parses playlists stored on Arweave and extracts everything it can from the audio — then uses that analysis to drive interactive features:
 
 **Audio Analysis** — Sonic fingerprinting (triple-tap sampling at 5%/40%/70%), full timeline analysis, and color palette extraction from audio frequency data.
 
-**Genre & Mood Classification** — ML-powered genre/mood/vibe detection using TensorFlow.js with essentia.js WASM models (Discogs-EffNet embeddings, 400+ subgenres, 60 moods).
+**Genre & Mood Classification** — ML-powered genre/mood/vibe detection using TensorFlow.js with essentia.js WASM models (Discogs-EffNet embeddings, 400+ subgenres, 60 moods). Models are hosted on Arweave and load directly — no local model files needed (custom locally hosted model option available too).
 
 **Pitch Analysis** — Full-track pitch detection via the pYIN algorithm with melody contour extraction, voicing ratio, and note distribution.
 
