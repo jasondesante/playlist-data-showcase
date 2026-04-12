@@ -92,6 +92,27 @@ Audio Analysis ──► Sonic Fingerprint
 
 Audio is the source of truth — the RPG layer is one of many things powered by it. The same audio always produces the same analysis, the same rhythm game levels, the same characters, and the same combat outcomes.
 
+## Steam API Server
+
+The `server/` folder contains a standalone Node.js backend that bridges the engine's Steam integration to the browser. Steam's API doesn't support CORS, so the frontend can't call it directly — this server runs the engine's `GamingPlatformSensors` in Node and exposes REST endpoints.
+
+```bash
+cd server
+npm install
+npm run dev        # starts on http://localhost:3001
+```
+
+**Endpoints:**
+- `GET /api/steam/game` — currently playing game
+- `POST /api/steam/auth` — authenticate with a Steam user ID
+- `POST /api/steam/validate-key` — validate a Steam API key
+- `GET /api/steam/gaming-bonus` — calculated XP multiplier from gaming context
+- `GET /api/steam/game-schema/:appId` — game achievements and stats
+- `POST /api/config` — update API keys at runtime (no restart needed)
+- `GET /api/diagnostics` — full sensor and cache diagnostics
+
+Built with Express, and links the engine directly via `file:../../playlist-data-engine`.
+
 ## Tech Stack
 
 **Showcase app:**
