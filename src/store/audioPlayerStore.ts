@@ -119,6 +119,10 @@ let audioElement: HTMLAudioElement | null = null;
 // Track pending seek to prevent timeupdate from overwriting target position
 let pendingSeekTarget: number | null = null;
 
+// Track when audio is actively seeking so timeupdate doesn't overwrite the
+// scrubbed position with stale data during timeline drag.
+let isAudioSeeking = false;
+
 // Gateway retry tracking — prevents infinite retry loops on load failures
 let gatewayRetryCount = 0;
 const MAX_GATEWAY_RETRIES = 2;
@@ -132,6 +136,48 @@ let loadStartTime: number | null = null;
 // 60-90s; this cuts it down to something tolerable.
 let loadTimeoutId: ReturnType<typeof setTimeout> | null = null;
 const AUDIO_LOAD_TIMEOUT_MS = 15_000;
+
+// Detect Safari (desktop + iOS) for browser-specific workarounds.
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+// Safari: download the full file as a blob URL so seeking works reliably.
+// Safari's HTML5 Audio element silently ignores seeks to positions outside the
+// current buffer instead of making range requests like Chrome/Firefox.
+// With a blob URL the entire file is local, so seeking always works.
+const blobUrlCache = new Map<string, string>();
+
+async function fetchAsBlobUrl(url: string, signal?: AbortSignal): Promise<string> {
+    const cached = blobUrlCache.get(url);
+    if (cached) return cached;
+
+    const response = await fetch(url, { signal });
+    if (!response.ok) throw new Error(`Blob fetch failed: ${response.status}`);
+
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    blobUrlCache.set(url, blobUrl);
+
+    // Keep cache bounded — revoke oldest entries beyond 3 tracks
+    if (blobUrlCache.size > 3) {
+        const oldestKey = blobUrlCache.keys().next().value;
+        URL.revokeObjectURL(blobUrlCache.get(oldestKey)!);
+        blobUrlCache.delete(oldestKey);
+    }
+
+    return blobUrl;
+}
+
+/** Resolve Arweave gateway + optionally convert to blob URL for Safari. */
+async function prepareUrl(url: string, signal?: AbortSignal): Promise<string> {
+    let resolvedUrl = url;
+    if (isArweaveUrl(url)) {
+        resolvedUrl = await resolveAudioUrl(url, signal);
+    }
+    if (isSafari) {
+        resolvedUrl = await fetchAsBlobUrl(resolvedUrl, signal);
+    }
+    return resolvedUrl;
+}
 
 // Shared AbortController — aborted on track switch or stop so that in-flight
 // resolveUrl() / reportGatewayFailure() calls are cancelled promptly.
@@ -177,7 +223,7 @@ function startLoadTimeout(audio: HTMLAudioElement, url: string): void {
             });
 
             try {
-                const newUrl = await resolveAudioUrl(url, signal);
+                const newUrl = await prepareUrl(url, signal);
                 if (useAudioPlayerStore.getState().currentUrl !== url) return;
                 if (newUrl !== audio.src) {
                     logger.info('Store', 'Retrying with new gateway (timeout)', { newUrl, oldSrc: audio.src });
@@ -248,6 +294,16 @@ const setupAudioEventListeners = (audio: HTMLAudioElement) => {
         useAudioPlayerStore.setState({ loadingDetail: null });
     });
 
+    // iOS Safari fires 'emptied' when it kills the audio buffer due to memory pressure.
+    // Pause playback so the UI stays in sync — the user can resume manually.
+    audio.addEventListener('emptied', () => {
+        const store = useAudioPlayerStore.getState();
+        if (store.playbackState === 'playing') {
+            logger.warn('Store', 'Audio buffer emptied (iOS memory pressure?)');
+            store.setPlaybackState('paused');
+        }
+    });
+
     audio.addEventListener('error', async () => {
         const store = useAudioPlayerStore.getState();
         const currentUrl = store.currentUrl;
@@ -290,7 +346,7 @@ const setupAudioEventListeners = (audio: HTMLAudioElement) => {
             });
 
             try {
-                const newUrl = await resolveAudioUrl(currentUrl, signal);
+                const newUrl = await prepareUrl(currentUrl, signal);
                 if (newUrl !== audio.src) {
                     logger.info('Store', 'Retrying with new gateway', { newUrl, oldSrc: audio.src });
                     audio.src = newUrl;
@@ -312,22 +368,47 @@ const setupAudioEventListeners = (audio: HTMLAudioElement) => {
     });
 
     audio.addEventListener('timeupdate', () => {
-        // Don't override currentTime if we have a pending seek
-        if (pendingSeekTarget !== null) {
+        // Don't override currentTime while seeking (initial load or drag scrub).
+        // Without this, timeupdate fires with stale positions during seeks and
+        // overwrites the store, causing the timeline to snap back.
+        if (pendingSeekTarget !== null || isAudioSeeking) {
             return;
         }
+
         useAudioPlayerStore.getState().updateTime(audio.currentTime);
     });
 
     audio.addEventListener('loadedmetadata', () => {
         useAudioPlayerStore.getState().updateDuration(audio.duration);
     });
+
+    // Track active seeks so timeupdate doesn't overwrite scrubbed positions.
+    // seeking fires synchronously when audio.currentTime is set, seeked fires when done.
+    // A safety timeout ensures the guard can't get stuck if Safari drops the seeked
+    // event (known to happen when iOS kills the audio buffer mid-seek).
+    let isAudioSeekingTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    audio.addEventListener('seeking', () => {
+        isAudioSeeking = true;
+        if (isAudioSeekingTimeout) clearTimeout(isAudioSeekingTimeout);
+        isAudioSeekingTimeout = setTimeout(() => {
+            isAudioSeeking = false;
+            isAudioSeekingTimeout = null;
+        }, 2000);
+    });
+    audio.addEventListener('seeked', () => {
+        isAudioSeeking = false;
+        if (isAudioSeekingTimeout) {
+            clearTimeout(isAudioSeekingTimeout);
+            isAudioSeekingTimeout = null;
+        }
+    });
 };
 
 const getAudioElement = (): HTMLAudioElement => {
     if (!audioElement) {
         audioElement = new Audio();
-        audioElement.preload = 'auto'; // Force buffering to ensure seekable range
+        audioElement.preload = 'auto'; // Buffer fully so all positions are seekable on Safari
         setupAudioEventListeners(audioElement);
     }
     return audioElement;
@@ -349,16 +430,14 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
         gatewayRetryCount = 0;
         const signal = resetLoadAbortController();
 
-        // Resolve Arweave URLs — use simple fetch-based resolver, not the gateway manager
-        let resolvedUrl = url;
-        if (isArweaveUrl(url)) {
-            set({ playbackState: 'loading', loadingDetail: 'Connecting...' });
-            try {
-                resolvedUrl = await resolveAudioUrl(url, signal);
-            } catch (err) {
-                logger.error('Store', 'Audio URL resolution failed', { url, error: err });
-                resolvedUrl = url;
-            }
+        // Resolve gateway + Safari blob conversion
+        set({ playbackState: 'loading', loadingDetail: isSafari ? 'Downloading...' : 'Connecting...' });
+        let resolvedUrl: string;
+        try {
+            resolvedUrl = await prepareUrl(url, signal);
+        } catch (err) {
+            logger.error('Store', 'Audio URL preparation failed', { url, error: err });
+            resolvedUrl = url;
         }
 
         if (currentUrl !== url) {
@@ -449,15 +528,13 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
             // Different track - resolve URL and play
             gatewayRetryCount = 0;
             const signal = resetLoadAbortController();
-            let resolvedUrl = url;
-            if (isArweaveUrl(url)) {
-                set({ playbackState: 'loading', loadingDetail: 'Connecting...' });
-                try {
-                    resolvedUrl = await resolveAudioUrl(url, signal);
-                } catch (err) {
-                    logger.error('Store', 'Audio URL resolution failed', { url, error: err });
-                    resolvedUrl = url;
-                }
+            set({ playbackState: 'loading', loadingDetail: isSafari ? 'Downloading...' : 'Connecting...' });
+            let resolvedUrl: string;
+            try {
+                resolvedUrl = await prepareUrl(url, signal);
+            } catch (err) {
+                logger.error('Store', 'Audio URL resolution failed', { url, error: err });
+                resolvedUrl = url;
             }
 
             audio.src = resolvedUrl;
@@ -482,6 +559,8 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
         resetLoadTimeout();
         loadAbortController?.abort();
         loadStartTime = null;
+        pendingSeekTarget = null;
+        isAudioSeeking = false;
         set({ currentUrl: null, playbackState: 'idle', currentTime: 0, duration: 0, error: null, loadingDetail: null });
     },
 
@@ -493,16 +572,13 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
         if (currentUrl !== url) {
             gatewayRetryCount = 0;
             const signal = resetLoadAbortController();
-            // Resolve Arweave URLs — use simple fetch-based resolver, not the gateway manager
-            let resolvedUrl = url;
-            if (isArweaveUrl(url)) {
-                set({ playbackState: 'loading', loadingDetail: 'Connecting...' });
-                try {
-                    resolvedUrl = await resolveAudioUrl(url, signal);
-                } catch (err) {
-                    logger.error('Store', 'Audio URL resolution failed', { url, error: err });
-                    resolvedUrl = url;
-                }
+            set({ playbackState: 'loading', loadingDetail: isSafari ? 'Downloading...' : 'Connecting...' });
+            let resolvedUrl: string;
+            try {
+                resolvedUrl = await prepareUrl(url, signal);
+            } catch (err) {
+                logger.error('Store', 'Audio URL resolution failed', { url, error: err });
+                resolvedUrl = url;
             }
 
             audio.src = resolvedUrl;
@@ -559,36 +635,61 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
             return;
         }
 
-        // Normal seek when audio is already loaded - no pending flag needed
+        // Normal seek when audio is already loaded
         if (currentUrl) {
-            const hasValidSeekable = audio.seekable.length > 0 &&
-                (audio.seekable.end(audio.seekable.length - 1) === Infinity ||
-                    audio.seekable.end(audio.seekable.length - 1) >= targetTime);
+            if (!isSafari) {
+                // Chrome/Firefox handle range requests natively — just set the time.
+                audio.currentTime = targetTime;
+            } else {
+                // Safari: check if the target is within the seekable range.
+                // Safari silently ignores seeks to unbuffered positions instead of
+                // making range requests like other browsers.
+                const seekableEnd = audio.seekable.length > 0
+                    ? audio.seekable.end(audio.seekable.length - 1)
+                    : 0;
+                const isSeekable = seekableEnd === Infinity || seekableEnd >= targetTime;
 
-            if (!hasValidSeekable) {
-                // Seekable range not ready - reload audio to fix it
-                console.log('[seek] seekable range broken, reloading audio');
-                const wasPlaying = !audio.paused;
-                const currentSrc = audio.src;
-                audio.src = '';
-                audio.src = currentSrc;
-
-                // Wait for reload to complete before seeking
-                const seekOnCanPlay = () => {
+                if (isSeekable) {
                     audio.currentTime = targetTime;
-                    // If audio was playing, resume playback
-                    if (wasPlaying) {
-                        audio.play().catch((err) => {
-                            console.error('Resume after seek reload failed:', err);
-                        });
-                    }
-                    audio.removeEventListener('canplay', seekOnCanPlay);
-                };
-                audio.addEventListener('canplay', seekOnCanPlay);
-                return;
-            }
+                } else {
+                    // Reload and wait for the seekable range to cover the target.
+                    const wasPlaying = !audio.paused;
+                    pendingSeekTarget = targetTime;
+                    audio.pause();
 
-            audio.currentTime = targetTime;
+                    const currentSrc = audio.src;
+                    audio.src = '';
+                    audio.src = currentSrc;
+
+                    const trySeek = () => {
+                        const target = pendingSeekTarget;
+                        if (target === null) {
+                            audio.removeEventListener('canplay', trySeek);
+                            audio.removeEventListener('progress', trySeek);
+                            return;
+                        }
+
+                        const end = audio.seekable.length > 0
+                            ? audio.seekable.end(audio.seekable.length - 1)
+                            : 0;
+                        const canSeek = end === Infinity || end >= target;
+
+                        if (canSeek) {
+                            audio.currentTime = target;
+                            pendingSeekTarget = null;
+                            audio.removeEventListener('canplay', trySeek);
+                            audio.removeEventListener('progress', trySeek);
+
+                            if (wasPlaying) {
+                                audio.play().catch(() => {});
+                            }
+                        }
+                    };
+
+                    audio.addEventListener('canplay', trySeek);
+                    audio.addEventListener('progress', trySeek);
+                }
+            }
         }
     },
 

@@ -272,9 +272,12 @@ export function HomeTab() {
                 <strong><a href="https://github.com/jasondesante/playlist-data-engine" target="_blank" rel="noopener noreferrer" className="home-about-link">playlist-data-engine</a></strong> and <strong><a href="https://github.com/jasondesante/playlist-data-showcase" target="_blank" rel="noopener noreferrer" className="home-about-link">playlist-data-showcase</a></strong> are both on GitHub.
               </p>
               <p>
-                The engine is a toolkit for working with serverless playlists — decentralized,
-                Arweave-hosted audio playlists. Parse them, fetch audio links, and handle Arweave
-                gateways automatically.
+                This app consumes <strong>Serverless Playlists</strong> — permanent, decentralized
+                music playlists stored on Arweave. Created with{' '}
+                <a href="https://listen.arweave.net/" target="_blank" rel="noopener noreferrer" className="home-about-link">The Contract Wizard</a>,
+                they mix Ethereum NFTs with Arweave uploads, add metadata and tags, and live
+                on-chain forever. The engine parses them, resolves audio sources, and extracts
+                everything it can from the audio.
               </p>
               <p>
                 It's an <strong>RPG game engine</strong> that generates characters from audio data.
@@ -293,6 +296,15 @@ export function HomeTab() {
                 All of these interactive features are part of the <strong>Interactive Mix </strong>
                 system, and the engine makes them easy to integrate into your own projects.
                 Create new ways to experience music.
+              </p>
+              <p>
+                <a href="https://contract-wizard.gitbook.io/contract-wizard/curate/the-mission" target="_blank" rel="noopener noreferrer" className="home-about-link">The Mission</a>
+                {' · '}
+                <a href="https://contract-wizard.gitbook.io/contract-wizard/curate/playlists" target="_blank" rel="noopener noreferrer" className="home-about-link">Playlist Objects</a>
+                {' · '}
+                <a href="https://contract-wizard.gitbook.io/contract-wizard/curate/playlists/playlist-tags" target="_blank" rel="noopener noreferrer" className="home-about-link">Playlist Tags</a>
+                {' · '}
+                <a href="https://github.com/jasondesante/Ape-Tapes-Docs" target="_blank" rel="noopener noreferrer" className="home-about-link">Full Docs</a>
               </p>
             </div>
           </div>

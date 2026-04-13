@@ -494,7 +494,7 @@
   .tap-area {
     min-height: 12rem;
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+    touch-action: none;
   }
 
   .tap-area__text {

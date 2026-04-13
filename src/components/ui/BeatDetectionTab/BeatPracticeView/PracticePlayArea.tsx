@@ -171,6 +171,15 @@ export function PracticePlayArea({
       {/* Practice View - TapArea or KeyLane based on view mode */}
       {keyLaneViewMode === 'off' ? (
         <>
+          <TapArea
+            onTap={handleTap}
+            isActive={streamIsActive}
+            lastTapResult={lastTapResult}
+            showFeedback={showFeedback}
+            feedbackDuration={500}
+            onFeedbackComplete={hideTapFeedback}
+            showTooFast={showTooFast}
+          />
           {/* ComboFeedbackDisplay for TapArea mode */}
           <div className="beat-practice-combo-feedback-row">
             <ComboFeedbackDisplay
@@ -181,15 +190,6 @@ export function PracticePlayArea({
               onBonusDisplayed={clearPendingBonuses}
             />
           </div>
-          <TapArea
-            onTap={handleTap}
-            isActive={streamIsActive}
-            lastTapResult={lastTapResult}
-            showFeedback={showFeedback}
-            feedbackDuration={500}
-            onFeedbackComplete={hideTapFeedback}
-            showTooFast={showTooFast}
-          />
         </>
       ) : (
         <>

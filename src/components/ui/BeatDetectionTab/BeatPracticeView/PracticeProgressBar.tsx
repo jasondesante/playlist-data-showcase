@@ -74,6 +74,7 @@ export function PracticeProgressBar({
    * Handle progress bar touch start
    */
   const handleProgressTouchStart = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
     const touch = e.touches[0];
     setIsDraggingProgress(true);
     const time = getTimeFromPosition(touch.clientX);
@@ -85,6 +86,7 @@ export function PracticeProgressBar({
    */
   const handleProgressTouchMove = useCallback((e: React.TouchEvent) => {
     if (!isDraggingProgress) return;
+    e.preventDefault();
     const touch = e.touches[0];
     const time = getTimeFromPosition(touch.clientX);
     onSeek(time);
