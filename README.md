@@ -21,9 +21,10 @@ This app consumes **Serverless Playlists** — permanent, decentralized music pl
 
 For the full spec, tags, and how to build with serverless playlists:
 
-- [Playlist Info](https://github.com/jasondesante/Ape-Tapes-Docs/tree/main/curate/playlists) — what serverless playlists are all about
-- [Playlist Tags](https://github.com/jasondesante/Ape-Tapes-Docs/blob/main/curate/playlists/playlist-tags.md) — on-chain queryable metadata
-- [Ape Tapes Docs](https://contract-wizard.gitbook.io/contract-wizard) — full documentation
+- [The Mission](https://contract-wizard.gitbook.io/contract-wizard/curate/the-mission) — the vision behind serverless playlists
+- [Playlist Info](https://contract-wizard.gitbook.io/contract-wizard/curate/playlists) — what serverless playlists are all about
+- [Playlist Tags](https://contract-wizard.gitbook.io/contract-wizard/curate/playlists/playlist-tags) — on-chain queryable metadata
+- [Ape Tapes Docs](https://github.com/jasondesante/Ape-Tapes-Docs) — full documentation
 - [ar://listen](https://listen.arweave.net/) — create and browse playlists
 
 ## The Playlist Data Engine
