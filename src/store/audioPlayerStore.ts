@@ -160,8 +160,13 @@ async function fetchAsBlobUrl(url: string, signal?: AbortSignal): Promise<string
     // Keep cache bounded — revoke oldest entries beyond 3 tracks
     if (blobUrlCache.size > 3) {
         const oldestKey = blobUrlCache.keys().next().value;
-        URL.revokeObjectURL(blobUrlCache.get(oldestKey)!);
-        blobUrlCache.delete(oldestKey);
+        if (oldestKey !== undefined) {
+            const oldestBlobUrl = blobUrlCache.get(oldestKey);
+            if (oldestBlobUrl !== undefined) {
+                URL.revokeObjectURL(oldestBlobUrl);
+            }
+            blobUrlCache.delete(oldestKey);
+        }
     }
 
     return blobUrl;
