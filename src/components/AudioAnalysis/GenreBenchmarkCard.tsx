@@ -188,17 +188,19 @@ export function GenreBenchmarkCard({ runs, isRunning, currentRunIndex, error, on
             </span>
           </div>
         </div>
-        {runs.length > 0 && !isRunning && (
-          <div className="gb-header-actions">
+        <div className="gb-header-actions">
+          {runs.length > 0 && !isRunning && (
             <button type="button" className={`gb-copy-btn${copied ? ' gb-copy-btn--copied' : ''}`} onClick={handleCopy} title="Copy benchmark results to clipboard">
               {copied ? <CheckCheck size={14} /> : <Copy size={14} />}
               <span className="gb-copy-label">{copied ? 'Copied' : 'Copy'}</span>
             </button>
+          )}
+          {runs.length > 0 && !isRunning && (
             <button type="button" className="gb-clear-btn" onClick={onClear} title="Clear benchmark results">
               <Trash2 size={14} />
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </CardHeader>
 
       {error && (

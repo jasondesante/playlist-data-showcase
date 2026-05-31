@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Waves, Music, Sparkles, Zap, Activity, Clock, Disc, TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Waves, Music, Sparkles, Zap, Activity, Clock, Disc, TrendingUp, TrendingDown, Minus, RefreshCw, CheckCheck, Copy } from 'lucide-react';
 import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -20,7 +20,7 @@ import { ArweaveImage } from '../shared/ArweaveImage';
 import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { PitchContourGraph } from '../ui/PitchContourGraph';
-import { ColorExtractor, MusicClassifier } from 'playlist-data-engine';
+import { ColorExtractor, MusicClassifier, modelCache } from 'playlist-data-engine';
 import { GenreBenchmarkCard, BENCHMARK_CONFIGS, type BenchmarkRun } from '../AudioAnalysis/GenreBenchmarkCard';
 import type { PitchAlgorithm } from '../../types/rhythmGeneration';
 import type { PitchContourDirection } from '../../types';
@@ -160,6 +160,36 @@ export function AudioAnalysisTab() {
   const [isBenchmarkRunning, setIsBenchmarkRunning] = useState(false);
   const [benchmarkCurrentIndex, setBenchmarkCurrentIndex] = useState(0);
   const [benchmarkError, setBenchmarkError] = useState<string | null>(null);
+
+  const [cacheCleared, setCacheCleared] = useState(false);
+  const [cachedModelCount, setCachedModelCount] = useState(0);
+  const [cacheSizeMB, setCacheSizeMB] = useState(0);
+
+  const refreshCacheStatus = useCallback(async () => {
+    try {
+      const [models, size] = await Promise.all([
+        modelCache.listCachedModels(),
+        modelCache.totalCacheSize(),
+      ]);
+      setCachedModelCount(models.length);
+      setCacheSizeMB(size / (1024 * 1024));
+    } catch { /* modelCache not available */ }
+  }, []);
+
+  // Poll cache status when in genre mode (catches models being downloaded/cleared)
+  useEffect(() => {
+    if (analysisMode !== 'genre') return;
+    refreshCacheStatus();
+    const interval = setInterval(refreshCacheStatus, 2000);
+    return () => clearInterval(interval);
+  }, [analysisMode, isGenreAnalyzing, isGenreModelLoading, isBenchmarkRunning, refreshCacheStatus]);
+
+  const handleClearCache = useCallback(async () => {
+    await modelCache.clear();
+    setCacheCleared(true);
+    await refreshCacheStatus();
+    setTimeout(() => setCacheCleared(false), 2000);
+  }, [refreshCacheStatus]);
 
   // Clear benchmark when switching tracks or modes
   useEffect(() => {
@@ -339,6 +369,10 @@ export function AudioAnalysisTab() {
     if (!selectedTrack?.audio_url) return;
 
     if (analysisMode === 'genre') {
+      // If benchmark results exist, don't run a separate analysis — the full-song result
+      // is already stored. Creating a second classifier would risk OOM.
+      if (benchmarkRuns.length > 0 && musicClassification) return;
+
       // Genre analysis mode - ML-based classification
       // Pass preset names to the engine — it resolves them to URLs internally
 
@@ -966,6 +1000,26 @@ export function AudioAnalysisTab() {
                         </div>
                       </div>
                     )}
+
+                    {/* Clear ML model cache */}
+                    <div className="audio-analysis-cache-section">
+                      <div className="audio-analysis-cache-row">
+                        <button
+                          type="button"
+                          className={`audio-analysis-cache-btn${cacheCleared ? ' audio-analysis-cache-btn--done' : ''}`}
+                          onClick={handleClearCache}
+                          disabled={isGenreAnalyzing || isGenreModelLoading || isBenchmarkRunning}
+                        >
+                          {cacheCleared ? <CheckCheck size={13} /> : <Copy size={13} />}
+                          <span>{cacheCleared ? 'Cache Cleared' : 'Clear Model Cache'}</span>
+                        </button>
+                        <span className={`audio-analysis-cache-status${cachedModelCount === 0 ? ' audio-analysis-cache-status--empty' : ''}`}>
+                          {cachedModelCount === 0
+                            ? 'No models cached'
+                            : `${cachedModelCount} model${cachedModelCount !== 1 ? 's' : ''} cached (${cacheSizeMB.toFixed(1)} MB)`}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
