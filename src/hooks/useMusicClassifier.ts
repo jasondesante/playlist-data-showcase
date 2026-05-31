@@ -43,6 +43,10 @@ export interface UseMusicClassifierOptions {
     };
     topN?: number;
     threshold?: number;
+    /** Seconds of audio to analyze. Full song when not set. */
+    analysisDurationSeconds?: number;
+    /** Position within song to start (0.0–1.0). Only applies when duration is set. */
+    analysisStartPosition?: number;
 }
 
 // ============================================================================

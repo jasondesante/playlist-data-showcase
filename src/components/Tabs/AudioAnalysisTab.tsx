@@ -20,7 +20,8 @@ import { ArweaveImage } from '../shared/ArweaveImage';
 import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { PitchContourGraph } from '../ui/PitchContourGraph';
-import { ColorExtractor } from 'playlist-data-engine';
+import { ColorExtractor, MusicClassifier } from 'playlist-data-engine';
+import { GenreBenchmarkCard, BENCHMARK_CONFIGS, type BenchmarkRun } from '../AudioAnalysis/GenreBenchmarkCard';
 import type { PitchAlgorithm } from '../../types/rhythmGeneration';
 import type { PitchContourDirection } from '../../types';
 import { PITCH_ALGORITHM_LABELS, STANDALONE_PITCH_EXCLUDED, PITCH_ALGORITHM_DEFAULT_MAX_FREQ } from '../../constants/pitchAlgorithms';
@@ -59,7 +60,7 @@ function DirectionBadge({ direction }: { direction: PitchContourDirection }) {
  * 8. Interactive multiplier controls for real-time frequency adjustment
  */
 export function AudioAnalysisTab() {
-  const { selectedTrack, audioProfile, setAudioProfile, musicClassification, pitchAnalysisProfile } = usePlaylistStore();
+  const { selectedTrack, audioProfile, setAudioProfile, musicClassification, pitchAnalysisProfile, setMusicClassification } = usePlaylistStore();
   const { playbackState, currentTime, seek } = useAudioPlayerStore();
   // Use shared hook for validated duration with metadata fallback
   const duration = useTrackDuration();
@@ -114,6 +115,58 @@ export function AudioAnalysisTab() {
   const [selectedGenreModel, setSelectedGenreModel] = useState<GenrePreset | null>(null);
   const [selectedMoodModel, setSelectedMoodModel] = useState<MoodPreset | null>(null);
   const [showModelSelector, setShowModelSelector] = useState(false);
+
+  // Partial analysis options — analyze a segment instead of the full song
+  const [partialAnalysisEnabled, setPartialAnalysisEnabled] = useState(false);
+  const [partialDuration, setPartialDuration] = useState(30); // seconds (10–120)
+  const [partialStartPos, setPartialStartPos] = useState(0.5); // 0.0–1.0
+
+  // Analysis timer — tracks wall-clock time from start to finish
+  const [analysisElapsed, setAnalysisElapsed] = useState(0); // seconds (live)
+  const [analysisElapsedFinal, setAnalysisElapsedFinal] = useState<number | null>(null); // frozen after completion
+  const analysisTimerStartRef = useRef<number | null>(null);
+  const analysisTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Tick the live timer every 100ms while analysis is running
+  useEffect(() => {
+    const isRunning = isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing || isPitchAnalyzing;
+    if (isRunning && analysisTimerStartRef.current === null) {
+      analysisTimerStartRef.current = performance.now();
+      analysisTimerRef.current = setInterval(() => {
+        if (analysisTimerStartRef.current !== null) {
+          setAnalysisElapsed((performance.now() - analysisTimerStartRef.current) / 1000);
+        }
+      }, 100);
+    } else if (!isRunning && analysisTimerStartRef.current !== null) {
+      clearInterval(analysisTimerRef.current!);
+      setAnalysisElapsedFinal((performance.now() - analysisTimerStartRef.current) / 1000);
+      setAnalysisElapsed(0);
+      analysisTimerStartRef.current = null;
+      analysisTimerRef.current = null;
+    }
+    return () => {
+      if (analysisTimerRef.current) clearInterval(analysisTimerRef.current);
+    };
+  }, [isAnalyzing, isTimelineAnalyzing, isGenreAnalyzing, isPitchAnalyzing]);
+
+  // Clear final time when switching tracks or modes
+  useEffect(() => {
+    setAnalysisElapsedFinal(null);
+  }, [selectedTrack, analysisMode]);
+
+  // Benchmark state
+  const [benchmarkEnabled, setBenchmarkEnabled] = useState(false);
+  const [benchmarkRuns, setBenchmarkRuns] = useState<BenchmarkRun[]>([]);
+  const [isBenchmarkRunning, setIsBenchmarkRunning] = useState(false);
+  const [benchmarkCurrentIndex, setBenchmarkCurrentIndex] = useState(0);
+  const [benchmarkError, setBenchmarkError] = useState<string | null>(null);
+
+  // Clear benchmark when switching tracks or modes
+  useEffect(() => {
+    setBenchmarkRuns([]);
+    setBenchmarkError(null);
+    setIsBenchmarkRunning(false);
+  }, [selectedTrack, analysisMode]);
 
   // Pitch mode options
   const [pitchAlgorithm, setPitchAlgorithm] = useState<PitchAlgorithm>('pitch_melodia');
@@ -221,6 +274,67 @@ export function AudioAnalysisTab() {
   const handleBassChange = (pos: number) => handleSliderChange(pos, setBassBoost, setBassSliderPos);
   const handleMidChange = (pos: number) => handleSliderChange(pos, setMidBoost, setMidSliderPos);
 
+  const handleBenchmark = async () => {
+    if (!selectedTrack?.audio_url) return;
+
+    setIsBenchmarkRunning(true);
+    setBenchmarkRuns([]);
+    setBenchmarkError(null);
+
+    const baseOptions = {
+      preset: {
+        genre: selectedGenreModel ?? 'discogs400',
+        mood: selectedMoodModel ?? 'jamendo',
+        danceability: 'default',
+      } as const,
+      topN: genreTopN,
+      threshold: genreThreshold,
+    };
+
+    // Create a single classifier — reuse across all 5 runs to avoid OOM from multiple WASM instances.
+    // For partial runs, mutate the analysis duration/position options before each analyze() call.
+    const classifier = new MusicClassifier({ ...baseOptions });
+    const options = (classifier as unknown as { options: Record<string, unknown> }).options;
+
+    const completedRuns: BenchmarkRun[] = [];
+
+    try {
+      for (let i = 0; i < BENCHMARK_CONFIGS.length; i++) {
+        const config = BENCHMARK_CONFIGS[i];
+        setBenchmarkCurrentIndex(i);
+
+        // Set analysis window for this run (null duration = full song)
+        options.analysisDurationSeconds = config.durationSeconds;
+        options.analysisStartPosition = config.startPosition;
+
+        const startTime = performance.now();
+        const profile = await classifier.analyze(selectedTrack.audio_url);
+        const elapsedMs = performance.now() - startTime;
+
+        completedRuns.push({
+          label: config.label,
+          duration: config.durationSeconds,
+          startPosition: config.startPosition,
+          elapsedMs,
+          profile,
+        });
+
+        setBenchmarkRuns([...completedRuns]);
+
+        // Store the full-song result in the playlist store
+        if (i === 0) {
+          setMusicClassification(profile);
+        }
+      }
+    } catch (err) {
+      setBenchmarkError(err instanceof Error ? err.message : String(err));
+    } finally {
+      classifier.clearAllCaches();
+      setIsBenchmarkRunning(false);
+      setBenchmarkCurrentIndex(BENCHMARK_CONFIGS.length);
+    }
+  };
+
   const handleAnalyze = async () => {
     if (!selectedTrack?.audio_url) return;
 
@@ -238,6 +352,10 @@ export function AudioAnalysisTab() {
         preset,
         topN: genreTopN,
         threshold: genreThreshold,
+        ...(partialAnalysisEnabled && {
+          analysisDurationSeconds: partialDuration,
+          analysisStartPosition: partialStartPos,
+        }),
       };
 
       // Also update state for UI consistency
@@ -672,6 +790,92 @@ export function AudioAnalysisTab() {
                     </div>
                   </div>
 
+                  {/* Partial Analysis Section */}
+                  <div className="audio-analysis-partial-section">
+                    <label className="audio-analysis-partial-toggle">
+                      <input
+                        type="checkbox"
+                        checked={partialAnalysisEnabled}
+                        onChange={(e) => setPartialAnalysisEnabled(e.target.checked)}
+                        disabled={isGenreAnalyzing || isGenreModelLoading}
+                      />
+                      <span className="audio-analysis-partial-toggle-label">Partial Analysis</span>
+                      <span className="audio-analysis-partial-toggle-desc">Analyze a segment instead of the full song</span>
+                    </label>
+
+                    {partialAnalysisEnabled && (
+                      <div className="audio-analysis-partial-controls">
+                        {/* Duration slider */}
+                        <div className="audio-analysis-genre-slider-container">
+                          <div className="audio-analysis-genre-slider-header">
+                            <span className="audio-analysis-genre-slider-label">Duration</span>
+                            <span className="audio-analysis-genre-slider-value">{partialDuration}s</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="10"
+                            max="120"
+                            step="5"
+                            value={partialDuration}
+                            onChange={(e) => setPartialDuration(parseInt(e.target.value, 10))}
+                            className="audio-analysis-genre-slider"
+                            style={{ '--slider-value': `${((partialDuration - 10) / 110) * 100}%` } as React.CSSProperties}
+                            aria-label="Duration in seconds to analyze"
+                            disabled={isGenreAnalyzing || isGenreModelLoading}
+                          />
+                          <div className="audio-analysis-genre-slider-marks">
+                            <span className="audio-analysis-genre-slider-mark">10s</span>
+                            <span className="audio-analysis-genre-slider-mark">120s</span>
+                          </div>
+                        </div>
+
+                        {/* Start position slider */}
+                        <div className="audio-analysis-genre-slider-container">
+                          <div className="audio-analysis-genre-slider-header">
+                            <span className="audio-analysis-genre-slider-label">Start Position</span>
+                            <span className="audio-analysis-genre-slider-value">{partialStartPos === 0 ? 'Start' : partialStartPos === 0.5 ? 'Middle' : partialStartPos === 1 ? 'End' : `${(partialStartPos * 100).toFixed(0)}%`}</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.05"
+                            value={partialStartPos}
+                            onChange={(e) => setPartialStartPos(parseFloat(e.target.value))}
+                            className="audio-analysis-genre-slider"
+                            style={{ '--slider-value': `${(partialStartPos / 1) * 100}%` } as React.CSSProperties}
+                            aria-label="Position within song to start analysis"
+                            disabled={isGenreAnalyzing || isGenreModelLoading}
+                          />
+                          <div className="audio-analysis-genre-slider-marks">
+                            <span className="audio-analysis-genre-slider-mark">Start</span>
+                            <span className="audio-analysis-genre-slider-mark">Middle</span>
+                            <span className="audio-analysis-genre-slider-mark">End</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Benchmark toggle */}
+                  <div className="audio-analysis-partial-section">
+                    <label className="audio-analysis-partial-toggle">
+                      <input
+                        type="checkbox"
+                        checked={benchmarkEnabled}
+                        onChange={(e) => setBenchmarkEnabled(e.target.checked)}
+                        disabled={isGenreAnalyzing || isGenreModelLoading || isBenchmarkRunning}
+                      />
+                      <span className="audio-analysis-partial-toggle-label">Benchmark Mode</span>
+                      <span className="audio-analysis-partial-toggle-desc">Compare full vs. partial analysis accuracy</span>
+                    </label>
+                    {benchmarkEnabled && (
+                      <div className="audio-analysis-benchmark-desc">
+                        Runs 5 sequential analyses (Full, 120s, 60s, 30s, 15s) starting at 30% position. Compares genre, mood, and vibe accuracy across all durations.
+                      </div>
+                    )}
+                  </div>
+
                   {/* Model Selection Section */}
                   <div className="audio-analysis-model-section">
                     <div className="audio-analysis-model-header">
@@ -930,16 +1134,16 @@ export function AudioAnalysisTab() {
               <Button
                 onClick={
                   analysisMode === 'genre'
-                    ? handleAnalyze
+                    ? (benchmarkEnabled ? handleBenchmark : handleAnalyze)
                     : analysisMode === 'pitch'
                       ? handleAnalyze
                       : (audioProfile ? handleApplyMultipliers : handleAnalyze)
                 }
                 disabled={
-                  isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing || isPitchAnalyzing ||
+                  isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing || isPitchAnalyzing || isBenchmarkRunning ||
                   (analysisMode !== 'genre' && analysisMode !== 'pitch' && playbackState !== 'playing')
                 }
-                isLoading={isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing || isPitchAnalyzing}
+                isLoading={isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing || isPitchAnalyzing || isBenchmarkRunning}
                 variant="primary"
                 size="lg"
                 className="audio-analysis-primary-action-button"
@@ -949,18 +1153,40 @@ export function AudioAnalysisTab() {
                     : ''
                 }
               >
-                {isPitchAnalyzing
-                  ? `${pitchProgress}%`
-                  : isGenreAnalyzing
-                    ? `${genreProgress}%`
-                    : isAnalyzing || isTimelineAnalyzing
-                      ? `${progress}%`
-                      : analysisMode === 'pitch'
-                        ? (pitchAnalysisProfile ? 'Re-Analyze Pitch' : 'Analyze Pitch')
-                        : analysisMode === 'genre'
-                          ? (musicClassification ? 'Re-Analyze Genre' : 'Analyze Genre')
-                          : (audioProfile ? 'Re-Analyze' : 'Analyze Audio')}
+                {isBenchmarkRunning
+                  ? `Run ${benchmarkCurrentIndex + 1}/5: ${BENCHMARK_CONFIGS[Math.min(benchmarkCurrentIndex, 4)].label}...`
+                  : isPitchAnalyzing
+                    ? `${pitchProgress}%`
+                    : isGenreAnalyzing
+                      ? `${genreProgress}%`
+                      : isAnalyzing || isTimelineAnalyzing
+                        ? `${progress}%`
+                        : analysisMode === 'pitch'
+                          ? (pitchAnalysisProfile ? 'Re-Analyze Pitch' : 'Analyze Pitch')
+                          : analysisMode === 'genre'
+                            ? benchmarkEnabled
+                              ? (benchmarkRuns.length > 0 ? 'Re-Run Benchmark' : 'Run Benchmark')
+                              : (musicClassification ? 'Re-Analyze Genre' : 'Analyze Genre')
+                            : (audioProfile ? 'Re-Analyze' : 'Analyze Audio')}
               </Button>
+
+              {/* Analysis timer */}
+              {(isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing || isPitchAnalyzing || analysisElapsedFinal !== null) && (
+                <div className="audio-analysis-timer">
+                  <span className="audio-analysis-timer-label">
+                    {(isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing || isPitchAnalyzing) ? 'Analyzing' : 'Completed'}
+                  </span>
+                  <span className="audio-analysis-timer-value">
+                    {(isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing || isPitchAnalyzing)
+                      ? analysisElapsed.toFixed(1)
+                      : analysisElapsedFinal !== null ? analysisElapsedFinal.toFixed(1) : '0.0'}
+                    s
+                  </span>
+                  {analysisElapsedFinal !== null && partialAnalysisEnabled && (
+                    <span className="audio-analysis-timer-segment">{partialDuration}s segment</span>
+                  )}
+                </div>
+              )}
 
               {analysisMode !== 'genre' && analysisMode !== 'pitch' && playbackState !== 'playing' && !isAnalyzing && !isTimelineAnalyzing && !isPitchAnalyzing && (
                 <div className="audio-analysis-playback-warning">
@@ -1019,6 +1245,19 @@ export function AudioAnalysisTab() {
               status="healthy"
             />
           )}
+        </div>
+      )}
+
+      {/* Benchmark Results */}
+      {selectedTrack && analysisMode === 'genre' && (benchmarkRuns.length > 0 || isBenchmarkRunning || benchmarkError) && (
+        <div className="audio-analysis-results fade-in">
+          <GenreBenchmarkCard
+            runs={benchmarkRuns}
+            isRunning={isBenchmarkRunning}
+            currentRunIndex={benchmarkCurrentIndex}
+            error={benchmarkError}
+            onClear={() => { setBenchmarkRuns([]); setBenchmarkError(null); }}
+          />
         </div>
       )}
 
