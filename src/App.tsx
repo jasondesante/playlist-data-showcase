@@ -25,6 +25,7 @@ import { useAutoCharacterSetup } from './hooks/useAutoCharacterSetup';
 import { useSessionCompletion } from './hooks/useSessionCompletion';
 import { useCharacterStore } from './store/characterStore';
 import { useDataViewerStore } from './store/dataViewerStore';
+import { arweaveGatewayManager } from 'playlist-data-engine';
 import { useCustomEquipmentInitializer } from './hooks/useItemCreator';
 
 type Tab = 'home' | 'playlist' | 'audio' | 'beat' | 'character' | 'party' | 'items' | 'dataviewer' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'balance' | 'settings';
@@ -40,6 +41,9 @@ function App() {
   const navigateToTab = useCallback((tab: Tab) => {
     setActiveTab(tab);
   }, []);
+
+  // Use ardrive.net as the default gateway
+  arweaveGatewayManager.setPreferredGateway('ardrive.net');
 
   // Initialize custom equipment from localStorage on app startup
   // This ensures custom items can be equipped after page refresh

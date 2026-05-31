@@ -1,14 +1,34 @@
 # Playlist Data Engine
 
+[![npm version](https://img.shields.io/npm/v/playlist-data-engine.svg)](https://www.npmjs.com/package/playlist-data-engine)
+
 > The data engine behind **[ar://listen](https://listen.arweave.net/)** — an interactive music player where every song becomes an adventure. Five years in the making.
 
-The engine takes **serverless playlists** (stored on Arweave via the Ario network) and turns them into music-powered experiences. It parses playlist data into clean formats, analyzes audio with TensorFlow-powered ML models, detects beats for rhythm games, generates RPG characters from sonic fingerprints, runs combat simulations with seeded dice, and feeds real-world sensor data back into the player to create a living, responsive experience. All with automatic Arweave gateway failover via the Ario Wayfinder so your data is always reachable.
+**[Live Engine Demo](https://playlist-data-showcase_contractwizard.ar.io/)** | **[ar://listen Gitbook](https://contract-wizard.gitbook.io/contract-wizard)**
+
+The engine takes **[serverless playlists](#what-are-serverless-playlists)** — permanent, censorship-resistant playlists stored on Arweave that mix Ethereum NFTs with decentralized uploads — and turns them into music-powered experiences. It parses playlist data into clean formats, analyzes audio with TensorFlow-powered ML models, detects beats for rhythm games, generates RPG characters from sonic fingerprints, runs combat simulations with seeded dice, and feeds real-world sensor data back into the player to create a living, responsive experience. All with automatic Arweave gateway failover via the Ario Wayfinder so your data is always reachable.
 
 **Think of it as a toybox for making music more fun.**
 
+**Install as a package:**
+```bash
+npm install playlist-data-engine
+```
+
+<details>
+<summary>Install from source (for contributors)</summary>
+
+```bash
+git clone https://github.com/jasondesante/playlist-data-engine.git
+cd playlist-data-engine
+npm install
+```
+
+</details>
+
 ### The Vision: An Intelligent Music Player
 
-The original design — five years ago — was simple: what if a music player *listened* to your music as carefully as you do? What if it knew the genre, the mood, the beats, the groove? What if it could react to where you are, what you're doing, the weather outside, the time of day? What if every song came with a character, a combat encounter, a rhythm game chart — all generated from the music itself?
+The original idea — five years ago — was a music player that goes beyond playing static audio. Think of how the best Nintendo games use dynamic music — different arrangements and mixes depending on what the player does. That's a whole category of experiencing recorded music, but only a handful of games have ever explored it. This engine opens that door for any music. It listens to your tracks and reacts to you — the genre, the mood, the beats, the groove, where you are, what you're doing, the weather outside, the time of day. Every song comes with a character, a combat encounter, a rhythm game chart — all generated from the music itself.
 
 That's what this engine does. Every system connects back to making the music player smarter and more interactive:
 
@@ -68,14 +88,6 @@ Plus: groove analysis (pocket detection, hotness meter), combo/groove XP rewards
 
 ---
 
-## Quick Start
-
-```bash
-npm install
-npm test
-npm run build
-```
-
 ### Parse a Playlist & Extract Data
 
 ```typescript
@@ -104,6 +116,8 @@ const profile = await analyzer.extractSonicFingerprint(track.audio_url);
 
 // TensorFlow-based genre, mood, and vibe classification
 const classifier = new MusicClassifier();
+// Or analyze only a segment for faster results:
+// const classifier = new MusicClassifier({ analysisDurationSeconds: 30, analysisStartPosition: 0.5 });
 const classification = await classifier.analyze(track.audio_url);
 // → { genres: ['techno', 'detroit-house'], moods: ['energetic', 'driving'], vibes: { danceability, energy, valence } }
 
@@ -212,6 +226,19 @@ src/core/
 The engine's bread and butter — the foundation everything else builds on. Feed it a raw serverless playlist JSON and it parses the data into clean, structured formats ready for your app. Audio URLs, image URLs, track metadata, VRM 3D model references — all extracted and organized.
 
 The parser handles Arweave-hosted content with built-in gateway failover via the Ario Wayfinder. If one gateway is down, it automatically tries the next — your player never notices.
+
+#### What Are Serverless Playlists?
+
+Serverless Playlists are permanent building blocks for decentralized music curation stored on [Arweave](https://www.arweave.org/). Instead of algorithms deciding what you hear, you create playlists that work across every platform forever. Mix Ethereum NFTs with Arweave uploads, add your own metadata, then share playlists that can't be censored, deleted, or controlled by anyone but you.
+
+They're created with **[The Contract Wizard](https://listen.arweave.net/)** and uploaded to Arweave with standardized tags (`App-Name: Contract-Wizard`, `Uploaded-Type: Playlist`, genre, audio tags, etc.) so they're queryable on-chain. Each track in a playlist can be an Ethereum NFT, a direct Arweave upload, or any mix — the playlist format handles them all.
+
+The engine takes these raw Arweave-stored playlist JSON objects and turns them into structured data you can build with.
+
+**Learn more:**
+- [Playlist Objects — full spec & format](https://github.com/jasondesante/Ape-Tapes-Docs/tree/main/curate/playlists/playlist-objects)
+- [Playlist Tags — on-chain queryable metadata](https://github.com/jasondesante/Ape-Tapes-Docs/tree/main/curate/playlists/playlist-tags.md)
+- [ar://listen](https://listen.arweave.net/) — the player that started it all
 
 ### Audio Analysis Pipeline
 
@@ -342,7 +369,7 @@ The engine runs in both environments. Audio analysis uses the Web Audio API (bro
 
 ## Project Status
 
-- **Version**: 1.1.0
+- **Version**: 1.1.1
 - **TypeScript**: Strict mode
 - **Tests**: 7,205 tests across 183 test files
 - **Module**: Dual ESM/CJS with full type declarations
