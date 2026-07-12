@@ -16,7 +16,7 @@
 
 import { useState, useEffect, useCallback, useRef, type ImgHTMLAttributes, type ReactNode } from 'react';
 import { Music } from 'lucide-react';
-import { arweaveGatewayManager, isArweaveUrl } from 'playlist-data-engine';
+import { arweaveGatewayManager, isArweaveUrl } from 'playlist-data-engine/gateway';
 import { logger } from '../../utils/logger';
 import './ArweaveImage.css';
 

@@ -33,7 +33,7 @@ import type {
     AllDifficultiesWithNatural,
 } from '../../types/levelGeneration';
 import type { PitchAlgorithm } from '../../types/rhythmGeneration';
-import type { GeneratedLevel } from 'playlist-data-engine';
+import type { GeneratedLevel } from 'playlist-data-engine/analysis';
 
 import { PITCH_ALGORITHM_LABELS } from '../../constants/pitchAlgorithms';
 import { PitchTimeline } from './PitchTimeline';

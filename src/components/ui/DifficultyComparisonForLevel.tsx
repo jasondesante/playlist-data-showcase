@@ -29,7 +29,7 @@ import type {
     AllDifficultiesWithNatural,
     DifficultyLevel,
 } from '../../types/levelGeneration';
-import type { GeneratedLevel } from 'playlist-data-engine';
+import type { GeneratedLevel } from 'playlist-data-engine/analysis';
 
 // ============================================================
 // Types

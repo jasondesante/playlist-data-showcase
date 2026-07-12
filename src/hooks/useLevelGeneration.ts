@@ -27,7 +27,7 @@ import {
     type AllDifficultiesResult,
     type LevelGenerationProgress,
     type LevelGenerationOptions,
-} from 'playlist-data-engine';
+} from 'playlist-data-engine/analysis';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 import {

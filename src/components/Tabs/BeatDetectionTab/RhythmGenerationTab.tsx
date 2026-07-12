@@ -51,7 +51,7 @@ import type {
     DensityGenerationConfig,
 } from '../../../types/rhythmGeneration';
 import { getPhraseHighlightColor } from '../../../types/rhythmGeneration';
-import type { GeneratedLevel } from 'playlist-data-engine';
+import type { GeneratedLevel } from 'playlist-data-engine/analysis';
 import { cn } from '../../../utils/cn';
 
 // ============================================================

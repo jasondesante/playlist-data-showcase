@@ -41,7 +41,8 @@ import {
 } from '../../store/beatDetectionStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import type { DifficultyLevel } from '../../types/levelGeneration';
-import type { GeneratedLevel, ControllerMode } from 'playlist-data-engine';
+import type { GeneratedLevel } from 'playlist-data-engine/analysis';
+import type { ControllerMode } from 'playlist-data-engine';
 import { cn } from '../../utils/cn';
 import { logger } from '../../utils/logger';
 import { usePlaylistStore } from '../../store/playlistStore';

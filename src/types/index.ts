@@ -17,7 +17,6 @@ export type {
     // Audio
     AudioProfile,
     AudioTimelineEvent,
-    SamplingStrategy,
     ColorPalette,
     FrequencyBands,
 
@@ -25,7 +24,6 @@ export type {
     MusicClassificationProfile,
     ClassificationTag,
     VibeMetrics,
-    MusicClassifierOptions,
 
     // Beat Detection
     Beat,
@@ -95,6 +93,12 @@ export type {
     GrooveEndBonusResult,
     GrooveStats
 } from 'playlist-data-engine';
+
+// TF-bearing types live on the /analysis subpath (AudioAnalyzer, MusicClassifier).
+export type {
+    SamplingStrategy,
+    MusicClassifierOptions,
+} from 'playlist-data-engine/analysis';
 
 // Re-export prestige system class, constants and helper functions
 export {

@@ -1,7 +1,9 @@
 import React, { useEffect, useCallback, useMemo, useRef } from 'react';
 import { Music, Sparkles, Drum, Download, ArrowRight, SkipForward, Upload, Joystick } from 'lucide-react';
-import { LevelSerializer, validateTrackMatch } from 'playlist-data-engine';
-import type { LevelPackExport, GeneratedLevel } from 'playlist-data-engine';
+import { validateTrackMatch } from 'playlist-data-engine';
+import { LevelSerializer } from 'playlist-data-engine/analysis';
+import type { LevelPackExport } from 'playlist-data-engine';
+import type { GeneratedLevel } from 'playlist-data-engine/analysis';
 import './BeatDetectionTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useBeatDetection } from '../../hooks/useBeatDetection';

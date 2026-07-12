@@ -6,7 +6,7 @@ import {
     type TwoStepModelConfig,
     type SingleStepModelConfig,
     type ClassifierPreset
-} from 'playlist-data-engine';
+} from 'playlist-data-engine/analysis';
 import type { MusicClassifierOptions, MusicClassificationProfile } from '@/types';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';

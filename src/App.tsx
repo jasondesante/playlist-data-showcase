@@ -25,7 +25,7 @@ import { useAutoCharacterSetup } from './hooks/useAutoCharacterSetup';
 import { useSessionCompletion } from './hooks/useSessionCompletion';
 import { useCharacterStore } from './store/characterStore';
 import { useDataViewerStore } from './store/dataViewerStore';
-import { arweaveGatewayManager } from 'playlist-data-engine';
+import { arweaveGatewayManager } from 'playlist-data-engine/gateway';
 import { useCustomEquipmentInitializer } from './hooks/useItemCreator';
 
 type Tab = 'home' | 'playlist' | 'audio' | 'beat' | 'character' | 'party' | 'items' | 'dataviewer' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'balance' | 'settings';

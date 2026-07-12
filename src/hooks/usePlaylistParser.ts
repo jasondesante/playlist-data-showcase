@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { PlaylistParser, arweaveGatewayManager } from 'playlist-data-engine';
+import { PlaylistParser } from 'playlist-data-engine';
+import { arweaveGatewayManager } from 'playlist-data-engine/gateway';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';

@@ -28,7 +28,8 @@ import {
 import type {
     AllDifficultiesWithNatural,
 } from '../../types/levelGeneration';
-import type { GeneratedLevel, ControllerMode } from 'playlist-data-engine';
+import type { GeneratedLevel } from 'playlist-data-engine/analysis';
+import type { ControllerMode } from 'playlist-data-engine';
 import DDRModeVisualization, { type DDRVisualizationBeat } from './DDRModeVisualization';
 import GuitarHeroModeVisualization, { type GuitarHeroVisualizationBeat } from './GuitarHeroModeVisualization';
 import ButtonDistributionChart from './ButtonDistributionChart';

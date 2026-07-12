@@ -38,7 +38,7 @@ import {
 } from 'playlist-data-engine';
 import { useCombatEngine, type Combatant, type TreasureConfig } from '../../hooks/useCombatEngine';
 import { logger } from '../../utils/logger';
-import { arweaveGatewayManager } from 'playlist-data-engine';
+import { arweaveGatewayManager } from 'playlist-data-engine/gateway';
 import type { PlaylistTrack, ServerlessPlaylist } from '../../types';
 import { PartyAnalyzerCard } from '../combat/PartyAnalyzerCard';
 import { TemplateBrowser } from '../combat/TemplateBrowser';

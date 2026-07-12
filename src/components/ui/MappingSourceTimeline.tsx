@@ -37,8 +37,8 @@ import type {
     ChartedBeat,
     ChartedBeatMap,
     ControllerMode,
-    GeneratedLevel,
 } from 'playlist-data-engine';
+import type { GeneratedLevel } from 'playlist-data-engine/analysis';
 import { getPatternById, DDR_PATTERN_LIBRARY, GUITAR_HERO_PATTERN_LIBRARY } from 'playlist-data-engine';
 
 // ============================================================

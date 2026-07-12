@@ -8,13 +8,15 @@
  */
 
 // Import types needed for local interface definitions
+// GeneratedLevel + PitchAtBeat live on the TF-bearing /analysis entry.
 import type {
     GeneratedLevel as GeneratedLevelType,
     PitchAtBeat,
-} from 'playlist-data-engine';
+} from 'playlist-data-engine/analysis';
 
 // ============================================================================
 // PITCH DETECTION TYPES (from playlist-data-engine)
+// pYIN PitchDetector is TF-free → main entry.
 // ============================================================================
 
 export type {
@@ -25,7 +27,7 @@ export type {
 } from 'playlist-data-engine';
 
 // ============================================================================
-// PITCH-BEAT LINKER TYPES (from playlist-data-engine)
+// PITCH-BEAT LINKER TYPES (from playlist-data-engine/analysis)
 // ============================================================================
 
 export type {
@@ -35,10 +37,11 @@ export type {
     PitchDirection,
     /** Category of interval size between consecutive pitches */
     IntervalCategory,
-} from 'playlist-data-engine';
+} from 'playlist-data-engine/analysis';
 
 // ============================================================================
-// BUTTON MAPPING TYPES (from playlist-data-engine)
+// BUTTON MAPPING TYPES (from playlist-data-engine + /analysis)
+// Controller/button primitives are TF-free; mapping result types are TF-bearing.
 // ============================================================================
 
 export type {
@@ -52,14 +55,17 @@ export type {
     Button,
     /** Configuration for button mapping */
     ButtonMappingConfig,
+} from 'playlist-data-engine';
+
+export type {
     /** Result of mapping beats to buttons */
     MappedLevelResult,
     /** Metadata about the button mapping process */
     ButtonMappingMetadata,
-} from 'playlist-data-engine';
+} from 'playlist-data-engine/analysis';
 
 // ============================================================================
-// LEVEL GENERATION TYPES (from playlist-data-engine)
+// LEVEL GENERATION TYPES (from playlist-data-engine/analysis)
 // ============================================================================
 
 export type {
@@ -73,16 +79,17 @@ export type {
     LevelGenerationProgress,
     /** Result of generating all difficulty variants */
     AllDifficultiesResult,
-} from 'playlist-data-engine';
+} from 'playlist-data-engine/analysis';
 
 // Re-export the LevelGenerator class and utilities
 export {
     LevelGenerator,
     type LevelProgressCallback,
-} from 'playlist-data-engine';
+} from 'playlist-data-engine/analysis';
 
 // ============================================================================
 // CHARTED BEAT MAP TYPES (from playlist-data-engine)
+// Charted beat maps are TF-free → main entry.
 // ============================================================================
 
 export type {
@@ -95,7 +102,7 @@ export type {
 } from 'playlist-data-engine';
 
 // ============================================================================
-// STANDALONE PITCH ANALYSIS TYPES (from playlist-data-engine)
+// STANDALONE PITCH ANALYSIS TYPES (from playlist-data-engine/analysis)
 // Full-track pitch detection and contour analysis (no beat map required).
 // ============================================================================
 
@@ -112,10 +119,10 @@ export type {
     PitchContourSegmentDirection,
     /** Overall direction of a pitch contour */
     PitchContourDirection,
-} from 'playlist-data-engine';
+} from 'playlist-data-engine/analysis';
 
 /** Standalone full-track pitch analyzer class */
-export { PitchAnalyzer } from 'playlist-data-engine';
+export { PitchAnalyzer } from 'playlist-data-engine/analysis';
 
 // ============================================================================
 // MELODY CONTOUR TYPES (local definitions)

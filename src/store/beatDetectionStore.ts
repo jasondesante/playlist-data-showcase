@@ -101,13 +101,15 @@ import {
     RhythmXPCalculator,
     // Rhythm Generation types (Task 1.1)
     type GeneratedRhythm,
+    type TrackReference,
+} from 'playlist-data-engine';
+import {
     // Level Generation types (Task 0.1)
     type GeneratedLevel,
     type AllDifficultiesResult,
     // Pitch types (Task 0.1)
     type PitchAtBeat,
-    type TrackReference,
-} from 'playlist-data-engine';
+} from 'playlist-data-engine/analysis';
 import { usePlaylistStore } from './playlistStore';
 import type { MelodyContour } from '@/types/levelGeneration';
 import type { DensityGenerationConfig } from '@/types/rhythmGeneration';

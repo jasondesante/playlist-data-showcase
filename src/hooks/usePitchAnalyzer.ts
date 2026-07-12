@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { PitchAnalyzer } from 'playlist-data-engine';
+import { PitchAnalyzer } from 'playlist-data-engine/analysis';
 import type { PitchAnalyzerConfig, PitchAnalysisProfile } from '@/types';
 import type { PitchAlgorithm } from '@/types/rhythmGeneration';
 import { logger } from '@/utils/logger';

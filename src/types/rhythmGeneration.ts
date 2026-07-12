@@ -46,7 +46,6 @@ export type {
     BandAnalysis,
     QuantizedBandStreams,
     GeneratedBeat,
-    GeneratedLevel,
     GridType,
     GridDecision,
     RhythmicPhrase,
@@ -72,6 +71,9 @@ export type {
     // Rhythmic balance configuration types
     RhythmicBalanceConfig,
 } from 'playlist-data-engine';
+
+// GeneratedLevel is TF-bearing (level-generation tree) → /analysis subpath.
+export type { GeneratedLevel } from 'playlist-data-engine/analysis';
 
 export type { StrongBeatEmphasis, BalancerAction, BalanceStats, BalanceResult } from 'playlist-data-engine';
 export { DEFAULT_RHYTHMIC_BALANCE_CONFIG, isStrongBeatForEmphasis, getControllerModeScoringDefaults, getControllerModeBalanceDefaults } from 'playlist-data-engine';

@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import { AudioAnalyzer, AudioProfile, ColorExtractor, AudioAnalyzerOptions, AudioTimelineEvent, SamplingStrategy } from 'playlist-data-engine';
+import { AudioProfile, ColorExtractor, AudioTimelineEvent } from 'playlist-data-engine';
+import { AudioAnalyzer, AudioAnalyzerOptions, SamplingStrategy } from 'playlist-data-engine/analysis';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 import { useAppStore } from '@/store/appStore';

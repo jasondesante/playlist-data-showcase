@@ -53,7 +53,7 @@ vi.mock('playlist-data-engine', () => ({
 }));
 
 // Import the mocked functions for type access
-import { isArweaveUrl, arweaveGatewayManager } from 'playlist-data-engine';
+import { isArweaveUrl, arweaveGatewayManager } from 'playlist-data-engine/gateway';
 
 const mockIsArweaveUrl = vi.mocked(isArweaveUrl);
 const mockResolveUrl = vi.mocked(arweaveGatewayManager.resolveUrl);

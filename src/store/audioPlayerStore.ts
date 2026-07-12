@@ -10,7 +10,7 @@
  */
 
 import { create } from 'zustand';
-import { isArweaveUrl } from 'playlist-data-engine';
+import { isArweaveUrl } from 'playlist-data-engine/gateway';
 import { logger } from '@/utils/logger';
 
 // Simple gateway list for audio — arweave.net first, one fallback.

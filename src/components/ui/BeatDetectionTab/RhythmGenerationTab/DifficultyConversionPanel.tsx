@@ -34,7 +34,7 @@ import type {
     BalanceStats,
     DensityGenerationConfig,
 } from '../../../../types/rhythmGeneration';
-import type { GeneratedLevel } from 'playlist-data-engine';
+import type { GeneratedLevel } from 'playlist-data-engine/analysis';
 
 // Type alias for variant beats (from any variant)
 type VariantBeat = DifficultyVariant['beats'][number];

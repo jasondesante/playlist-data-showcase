@@ -17,6 +17,7 @@ cert
 public/models/
 
 # claude api key
+.claude/*
 .claude/settings.json
 
 
